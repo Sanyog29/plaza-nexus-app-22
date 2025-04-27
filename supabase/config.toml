@@ -1,1 +1,5 @@
+
 project_id = "mukqpwinqhdfffdkthcg"
+
+[functions.categorize-request]
+verify_jwt = false

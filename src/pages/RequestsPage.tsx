@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { MessageSquare, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
-// Sample request data with enhanced information
+// Sample request data with enhanced information and SLA timers
 const requestData = [
   {
     id: 'req-001',
@@ -18,6 +19,9 @@ const requestData = [
     updatedAt: '2025-04-25T14:15:00',
     assignedTo: 'Technical Team',
     eta: '2025-04-25T16:30:00',
+    slaMinutesLeft: 102, // 1h 42m left
+    slaPercentage: 35, // 35% of SLA time remaining
+    isBreaching: false,
   },
   {
     id: 'req-002',
@@ -39,6 +43,10 @@ const requestData = [
     createdAt: '2025-04-27T09:10:00',
     updatedAt: '2025-04-27T09:10:00',
     assignedTo: 'IT Support',
+    slaMinutesLeft: 43, // 0h 43m left
+    slaPercentage: 15, // 15% of SLA time remaining
+    isBreaching: true,
+    escalatedTo: 'Network Manager',
   },
 ];
 
@@ -64,6 +72,12 @@ const getPriorityBadge = (priority: string) => {
     default:
       return <Badge variant="secondary" className="text-xs">Low Priority</Badge>;
   }
+};
+
+const formatSlaTime = (minutes: number) => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m left`;
 };
 
 const RequestsPage = () => {
@@ -132,6 +146,11 @@ const RequestsPage = () => {
                       <div className="flex items-center gap-2">
                         <h4 className="font-medium text-white">{request.title}</h4>
                         {getPriorityBadge(request.priority)}
+                        {request.escalatedTo && (
+                          <Badge variant="outline" className="text-xs bg-red-900/20 text-red-300 border-red-800">
+                            Escalated
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-gray-400 mt-1">{request.category}</p>
                       <div className="mt-2 space-y-1">
@@ -141,6 +160,35 @@ const RequestsPage = () => {
                         <p className="text-xs text-gray-500">
                           Updated: {new Date(request.updatedAt).toLocaleString()}
                         </p>
+                        
+                        {/* SLA Timer */}
+                        {request.slaMinutesLeft !== undefined && request.status !== 'Completed' && (
+                          <div className="mt-3 space-y-1">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-1">
+                                <Timer size={12} className={request.isBreaching ? "text-red-400" : "text-yellow-400"} />
+                                <span className={`text-xs ${request.isBreaching ? "text-red-400" : "text-yellow-400"}`}>
+                                  Resolution SLA: {formatSlaTime(request.slaMinutesLeft)}
+                                </span>
+                              </div>
+                              {request.escalatedTo && (
+                                <span className="text-xs text-red-400">
+                                  → {request.escalatedTo}
+                                </span>
+                              )}
+                            </div>
+                            <Progress 
+                              value={request.slaPercentage} 
+                              className={`h-1 ${
+                                request.slaPercentage < 20 
+                                  ? "bg-red-950" 
+                                  : request.slaPercentage < 50 
+                                  ? "bg-amber-950" 
+                                  : "bg-emerald-950"
+                              }`}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
