@@ -158,7 +158,9 @@ const UserManagementPage = () => {
                       : 'Never'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.confirmed_at ? "success" : "destructive"}>
+                    <Badge 
+                      variant={user.confirmed_at ? "default" : "destructive"}
+                    >
                       {user.confirmed_at ? 'Verified' : 'Unverified'}
                     </Badge>
                   </TableCell>
