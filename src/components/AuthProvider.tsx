@@ -36,13 +36,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN') {
-          toast({
-            title: "Welcome back!",
+          toast("Welcome back!", {
             description: "You have successfully logged in.",
           });
         } else if (event === 'SIGNED_OUT') {
-          toast({
-            title: "Signed out",
+          toast("Signed out", {
             description: "You have been signed out successfully.",
           });
         }
@@ -69,8 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await supabase.auth.signOut();
     } catch (error: any) {
-      toast({
-        title: "Error signing out",
+      toast("Error signing out", {
         description: error.message,
         variant: "destructive",
       });

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -31,8 +30,7 @@ const AuthPage = () => {
           password,
         });
         if (error) throw error;
-        toast({
-          title: "Account created",
+        toast("Account created", {
           description: "Please check your email to confirm your account.",
         });
       } else {
