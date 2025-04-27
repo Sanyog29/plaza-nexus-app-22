@@ -14,6 +14,9 @@ import NewRequestPage from "./pages/NewRequestPage";
 import BookingsPage from "./pages/BookingsPage";
 import AlertsPage from "./pages/AlertsPage";
 import CafeteriaPage from "./pages/CafeteriaPage";
+import ServicesPage from "./pages/ServicesPage";
+import SecurityPage from "./pages/SecurityPage";
+import InfoHubPage from "./pages/InfoHubPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +42,9 @@ const App = () => (
               <Route path="/bookings" element={<BookingsPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cafeteria" element={<CafeteriaPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route path="/info-hub" element={<InfoHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
             <Route path="*" element={<NotFound />} />

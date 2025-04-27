@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, MessageSquare, Calendar, User } from 'lucide-react';
+import { Home, MessageSquare, Calendar, User, Coffee } from 'lucide-react';
 
 const BottomNavigation: React.FC = () => {
   return (
@@ -26,6 +26,16 @@ const BottomNavigation: React.FC = () => {
         >
           <MessageSquare size={20} />
           <span className="text-xs mt-1">Requests</span>
+        </NavLink>
+        
+        <NavLink 
+          to="/services" 
+          className={({ isActive }) => 
+            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-plaza-blue' : 'text-gray-400'}`
+          }
+        >
+          <Coffee size={20} />
+          <span className="text-xs mt-1">Services</span>
         </NavLink>
         
         <NavLink 
