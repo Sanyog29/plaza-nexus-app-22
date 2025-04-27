@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ const AuthPage = () => {
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSignUp, setIsSignUp] = React.useState(false);
+  const [showEmailSentMessage, setShowEmailSentMessage] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast: uiToast } = useToast();
@@ -22,22 +24,28 @@ const AuthPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setShowEmailSentMessage(false);
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { error, data } = await supabase.auth.signUp({
           email,
           password,
         });
+        
         if (error) throw error;
+        
+        // Show a more detailed message about email confirmation
+        setShowEmailSentMessage(true);
         toast("Account created", {
-          description: "Please check your email to confirm your account.",
+          description: "Please check your email (including spam folder) to confirm your account.",
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        
         if (error) throw error;
         navigate(from);
       }
@@ -66,6 +74,16 @@ const AuthPage = () => {
             {isSignUp ? 'Sign up to get started' : 'Welcome back to your tenant portal'}
           </p>
         </div>
+
+        {showEmailSentMessage && (
+          <div className="bg-blue-900/30 border border-blue-500 p-4 rounded-md text-white">
+            <h3 className="font-medium mb-1">Check your email</h3>
+            <p className="text-sm text-gray-300">
+              We've sent a confirmation email to <span className="font-medium">{email}</span>.
+              Please check your inbox (and spam folder) to verify your account before signing in.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -128,7 +146,10 @@ const AuthPage = () => {
           <div className="text-center border-t border-gray-700 pt-4">
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setShowEmailSentMessage(false);
+              }}
               className="text-plaza-blue hover:underline text-sm"
             >
               {isSignUp
