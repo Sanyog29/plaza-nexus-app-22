@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   MessageSquare, 
@@ -10,7 +9,11 @@ import {
   Users,
   Building,
   Wrench,
-  MapPin
+  MapPin,
+  // Add the missing icons
+  CheckCircle,
+  AlertTriangle,
+  Thermometer
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import DashboardTile from '../components/DashboardTile';
