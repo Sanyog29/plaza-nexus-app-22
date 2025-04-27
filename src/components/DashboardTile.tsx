@@ -4,31 +4,41 @@ import { Link } from 'react-router-dom';
 
 interface DashboardTileProps {
   title: string;
+  description?: string;
   icon: React.ReactNode;
   to: string;
-  bgColor?: string;
+  bgColor: string;
   count?: number;
 }
 
 const DashboardTile: React.FC<DashboardTileProps> = ({
   title,
+  description,
   icon,
   to,
-  bgColor = 'bg-card',
+  bgColor,
   count,
 }) => {
   return (
-    <Link to={to} className="block">
-      <div className={`${bgColor} rounded-lg p-4 h-32 relative overflow-hidden card-shadow transition-transform hover:translate-y-[-2px]`}>
-        <div className="absolute top-3 right-3 opacity-70">{icon}</div>
-        <div className="mt-10">
-          <h3 className="font-montserrat text-lg font-medium text-white">{title}</h3>
-          {count !== undefined && (
-            <span className="inline-block mt-2 px-2 py-1 bg-black bg-opacity-30 rounded text-sm">
-              {count} {count === 1 ? 'item' : 'items'}
-            </span>
+    <Link to={to}>
+      <div className={`${bgColor} rounded-lg p-4 relative overflow-hidden card-shadow hover:brightness-110 transition-all`}>
+        <div className="relative z-10">
+          <div className="flex items-start justify-between">
+            <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+              {icon}
+            </div>
+            {count !== undefined && (
+              <span className="bg-white text-black text-xs font-bold px-2 py-1 rounded-full">
+                {count}
+              </span>
+            )}
+          </div>
+          <h3 className="text-white font-semibold mt-3">{title}</h3>
+          {description && (
+            <p className="text-white/80 text-sm mt-1">{description}</p>
           )}
         </div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
       </div>
     </Link>
   );

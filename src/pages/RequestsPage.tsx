@@ -1,79 +1,157 @@
 
 import React from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
-// Sample request data
+// Sample request data with enhanced information
 const requestData = [
   {
     id: 'req-001',
     title: 'AC not working in Meeting Room B',
     category: 'Maintenance',
+    priority: 'high',
     status: 'In Progress',
     createdAt: '2025-04-25T10:30:00',
     updatedAt: '2025-04-25T14:15:00',
+    assignedTo: 'Technical Team',
+    eta: '2025-04-25T16:30:00',
   },
   {
     id: 'req-002',
     title: 'Request for deep cleaning',
-    category: 'Cleaning',
+    category: 'Housekeeping',
+    priority: 'medium',
     status: 'Completed',
     createdAt: '2025-04-23T08:45:00',
     updatedAt: '2025-04-24T11:20:00',
+    assignedTo: 'Housekeeping Team',
+    rating: 5,
   },
   {
     id: 'req-003',
     title: 'WiFi connection issues',
     category: 'IT',
+    priority: 'high',
     status: 'New',
     createdAt: '2025-04-27T09:10:00',
     updatedAt: '2025-04-27T09:10:00',
+    assignedTo: 'IT Support',
   },
 ];
+
+const getStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'new':
+      return 'bg-plaza-blue bg-opacity-20 text-plaza-blue';
+    case 'in progress':
+      return 'bg-yellow-500 bg-opacity-20 text-yellow-500';
+    case 'completed':
+      return 'bg-green-500 bg-opacity-20 text-green-500';
+    default:
+      return 'bg-gray-500 bg-opacity-20 text-gray-500';
+  }
+};
+
+const getPriorityBadge = (priority: string) => {
+  switch (priority.toLowerCase()) {
+    case 'high':
+      return <Badge variant="destructive" className="text-xs">High Priority</Badge>;
+    case 'medium':
+      return <Badge variant="default" className="bg-yellow-600 text-xs">Medium Priority</Badge>;
+    default:
+      return <Badge variant="secondary" className="text-xs">Low Priority</Badge>;
+  }
+};
 
 const RequestsPage = () => {
   return (
     <div className="px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Requests</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-white">Requests</h2>
+          <p className="text-sm text-gray-400 mt-1">Track your service requests</p>
+        </div>
         <Link to="/requests/new">
           <Button className="bg-plaza-blue hover:bg-blue-700">New Request</Button>
         </Link>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <Card className="bg-card/50 backdrop-blur">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-plaza-blue/20 p-2 rounded-full">
+              <Clock size={20} className="text-plaza-blue" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Active</p>
+              <p className="text-lg font-semibold text-white">4</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card/50 backdrop-blur">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-yellow-500/20 p-2 rounded-full">
+              <AlertTriangle size={20} className="text-yellow-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Pending</p>
+              <p className="text-lg font-semibold text-white">2</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card/50 backdrop-blur">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-green-500/20 p-2 rounded-full">
+              <CheckCircle size={20} className="text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-400">Resolved</p>
+              <p className="text-lg font-semibold text-white">8</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
       <div className="space-y-4">
         {requestData.map((request) => (
           <Link key={request.id} to={`/requests/${request.id}`}>
-            <div className="bg-card rounded-lg p-4 card-shadow">
-              <div className="flex justify-between items-start">
-                <div className="flex items-start">
-                  <div className="bg-plaza-blue bg-opacity-20 p-2 rounded-full mr-3 mt-1">
-                    <MessageSquare size={18} className="text-plaza-blue" />
+            <Card className="bg-card hover:bg-card/80 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start">
+                    <div className="bg-plaza-blue bg-opacity-20 p-2 rounded-full mr-3 mt-1">
+                      <MessageSquare size={18} className="text-plaza-blue" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-white">{request.title}</h4>
+                        {getPriorityBadge(request.priority)}
+                      </div>
+                      <p className="text-sm text-gray-400 mt-1">{request.category}</p>
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-gray-500">
+                          Assigned to: {request.assignedTo}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Updated: {new Date(request.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-medium text-white">{request.title}</h4>
-                    <p className="text-sm text-gray-400">{request.category}</p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {new Date(request.updatedAt).toLocaleDateString()}
-                    </p>
+                  <div className="ml-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                      {request.status}
+                    </span>
                   </div>
                 </div>
-                <div className="ml-3">
-                  <span 
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      request.status === 'New' 
-                        ? 'bg-plaza-blue bg-opacity-20 text-plaza-blue' 
-                        : request.status === 'In Progress' 
-                        ? 'bg-amber-500 bg-opacity-20 text-amber-500' 
-                        : 'bg-green-500 bg-opacity-20 text-green-500'
-                    }`}
-                  >
-                    {request.status}
-                  </span>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </Link>
         ))}
       </div>
