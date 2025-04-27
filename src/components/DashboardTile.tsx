@@ -25,15 +25,17 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
   status,
 }) => {
   return (
-    <Link to={to} className="block">
-      <div className={`${bgColor} rounded-lg p-5 relative overflow-hidden card-shadow hover:brightness-105 transition-all duration-200`}>
+    <Link to={to} className="block group">
+      <div className={`${bgColor} rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:brightness-110`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
         <div className="relative z-10">
-          <div className="flex items-start justify-between mb-3">
-            <div className="bg-white/20 p-2.5 rounded-lg backdrop-blur-sm">
+          <div className="flex items-start justify-between mb-4">
+            <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
               {icon}
             </div>
             {count !== undefined && (
-              <span className="bg-white text-black text-xs font-semibold px-3 py-1 rounded-full">
+              <span className="bg-white/90 text-black text-xs font-semibold px-3 py-1.5 rounded-full">
                 {count}
               </span>
             )}
@@ -41,16 +43,15 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
           
           <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
           {description && (
-            <p className="text-white/90 text-sm">{description}</p>
+            <p className="text-white/90 text-sm mb-4">{description}</p>
           )}
           
           {status && (
-            <div className={`mt-3 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${status.color}`}>
+            <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${status.color}`}>
               {status.text}
             </div>
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
       </div>
     </Link>
   );
