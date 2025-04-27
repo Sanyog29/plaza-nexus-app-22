@@ -46,4 +46,3 @@ export const slaCompliance = [
   { id: 'sla-4', category: 'Security Issues', target: '1 hour', actual: '0.8 hours', compliance: '100%', trend: 'improving' },
   { id: 'sla-5', category: 'General Maintenance', target: '24 hours', actual: '18 hours', compliance: '100%', trend: 'stable' },
 ];
-
