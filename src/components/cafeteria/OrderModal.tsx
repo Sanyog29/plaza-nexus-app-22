@@ -25,9 +25,23 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
       const pickupTime = addHours(new Date(), 1); // Default pickup in 1 hour
       const totalAmount = item.price * quantity;
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to place an order",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { data: order, error: orderError } = await supabase
         .from('cafeteria_orders')
         .insert({
+          user_id: user.id,
           total_amount: totalAmount,
           pickup_time: pickupTime.toISOString(),
         })
