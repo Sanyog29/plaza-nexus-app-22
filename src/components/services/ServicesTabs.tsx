@@ -1,5 +1,5 @@
 
-import { Car, Coffee, ShoppingBag, Stethoscope } from 'lucide-react';
+import { Car, Coffee, ShoppingBag, Stethoscope, Star } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServiceCard from './ServiceCard';
 import { servicesData } from '@/data/services';
