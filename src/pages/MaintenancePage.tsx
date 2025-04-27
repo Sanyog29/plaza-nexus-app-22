@@ -37,7 +37,7 @@ const getStatusBadge = (status: string) => {
     case 'operational':
       return <Badge className="bg-green-600">Operational</Badge>;
     case 'needs-attention':
-      return <Badge variant="warning" className="bg-yellow-600">Needs Attention</Badge>;
+      return <Badge variant="outline" className="bg-yellow-600">Needs Attention</Badge>;
     case 'maintenance-due':
       return <Badge variant="destructive">Maintenance Due</Badge>;
     case 'offline':
