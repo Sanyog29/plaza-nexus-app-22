@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send } from 'lucide-react';
@@ -11,6 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Database } from '@/integrations/supabase/types';
+
+type RequestPriority = Database['public']['Enums']['request_priority'];
+type RequestStatus = Database['public']['Enums']['request_status'];
 
 interface MaintenanceRequestFormProps {
   categories: any[];
@@ -27,7 +30,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [location, setLocation] = useState('');
-  const [priority, setPriority] = useState('medium');
+  const [priority, setPriority] = useState<RequestPriority>('medium');
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(120);
   const [submitting, setSubmitting] = useState(false);
@@ -51,15 +54,15 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
       
       const { data, error } = await supabase
         .from('maintenance_requests')
-        .insert([{
+        .insert({
           title,
           description,
           category_id: selectedCategory,
           location,
           reported_by: userId,
           priority,
-          status: 'pending'
-        }])
+          status: 'pending' as RequestStatus
+        })
         .select()
         .single();
       
@@ -171,7 +174,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
         <Label>Priority</Label>
         <RadioGroup 
           value={priority} 
-          onValueChange={setPriority} 
+          onValueChange={(value) => setPriority(value as RequestPriority)} 
           className="flex space-x-2"
           disabled={isLoading || submitting}
         >

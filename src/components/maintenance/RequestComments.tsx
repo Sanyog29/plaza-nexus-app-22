@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,9 +17,9 @@ interface Comment {
   content: string;
   created_at: string;
   user: {
-    first_name: string;
-    last_name: string;
-    role: string;
+    first_name: string | null;
+    last_name: string | null;
+    role: string | null;
   } | null;
 }
 
@@ -63,7 +62,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
           id,
           content,
           created_at,
-          user:user_id(
+          profiles:user_id(
             first_name,
             last_name,
             role
@@ -74,7 +73,15 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
 
       if (error) throw error;
       
-      setComments(data as Comment[] || []);
+      // Transform the data to match our Comment interface
+      const formattedComments: Comment[] = (data || []).map((item: any) => ({
+        id: item.id,
+        content: item.content,
+        created_at: item.created_at,
+        user: item.profiles
+      }));
+      
+      setComments(formattedComments);
     } catch (error: any) {
       console.error('Error fetching comments:', error);
       toast({

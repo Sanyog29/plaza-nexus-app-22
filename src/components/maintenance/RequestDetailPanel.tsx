@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,10 @@ import {
 import RequestComments from './RequestComments';
 import { format } from 'date-fns';
 import { useAuth } from '@/components/AuthProvider';
+import { Database } from '@/integrations/supabase/types';
+
+type RequestPriority = Database['public']['Enums']['request_priority'];
+type RequestStatus = Database['public']['Enums']['request_status'];
 
 interface RequestDetailPanelProps {
   requestId: string;
@@ -35,9 +38,9 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
   const [staff, setStaff] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [updatedStatus, setUpdatedStatus] = useState<string | null>(null);
+  const [updatedStatus, setUpdatedStatus] = useState<RequestStatus | null>(null);
   const [updatedAssignee, setUpdatedAssignee] = useState<string | null>(null);
-  const [updatedPriority, setUpdatedPriority] = useState<string | null>(null);
+  const [updatedPriority, setUpdatedPriority] = useState<RequestPriority | null>(null);
   const [statusNote, setStatusNote] = useState('');
   const [expanded, setExpanded] = useState(true);
   const { toast } = useToast();
@@ -99,9 +102,9 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       setUpdating(true);
       
       const updates = {
-        status: updatedStatus,
+        status: updatedStatus as RequestStatus,
         assigned_to: updatedAssignee,
-        priority: updatedPriority,
+        priority: updatedPriority as RequestPriority,
         updated_at: new Date().toISOString(),
       };
 
@@ -118,7 +121,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           .from('request_status_history')
           .insert({
             request_id: requestId,
-            status: updatedStatus as any,
+            status: updatedStatus as RequestStatus,
             notes: statusNote,
             changed_by: user?.id
           });
@@ -319,12 +322,12 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white">Status</label>
                 <Select 
-                  value={updatedStatus || request.status} 
-                  onValueChange={setUpdatedStatus}
+                  value={updatedStatus || undefined} 
+                  onValueChange={(value) => setUpdatedStatus(value as RequestStatus)}
                   disabled={updating}
                 >
                   <SelectTrigger className="bg-card border-gray-700">
-                    <SelectValue />
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
@@ -338,12 +341,12 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white">Priority</label>
                 <Select 
-                  value={updatedPriority || request.priority} 
-                  onValueChange={setUpdatedPriority}
+                  value={updatedPriority || undefined} 
+                  onValueChange={(value) => setUpdatedPriority(value as RequestPriority)}
                   disabled={updating}
                 >
                   <SelectTrigger className="bg-card border-gray-700">
-                    <SelectValue />
+                    <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Low</SelectItem>
