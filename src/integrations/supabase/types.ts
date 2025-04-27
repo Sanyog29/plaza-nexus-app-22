@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          message: string
+          severity: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          message: string
+          severity?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
       broadcasts: {
         Row: {
           content: string
@@ -38,6 +68,77 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      cafeteria_menu_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      cafeteria_menu_items: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          is_vegan: boolean | null
+          is_vegetarian: boolean | null
+          name: string
+          price: number
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          is_vegan?: boolean | null
+          is_vegetarian?: boolean | null
+          name: string
+          price: number
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          is_vegan?: boolean | null
+          is_vegetarian?: boolean | null
+          name?: string
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cafeteria_menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_menu_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cafeteria_orders: {
         Row: {
@@ -158,6 +259,30 @@ export type Database = {
           },
         ]
       }
+      maintenance_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       maintenance_requests: {
         Row: {
           assigned_to: string | null
@@ -251,6 +376,47 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parking_requests: {
+        Row: {
+          approved: boolean | null
+          created_at: string
+          duration: string
+          id: string
+          user_id: string | null
+          vehicle_number: string
+          visit_date: string
+          visitor_id: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          created_at?: string
+          duration: string
+          id?: string
+          user_id?: string | null
+          vehicle_number: string
+          visit_date: string
+          visitor_id?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          created_at?: string
+          duration?: string
+          id?: string
+          user_id?: string | null
+          vehicle_number?: string
+          visit_date?: string
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parking_requests_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
             referencedColumns: ["id"]
           },
         ]
@@ -385,6 +551,83 @@ export type Database = {
           },
         ]
       }
+      room_bookings: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_time: string
+          id: string
+          room_id: string
+          start_time: string
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_time: string
+          id?: string
+          room_id: string
+          start_time: string
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          room_id?: string
+          start_time?: string
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_bookings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          capacity: number
+          created_at: string
+          description: string | null
+          facilities: string[] | null
+          id: string
+          image_url: string | null
+          location: string
+          name: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          description?: string | null
+          facilities?: string[] | null
+          id?: string
+          image_url?: string | null
+          location: string
+          name: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          description?: string | null
+          facilities?: string[] | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          name?: string
+        }
+        Relationships: []
+      }
       sla_configs: {
         Row: {
           category_id: string
@@ -422,6 +665,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      visitors: {
+        Row: {
+          company: string | null
+          contact_number: string | null
+          created_at: string
+          entry_time: string | null
+          exit_time: string | null
+          host_id: string
+          id: string
+          name: string
+          status: string | null
+          visit_date: string
+          visit_purpose: string
+        }
+        Insert: {
+          company?: string | null
+          contact_number?: string | null
+          created_at?: string
+          entry_time?: string | null
+          exit_time?: string | null
+          host_id: string
+          id?: string
+          name: string
+          status?: string | null
+          visit_date: string
+          visit_purpose: string
+        }
+        Update: {
+          company?: string | null
+          contact_number?: string | null
+          created_at?: string
+          entry_time?: string | null
+          exit_time?: string | null
+          host_id?: string
+          id?: string
+          name?: string
+          status?: string | null
+          visit_date?: string
+          visit_purpose?: string
+        }
+        Relationships: []
       }
     }
     Views: {

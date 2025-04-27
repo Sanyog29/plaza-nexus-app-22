@@ -10,69 +10,47 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-
-const categories = [
-  { id: 'maintenance', name: 'Maintenance' },
-  { id: 'cleaning', name: 'Housekeeping' },
-  { id: 'it', name: 'IT Support' },
-  { id: 'security', name: 'Security' },
-  { id: 'hvac', name: 'HVAC' },
-  { id: 'electrical', name: 'Electrical' },
-  { id: 'plumbing', name: 'Plumbing' },
-  { id: 'other', name: 'Other' },
-];
+import { useAuth } from '@/components/AuthProvider';
 
 const NewRequestPage = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [location, setLocation] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [descriptionFocused, setDescriptionFocused] = useState(false);
-  const [estimatedTime, setEstimatedTime] = useState(120); // Example: 120 minutes to resolve
+  const [estimatedTime, setEstimatedTime] = useState(120);
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  // Handle AI categorization
+  const { user } = useAuth();
+
   useEffect(() => {
-    const debounceTimeout = setTimeout(async () => {
-      if (title && description && description.length > 10 && descriptionFocused) {
-        setIsAnalyzing(true);
-        
-        try {
-          const response = await supabase.functions.invoke('categorize-request', {
-            body: { title, description },
-          });
-          
-          if (response.data?.category) {
-            setAiSuggestion(response.data.category);
-            
-            // Auto-select the suggested category if no category is currently selected
-            if (!selectedCategory) {
-              setSelectedCategory(response.data.category);
-              
-              toast({
-                title: "Category suggested",
-                description: `AI suggested: ${categories.find(cat => cat.id === response.data.category)?.name || 'Unknown'}`,
-                variant: "default",
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error calling categorize-request:', error);
-        } finally {
-          setIsAnalyzing(false);
-        }
-      }
-    }, 1000); // Debounce for 1 second
-    
-    return () => clearTimeout(debounceTimeout);
-  }, [title, description, descriptionFocused, selectedCategory, toast]);
-  
-  const handleSubmit = (e: React.FormEvent) => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_categories')
+        .select('*');
+      
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching categories",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedCategory || !title || !description) {
+    if (!selectedCategory || !title || !description || !location) {
       toast({
         title: "Error",
         description: "Please fill all required fields",
@@ -80,22 +58,41 @@ const NewRequestPage = () => {
       });
       return;
     }
+
+    setIsLoading(true);
     
-    // In a real app, we would send this data to an API
-    console.log({
-      category: selectedCategory,
-      title,
-      description,
-      timestamp: new Date().toISOString(),
-      estimatedResolutionTime: estimatedTime,
-    });
-    
-    toast({
-      title: "Request submitted",
-      description: "Your request has been submitted successfully",
-    });
-    
-    navigate('/requests');
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_requests')
+        .insert([{
+          title,
+          description,
+          category_id: selectedCategory,
+          location,
+          reported_by: user?.id,
+          priority: 'medium',
+          status: 'pending'
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Request submitted",
+        description: "Your maintenance request has been submitted successfully",
+      });
+      
+      navigate('/requests');
+    } catch (error: any) {
+      toast({
+        title: "Error submitting request",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -116,6 +113,7 @@ const NewRequestPage = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="bg-card border-gray-600"
+            disabled={isLoading}
           />
         </div>
         
@@ -130,25 +128,25 @@ const NewRequestPage = () => {
             onBlur={() => setDescriptionFocused(false)}
             rows={4}
             className="bg-card border-gray-600"
+            disabled={isLoading}
           />
         </div>
-        
-        {isAnalyzing && (
-          <div className="bg-blue-900/20 p-3 rounded-md flex items-center gap-2 text-sm">
-            <Sparkles size={16} className="text-plaza-blue animate-pulse" />
-            <span className="text-blue-300">AI is analyzing your request...</span>
-          </div>
-        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="location">Location</Label>
+          <Input
+            id="location"
+            placeholder="Where is the issue located?"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="bg-card border-gray-600"
+            disabled={isLoading}
+          />
+        </div>
         
         <div className="space-y-2">
           <div className="flex justify-between">
             <Label htmlFor="category">Category</Label>
-            {aiSuggestion && (
-              <Badge variant="outline" className="text-plaza-blue border-plaza-blue flex items-center gap-1">
-                <Sparkles size={12} className="text-plaza-blue" />
-                AI suggested
-              </Badge>
-            )}
           </div>
           <div className="grid grid-cols-2 gap-2">
             {categories.map((category) => (
@@ -160,17 +158,11 @@ const NewRequestPage = () => {
                   selectedCategory === category.id 
                     ? "bg-plaza-blue hover:bg-blue-700" 
                     : "border-gray-600 hover:bg-gray-800"
-                } ${
-                  aiSuggestion === category.id && selectedCategory !== category.id
-                    ? "border-plaza-blue border-dashed"
-                    : ""
                 }`}
                 onClick={() => setSelectedCategory(category.id)}
+                disabled={isLoading}
               >
                 {category.name}
-                {aiSuggestion === category.id && (
-                  <Sparkles size={14} className="ml-2 text-yellow-300" />
-                )}
               </Button>
             ))}
           </div>
@@ -201,11 +193,11 @@ const NewRequestPage = () => {
         <div className="space-y-2">
           <Label>Attachments</Label>
           <div className="flex space-x-4">
-            <Button type="button" variant="outline" className="border-gray-600">
+            <Button type="button" variant="outline" className="border-gray-600" disabled={isLoading}>
               <Image size={20} className="mr-2" />
               Photo
             </Button>
-            <Button type="button" variant="outline" className="border-gray-600">
+            <Button type="button" variant="outline" className="border-gray-600" disabled={isLoading}>
               <Paperclip size={20} className="mr-2" />
               Attach
             </Button>
@@ -215,9 +207,10 @@ const NewRequestPage = () => {
         <Button 
           type="submit" 
           className="w-full bg-plaza-blue hover:bg-blue-700"
+          disabled={isLoading}
         >
           <Send size={18} className="mr-2" />
-          Submit Request
+          {isLoading ? 'Submitting...' : 'Submit Request'}
         </Button>
       </form>
     </div>
