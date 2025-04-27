@@ -1,13 +1,21 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, User, ServerCog, Clock } from 'lucide-react';
+import { LayoutDashboard, User, ServerCog, Clock, BarChart3, Map, Users } from 'lucide-react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { format, subDays } from 'date-fns';
+import { toast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+
+// Import custom admin dashboard components
+import MaintenanceHeatmap from '@/components/admin/MaintenanceHeatmap';
+import StaffWorkloadChart from '@/components/admin/StaffWorkloadChart';
+import EquipmentCostChart from '@/components/admin/EquipmentCostChart';
 
 // Sample data for charts
 const generatePerformanceData = () => {
@@ -120,6 +128,66 @@ const getTrendBadge = (trend: string) => {
 };
 
 const AdminDashboardPage = () => {
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+  // Check if user has admin rights
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase.rpc('is_admin', { uid: user.id });
+          if (error) throw error;
+          setIsAdmin(data || false);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        toast({
+          title: "Access Error",
+          description: "Failed to verify administrative privileges",
+          variant: "destructive",
+        });
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  // Fetch live performance metrics from Supabase
+  const { data: performanceMetrics } = useQuery({
+    queryKey: ['admin-performance-metrics'],
+    queryFn: async () => {
+      try {
+        // In a real implementation, this would fetch from the performance_metrics table
+        // For now, we'll use the mock data
+        return performanceData;
+      } catch (error) {
+        console.error('Error fetching performance metrics:', error);
+        return [];
+      }
+    }
+  });
+
+  // If user is not admin, show access denied
+  if (!isAdmin) {
+    return (
+      <div className="px-4 py-6 flex items-center justify-center h-[calc(100vh-100px)]">
+        <Card className="bg-card/50 backdrop-blur max-w-md w-full">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center text-center space-y-4">
+              <ServerCog className="h-16 w-16 text-red-500" />
+              <h2 className="text-2xl font-bold text-white">Access Restricted</h2>
+              <p className="text-gray-400">You don't have permission to access the Admin Dashboard.</p>
+              <Button variant="default" className="mt-4" onClick={() => history.back()}>
+                Go Back
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
@@ -173,7 +241,7 @@ const AdminDashboardPage = () => {
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={performanceMetrics || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip />
@@ -200,6 +268,37 @@ const AdminDashboardPage = () => {
         </CardContent>
       </Card>
 
+      {/* Advanced Analytics Section */}
+      <Tabs defaultValue="heatmap" className="w-full">
+        <TabsList className="grid grid-cols-3 mb-6 bg-card/50">
+          <TabsTrigger value="heatmap" className="data-[state=active]:bg-plaza-blue">
+            <Map className="h-4 w-4 mr-2" />
+            Heatmaps
+          </TabsTrigger>
+          <TabsTrigger value="staffing" className="data-[state=active]:bg-plaza-blue">
+            <Users className="h-4 w-4 mr-2" />
+            Staff Workload
+          </TabsTrigger>
+          <TabsTrigger value="budget" className="data-[state=active]:bg-plaza-blue">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Budget Impact
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="heatmap">
+          <MaintenanceHeatmap />
+        </TabsContent>
+
+        <TabsContent value="staffing">
+          <StaffWorkloadChart />
+        </TabsContent>
+
+        <TabsContent value="budget">
+          <EquipmentCostChart />
+        </TabsContent>
+      </Tabs>
+
+      {/* Original Tabs Section */}
       <Tabs defaultValue="tickets" className="w-full">
         <TabsList className="grid grid-cols-3 mb-6 bg-card/50">
           <TabsTrigger value="tickets" className="data-[state=active]:bg-plaza-blue">
