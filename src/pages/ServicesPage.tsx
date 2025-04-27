@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, Car, Coffee, Medkit, ShoppingBag, Star } from 'lucide-react';
+import { CalendarClock, Car, Coffee, Stethoscope, ShoppingBag, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ServiceCard from '@/components/services/ServiceCard';
 import ServiceBookingModal from '@/components/services/ServiceBookingModal';
@@ -109,7 +109,7 @@ const getCategoryIcon = (category: string) => {
     case 'food':
       return <Coffee className="h-5 w-5" />;
     case 'health':
-      return <Medkit className="h-5 w-5" />;
+      return <Stethoscope className="h-5 w-5" />;
     default:
       return <Star className="h-5 w-5" />;
   }
