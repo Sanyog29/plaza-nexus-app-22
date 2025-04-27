@@ -61,7 +61,7 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
                   {date ? format(date, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -70,6 +70,7 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
                   disabled={(date) => 
                     date < new Date(new Date().setHours(0, 0, 0, 0))
                   }
+                  className={cn("p-3 pointer-events-auto")}
                 />
               </PopoverContent>
             </Popover>
