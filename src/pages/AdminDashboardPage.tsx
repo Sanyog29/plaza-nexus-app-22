@@ -1,23 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, User, ServerCog, Clock, BarChart3, Map, Users } from 'lucide-react';
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Card, CardContent } from '@/components/ui/card';
+import { LayoutDashboard, User, Clock, ServerCog } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
 
 // Import custom admin dashboard components
 import MaintenanceHeatmap from '@/components/admin/MaintenanceHeatmap';
 import StaffWorkloadChart from '@/components/admin/StaffWorkloadChart';
 import EquipmentCostChart from '@/components/admin/EquipmentCostChart';
+import DashboardStats from '@/components/admin/dashboard/DashboardStats';
+import PerformanceChart from '@/components/admin/dashboard/PerformanceChart';
+import TicketManagement from '@/components/admin/dashboard/TicketManagement';
+import StaffAttendance from '@/components/admin/dashboard/StaffAttendance';
+import SLAComplianceReport from '@/components/admin/dashboard/SLAComplianceReport';
+import EquipmentMonitoring from '@/components/admin/dashboard/EquipmentMonitoring';
+import { getStatusBadge, getPriorityBadge, getTrendBadge } from '@/components/admin/dashboard/BadgeUtils';
 
-// Sample data for charts
+// Sample data generation function
 const generatePerformanceData = () => {
   const result = [];
   for (let i = 30; i >= 0; i--) {
@@ -32,9 +34,8 @@ const generatePerformanceData = () => {
   return result;
 };
 
+// Sample data
 const performanceData = generatePerformanceData();
-
-// Sample staff data
 const staff = [
   { id: 'staff-1', name: 'Amit Sharma', role: 'Maintenance Technician', status: 'active', currentTask: 'HVAC repair on 3rd floor', attendance: 'present' },
   { id: 'staff-2', name: 'Priya Patel', role: 'Security Officer', status: 'active', currentTask: 'Main entrance monitoring', attendance: 'present' },
@@ -43,7 +44,6 @@ const staff = [
   { id: 'staff-5', name: 'Vikram Singh', role: 'Maintenance Technician', status: 'offline', currentTask: 'Off duty', attendance: 'absent' },
 ];
 
-// Sample equipment monitoring data
 const equipment = [
   { id: 'equip-1', name: 'Main HVAC System', status: 'operational', lastMaintenance: '2025-04-15', health: '95%', alerts: 0 },
   { id: 'equip-2', name: 'Backup Generator', status: 'maintenance-due', lastMaintenance: '2025-01-20', health: '78%', alerts: 2 },
@@ -52,7 +52,6 @@ const equipment = [
   { id: 'equip-5', name: 'Fire Alarm System', status: 'operational', lastMaintenance: '2025-04-05', health: '98%', alerts: 0 },
 ];
 
-// Sample tickets in pipeline
 const tickets = [
   { id: 'ticket-1', title: 'AC not working in Room 305', priority: 'high', status: 'in-progress', createdAt: '2025-04-25', assignedTo: 'Amit Sharma' },
   { id: 'ticket-2', title: 'Flickering lights in hallway', priority: 'medium', status: 'assigned', createdAt: '2025-04-26', assignedTo: 'Rajiv Kumar' },
@@ -61,7 +60,6 @@ const tickets = [
   { id: 'ticket-5', title: 'Replace light bulbs in lobby', priority: 'low', status: 'completed', createdAt: '2025-04-24', assignedTo: 'Sunita Verma' },
 ];
 
-// Sample SLA compliance data
 const slaCompliance = [
   { id: 'sla-1', category: 'HVAC Issues', target: '4 hours', actual: '3.5 hours', compliance: '100%', trend: 'improving' },
   { id: 'sla-2', category: 'Electrical Issues', target: '2 hours', actual: '1.8 hours', compliance: '100%', trend: 'stable' },
@@ -70,67 +68,9 @@ const slaCompliance = [
   { id: 'sla-5', category: 'General Maintenance', target: '24 hours', actual: '18 hours', compliance: '100%', trend: 'stable' },
 ];
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'active':
-      return <Badge className="bg-green-600">Active</Badge>;
-    case 'break':
-      return <Badge variant="outline">On Break</Badge>;
-    case 'offline':
-      return <Badge variant="secondary">Offline</Badge>;
-    case 'operational':
-      return <Badge className="bg-green-600">Operational</Badge>;
-    case 'needs-attention':
-      return <Badge className="bg-yellow-600">Needs Attention</Badge>;
-    case 'maintenance-due':
-      return <Badge variant="destructive">Maintenance Due</Badge>;
-    case 'present':
-      return <Badge className="bg-green-600">Present</Badge>;
-    case 'absent':
-      return <Badge variant="secondary">Absent</Badge>;
-    case 'open':
-      return <Badge className="bg-blue-600">Open</Badge>;
-    case 'assigned':
-      return <Badge className="bg-yellow-600">Assigned</Badge>;
-    case 'in-progress':
-      return <Badge className="bg-purple-600">In Progress</Badge>;
-    case 'completed':
-      return <Badge variant="secondary">Completed</Badge>;
-    default:
-      return <Badge variant="outline">Unknown</Badge>;
-  }
-};
-
-const getPriorityBadge = (priority: string) => {
-  switch (priority) {
-    case 'high':
-      return <Badge variant="destructive">High</Badge>;
-    case 'medium':
-      return <Badge className="bg-yellow-600">Medium</Badge>;
-    case 'low':
-      return <Badge variant="outline">Low</Badge>;
-    default:
-      return null;
-  }
-};
-
-const getTrendBadge = (trend: string) => {
-  switch (trend) {
-    case 'improving':
-      return <Badge className="bg-green-600">Improving</Badge>;
-    case 'stable':
-      return <Badge variant="outline">Stable</Badge>;
-    case 'declining':
-      return <Badge variant="destructive">Declining</Badge>;
-    default:
-      return null;
-  }
-};
-
 const AdminDashboardPage = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  // Check if user has admin rights
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
@@ -153,22 +93,6 @@ const AdminDashboardPage = () => {
     checkAdminStatus();
   }, []);
 
-  // Fetch live performance metrics from Supabase
-  const { data: performanceMetrics } = useQuery({
-    queryKey: ['admin-performance-metrics'],
-    queryFn: async () => {
-      try {
-        // In a real implementation, this would fetch from the performance_metrics table
-        // For now, we'll use the mock data
-        return performanceData;
-      } catch (error) {
-        console.error('Error fetching performance metrics:', error);
-        return [];
-      }
-    }
-  });
-
-  // If user is not admin, show access denied
   if (!isAdmin) {
     return (
       <div className="px-4 py-6 flex items-center justify-center h-[calc(100vh-100px)]">
@@ -195,92 +119,24 @@ const AdminDashboardPage = () => {
         <p className="text-sm text-gray-400 mt-1">Monitor building operations and performance</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-card/50 backdrop-blur">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center h-full">
-              <span className="text-4xl font-bold text-white">{tickets.filter(t => t.status !== 'completed').length}</span>
-              <span className="text-sm text-gray-400 mt-1">Active Tickets</span>
-            </div>
-          </CardContent>
-        </Card>
+      <DashboardStats 
+        tickets={tickets}
+        staff={staff}
+        equipment={equipment}
+        slaCompliance={slaCompliance}
+      />
 
-        <Card className="bg-card/50 backdrop-blur">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center h-full">
-              <span className="text-4xl font-bold text-white">{staff.filter(s => s.attendance === 'present').length}</span>
-              <span className="text-sm text-gray-400 mt-1">Staff Present</span>
-            </div>
-          </CardContent>
-        </Card>
+      <PerformanceChart data={performanceData} />
 
-        <Card className="bg-card/50 backdrop-blur">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center h-full">
-              <span className="text-4xl font-bold text-white">{equipment.filter(e => e.status === 'operational').length}/{equipment.length}</span>
-              <span className="text-sm text-gray-400 mt-1">Systems Operational</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 backdrop-blur">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center h-full">
-              <span className="text-4xl font-bold text-white">96%</span>
-              <span className="text-sm text-gray-400 mt-1">SLA Compliance</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="bg-card/50 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="text-white text-lg">Performance Overview</CardTitle>
-          <CardDescription>Monthly request handling performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceMetrics || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip />
-                <Line type="monotone" dataKey="totalRequests" stroke="#1E40AF" strokeWidth={2} />
-                <Line type="monotone" dataKey="completed" stroke="#10B981" strokeWidth={2} />
-                <Line type="monotone" dataKey="breached" stroke="#EF4444" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex items-center justify-center space-x-4 mt-4">
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-blue-800 rounded-full mr-2" />
-              <span className="text-sm text-gray-400">Total Requests</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-green-600 rounded-full mr-2" />
-              <span className="text-sm text-gray-400">Completed</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-red-600 rounded-full mr-2" />
-              <span className="text-sm text-gray-400">SLA Breached</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Advanced Analytics Section */}
       <Tabs defaultValue="heatmap" className="w-full">
         <TabsList className="grid grid-cols-3 mb-6 bg-card/50">
           <TabsTrigger value="heatmap" className="data-[state=active]:bg-plaza-blue">
-            <Map className="h-4 w-4 mr-2" />
             Heatmaps
           </TabsTrigger>
           <TabsTrigger value="staffing" className="data-[state=active]:bg-plaza-blue">
-            <Users className="h-4 w-4 mr-2" />
             Staff Workload
           </TabsTrigger>
           <TabsTrigger value="budget" className="data-[state=active]:bg-plaza-blue">
-            <BarChart3 className="h-4 w-4 mr-2" />
             Budget Impact
           </TabsTrigger>
         </TabsList>
@@ -298,7 +154,6 @@ const AdminDashboardPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Original Tabs Section */}
       <Tabs defaultValue="tickets" className="w-full">
         <TabsList className="grid grid-cols-3 mb-6 bg-card/50">
           <TabsTrigger value="tickets" className="data-[state=active]:bg-plaza-blue">
@@ -316,211 +171,32 @@ const AdminDashboardPage = () => {
         </TabsList>
 
         <TabsContent value="tickets">
-          <Card className="bg-card/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">Ticket Management Pipeline</CardTitle>
-              <CardDescription>Active and recent maintenance tickets</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead>Ticket</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Assigned To</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tickets.map((ticket) => (
-                    <TableRow key={ticket.id} className="border-border">
-                      <TableCell>
-                        <div className="font-medium text-white">{ticket.title}</div>
-                      </TableCell>
-                      <TableCell>
-                        {getPriorityBadge(ticket.priority)}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(ticket.status)}
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {ticket.assignedTo}
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {format(new Date(ticket.createdAt), 'PP')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                        >
-                          Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <TicketManagement 
+            tickets={tickets}
+            getStatusBadge={getStatusBadge}
+            getPriorityBadge={getPriorityBadge}
+          />
         </TabsContent>
 
         <TabsContent value="staff">
-          <Card className="bg-card/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">Staff Attendance Tracking</CardTitle>
-              <CardDescription>Current staff status and assignments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead>Staff Member</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Current Task</TableHead>
-                    <TableHead>Attendance</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {staff.map((person) => (
-                    <TableRow key={person.id} className="border-border">
-                      <TableCell>
-                        <div className="font-medium text-white">{person.name}</div>
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {person.role}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(person.status)}
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {person.currentTask}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(person.attendance)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <StaffAttendance 
+            staff={staff}
+            getStatusBadge={getStatusBadge}
+          />
         </TabsContent>
 
         <TabsContent value="sla">
-          <Card className="bg-card/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">Monthly SLA Compliance Reports</CardTitle>
-              <CardDescription>April 2025</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead>Category</TableHead>
-                    <TableHead>Target Response</TableHead>
-                    <TableHead>Actual Response</TableHead>
-                    <TableHead>Compliance</TableHead>
-                    <TableHead>Trend</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {slaCompliance.map((item) => (
-                    <TableRow key={item.id} className="border-border">
-                      <TableCell>
-                        <div className="font-medium text-white">{item.category}</div>
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {item.target}
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {item.actual}
-                      </TableCell>
-                      <TableCell className="text-gray-400">
-                        {item.compliance}
-                      </TableCell>
-                      <TableCell>
-                        {getTrendBadge(item.trend)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <SLAComplianceReport 
+            slaCompliance={slaCompliance}
+            getTrendBadge={getTrendBadge}
+          />
         </TabsContent>
       </Tabs>
 
-      <Card className="bg-card/50 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="text-white text-lg">Equipment Monitoring</CardTitle>
-          <CardDescription>Real-time building systems status</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border">
-                <TableHead>Equipment</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Health</TableHead>
-                <TableHead>Last Maintenance</TableHead>
-                <TableHead>Alerts</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {equipment.map((item) => (
-                <TableRow key={item.id} className="border-border">
-                  <TableCell>
-                    <div className="flex items-center">
-                      <ServerCog className="h-5 w-5 text-plaza-blue mr-3" />
-                      <div className="font-medium text-white">{item.name}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(item.status)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <div className="w-24 h-2 bg-gray-600 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${
-                            parseInt(item.health) > 90 ? 'bg-green-600' : 
-                            parseInt(item.health) > 75 ? 'bg-yellow-600' : 'bg-red-600'
-                          }`}
-                          style={{ width: item.health }}
-                        />
-                      </div>
-                      <span className="ml-2 text-gray-400">{item.health}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-gray-400">
-                    {format(new Date(item.lastMaintenance), 'PP')}
-                  </TableCell>
-                  <TableCell>
-                    {item.alerts > 0 ? (
-                      <Badge variant="destructive">{item.alerts}</Badge>
-                    ) : (
-                      <span className="text-gray-400">None</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                    >
-                      Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <EquipmentMonitoring 
+        equipment={equipment}
+        getStatusBadge={getStatusBadge}
+      />
     </div>
   );
 };
