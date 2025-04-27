@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface MaintenanceRequestFormProps {
   categories: any[];
@@ -26,8 +27,10 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [location, setLocation] = useState('');
+  const [priority, setPriority] = useState('medium');
   const [descriptionFocused, setDescriptionFocused] = useState(false);
-  const [estimatedTime] = useState(120);
+  const [estimatedTime, setEstimatedTime] = useState(120);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -44,6 +47,8 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
     }
 
     try {
+      setSubmitting(true);
+      
       const { data, error } = await supabase
         .from('maintenance_requests')
         .insert([{
@@ -52,7 +57,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           category_id: selectedCategory,
           location,
           reported_by: userId,
-          priority: 'medium',
+          priority,
           status: 'pending'
         }])
         .select()
@@ -72,8 +77,30 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  // Update estimated time based on priority
+  React.useEffect(() => {
+    switch (priority) {
+      case 'low':
+        setEstimatedTime(480); // 8 hours
+        break;
+      case 'medium':
+        setEstimatedTime(240); // 4 hours
+        break;
+      case 'high':
+        setEstimatedTime(120); // 2 hours
+        break;
+      case 'urgent':
+        setEstimatedTime(60); // 1 hour
+        break;
+      default:
+        setEstimatedTime(240);
+    }
+  }, [priority]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -85,7 +112,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="bg-card border-gray-600"
-          disabled={isLoading}
+          disabled={isLoading || submitting}
         />
       </div>
       
@@ -100,7 +127,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           onBlur={() => setDescriptionFocused(false)}
           rows={4}
           className="bg-card border-gray-600"
-          disabled={isLoading}
+          disabled={isLoading || submitting}
         />
       </div>
 
@@ -112,7 +139,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="bg-card border-gray-600"
-          disabled={isLoading}
+          disabled={isLoading || submitting}
         />
       </div>
       
@@ -132,25 +159,52 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
                   : "border-gray-600 hover:bg-gray-800"
               }`}
               onClick={() => setSelectedCategory(category.id)}
-              disabled={isLoading}
+              disabled={isLoading || submitting}
             >
               {category.name}
             </Button>
           ))}
         </div>
       </div>
+
+      <div className="space-y-2">
+        <Label>Priority</Label>
+        <RadioGroup 
+          value={priority} 
+          onValueChange={setPriority} 
+          className="flex space-x-2"
+          disabled={isLoading || submitting}
+        >
+          <div className="flex items-center space-x-2 bg-card/50 p-2 rounded-md flex-1 text-center">
+            <RadioGroupItem value="low" id="low" className="sr-only" />
+            <Label htmlFor="low" className="cursor-pointer flex-1">Low</Label>
+          </div>
+          <div className="flex items-center space-x-2 bg-card/50 p-2 rounded-md flex-1 text-center">
+            <RadioGroupItem value="medium" id="medium" className="sr-only" />
+            <Label htmlFor="medium" className="cursor-pointer flex-1">Medium</Label>
+          </div>
+          <div className="flex items-center space-x-2 bg-card/50 p-2 rounded-md flex-1 text-center">
+            <RadioGroupItem value="high" id="high" className="sr-only" />
+            <Label htmlFor="high" className="cursor-pointer flex-1">High</Label>
+          </div>
+          <div className="flex items-center space-x-2 bg-card/50 p-2 rounded-md flex-1 text-center">
+            <RadioGroupItem value="urgent" id="urgent" className="sr-only" />
+            <Label htmlFor="urgent" className="cursor-pointer flex-1">Urgent</Label>
+          </div>
+        </RadioGroup>
+      </div>
       
       <SLATimerPreview estimatedTime={estimatedTime} />
       
-      <RequestAttachments isLoading={isLoading} />
+      <RequestAttachments isLoading={isLoading || submitting} />
       
       <Button 
         type="submit" 
         className="w-full bg-plaza-blue hover:bg-blue-700"
-        disabled={isLoading}
+        disabled={isLoading || submitting}
       >
         <Send size={18} className="mr-2" />
-        {isLoading ? 'Submitting...' : 'Submit Request'}
+        {submitting ? 'Submitting...' : 'Submit Request'}
       </Button>
     </form>
   );

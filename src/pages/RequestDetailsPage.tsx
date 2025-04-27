@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,44 +9,84 @@ import { Link } from 'react-router-dom';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import RequestDetailPanel from '@/components/maintenance/RequestDetailPanel';
+import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
+  const [request, setRequest] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isStaff, setIsStaff] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
   
-  // For now using static data - would be fetched from API in real implementation
-  const request = {
-    id: requestId,
-    title: 'AC not working in Meeting Room B',
-    category: 'Maintenance',
-    priority: 'high',
-    status: 'In Progress',
-    createdAt: '2025-04-25T10:30:00',
-    updatedAt: '2025-04-25T14:15:00',
-    assignedTo: 'Technical Team',
-    eta: '2025-04-25T16:30:00',
-    description: 'The air conditioning unit is not cooling properly. Temperature is consistently above 26°C.',
-    slaMinutesLeft: 102, // 1h 42m left
-    slaPercentage: 35, // 35% of SLA time remaining
-    isBreaching: false,
-    slaDueAt: '2025-04-25T18:30:00',
-    autoEscalationRules: [
-      { 
-        condition: 'SLA < 30 min', 
-        action: 'Notify Maintenance Manager',
-        status: 'Pending' 
-      },
-      { 
-        condition: 'SLA Breach', 
-        action: 'Boost Priority to Critical',
-        status: 'Pending'
-      },
-      { 
-        condition: 'SLA Breach + 30 min', 
-        action: 'Escalate to Building Manager',
-        status: 'Pending'
-      },
-    ]
+  useEffect(() => {
+    if (requestId) {
+      fetchRequestDetails();
+      checkStaffStatus();
+    }
+  }, [requestId, user]);
+
+  const checkStaffStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.rpc('is_staff', { uid: user.id });
+      if (error) throw error;
+      setIsStaff(!!data);
+    } catch (error) {
+      console.error('Error checking staff status:', error);
+    }
   };
+
+  const fetchRequestDetails = async () => {
+    if (!requestId) return;
+    
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('maintenance_requests')
+        .select(`
+          *,
+          category:category_id(name)
+        `)
+        .eq('id', requestId)
+        .single();
+        
+      if (error) throw error;
+      setRequest(data);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching request",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6">
+        <div className="flex justify-center items-center h-40">
+          <p className="text-gray-400">Loading request details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!request) {
+    return (
+      <div className="px-4 py-6">
+        <div className="flex justify-center items-center h-40">
+          <p className="text-gray-400">Request not found</p>
+        </div>
+      </div>
+    );
+  }
 
   const formatSlaTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -72,7 +112,7 @@ const RequestDetailsPage = () => {
               <div>
                 <h2 className="text-2xl font-bold text-white mb-2">{request.title}</h2>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Badge variant="outline">{request.category}</Badge>
+                  <Badge variant="outline">{request.category?.name || 'Uncategorized'}</Badge>
                   <Badge 
                     variant={request.priority === 'high' ? 'destructive' : 'default'}
                     className="capitalize"
@@ -83,14 +123,14 @@ const RequestDetailsPage = () => {
               </div>
               <Badge 
                 className="capitalize"
-                variant={request.status === 'In Progress' ? 'default' : 'secondary'}
+                variant={request.status === 'in_progress' ? 'default' : 'secondary'}
               >
-                {request.status}
+                {request.status?.replace('_', ' ')}
               </Badge>
             </div>
 
             {/* SLA Timer Card */}
-            {request.status !== 'Completed' && (
+            {request.status !== 'completed' && request.sla_breach_at && (
               <Card className="bg-card/50 border-yellow-800/30">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
@@ -98,14 +138,19 @@ const RequestDetailsPage = () => {
                       <Timer size={18} className="text-yellow-500" />
                       <div>
                         <h3 className="font-medium text-white">SLA Timer</h3>
-                        <p className="text-sm text-yellow-400">Resolution SLA: {formatSlaTime(request.slaMinutesLeft)}</p>
+                        <p className="text-sm text-yellow-400">
+                          Resolution by: {new Date(request.sla_breach_at).toLocaleString()}
+                        </p>
                       </div>
                     </div>
                     <Badge variant="outline" className="bg-yellow-900/20 text-yellow-400">
-                      Due: {new Date(request.slaDueAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      Due: {new Date(request.sla_breach_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Badge>
                   </div>
-                  <Progress value={request.slaPercentage} className="mt-3 h-2" />
+                  <Progress 
+                    value={35} 
+                    className="mt-3 h-2" 
+                  />
                 </CardContent>
               </Card>
             )}
@@ -134,7 +179,23 @@ const RequestDetailsPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {request.autoEscalationRules.map((rule, index) => (
+                    {[
+                      {
+                        condition: 'SLA < 30 min', 
+                        action: 'Notify Maintenance Manager',
+                        status: 'Pending'
+                      },
+                      {
+                        condition: 'SLA Breach', 
+                        action: 'Boost Priority to Critical',
+                        status: 'Pending'
+                      },
+                      {
+                        condition: 'SLA Breach + 30 min', 
+                        action: 'Escalate to Building Manager',
+                        status: 'Pending'
+                      }
+                    ].map((rule, index) => (
                       <TableRow key={index}>
                         <TableCell>{rule.condition}</TableCell>
                         <TableCell className="flex items-center gap-2">
@@ -156,16 +217,16 @@ const RequestDetailsPage = () => {
             <div className="grid gap-4 text-sm">
               <div className="flex items-center gap-2 text-gray-400">
                 <Clock className="h-4 w-4" />
-                <span>Created: {new Date(request.createdAt).toLocaleString()}</span>
+                <span>Created: {new Date(request.created_at).toLocaleString()}</span>
               </div>
               <div className="flex items-center gap-2 text-gray-400">
                 <MessageSquare className="h-4 w-4" />
-                <span>Assigned to: {request.assignedTo}</span>
+                <span>Reported by: {request.reported_by}</span>
               </div>
-              {request.eta && (
+              {request.assigned_to && (
                 <div className="flex items-center gap-2 text-gray-400">
-                  <Clock className="h-4 w-4" />
-                  <span>ETA: {new Date(request.eta).toLocaleString()}</span>
+                  <User className="h-4 w-4" />
+                  <span>Assigned to: {request.assigned_to}</span>
                 </div>
               )}
             </div>
@@ -177,6 +238,25 @@ const RequestDetailsPage = () => {
           </div>
         </CardContent>
       </Card>
+      
+      {/* For staff, show the detailed management panel */}
+      {isStaff && requestId && (
+        <RequestDetailPanel 
+          requestId={requestId} 
+          onUpdate={fetchRequestDetails}
+        />
+      )}
+      
+      {/* For tenants, show just the comments component */}
+      {!isStaff && requestId && (
+        <div className="mt-6">
+          <h3 className="text-xl font-bold text-white mb-4">Communication</h3>
+          <RequestDetailPanel 
+            requestId={requestId} 
+            onUpdate={fetchRequestDetails}
+          />
+        </div>
+      )}
     </div>
   );
 };
