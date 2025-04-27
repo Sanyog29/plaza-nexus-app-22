@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from '@/components/AuthProvider';
 
 const staffRequestSchema = z.object({
   reason: z.string().min(10, { message: "Please provide a detailed reason for your request" })
@@ -25,6 +26,7 @@ type StaffRequestFormValues = z.infer<typeof staffRequestSchema>;
 
 export function StaffRoleRequest() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
 
@@ -62,7 +64,7 @@ export function StaffRoleRequest() {
         .from('staff_role_requests')
         .insert({
           reason: data.reason,
-          // user_id is automatically set by RLS policies
+          user_id: user?.id // Explicitly provide the user_id to satisfy TypeScript
         });
 
       if (error) throw error;
