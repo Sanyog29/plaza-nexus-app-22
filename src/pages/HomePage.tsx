@@ -10,7 +10,6 @@ import {
   Building,
   Wrench,
   MapPin,
-  // Add the missing icons
   CheckCircle,
   AlertTriangle,
   Thermometer
@@ -45,7 +44,7 @@ const HomePage = () => {
         <DashboardTile 
           title="Raise Request"
           description="Report issues or request assistance"
-          icon={<MessageSquare size={24} className="text-white" />}
+          icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />}
           to="/requests/new"
           bgColor="bg-gradient-to-br from-plaza-blue to-blue-700"
           count={3}
@@ -58,7 +57,7 @@ const HomePage = () => {
         <DashboardTile 
           title="Book Room"
           description="Reserve meeting spaces & training rooms"
-          icon={<Calendar size={24} className="text-white" />}
+          icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />}
           to="/bookings"
           bgColor="bg-gradient-to-br from-purple-600 to-purple-800"
           count={2}
@@ -71,7 +70,7 @@ const HomePage = () => {
         <DashboardTile 
           title="Today's Menu"
           description="View cafeteria specials & pre-order"
-          icon={<Coffee size={24} className="text-white" />}
+          icon={<Coffee size={28} className="text-white" strokeWidth={1.5} />}
           to="/cafeteria"
           bgColor="bg-gradient-to-br from-amber-600 to-amber-800"
           status={{
@@ -83,7 +82,7 @@ const HomePage = () => {
         <DashboardTile 
           title="Alerts"
           description="Important facility updates"
-          icon={<Bell size={24} className="text-white" />}
+          icon={<Bell size={28} className="text-white" strokeWidth={1.5} />}
           to="/alerts"
           bgColor="bg-gradient-to-br from-red-600 to-red-800"
           count={3}
@@ -96,7 +95,7 @@ const HomePage = () => {
         <DashboardTile 
           title="Security"
           description="Manage visitors & access control"
-          icon={<Shield size={24} className="text-white" />}
+          icon={<Shield size={28} className="text-white" strokeWidth={1.5} />}
           to="/security"
           bgColor="bg-gradient-to-br from-indigo-600 to-indigo-800"
           count={5}
