@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import DashboardTile from '../components/DashboardTile';
 import { Card, CardContent } from '@/components/ui/card';
+import AISummaryCards from '../components/AISummaryCards';
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -33,6 +34,8 @@ const HomePage = () => {
         </h2>
         <p className="text-gray-400 text-sm">{currentDate}</p>
       </div>
+
+      <AISummaryCards />
       
       <div className="grid grid-cols-2 gap-4">
         <DashboardTile 
