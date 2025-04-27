@@ -1,7 +1,10 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Coffee, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import OrderModal from '@/components/cafeteria/OrderModal';
+import LoyaltyCard from '@/components/cafeteria/LoyaltyCard';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 // Sample menu data
 const menuData = {
@@ -61,6 +64,19 @@ const menuData = {
 };
 
 const CafeteriaPage = () => {
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  
+  const { data: loyaltyPoints = 0 } = useQuery({
+    queryKey: ['loyalty-points'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('loyalty_points')
+        .select('points')
+        .single();
+      return data?.points || 0;
+    },
+  });
+
   return (
     <div className="pb-6">
       <div className="relative h-40 overflow-hidden">
@@ -78,6 +94,8 @@ const CafeteriaPage = () => {
       </div>
       
       <div className="px-4 mt-6">
+        <LoyaltyCard />
+        
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-white">Today's Special</h3>
           <span className="text-sm text-gray-400">{menuData.date}</span>
@@ -106,7 +124,10 @@ const CafeteriaPage = () => {
               </div>
               <div className="mt-4 flex justify-between items-center">
                 <span className="text-lg font-medium text-white">${special.price}</span>
-                <Button className="bg-plaza-blue hover:bg-blue-700">
+                <Button 
+                  className="bg-plaza-blue hover:bg-blue-700"
+                  onClick={() => setSelectedItem(special)}
+                >
                   Order Now
                 </Button>
               </div>
@@ -137,9 +158,14 @@ const CafeteriaPage = () => {
                     </div>
                     <div className="text-right">
                       <span className="text-white">${item.price}</span>
-                      <Button variant="ghost" size="sm" className="mt-2 hover:bg-plaza-blue hover:text-white">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mt-2 hover:bg-plaza-blue hover:text-white"
+                        onClick={() => setSelectedItem(item)}
+                      >
                         <Coffee size={16} className="mr-1" />
-                        Add
+                        Order
                       </Button>
                     </div>
                   </div>
@@ -149,6 +175,13 @@ const CafeteriaPage = () => {
           </div>
         ))}
       </div>
+
+      <OrderModal
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        item={selectedItem}
+        loyaltyPoints={loyaltyPoints}
+      />
     </div>
   );
 };
