@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -50,7 +50,7 @@ export function StaffRoleRequest() {
     setHasPendingRequest(!!data);
   };
 
-  useState(() => {
+  useEffect(() => {
     checkExistingRequest();
   }, []);
 
@@ -60,7 +60,10 @@ export function StaffRoleRequest() {
       
       const { error } = await supabase
         .from('staff_role_requests')
-        .insert([{ reason: data.reason }]);
+        .insert({
+          reason: data.reason,
+          // user_id is automatically set by RLS policies
+        });
 
       if (error) throw error;
 
