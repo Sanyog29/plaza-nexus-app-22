@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   MessageSquare, 
@@ -9,7 +8,8 @@ import {
   AlertTriangle, 
   CheckCircle,
   Users,
-  Thermometer
+  Thermometer,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import DashboardTile from '../components/DashboardTile';
@@ -83,6 +83,19 @@ const HomePage = () => {
           status={{
             text: "1 Critical",
             color: "bg-red-400/20 text-red-200"
+          }}
+        />
+        
+        <DashboardTile 
+          title="Security"
+          description="Manage visitors & access control"
+          icon={<Shield size={24} className="text-white" />}
+          to="/security"
+          bgColor="bg-gradient-to-br from-indigo-600 to-indigo-800"
+          count={5}
+          status={{
+            text: "3 Pending",
+            color: "bg-indigo-400/20 text-indigo-200"
           }}
         />
       </div>
