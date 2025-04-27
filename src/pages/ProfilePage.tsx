@@ -1,20 +1,52 @@
 
-import React from 'react';
-import { Settings, User, Building, LogOut, FileText, Bell } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Settings, User, Building, LogOut, FileText, Bell, Mail, Phone, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        setProfile(data);
+      } catch (error: any) {
+        toast({
+          title: "Error fetching profile",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProfile();
+  }, [user, toast]);
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       navigate('/auth');
     } catch (error: any) {
       toast({
@@ -23,6 +55,13 @@ const ProfilePage = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const getDisplayName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    return user?.email || 'Tenant';
   };
 
   return (
@@ -46,8 +85,31 @@ const ProfilePage = () => {
           </div>
         </div>
         
-        <h3 className="text-xl font-semibold text-white">{user?.email}</h3>
-        <p className="text-gray-400 text-sm">Tenant</p>
+        <h3 className="text-xl font-semibold text-white">{getDisplayName()}</h3>
+        <p className="text-gray-400 text-sm">{profile?.role || 'Tenant'}</p>
+        
+        {!isLoading && (
+          <div className="w-full mt-6 space-y-4">
+            <div className="flex items-center text-gray-300 gap-3">
+              <Mail size={18} className="text-gray-400" />
+              <span>{user?.email}</span>
+            </div>
+            
+            {profile?.phone_number && (
+              <div className="flex items-center text-gray-300 gap-3">
+                <Phone size={18} className="text-gray-400" />
+                <span>{profile.phone_number}</span>
+              </div>
+            )}
+            
+            {profile?.apartment_number && (
+              <div className="flex items-center text-gray-300 gap-3">
+                <Home size={18} className="text-gray-400" />
+                <span>Apartment {profile.apartment_number}</span>
+              </div>
+            )}
+          </div>
+        )}
         
         <div className="w-full border-t border-gray-700 mt-6 pt-4">
           <div className="flex items-center justify-between text-white">
@@ -81,7 +143,12 @@ const ProfilePage = () => {
               <FileText size={18} className="text-gray-400 mr-3" />
               <span className="text-white">My Requests</span>
             </div>
-            <Button variant="ghost" size="sm" className="text-plaza-blue hover:text-plaza-blue">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-plaza-blue hover:text-plaza-blue"
+              onClick={() => navigate('/requests')}
+            >
               View
             </Button>
           </div>

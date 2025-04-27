@@ -1,11 +1,13 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { Building, Lock, Mail, User } from 'lucide-react';
 
 const AuthPage = () => {
   const [email, setEmail] = React.useState('');
@@ -13,7 +15,10 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSignUp, setIsSignUp] = React.useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const location = useLocation();
+  const { toast: uiToast } = useToast();
+
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +32,7 @@ const AuthPage = () => {
         });
         if (error) throw error;
         toast({
-          title: "Success",
+          title: "Account created",
           description: "Please check your email to confirm your account.",
         });
       } else {
@@ -36,11 +41,11 @@ const AuthPage = () => {
           password,
         });
         if (error) throw error;
-        navigate('/');
+        navigate(from);
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
+      uiToast({
+        title: "Authentication error",
         description: error.message,
         variant: "destructive",
       });
@@ -51,50 +56,78 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-plaza-dark">
-      <div className="w-full max-w-md space-y-8 bg-card p-6 rounded-lg card-shadow">
-        <div>
-          <h2 className="text-2xl font-bold text-white text-center">
-            {isSignUp ? 'Create your account' : 'Welcome back'}
+      <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-lg card-shadow">
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <Building className="h-12 w-12 text-plaza-blue" />
+          </div>
+          <h2 className="text-2xl font-bold text-white">
+            {isSignUp ? 'Create your account' : 'Sign in to SS Plaza'}
           </h2>
-          <p className="mt-2 text-sm text-gray-400 text-center">
-            {isSignUp ? 'Sign up to get started' : 'Sign in to your account'}
+          <p className="mt-2 text-sm text-gray-400">
+            {isSignUp ? 'Sign up to get started' : 'Welcome back to your tenant portal'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="flex items-center gap-2 text-white">
+              <Mail size={16} className="text-gray-400" />
+              Email Address
+            </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-card border-gray-600"
+              className="bg-card border-gray-600 mt-1"
+              placeholder="you@example.com"
               required
+              autoComplete="email"
             />
           </div>
 
           <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="flex items-center gap-2 text-white">
+              <Lock size={16} className="text-gray-400" />
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-card border-gray-600"
+              className="bg-card border-gray-600 mt-1"
+              placeholder="••••••••"
               required
+              autoComplete={isSignUp ? "new-password" : "current-password"}
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-plaza-blue hover:bg-blue-700"
+            className="w-full bg-plaza-blue hover:bg-blue-700 flex items-center justify-center gap-2"
             disabled={isLoading}
           >
-            {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
+            {isLoading ? (
+              <>
+                <span className="animate-spin">◌</span>
+                Processing...
+              </>
+            ) : isSignUp ? (
+              <>
+                <User size={18} />
+                Create Account
+              </>
+            ) : (
+              <>
+                <Lock size={18} />
+                Sign In
+              </>
+            )}
           </Button>
 
-          <div className="text-center">
+          <div className="text-center border-t border-gray-700 pt-4">
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
