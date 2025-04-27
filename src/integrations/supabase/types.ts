@@ -717,12 +717,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_user_management_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          first_name: string
+          last_name: string
+          role: string
+          created_at: string
+          updated_at: string
+          email: string
+          confirmed_at: string
+          last_sign_in_at: string
+        }[]
+      }
       is_admin: {
         Args: { uid: string }
         Returns: boolean
       }
       is_staff: {
         Args: { uid: string }
+        Returns: boolean
+      }
+      update_user_role: {
+        Args: { user_id: string; new_role: string }
         Returns: boolean
       }
     }

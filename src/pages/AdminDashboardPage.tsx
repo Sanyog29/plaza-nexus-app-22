@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ServerCog } from 'lucide-react';
+import { ServerCog, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import DashboardStats from '@/components/admin/dashboard/DashboardStats';
 import PerformanceChart from '@/components/admin/dashboard/PerformanceChart';
 import AnalyticsTabs from '@/components/admin/dashboard/AnalyticsTabs';
@@ -17,6 +17,7 @@ const performanceData = generatePerformanceData();
 
 const AdminDashboardPage = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -61,9 +62,19 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="px-4 py-6 space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
-        <p className="text-sm text-gray-400 mt-1">Monitor building operations and performance</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
+          <p className="text-sm text-gray-400 mt-1">Monitor building operations and performance</p>
+        </div>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => navigate('/admin/users')}
+        >
+          <Users size={16} />
+          Manage Users
+        </Button>
       </div>
 
       <DashboardStats 
