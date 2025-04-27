@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -174,7 +173,7 @@ const ServicesPage: React.FC = () => {
             <span className="hidden sm:inline-block">Food</span>
           </TabsTrigger>
           <TabsTrigger value="health" className="data-[state=active]:bg-plaza-blue">
-            <Medkit className="h-4 w-4 mr-1" />
+            <Stethoscope className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline-block">Health</span>
           </TabsTrigger>
         </TabsList>
