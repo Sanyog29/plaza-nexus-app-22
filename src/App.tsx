@@ -25,6 +25,11 @@ import UserManagementPage from "./pages/UserManagementPage";
 import AdminRequestsPage from "./pages/AdminRequestsPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
+import StaffDashboardPage from "./pages/StaffDashboardPage";
+import StaffRequestsPage from "./pages/StaffRequestsPage";
+import StaffAlertsPage from "./pages/StaffAlertsPage";
+import StaffReportsPage from "./pages/StaffReportsPage";
+import StaffSettingsPage from "./pages/StaffSettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +65,11 @@ const App = () => (
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
               <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+              <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
+              <Route path="/staff/requests" element={<StaffRequestsPage />} />
+              <Route path="/staff/alerts" element={<StaffAlertsPage />} />
+              <Route path="/staff/reports" element={<StaffReportsPage />} />
+              <Route path="/staff/settings" element={<StaffSettingsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
