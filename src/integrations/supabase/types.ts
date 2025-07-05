@@ -780,7 +780,7 @@ export type Database = {
         Returns: undefined
       }
       get_user_management_data: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { caller_id: string }
         Returns: {
           id: string
           first_name: string

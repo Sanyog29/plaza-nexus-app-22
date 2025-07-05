@@ -35,7 +35,9 @@ const UserManagementPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_user_management_data');
+      const { data, error } = await supabase.rpc('get_user_management_data', {
+        caller_id: user?.id
+      });
       if (error) throw error;
       setUsers(data);
     } catch (error: any) {
