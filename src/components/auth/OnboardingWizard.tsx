@@ -66,20 +66,43 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
 
     setIsLoading(true);
     try {
-      // Update or create profile
-      const { error } = await supabase
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          apartment_number: data.apartmentNumber,
-          phone_number: data.phoneNumber,
-          avatar_url: data.avatarUrl,
-          role: 'tenant',
-        });
+        .select('id')
+        .eq('id', user.id)
+        .single();
 
-      if (error) throw error;
+      if (existingProfile) {
+        // Update existing profile
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            first_name: data.firstName,
+            last_name: data.lastName,
+            apartment_number: data.apartmentNumber,
+            phone_number: data.phoneNumber,
+            avatar_url: data.avatarUrl,
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Create new profile
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            apartment_number: data.apartmentNumber,
+            phone_number: data.phoneNumber,
+            avatar_url: data.avatarUrl,
+            role: 'tenant',
+          });
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Welcome to SS Plaza!",
