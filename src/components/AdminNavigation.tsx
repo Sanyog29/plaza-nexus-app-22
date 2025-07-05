@@ -29,6 +29,7 @@ const AdminNavigation: React.FC = () => {
 
   const adminNavItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+    { icon: Settings, label: 'Content', path: '/admin/content' },
     { icon: ClipboardList, label: 'Requests', path: '/admin/requests' },
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
