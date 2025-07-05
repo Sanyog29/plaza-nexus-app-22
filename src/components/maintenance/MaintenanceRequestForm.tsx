@@ -34,6 +34,8 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [estimatedTime, setEstimatedTime] = useState(120);
   const [submitting, setSubmitting] = useState(false);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -67,13 +69,20 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
         .single();
       
       if (error) throw error;
+
+      // Set the created request ID for file uploads
+      setCreatedRequestId(data.id);
       
       toast({
         title: "Request submitted",
-        description: "Your maintenance request has been submitted successfully",
+        description: `Your maintenance request has been submitted successfully${attachmentFiles.length > 0 ? '. You can now upload your attachments.' : ''}`,
       });
+
+      // If no attachments, navigate immediately
+      if (attachmentFiles.length === 0) {
+        navigate('/requests');
+      }
       
-      navigate('/requests');
     } catch (error: any) {
       toast({
         title: "Error submitting request",
@@ -83,6 +92,10 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleFilesChange = (files: File[]) => {
+    setAttachmentFiles(files);
   };
 
   // Update estimated time based on priority
@@ -199,7 +212,11 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
       
       <SLATimerPreview estimatedTime={estimatedTime} />
       
-      <RequestAttachments isLoading={isLoading || submitting} />
+      <RequestAttachments 
+        isLoading={isLoading || submitting} 
+        onFilesChange={handleFilesChange}
+        requestId={createdRequestId}
+      />
       
       <Button 
         type="submit" 
@@ -207,8 +224,21 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
         disabled={isLoading || submitting}
       >
         <Send size={18} className="mr-2" />
-        {submitting ? 'Submitting...' : 'Submit Request'}
+        {submitting ? 'Submitting...' : 
+         createdRequestId ? 'Request Created - Upload Files Above' : 
+         'Submit Request'}
       </Button>
+      
+      {createdRequestId && attachmentFiles.length === 0 && (
+        <Button 
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => navigate('/requests')}
+        >
+          Continue Without Attachments
+        </Button>
+      )}
     </form>
   );
 };

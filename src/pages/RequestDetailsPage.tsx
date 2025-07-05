@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import RequestDetailPanel from '@/components/maintenance/RequestDetailPanel';
+import AttachmentViewer from '@/components/maintenance/AttachmentViewer';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -234,6 +235,17 @@ const RequestDetailsPage = () => {
             <div className="mt-4">
               <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
               <p className="text-gray-400">{request.description}</p>
+            </div>
+
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold text-white mb-2">Location</h3>
+              <p className="text-gray-400">{request.location}</p>
+            </div>
+
+            {/* Attachments Section */}
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold text-white mb-3">Attachments</h3>
+              <AttachmentViewer requestId={requestId!} />
             </div>
           </div>
         </CardContent>
