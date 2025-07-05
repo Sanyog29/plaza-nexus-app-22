@@ -12,15 +12,18 @@ import {
   MapPin,
   CheckCircle,
   AlertTriangle,
-  Thermometer
+  Thermometer,
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import DashboardTile from '../components/DashboardTile';
 import { Card, CardContent } from '@/components/ui/card';
 import AISummaryCards from '../components/AISummaryCards';
 
 const HomePage = () => {
   const { user } = useAuth();
+  const { metrics, isLoading } = useDashboardMetrics();
   const firstName = user?.user_metadata?.first_name || 'Tenant';
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -28,6 +31,18 @@ const HomePage = () => {
     month: 'long',
     day: 'numeric',
   });
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6 flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2 text-white">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="px-4 py-6 space-y-8">
@@ -47,9 +62,9 @@ const HomePage = () => {
           icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />}
           to="/requests/new"
           bgColor="bg-gradient-to-br from-plaza-blue to-blue-700"
-          count={3}
+          count={metrics.totalRequests}
           status={{
-            text: "2 Active",
+            text: `${metrics.activeRequests} Active`,
             color: "bg-blue-500/20 text-blue-200"
           }}
         />
@@ -60,9 +75,9 @@ const HomePage = () => {
           icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />}
           to="/bookings"
           bgColor="bg-gradient-to-br from-purple-600 to-purple-800"
-          count={2}
+          count={metrics.totalRooms}
           status={{
-            text: "3 Available",
+            text: `${metrics.availableRooms} Available`,
             color: "bg-purple-400/20 text-purple-200"
           }}
         />
@@ -85,9 +100,9 @@ const HomePage = () => {
           icon={<Bell size={28} className="text-white" strokeWidth={1.5} />}
           to="/alerts"
           bgColor="bg-gradient-to-br from-red-600 to-red-800"
-          count={3}
+          count={metrics.activeAlerts}
           status={{
-            text: "1 Critical",
+            text: `${metrics.criticalAlerts} Critical`,
             color: "bg-red-400/20 text-red-200"
           }}
         />
@@ -98,9 +113,9 @@ const HomePage = () => {
           icon={<Shield size={28} className="text-white" strokeWidth={1.5} />}
           to="/security"
           bgColor="bg-gradient-to-br from-indigo-600 to-indigo-800"
-          count={5}
+          count={metrics.totalVisitors}
           status={{
-            text: "3 Pending",
+            text: `${metrics.pendingVisitors} Pending`,
             color: "bg-indigo-400/20 text-indigo-200"
           }}
         />
@@ -115,12 +130,18 @@ const HomePage = () => {
           <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-green-500/20 p-2 rounded-full">
-                  <CheckCircle size={20} className="text-green-500" />
+                <div className={`${metrics.operationalSystems ? 'bg-green-500/20' : 'bg-red-500/20'} p-2 rounded-full`}>
+                  {metrics.operationalSystems ? (
+                    <CheckCircle size={20} className="text-green-500" />
+                  ) : (
+                    <AlertTriangle size={20} className="text-red-500" />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">All Systems</p>
-                  <p className="text-xs text-green-500">Operating normally</p>
+                  <p className={`text-xs ${metrics.operationalSystems ? 'text-green-500' : 'text-red-500'}`}>
+                    {metrics.operationalSystems ? 'Operating normally' : 'Issues detected'}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -129,12 +150,18 @@ const HomePage = () => {
           <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-yellow-500/20 p-2 rounded-full">
-                  <AlertTriangle size={20} className="text-yellow-500" />
+                <div className={`${metrics.pendingMaintenance > 0 ? 'bg-yellow-500/20' : 'bg-green-500/20'} p-2 rounded-full`}>
+                  {metrics.pendingMaintenance > 0 ? (
+                    <AlertTriangle size={20} className="text-yellow-500" />
+                  ) : (
+                    <CheckCircle size={20} className="text-green-500" />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">Maintenance</p>
-                  <p className="text-xs text-yellow-500">Scheduled today</p>
+                  <p className={`text-xs ${metrics.pendingMaintenance > 0 ? 'text-yellow-500' : 'text-green-500'}`}>
+                    {metrics.pendingMaintenance > 0 ? `${metrics.pendingMaintenance} pending` : 'All up to date'}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -148,7 +175,7 @@ const HomePage = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">Occupancy</p>
-                  <p className="text-xs text-blue-500">82% (3,280 people)</p>
+                  <p className="text-xs text-blue-500">{metrics.occupancyRate}% ({metrics.totalOccupants.toLocaleString()} people)</p>
                 </div>
               </div>
             </CardContent>
@@ -162,7 +189,9 @@ const HomePage = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">Temperature</p>
-                  <p className="text-xs text-emerald-500">24°C (Optimal)</p>
+                  <p className="text-xs text-emerald-500">
+                    {metrics.currentTemperature}°C {metrics.currentTemperature >= 22 && metrics.currentTemperature <= 26 ? '(Optimal)' : '(Adjusting)'}
+                  </p>
                 </div>
               </div>
             </CardContent>
