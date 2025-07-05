@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Book } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
@@ -13,6 +13,14 @@ const Header: React.FC = () => {
           </Link>
         </div>
         <div className="flex items-center space-x-4">
+          <Link 
+            to="/manual" 
+            className="flex items-center gap-2 text-white hover:text-plaza-blue transition-colors"
+            title="User Manual"
+          >
+            <Book className="h-5 w-5" />
+            <span className="hidden sm:inline">Manual</span>
+          </Link>
           <Link to="/alerts" className="relative">
             <Bell className="h-5 w-5 text-white" />
             <span className="absolute -top-1 -right-1 bg-plaza-blue text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">

@@ -31,6 +31,7 @@ import StaffRequestsPage from "./pages/StaffRequestsPage";
 import StaffAlertsPage from "./pages/StaffAlertsPage";
 import StaffReportsPage from "./pages/StaffReportsPage";
 import StaffSettingsPage from "./pages/StaffSettingsPage";
+import UserManualPage from "./pages/UserManualPage";
 
 const queryClient = new QueryClient();
 
@@ -60,13 +61,13 @@ const App = () => (
               <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="/info-hub" element={<InfoHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/manual" element={<UserManualPage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/content" element={<AdminContentPage />} />
           <Route path="/admin/requests" element={<AdminRequestsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
-              <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
               <Route path="/staff/requests" element={<StaffRequestsPage />} />
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
