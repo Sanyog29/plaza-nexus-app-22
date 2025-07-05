@@ -67,7 +67,15 @@ export type Database = {
           importance?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cafeteria_menu_categories: {
         Row: {
@@ -542,6 +550,13 @@ export type Database = {
           status?: Database["public"]["Enums"]["request_status"]
         }
         Relationships: [
+          {
+            foreignKeyName: "request_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "request_status_history_request_id_fkey"
             columns: ["request_id"]
