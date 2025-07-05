@@ -62,21 +62,25 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-plaza-dark">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 items-center">
-        <WelcomeCard />
-        <AuthForm
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-          isLoading={isLoading}
-          isSignUp={isSignUp}
-          setIsSignUp={setIsSignUp}
-          showEmailSentMessage={showEmailSentMessage}
-          setShowEmailSentMessage={setShowEmailSentMessage}
-          onSubmit={handleSubmit}
-        />
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background mobile-safe">
+      <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center animate-fade-in-up">
+        <div className="hidden lg:block">
+          <WelcomeCard />
+        </div>
+        <div className="w-full max-w-md mx-auto lg:max-w-none">
+          <AuthForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            isLoading={isLoading}
+            isSignUp={isSignUp}
+            setIsSignUp={setIsSignUp}
+            showEmailSentMessage={showEmailSentMessage}
+            setShowEmailSentMessage={setShowEmailSentMessage}
+            onSubmit={handleSubmit}
+          />
+        </div>
       </div>
     </div>
   );

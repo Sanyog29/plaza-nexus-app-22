@@ -1,24 +1,43 @@
-const CACHE_NAME = 'ss-plaza-v1';
+const CACHE_NAME = 'ss-plaza-v2';
+const OFFLINE_CACHE = 'ss-plaza-offline-v1';
+
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
-  '/manifest.json'
+  '/manifest.json',
+  '/auth',
+  // Add core fonts and assets
+  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap'
+];
+
+const offlineUrls = [
+  '/auth',
+  '/'
 ];
 
 // Install SW
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
+    Promise.all([
+      caches.open(CACHE_NAME).then((cache) => {
+        console.log('Opened main cache');
         return cache.addAll(urlsToCache);
+      }),
+      caches.open(OFFLINE_CACHE).then((cache) => {
+        console.log('Opened offline cache');
+        return cache.addAll(offlineUrls);
       })
+    ])
   );
 });
 
 // Listen for requests
 self.addEventListener('fetch', (event) => {
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -26,19 +45,44 @@ self.addEventListener('fetch', (event) => {
         if (response) {
           return response;
         }
-        return fetch(event.request);
-      }
-    )
+
+        // Try to fetch from network
+        return fetch(event.request.clone())
+          .then((response) => {
+            // Don't cache non-successful responses
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Cache successful responses
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          })
+          .catch(() => {
+            // Return offline page for navigation requests
+            if (event.request.mode === 'navigate') {
+              return caches.match('/auth');
+            }
+            return new Response('Offline', { status: 503 });
+          });
+      })
   );
 });
 
 // Activate SW
 self.addEventListener('activate', (event) => {
+  self.clients.claim();
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== OFFLINE_CACHE) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })

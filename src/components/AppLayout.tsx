@@ -48,8 +48,8 @@ const AppLayout: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-plaza-dark">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-plaza-blue"></div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
