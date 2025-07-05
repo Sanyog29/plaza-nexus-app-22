@@ -30,16 +30,16 @@ const AppLayout: React.FC = () => {
           setIsAdmin(adminResult.data || false);
           setIsStaff(staffResult.data || false);
 
-          // Redirect staff/admin users away from tenant routes
-          const isOnTenantRoute = !location.pathname.startsWith('/admin') && 
-                                  !location.pathname.startsWith('/staff') && 
-                                  location.pathname !== '/auth';
+          // Only redirect on home page or basic tenant routes, not when navigating within admin/staff contexts
+          const isOnBasicTenantRoute = location.pathname === '/' || 
+                                      (location.pathname.startsWith('/requests') && !location.pathname.includes('/admin/') && !location.pathname.includes('/staff/')) ||
+                                      (location.pathname.startsWith('/bookings') && !location.pathname.includes('/admin/') && !location.pathname.includes('/staff/'));
           
-          if (isOnTenantRoute) {
-            if (adminResult.data) {
+          if (isOnBasicTenantRoute && location.pathname !== '/auth') {
+            if (adminResult.data && location.pathname === '/') {
               window.location.replace('/admin/dashboard');
               return;
-            } else if (staffResult.data) {
+            } else if (staffResult.data && location.pathname === '/') {
               window.location.replace('/staff/dashboard');
               return;
             }
