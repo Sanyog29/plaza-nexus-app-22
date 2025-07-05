@@ -252,7 +252,7 @@ const StaffRequestsPage = () => {
                           {getStatusIcon(request.status)}
                           <h3 
                             className="font-semibold text-white cursor-pointer hover:text-plaza-blue"
-                            onClick={() => navigate(`/requests/${request.id}`)}
+                             onClick={() => navigate(`/staff/requests/${request.id}`)}
                           >
                             {request.title}
                           </h3>
@@ -299,7 +299,7 @@ const StaffRequestsPage = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/requests/${request.id}`)}
+                        onClick={() => navigate(`/staff/requests/${request.id}`)}
                       >
                         View Details
                       </Button>

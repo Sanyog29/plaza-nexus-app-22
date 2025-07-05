@@ -313,7 +313,7 @@ const RequestsList: React.FC<RequestsListProps> = ({
     <div className="space-y-4">
       {requests.map((request) => (
         <Card key={request.id} className="bg-card/50 backdrop-blur hover:bg-card/70 transition-colors cursor-pointer">
-          <CardContent className="p-4" onClick={() => navigate(`/requests/${request.id}`)}>
+          <CardContent className="p-4" onClick={() => navigate(`/admin/requests/${request.id}`)}>
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">

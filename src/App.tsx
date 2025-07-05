@@ -66,10 +66,12 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/content" element={<AdminContentPage />} />
           <Route path="/admin/requests" element={<AdminRequestsPage />} />
+          <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
               <Route path="/staff/requests" element={<StaffRequestsPage />} />
+              <Route path="/staff/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
               <Route path="/staff/reports" element={<StaffReportsPage />} />
               <Route path="/staff/settings" element={<StaffSettingsPage />} />
