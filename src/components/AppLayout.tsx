@@ -30,6 +30,21 @@ const AppLayout: React.FC = () => {
           setIsAdmin(adminResult.data || false);
           setIsStaff(staffResult.data || false);
 
+          // Redirect staff/admin users away from tenant routes
+          const isOnTenantRoute = !location.pathname.startsWith('/admin') && 
+                                  !location.pathname.startsWith('/staff') && 
+                                  location.pathname !== '/auth';
+          
+          if (isOnTenantRoute) {
+            if (adminResult.data) {
+              window.location.replace('/admin/dashboard');
+              return;
+            } else if (staffResult.data) {
+              window.location.replace('/staff/dashboard');
+              return;
+            }
+          }
+
           // Request notification permissions for staff/admin
           if (adminResult.data || staffResult.data) {
             requestNotificationPermission();
@@ -44,7 +59,7 @@ const AppLayout: React.FC = () => {
     };
 
     checkUserRole();
-  }, [user, requestNotificationPermission]);
+  }, [user, requestNotificationPermission, location.pathname]);
 
   if (isLoading) {
     return (
