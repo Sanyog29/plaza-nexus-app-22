@@ -345,7 +345,7 @@ export type Database = {
             foreignKeyName: "maintenance_requests_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "categories"
+            referencedRelation: "maintenance_categories"
             referencedColumns: ["id"]
           },
         ]
