@@ -22,6 +22,9 @@ import RequestDetailsPage from "./pages/RequestDetailsPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import UserManagementPage from "./pages/UserManagementPage";
+import AdminRequestsPage from "./pages/AdminRequestsPage";
+import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import AdminReportsPage from "./pages/AdminReportsPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,10 @@ const App = () => (
               <Route path="/info-hub" element={<InfoHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/requests" element={<AdminRequestsPage />} />
+              <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+              <Route path="/admin/reports" element={<AdminReportsPage />} />
               <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
