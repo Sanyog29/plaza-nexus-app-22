@@ -18,8 +18,13 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/components/AuthProvider';
 
+import DOMPurify from 'dompurify';
+
 const staffRequestSchema = z.object({
-  reason: z.string().min(10, { message: "Please provide a detailed reason for your request" })
+  reason: z.string()
+    .min(10, { message: "Please provide a detailed reason for your request" })
+    .max(1000, { message: "Reason must be less than 1000 characters" })
+    .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] }))
 });
 
 type StaffRequestFormValues = z.infer<typeof staffRequestSchema>;
@@ -38,9 +43,12 @@ export function StaffRoleRequest() {
   });
 
   const checkExistingRequest = async () => {
+    if (!user?.id) return;
+    
     const { data, error } = await supabase
       .from('staff_role_requests')
       .select('status')
+      .eq('user_id', user.id)
       .eq('status', 'pending')
       .maybeSingle();
 
@@ -54,7 +62,7 @@ export function StaffRoleRequest() {
 
   useEffect(() => {
     checkExistingRequest();
-  }, []);
+  }, [user?.id]);
 
   async function onSubmit(data: StaffRequestFormValues) {
     try {

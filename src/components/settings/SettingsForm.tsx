@@ -19,12 +19,26 @@ import { Switch } from "@/components/ui/switch"
 import { useAuth } from "@/components/AuthProvider"
 import { StaffRoleRequest } from "./StaffRoleRequest";
 
+import DOMPurify from 'dompurify';
+
 const settingsFormSchema = z.object({
-  firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
-  lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
+  firstName: z.string()
+    .min(2, { message: "First name must be at least 2 characters" })
+    .max(50, { message: "First name must be less than 50 characters" })
+    .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
+  lastName: z.string()
+    .min(2, { message: "Last name must be at least 2 characters" })
+    .max(50, { message: "Last name must be less than 50 characters" })
+    .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
   email: z.string().email({ message: "Please enter a valid email" }),
-  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
-  apartmentNumber: z.string().min(1, { message: "Apartment number is required" }),
+  phone: z.string()
+    .min(10, { message: "Please enter a valid phone number" })
+    .max(20, { message: "Phone number must be less than 20 characters" })
+    .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
+  apartmentNumber: z.string()
+    .min(1, { message: "Apartment number is required" })
+    .max(10, { message: "Apartment number must be less than 10 characters" })
+    .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
   notifications: z.boolean().default(true),
 })
 
