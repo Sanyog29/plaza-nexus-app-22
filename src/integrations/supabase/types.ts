@@ -802,7 +802,9 @@ export type Database = {
         Returns: boolean
       }
       update_user_role: {
-        Args: { user_id: string; new_role: string }
+        Args:
+          | { user_id: string; new_role: string }
+          | { user_id: string; new_role: string; caller_id: string }
         Returns: boolean
       }
     }

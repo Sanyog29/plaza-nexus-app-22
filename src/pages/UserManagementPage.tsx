@@ -56,6 +56,7 @@ const UserManagementPage = () => {
       const { error } = await supabase.rpc('update_user_role', {
         user_id: userId,
         new_role: newRole,
+        caller_id: user?.id,
       });
       
       if (error) throw error;
