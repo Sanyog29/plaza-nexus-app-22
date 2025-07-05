@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/components/AuthProvider';
@@ -19,6 +20,7 @@ interface Profile {
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -105,8 +107,8 @@ const ProfilePage = () => {
         </TabsList>
         
         <TabsContent value="profile">
-          <Card className="mt-6 p-6">
-            {!profile ? (
+          {!profile ? (
+            <Card className="mt-6 p-6">
               <div className="flex flex-col items-center space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-white mb-4">Profile Not Found</h2>
@@ -121,31 +123,137 @@ const ProfilePage = () => {
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center space-y-6">
-                <img 
-                  src={`https://api.dicebear.com/7.x/avatars/svg?seed=${user.email}`}
-                  alt="Profile" 
-                  className="w-32 h-32 rounded-full"
-                />
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-white">
-                    {profile.first_name && profile.last_name 
-                      ? `${profile.first_name} ${profile.last_name}`
-                      : user.email
-                    }
-                  </h2>
-                  <p className="text-gray-400 mt-1 capitalize">{profile.role}</p>
-                  {profile.apartment_number && (
-                    <p className="text-gray-400 mt-1">Apartment: {profile.apartment_number}</p>
-                  )}
-                  {profile.phone_number && (
-                    <p className="text-gray-400 mt-1">Phone: {profile.phone_number}</p>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {/* Profile Header */}
+              <Card className="p-6">
+                <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avatars/svg?seed=${user.email}`}
+                    alt="Profile" 
+                    className="w-24 h-24 rounded-full border-4 border-plaza-blue"
+                  />
+                  <div className="flex-1 text-center md:text-left">
+                    <h2 className="text-2xl font-bold text-white">
+                      {profile.first_name && profile.last_name 
+                        ? `${profile.first_name} ${profile.last_name}`
+                        : user.email
+                      }
+                    </h2>
+                    <p className="text-plaza-blue font-medium capitalize">{profile.role}</p>
+                    <p className="text-gray-400 text-sm mt-1">{user.email}</p>
+                    
+                    <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
+                      {profile.apartment_number && (
+                        <div className="bg-gray-800 px-3 py-1 rounded-full">
+                          <span className="text-sm text-gray-300">Apt: {profile.apartment_number}</span>
+                        </div>
+                      )}
+                      {profile.phone_number && (
+                        <div className="bg-gray-800 px-3 py-1 rounded-full">
+                          <span className="text-sm text-gray-300">{profile.phone_number}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Button variant="outline" onClick={signOut} className="mt-4 md:mt-0">
+                    Sign Out
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Button 
+                    className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                    onClick={() => navigate('/requests/new')}
+                  >
+                    <span className="text-plaza-blue text-xl mb-1">+</span>
+                    <span>New Request</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                    onClick={() => navigate('/requests')}
+                  >
+                    <span className="text-plaza-blue text-xl mb-1">📋</span>
+                    <span>My Requests</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                    onClick={() => navigate('/services')}
+                  >
+                    <span className="text-plaza-blue text-xl mb-1">🏢</span>
+                    <span>Services</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                    onClick={() => navigate('/security')}
+                  >
+                    <span className="text-plaza-blue text-xl mb-1">🔒</span>
+                    <span>Security</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                    onClick={() => navigate('/cafeteria')}
+                  >
+                    <span className="text-plaza-blue text-xl mb-1">🍴</span>
+                    <span>Cafeteria</span>
+                  </Button>
+                  
+                  <Button 
+                    className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                    onClick={() => navigate('/bookings')}
+                  >
+                    <span className="text-plaza-blue text-xl mb-1">📅</span>
+                    <span>Bookings</span>
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Profile Completion */}
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Profile Completion</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Basic Information</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.first_name && profile.last_name ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                    }`}>
+                      {profile.first_name && profile.last_name ? 'Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Contact Details</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.phone_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                    }`}>
+                      {profile.phone_number ? 'Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Apartment Number</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.apartment_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                    }`}>
+                      {profile.apartment_number ? 'Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  {(!profile.first_name || !profile.last_name || !profile.phone_number || !profile.apartment_number) && (
+                    <p className="text-sm text-gray-400 mt-3">
+                      Complete your profile in the Settings tab to access all features.
+                    </p>
                   )}
                 </div>
-              </div>
-            )}
-          </Card>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="settings">
