@@ -4,88 +4,46 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/components/AuthProvider';
+import { useProfile } from '@/hooks/useProfile';
 import { SettingsForm } from '@/components/settings/SettingsForm';
-import { supabase } from '@/integrations/supabase/client';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { OnboardingWizard } from '@/components/auth/OnboardingWizard';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/sonner';
-
-interface Profile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  role: string;
-  apartment_number: string | null;
-  phone_number: string | null;
-}
+import { Progress } from '@/components/ui/progress';
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { profile, isLoading, isProfileComplete, completionPercentage, updateProfile } = useProfile();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile doesn't exist, show create option
-          setProfile(null);
-        } else {
-          throw error;
-        }
-      } else {
-        setProfile(data);
+    // Show onboarding if profile doesn't exist or is incomplete on first visit
+    if (!isLoading && (!profile || !isProfileComplete)) {
+      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
       }
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      toast("Error loading profile", {
-        description: error.message,
-      });
-    } finally {
-      setIsLoading(false);
     }
+  }, [profile, isLoading, isProfileComplete]);
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('hasSeenOnboarding', 'true');
   };
 
-  const createProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .insert({
-          id: user.id,
-          first_name: '',
-          last_name: '',
-          role: 'tenant'
-        });
-
-      if (error) throw error;
-      
-      toast("Profile created successfully!");
-      fetchProfile();
-    } catch (error: any) {
-      toast("Error creating profile", {
-        description: error.message,
-      });
+  const handleAvatarUpdate = async (url: string | null) => {
+    if (profile) {
+      await updateProfile({ avatar_url: url });
     }
   };
 
   if (!user) {
     return null;
+  }
+
+  if (showOnboarding) {
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
   }
 
   if (isLoading) {
@@ -112,9 +70,12 @@ const ProfilePage = () => {
               <div className="flex flex-col items-center space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-white mb-4">Profile Not Found</h2>
-                  <p className="text-gray-400 mb-6">Your profile data is missing. Please create your profile to continue.</p>
-                  <Button onClick={createProfile} className="bg-plaza-blue hover:bg-blue-700">
-                    Create Profile
+                  <p className="text-gray-400 mb-6">Your profile data is missing. Let's set it up!</p>
+                  <Button 
+                    onClick={() => setShowOnboarding(true)} 
+                    className="bg-plaza-blue hover:bg-blue-700"
+                  >
+                    Complete Profile Setup
                   </Button>
                   <div className="mt-4">
                     <Button variant="outline" onClick={signOut}>
@@ -129,10 +90,10 @@ const ProfilePage = () => {
               {/* Profile Header */}
               <Card className="p-6">
                 <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-                  <img 
-                    src={`https://api.dicebear.com/7.x/avatars/svg?seed=${user.email}`}
-                    alt="Profile" 
-                    className="w-24 h-24 rounded-full border-4 border-plaza-blue"
+                  <AvatarUpload
+                    currentAvatarUrl={profile.avatar_url}
+                    onAvatarUpdate={handleAvatarUpdate}
+                    size="lg"
                   />
                   <div className="flex-1 text-center md:text-left">
                     <h2 className="text-2xl font-bold text-white">
@@ -160,6 +121,64 @@ const ProfilePage = () => {
                   <Button variant="outline" onClick={signOut} className="mt-4 md:mt-0">
                     Sign Out
                   </Button>
+                </div>
+              </Card>
+
+              {/* Profile Completion */}
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white">Profile Completion</h3>
+                  <span className="text-sm text-gray-400">{completionPercentage}%</span>
+                </div>
+                <Progress value={completionPercentage} className="mb-4" />
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Basic Information</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.first_name && profile.last_name ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                    }`}>
+                      {profile.first_name && profile.last_name ? 'Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Contact Details</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.phone_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                    }`}>
+                      {profile.phone_number ? 'Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Apartment Number</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.apartment_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                    }`}>
+                      {profile.apartment_number ? 'Complete' : 'Incomplete'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Profile Picture</span>
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      profile.avatar_url ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
+                    }`}>
+                      {profile.avatar_url ? 'Complete' : 'Optional'}
+                    </span>
+                  </div>
+                  {!isProfileComplete && (
+                    <div className="flex items-center justify-between pt-2">
+                      <p className="text-sm text-gray-400">
+                        Complete your profile to access all features.
+                      </p>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setShowOnboarding(true)}
+                        className="bg-plaza-blue hover:bg-blue-700"
+                      >
+                        Complete Now
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </Card>
 
@@ -214,42 +233,6 @@ const ProfilePage = () => {
                     <span className="text-plaza-blue text-xl mb-1">📅</span>
                     <span>Bookings</span>
                   </Button>
-                </div>
-              </Card>
-
-              {/* Profile Completion */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Profile Completion</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Basic Information</span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      profile.first_name && profile.last_name ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
-                    }`}>
-                      {profile.first_name && profile.last_name ? 'Complete' : 'Incomplete'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Contact Details</span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      profile.phone_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
-                    }`}>
-                      {profile.phone_number ? 'Complete' : 'Incomplete'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300">Apartment Number</span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      profile.apartment_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
-                    }`}>
-                      {profile.apartment_number ? 'Complete' : 'Incomplete'}
-                    </span>
-                  </div>
-                  {(!profile.first_name || !profile.last_name || !profile.phone_number || !profile.apartment_number) && (
-                    <p className="text-sm text-gray-400 mt-3">
-                      Complete your profile in the Settings tab to access all features.
-                    </p>
-                  )}
                 </div>
               </Card>
             </div>

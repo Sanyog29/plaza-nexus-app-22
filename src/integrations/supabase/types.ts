@@ -524,6 +524,7 @@ export type Database = {
       profiles: {
         Row: {
           apartment_number: string | null
+          avatar_url: string | null
           created_at: string
           first_name: string | null
           id: string
@@ -534,6 +535,7 @@ export type Database = {
         }
         Insert: {
           apartment_number?: string | null
+          avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id: string
@@ -544,6 +546,7 @@ export type Database = {
         }
         Update: {
           apartment_number?: string | null
+          avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
