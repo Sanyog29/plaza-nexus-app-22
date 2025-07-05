@@ -90,7 +90,7 @@ const UserManagementPage = () => {
             description: "You don't have permission to view this page.",
             variant: "destructive",
           });
-          navigate('/');
+          navigate('/admin/dashboard');
           return;
         }
         
@@ -101,7 +101,7 @@ const UserManagementPage = () => {
           description: error.message,
           variant: "destructive",
         });
-        navigate('/');
+        navigate('/admin/dashboard');
       }
     };
 

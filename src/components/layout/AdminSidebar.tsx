@@ -8,7 +8,8 @@ import {
   Home,
   Wrench,
   ClipboardList,
-  TrendingUp
+  TrendingUp,
+  User
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -102,16 +103,16 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Quick Actions */}
+        {/* Profile Access */}
         {!isCollapsed && (
           <div className="mt-auto p-4 border-t border-border">
             <div className="space-y-2">
               <NavLink 
-                to="/" 
+                to="/profile" 
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Home className="h-4 w-4" />
-                Back to Home
+                <User className="h-4 w-4" />
+                Profile Settings
               </NavLink>
             </div>
           </div>
