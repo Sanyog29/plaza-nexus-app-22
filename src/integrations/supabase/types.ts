@@ -342,10 +342,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "maintenance_requests_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "maintenance_requests_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "maintenance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
