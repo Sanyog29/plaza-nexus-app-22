@@ -360,15 +360,15 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white">Assign To</label>
                 <Select 
-                  value={updatedAssignee || ''} 
-                  onValueChange={setUpdatedAssignee}
+                  value={updatedAssignee || 'unassigned'} 
+                  onValueChange={(value) => setUpdatedAssignee(value === 'unassigned' ? null : value)}
                   disabled={updating}
                 >
                   <SelectTrigger className="bg-card border-gray-700">
                     <SelectValue placeholder="Unassigned" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {staff.map((member) => (
                       <SelectItem key={member.id} value={member.id}>
                         {member.first_name} {member.last_name} ({member.role})

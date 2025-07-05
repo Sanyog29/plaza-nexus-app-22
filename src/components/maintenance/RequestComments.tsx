@@ -56,29 +56,32 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
   const fetchComments = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data: commentsData, error } = await supabase
         .from('request_comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          profiles:user_id(
-            first_name,
-            last_name,
-            role
-          )
-        `)
+        .select('id, content, created_at, user_id')
         .eq('request_id', requestId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      
+
+      // Fetch user profiles separately
+      const userIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, role')
+        .in('id', userIds);
+
+      const profilesMap = profilesData?.reduce((acc, profile) => {
+        acc[profile.id] = profile;
+        return acc;
+      }, {} as Record<string, any>) || {};
+
       // Transform the data to match our Comment interface
-      const formattedComments: Comment[] = (data || []).map((item: any) => ({
+      const formattedComments: Comment[] = (commentsData || []).map((item: any) => ({
         id: item.id,
         content: item.content,
         created_at: item.created_at,
-        user: item.profiles
+        user: profilesMap[item.user_id] || null
       }));
       
       setComments(formattedComments);
