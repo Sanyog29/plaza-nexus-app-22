@@ -22,10 +22,7 @@ interface MaintenanceRequest {
   created_at: string;
   reported_by: string;
   assigned_to?: string;
-  profiles?: {
-    first_name: string;
-    last_name: string;
-  } | null;
+  [key: string]: any; // Allow additional Supabase fields
 }
 
 const StaffRequestsPage = () => {
@@ -53,7 +50,7 @@ const StaffRequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          profiles:reported_by (
+          reporter:profiles!reported_by (
             first_name,
             last_name
           )
@@ -61,7 +58,16 @@ const StaffRequestsPage = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      // Transform data to handle join results
+      const transformedData = (data || []).map(req => ({
+        ...req,
+        reporterName: req.reporter?.first_name && req.reporter?.last_name 
+          ? `${req.reporter.first_name} ${req.reporter.last_name}`
+          : 'Unknown User'
+      }));
+      
+      setRequests(transformedData);
     } catch (error: any) {
       toast({
         title: "Error loading requests",
@@ -255,7 +261,7 @@ const StaffRequestsPage = () => {
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <span>📍 {request.location}</span>
                           <span>
-                            👤 {request.profiles?.first_name} {request.profiles?.last_name}
+                            👤 {request.reporterName || 'Unknown User'}
                           </span>
                           <span>🕒 {format(new Date(request.created_at), 'MMM d, yyyy')}</span>
                         </div>
