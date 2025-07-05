@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { toast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import RealTimeMetrics from '@/components/admin/RealTimeMetrics';
+import AdvancedAnalytics from '@/components/admin/AdvancedAnalytics';
+import StaffWorkloadBalancer from '@/components/admin/StaffWorkloadBalancer';
 
 interface DashboardStats {
   totalRequests: number;
@@ -178,7 +181,7 @@ const AdminDashboardPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
-          <p className="text-sm text-gray-400 mt-1">Monitor building operations and performance</p>
+          <p className="text-sm text-gray-400 mt-1">Real-time building operations and analytics</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -199,6 +202,15 @@ const AdminDashboardPage = () => {
           </Button>
         </div>
       </div>
+
+      {/* Real-Time Metrics */}
+      <RealTimeMetrics />
+
+      {/* Advanced Analytics */}
+      <AdvancedAnalytics />
+
+      {/* Staff Workload Balancer */}
+      <StaffWorkloadBalancer />
 
       {/* Real-time Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
