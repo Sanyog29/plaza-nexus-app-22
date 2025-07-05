@@ -4,13 +4,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from '@/components/ui/sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
 
 interface ServiceBookingModalProps {
   isOpen: boolean;
@@ -19,31 +21,66 @@ interface ServiceBookingModalProps {
 }
 
 const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClose, service }) => {
+  const { user } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState("");
-  const [saveDetails, setSaveDetails] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!service) return null;
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    toast("Booking Confirmed", {
-      description: `Your booking for ${service.title} on ${format(date!, 'PPP')} at ${time} has been confirmed.`,
-    });
-    onClose();
+    if (!user || !date || !time) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('service_bookings')
+        .insert({
+          user_id: user.id,
+          service_item_id: service.id,
+          booking_date: format(date, 'yyyy-MM-dd'),
+          booking_time: time,
+          status: 'pending',
+          notes: notes || null,
+          total_amount: service.price || 0
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Booking Confirmed",
+        description: `Your booking for ${service.title || service.name} on ${format(date, 'PPP')} at ${time} has been confirmed.`,
+      });
+      
+      // Reset form
+      setDate(new Date());
+      setTime("");
+      setNotes("");
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Booking Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const timeSlots = [
-    "09:00 AM", "10:00 AM", "11:00 AM", 
-    "12:00 PM", "01:00 PM", "02:00 PM", 
-    "03:00 PM", "04:00 PM", "05:00 PM"
+    "09:00", "10:00", "11:00", 
+    "12:00", "13:00", "14:00", 
+    "15:00", "16:00", "17:00"
   ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card text-white sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Book {service.title}</DialogTitle>
+          <DialogTitle>Book {service.title || service.name}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -99,27 +136,14 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
 
           <div className="space-y-2">
             <Label htmlFor="notes">Special Instructions (Optional)</Label>
-            <Input 
-              id="notes" 
+            <Textarea 
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Any special requirements..."
               className="bg-background/50"
+              rows={3}
             />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="saveDetails" 
-              checked={saveDetails}
-              onCheckedChange={(checked) => 
-                setSaveDetails(checked as boolean)
-              }
-            />
-            <label
-              htmlFor="saveDetails"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Save my details for future bookings
-            </label>
           </div>
 
           <DialogFooter>
@@ -127,6 +151,7 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
               type="button" 
               variant="outline" 
               onClick={onClose}
+              disabled={isSubmitting}
               className="mt-2 sm:mt-0"
             >
               Cancel
@@ -134,9 +159,9 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
             <Button 
               type="submit"
               className="bg-plaza-blue hover:bg-blue-700"
-              disabled={!date || !time}
+              disabled={!date || !time || isSubmitting}
             >
-              Confirm Booking
+              {isSubmitting ? "Booking..." : "Confirm Booking"}
             </Button>
           </DialogFooter>
         </form>

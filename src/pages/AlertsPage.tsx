@@ -1,46 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Droplet, Zap, Thermometer, ArrowUp, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
-// Sample alert data
-const alertsData = [
-  {
-    id: 'alert-001',
-    title: 'Planned Power Shutdown',
-    description: 'There will be a planned power shutdown for maintenance on Saturday from 10 PM to 4 AM.',
-    type: 'electricity',
-    severity: 'warning',
-    timestamp: '2025-04-29T10:00:00',
-  },
-  {
-    id: 'alert-002',
-    title: 'AC Maintenance',
-    description: 'AC units on floors 3-5 will undergo maintenance tomorrow. Temporary temperature fluctuations expected.',
-    type: 'ac',
-    severity: 'info',
-    timestamp: '2025-04-28T09:15:00',
-  },
-  {
-    id: 'alert-003',
-    title: 'Water Supply Disruption',
-    description: 'Water supply will be temporarily disrupted on the 7th floor due to pipe repairs from 2 PM to 4 PM today.',
-    type: 'water',
-    severity: 'critical',
-    timestamp: '2025-04-27T14:00:00',
-  },
-  {
-    id: 'alert-004',
-    title: 'Elevator 2 Out of Service',
-    description: 'Elevator 2 is currently undergoing repairs and will be out of service until tomorrow afternoon.',
-    type: 'elevator',
-    severity: 'warning',
-    timestamp: '2025-04-27T11:30:00',
-  },
-];
+interface Alert {
+  id: string;
+  title: string;
+  message: string;
+  severity: 'info' | 'warning' | 'critical';
+  is_active: boolean;
+  created_at: string;
+  expires_at: string | null;
+}
 
-const AlertStats = ({ alerts }: { alerts: typeof alertsData }) => {
+const AlertStats = ({ alerts }: { alerts: Alert[] }) => {
   const criticalCount = alerts.filter(a => a.severity === 'critical').length;
   const warningCount = alerts.filter(a => a.severity === 'warning').length;
   const infoCount = alerts.filter(a => a.severity === 'info').length;
@@ -86,19 +62,20 @@ const AlertStats = ({ alerts }: { alerts: typeof alertsData }) => {
   );
 };
 
-const AlertItem = ({ alert }: { alert: typeof alertsData[0] }) => {
+const AlertItem = ({ alert }: { alert: Alert }) => {
   const getIcon = () => {
-    switch (alert.type) {
-      case 'water':
-        return <Droplet size={24} className="text-blue-400" />;
-      case 'electricity':
-        return <Zap size={24} className="text-yellow-400" />;
-      case 'ac':
-        return <Thermometer size={24} className="text-green-400" />;
-      case 'elevator':
-        return <ArrowUp size={24} className="text-purple-400" />;
-      default:
-        return <AlertTriangle size={24} className="text-red-400" />;
+    // Use title keywords to determine icon type
+    const title = alert.title.toLowerCase();
+    if (title.includes('water') || title.includes('plumb')) {
+      return <Droplet size={24} className="text-blue-400" />;
+    } else if (title.includes('power') || title.includes('electric')) {
+      return <Zap size={24} className="text-yellow-400" />;
+    } else if (title.includes('ac') || title.includes('air') || title.includes('temperature')) {
+      return <Thermometer size={24} className="text-green-400" />;
+    } else if (title.includes('elevator') || title.includes('lift')) {
+      return <ArrowUp size={24} className="text-purple-400" />;
+    } else {
+      return <AlertTriangle size={24} className="text-red-400" />;
     }
   };
   
@@ -141,11 +118,15 @@ const AlertItem = ({ alert }: { alert: typeof alertsData[0] }) => {
                 <h4 className="font-medium text-white">{alert.title}</h4>
                 {getSeverityBadge()}
               </div>
-              <p className="text-sm text-gray-400">{alert.description}</p>
+              <p className="text-sm text-gray-400">{alert.message}</p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>Type: {alert.type}</span>
-                <span>•</span>
-                <span>{new Date(alert.timestamp).toLocaleString()}</span>
+                <span>{new Date(alert.created_at).toLocaleString()}</span>
+                {alert.expires_at && (
+                  <>
+                    <span>•</span>
+                    <span>Expires: {new Date(alert.expires_at).toLocaleDateString()}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -156,27 +137,27 @@ const AlertItem = ({ alert }: { alert: typeof alertsData[0] }) => {
 };
 
 const AlertFilters = ({ 
-  selectedType, 
-  onTypeChange 
+  selectedSeverity, 
+  onSeverityChange 
 }: { 
-  selectedType: string; 
-  onTypeChange: (type: string) => void;
+  selectedSeverity: string; 
+  onSeverityChange: (severity: string) => void;
 }) => {
-  const types = ['all', 'electricity', 'water', 'ac', 'elevator'];
+  const severities = ['all', 'critical', 'warning', 'info'];
 
   return (
     <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-      {types.map((type) => (
+      {severities.map((severity) => (
         <button
-          key={type}
-          onClick={() => onTypeChange(type)}
+          key={severity}
+          onClick={() => onSeverityChange(severity)}
           className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-            selectedType === type
+            selectedSeverity === severity
               ? 'bg-plaza-blue text-white'
               : 'bg-card/50 text-gray-400 hover:bg-card'
           }`}
         >
-          {type.charAt(0).toUpperCase() + type.slice(1)}
+          {severity.charAt(0).toUpperCase() + severity.slice(1)}
         </button>
       ))}
     </div>
@@ -184,11 +165,55 @@ const AlertFilters = ({
 };
 
 const AlertsPage = () => {
-  const [selectedType, setSelectedType] = useState('all');
+  const [selectedSeverity, setSelectedSeverity] = useState('all');
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredAlerts = selectedType === 'all'
-    ? alertsData
-    : alertsData.filter(alert => alert.type === selectedType);
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
+
+  const fetchAlerts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('alerts')
+        .select('*')
+        .eq('is_active', true)
+        .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Filter and type-cast the data to ensure severity matches our interface
+      const validAlerts = (data || []).filter(alert => 
+        ['info', 'warning', 'critical'].includes(alert.severity)
+      ) as Alert[];
+      
+      setAlerts(validAlerts);
+    } catch (error: any) {
+      toast({
+        title: "Error loading alerts",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredAlerts = selectedSeverity === 'all'
+    ? alerts
+    : alerts.filter(alert => alert.severity === selectedSeverity);
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-6">
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-plaza-blue"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6">
@@ -199,16 +224,24 @@ const AlertsPage = () => {
         </div>
       </div>
       
-      <AlertStats alerts={alertsData} />
+      <AlertStats alerts={alerts} />
       
       <Separator className="my-6 bg-gray-800" />
       
-      <AlertFilters selectedType={selectedType} onTypeChange={setSelectedType} />
+      <AlertFilters selectedSeverity={selectedSeverity} onSeverityChange={setSelectedSeverity} />
       
       <div className="space-y-4">
-        {filteredAlerts.map((alert) => (
-          <AlertItem key={alert.id} alert={alert} />
-        ))}
+        {filteredAlerts.length === 0 ? (
+          <Card className="bg-card/50 backdrop-blur">
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-400">No active alerts found</p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredAlerts.map((alert) => (
+            <AlertItem key={alert.id} alert={alert} />
+          ))
+        )}
       </div>
     </div>
   );
