@@ -30,31 +30,6 @@ const AppLayout: React.FC = () => {
           setIsAdmin(adminResult.data || false);
           setIsStaff(staffResult.data || false);
 
-          // Redirect admin/staff users to their appropriate routes
-          const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && !location.pathname.includes('/admin/') && !location.pathname.includes('/staff/');
-          
-          if (isOnTenantRequestRoute) {
-            const requestId = location.pathname.split('/requests/')[1];
-            if (adminResult.data) {
-              window.location.replace(`/admin/requests/${requestId}`);
-              return;
-            } else if (staffResult.data) {
-              window.location.replace(`/staff/requests/${requestId}`);
-              return;
-            }
-          }
-          
-          // Only redirect on home page for dashboard access
-          if (location.pathname === '/') {
-            if (adminResult.data) {
-              window.location.replace('/admin/dashboard');
-              return;
-            } else if (staffResult.data) {
-              window.location.replace('/staff/dashboard');
-              return;
-            }
-          }
-
           // Request notification permissions for staff/admin
           if (adminResult.data || staffResult.data) {
             requestNotificationPermission();
@@ -69,7 +44,39 @@ const AppLayout: React.FC = () => {
     };
 
     checkUserRole();
-  }, [user, requestNotificationPermission, location.pathname]);
+  }, [user, requestNotificationPermission]);
+
+  // Handle redirects separately to avoid infinite loops
+  useEffect(() => {
+    if (isLoading || !user) return;
+
+    // Redirect admin/staff users to their appropriate routes only for specific cases
+    const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
+                                  !location.pathname.includes('/admin/') && 
+                                  !location.pathname.includes('/staff/');
+    
+    if (isOnTenantRequestRoute && (isAdmin || isStaff)) {
+      const requestId = location.pathname.split('/requests/')[1];
+      if (isAdmin) {
+        window.location.replace(`/admin/requests/${requestId}`);
+        return;
+      } else if (isStaff) {
+        window.location.replace(`/staff/requests/${requestId}`);
+        return;
+      }
+    }
+    
+    // Only redirect to dashboard when first landing on home page
+    if (location.pathname === '/' && (isAdmin || isStaff)) {
+      if (isAdmin) {
+        window.location.replace('/admin/dashboard');
+        return;
+      } else if (isStaff) {
+        window.location.replace('/staff/dashboard');
+        return;
+      }
+    }
+  }, [location.pathname, isAdmin, isStaff, isLoading, user]);
 
   if (isLoading) {
     return (
