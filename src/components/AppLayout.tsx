@@ -30,16 +30,26 @@ const AppLayout: React.FC = () => {
           setIsAdmin(adminResult.data || false);
           setIsStaff(staffResult.data || false);
 
-          // Only redirect on home page or basic tenant routes, not when navigating within admin/staff contexts
-          const isOnBasicTenantRoute = location.pathname === '/' || 
-                                      (location.pathname.startsWith('/requests') && !location.pathname.includes('/admin/') && !location.pathname.includes('/staff/')) ||
-                                      (location.pathname.startsWith('/bookings') && !location.pathname.includes('/admin/') && !location.pathname.includes('/staff/'));
+          // Redirect admin/staff users to their appropriate routes
+          const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && !location.pathname.includes('/admin/') && !location.pathname.includes('/staff/');
           
-          if (isOnBasicTenantRoute && location.pathname !== '/auth') {
-            if (adminResult.data && location.pathname === '/') {
+          if (isOnTenantRequestRoute) {
+            const requestId = location.pathname.split('/requests/')[1];
+            if (adminResult.data) {
+              window.location.replace(`/admin/requests/${requestId}`);
+              return;
+            } else if (staffResult.data) {
+              window.location.replace(`/staff/requests/${requestId}`);
+              return;
+            }
+          }
+          
+          // Only redirect on home page for dashboard access
+          if (location.pathname === '/') {
+            if (adminResult.data) {
               window.location.replace('/admin/dashboard');
               return;
-            } else if (staffResult.data && location.pathname === '/') {
+            } else if (staffResult.data) {
               window.location.replace('/staff/dashboard');
               return;
             }
