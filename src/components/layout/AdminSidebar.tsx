@@ -1,0 +1,122 @@
+import React from 'react';
+import { 
+  BarChart3, 
+  Users, 
+  Settings, 
+  FileText, 
+  AlertTriangle,
+  Home,
+  Wrench,
+  ClipboardList,
+  TrendingUp
+} from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+
+const adminMenuItems = [
+  { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+  { title: "User Management", url: "/admin/users", icon: Users },
+  { title: "Requests", url: "/admin/requests", icon: ClipboardList },
+  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
+  { title: "Reports", url: "/admin/reports", icon: BarChart3 },
+  { title: "Content", url: "/admin/content", icon: FileText },
+];
+
+const staffMenuItems = [
+  { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+  { title: "Requests", url: "/staff/requests", icon: Wrench },
+  { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
+  { title: "Reports", url: "/staff/reports", icon: BarChart3 },
+  { title: "Settings", url: "/staff/settings", icon: Settings },
+];
+
+interface AdminSidebarProps {
+  userRole: 'admin' | 'staff';
+}
+
+export function AdminSidebar({ userRole }: AdminSidebarProps) {
+  const { state } = useSidebar();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const menuItems = userRole === 'admin' ? adminMenuItems : staffMenuItems;
+  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
+  const isCollapsed = state === 'collapsed';
+
+  const getNavClass = (path: string) => {
+    const active = isActive(path);
+    return `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+      active 
+        ? 'bg-primary text-primary-foreground font-medium' 
+        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+    }`;
+  };
+
+  return (
+    <Sidebar className="border-r border-border" collapsible="icon">
+      <SidebarContent className="bg-card">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            {!isCollapsed && (
+              <>
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">SP</span>
+                </div>
+                <div>
+                  <h2 className="font-semibold text-foreground">SS Plaza</h2>
+                  <p className="text-xs text-muted-foreground capitalize">{userRole} Panel</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className={isCollapsed ? 'sr-only' : ''}>
+            {userRole === 'admin' ? 'Administration' : 'Staff Tools'}
+          </SidebarGroupLabel>
+          
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild className="w-full">
+                    <NavLink to={item.url} className={getNavClass(item.url)}>
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {!isCollapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Quick Actions */}
+        {!isCollapsed && (
+          <div className="mt-auto p-4 border-t border-border">
+            <div className="space-y-2">
+              <NavLink 
+                to="/" 
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Home className="h-4 w-4" />
+                Back to Home
+              </NavLink>
+            </div>
+          </div>
+        )}
+      </SidebarContent>
+    </Sidebar>
+  );
+}

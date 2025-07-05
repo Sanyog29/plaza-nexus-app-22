@@ -1,18 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import BottomNavigation from './BottomNavigation';
 import Header from './Header';
 import { useAuth } from './AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
-import AdminNavigation from './AdminNavigation';
-import StaffNavigation from './StaffNavigation';
+import { ResponsiveLayout } from './layout/ResponsiveLayout';
+import { HelpSystem } from './help/HelpSystem';
+import ErrorBoundary from './common/ErrorBoundary';
+import { usePWA } from '@/hooks/usePWA';
 
 const AppLayout: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isStaff, setIsStaff] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { requestNotificationPermission } = usePWA();
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -25,6 +29,11 @@ const AppLayout: React.FC = () => {
           
           setIsAdmin(adminResult.data || false);
           setIsStaff(staffResult.data || false);
+
+          // Request notification permissions for staff/admin
+          if (adminResult.data || staffResult.data) {
+            requestNotificationPermission();
+          }
         } catch (error) {
           console.error('Error checking user role:', error);
           setIsAdmin(false);
@@ -35,7 +44,7 @@ const AppLayout: React.FC = () => {
     };
 
     checkUserRole();
-  }, [user]);
+  }, [user, requestNotificationPermission]);
 
   if (isLoading) {
     return (
@@ -45,14 +54,31 @@ const AppLayout: React.FC = () => {
     );
   }
 
+  // Use responsive layout for admin/staff areas
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isStaffRoute = location.pathname.startsWith('/staff');
+  
+  if ((isAdminRoute && isAdmin) || (isStaffRoute && isStaff)) {
+    return (
+      <ErrorBoundary>
+        <ResponsiveLayout userRole={isAdmin ? 'admin' : 'staff'} />
+        <HelpSystem />
+      </ErrorBoundary>
+    );
+  }
+
+  // Default layout for regular users
   return (
-    <div className="flex flex-col min-h-screen bg-plaza-dark">
-      <Header />
-      <main className="flex-1 pb-16">
-        <Outlet />
-      </main>
-      {isAdmin ? <AdminNavigation /> : isStaff ? <StaffNavigation /> : <BottomNavigation />}
-    </div>
+    <ErrorBoundary>
+      <div className="flex flex-col min-h-screen bg-plaza-dark">
+        <Header />
+        <main className="flex-1 pb-16">
+          <Outlet />
+        </main>
+        <BottomNavigation />
+        <HelpSystem />
+      </div>
+    </ErrorBoundary>
   );
 };
 
