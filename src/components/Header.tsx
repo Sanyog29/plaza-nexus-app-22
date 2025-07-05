@@ -2,6 +2,7 @@
 import React from 'react';
 import { Bell, Book } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import NotificationCenter from './notifications/NotificationCenter';
 
 const Header: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const Header: React.FC = () => {
             <Book className="h-5 w-5" />
             <span className="hidden sm:inline">Manual</span>
           </Link>
+          <NotificationCenter />
           <Link to="/alerts" className="relative">
             <Bell className="h-5 w-5 text-white" />
             <span className="absolute -top-1 -right-1 bg-plaza-blue text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">

@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { useEmailService } from '@/hooks/useEmailService';
 
 interface ServiceBookingModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ interface ServiceBookingModalProps {
 
 const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClose, service }) => {
   const { user } = useAuth();
+  const { sendBookingConfirmation } = useEmailService();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState("");
@@ -35,23 +37,51 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('service_bookings')
         .insert({
           user_id: user.id,
           service_item_id: service.id,
           booking_date: format(date, 'yyyy-MM-dd'),
           booking_time: time,
-          status: 'pending',
+          status: 'confirmed',
           notes: notes || null,
           total_amount: service.price || 0
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
+      // Send confirmation email
+      const userProfile = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+
+      if (user.email) {
+        await sendBookingConfirmation(user.email, {
+          service_name: service.name,
+          booking_date: format(date, 'yyyy-MM-dd'),
+          booking_time: time,
+          status: 'confirmed',
+          notes
+        });
+      }
+
+      // Create notification
+      await supabase.rpc('create_notification', {
+        target_user_id: user.id,
+        notification_title: 'Booking Confirmed',
+        notification_message: `Your ${service.name} booking for ${format(date, 'PPP')} at ${time} has been confirmed`,
+        notification_type: 'success',
+        action_url: '/bookings'
+      });
+
       toast({
-        title: "Booking Confirmed",
-        description: `Your booking for ${service.title || service.name} on ${format(date, 'PPP')} at ${time} has been confirmed.`,
+        title: "Booking Confirmed!",
+        description: `Your booking for ${service.name} on ${format(date, 'PPP')} at ${time} has been confirmed. Check your email for details.`,
       });
       
       // Reset form

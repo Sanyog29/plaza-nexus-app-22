@@ -11,6 +11,9 @@ import { useAuth } from '@/components/AuthProvider';
 import { Search, Filter, Clock, AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { useRealtimeRequests } from '@/hooks/useRealtimeUpdates';
+import { LoadingState } from '@/components/ui/loading-state';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface MaintenanceRequest {
   id: string;
@@ -35,6 +38,22 @@ const StaffRequestsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('all');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    loading: boolean;
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+    loading: false
+  });
+
+  // Enable real-time updates
+  useRealtimeRequests();
 
   useEffect(() => {
     fetchRequests();
@@ -110,30 +129,62 @@ const StaffRequestsPage = () => {
   };
 
   const updateRequestStatus = async (requestId: string, newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
-    try {
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .update({ 
-          status: newStatus,
-          assigned_to: newStatus === 'in_progress' ? user?.id : null
-        })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Request updated",
-        description: `Request status changed to ${newStatus.replace('_', ' ')}`,
+    const request = requests.find(r => r.id === requestId);
+    const actionText = newStatus === 'in_progress' ? 'start work on' : 'mark as completed';
+    
+    const openDialog = () => {
+      setConfirmDialog({
+        open: true,
+        title: `${newStatus === 'in_progress' ? 'Start Work' : 'Complete Request'}`,
+        description: `Are you sure you want to ${actionText} "${request?.title}"?`,
+        onConfirm: () => executeStatusUpdate(requestId, newStatus),
+        loading: false
       });
+    };
 
-      fetchRequests();
-    } catch (error: any) {
-      toast({
-        title: "Error updating request",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    const executeStatusUpdate = async (requestId: string, newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
+      setConfirmDialog(prev => ({ ...prev, loading: true }));
+      
+      try {
+        const { error } = await supabase
+          .from('maintenance_requests')
+          .update({ 
+            status: newStatus,
+            assigned_to: newStatus === 'in_progress' ? user?.id : null
+          })
+          .eq('id', requestId);
+
+        if (error) throw error;
+
+        // Create notification for the reporter
+        if (request?.reported_by) {
+          await supabase.rpc('create_notification', {
+            target_user_id: request.reported_by,
+            notification_title: 'Request Status Updated',
+            notification_message: `Your request "${request.title}" is now ${newStatus.replace('_', ' ')}`,
+            notification_type: newStatus === 'completed' ? 'success' : 'info',
+            action_url: `/requests/${requestId}`
+          });
+        }
+
+        toast({
+          title: "Request updated successfully",
+          description: `Request status changed to ${newStatus.replace('_', ' ')}`,
+        });
+
+        setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
+        fetchRequests();
+      } catch (error: any) {
+        toast({
+          title: "Error updating request",
+          description: error.message,
+          variant: "destructive",
+        });
+        setConfirmDialog(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    openDialog();
   };
 
   const getPriorityColor = (priority: string) => {
@@ -162,8 +213,12 @@ const StaffRequestsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-plaza-blue"></div>
+      <div className="container mx-auto px-4 py-8 pb-20">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white mb-2">Maintenance Requests</h1>
+          <p className="text-gray-400">Manage and track maintenance requests</p>
+        </div>
+        <LoadingState type="card" count={5} />
       </div>
     );
   }
@@ -311,6 +366,15 @@ const StaffRequestsPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <ConfirmationDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        loading={confirmDialog.loading}
+      />
     </div>
   );
 };

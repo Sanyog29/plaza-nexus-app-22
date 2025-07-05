@@ -412,6 +412,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -994,6 +1027,16 @@ export type Database = {
       calculate_daily_metrics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      create_notification: {
+        Args: {
+          target_user_id: string
+          notification_title: string
+          notification_message: string
+          notification_type?: string
+          action_url?: string
+        }
+        Returns: string
       }
       get_user_management_data: {
         Args: Record<PropertyKey, never> | { caller_id: string }
