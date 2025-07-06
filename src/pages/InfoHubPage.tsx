@@ -3,56 +3,113 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Building, Map, User, HardDrive, Download } from 'lucide-react';
+import { Building, Map, User, HardDrive, Download, Phone, Mail } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Sample floor plans and emergency maps
-const floorPlans = [
-  { id: 'floor-1', name: 'Ground Floor', type: 'floor-plan', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-03-15' },
-  { id: 'floor-2', name: '1st Floor', type: 'floor-plan', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-03-15' },
-  { id: 'floor-3', name: '2nd Floor', type: 'floor-plan', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-03-15' },
-  { id: 'floor-4', name: '3rd Floor', type: 'floor-plan', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-03-15' },
-];
+interface InfoCategory {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  display_order: number;
+}
 
-const emergencyMaps = [
-  { id: 'emerg-1', name: 'Fire Evacuation Route - Ground Floor', type: 'evacuation-map', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-02-10' },
-  { id: 'emerg-2', name: 'Fire Evacuation Route - 1st Floor', type: 'evacuation-map', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-02-10' },
-  { id: 'emerg-3', name: 'Emergency Assembly Points', type: 'evacuation-map', fileUrl: '#', image: '/placeholder.svg', updatedAt: '2025-02-10' },
-];
-
-// Sample contact information
-const contacts = [
-  { id: 'contact-1', name: 'John Smith', role: 'Building Manager', email: 'john.smith@ssplaza.com', phone: '+91-9876543210' },
-  { id: 'contact-2', name: 'Priya Patel', role: 'Security Manager', email: 'priya.patel@ssplaza.com', phone: '+91-9876543211' },
-  { id: 'contact-3', name: 'Ahmed Khan', role: 'Maintenance Head', email: 'ahmed.khan@ssplaza.com', phone: '+91-9876543212' },
-  { id: 'contact-4', name: 'Sarah Johnson', role: 'Admin Manager', email: 'sarah.johnson@ssplaza.com', phone: '+91-9876543213' },
-];
-
-// Sample resources
-const resources = [
-  { id: 'resource-1', name: 'Building User Manual', type: 'PDF', fileUrl: '#', size: '2.4 MB', updatedAt: '2025-01-15' },
-  { id: 'resource-2', name: 'Visitor Policy', type: 'PDF', fileUrl: '#', size: '1.2 MB', updatedAt: '2025-03-05' },
-  { id: 'resource-3', name: 'Emergency Procedures', type: 'PDF', fileUrl: '#', size: '3.5 MB', updatedAt: '2025-02-20' },
-  { id: 'resource-4', name: 'Maintenance Request Form', type: 'PDF', fileUrl: '#', size: '0.8 MB', updatedAt: '2025-03-10' },
-];
-
-// Sample guidelines
-const guidelines = [
-  { id: 'guide-1', title: 'Office Hours', content: 'Building operational hours are from 8:00 AM to 8:00 PM on weekdays, and 10:00 AM to 6:00 PM on weekends.' },
-  { id: 'guide-2', title: 'Visitor Registration', content: 'All visitors must register at the security desk in the main lobby. Visitors are required to show valid ID and must be accompanied by their host at all times.' },
-  { id: 'guide-3', title: 'Parking Policy', content: 'Parking is available on a first-come, first-served basis for tenants with valid parking permits. Visitor parking requires prior approval through the security office.' },
-  { id: 'guide-4', title: 'Maintenance Requests', content: 'Maintenance requests should be submitted through the SS Plaza mobile app or by contacting the maintenance department directly at maintenance@ssplaza.com.' },
-];
+interface InfoItem {
+  id: string;
+  category_id: string;
+  title: string;
+  description: string;
+  content: string;
+  file_url: string;
+  file_size: string;
+  file_type: string;
+  image_url: string;
+  contact_email: string;
+  contact_phone: string;
+  contact_role: string;
+  display_order: number;
+  updated_at: string;
+}
 
 const InfoHubPage = () => {
-  const [selectedFloorPlan, setSelectedFloorPlan] = useState<any>(null);
+  const [selectedFloorPlan, setSelectedFloorPlan] = useState<InfoItem | null>(null);
   
-  const handleDownload = (item: any) => {
-    // In a real app, this would trigger an actual download
-    console.log(`Downloading ${item.name}`);
-    // Mock download simulation
-    alert(`Downloading ${item.name}`);
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ['info-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('info_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      
+      if (error) throw error;
+      return data as InfoCategory[];
+    },
+  });
+
+  const { data: items = [], isLoading: itemsLoading } = useQuery({
+    queryKey: ['info-items'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('info_items')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      
+      if (error) throw error;
+      return data as InfoItem[];
+    },
+  });
+
+  const getItemsForCategory = (categoryName: string) => {
+    const category = categories.find(c => c.name === categoryName);
+    if (!category) return [];
+    return items.filter(item => item.category_id === category.id);
   };
+
+  const getCategoryIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'building':
+        return <Building className="h-4 w-4 mr-2" />;
+      case 'user':
+        return <User className="h-4 w-4 mr-2" />;
+      case 'hard-drive':
+        return <HardDrive className="h-4 w-4 mr-2" />;
+      case 'map':
+        return <Map className="h-4 w-4 mr-2" />;
+      default:
+        return <Building className="h-4 w-4 mr-2" />;
+    }
+  };
+  
+  const handleDownload = (item: InfoItem) => {
+    console.log(`Downloading ${item.title}`);
+    if (item.file_url && item.file_url !== '#') {
+      window.open(item.file_url, '_blank');
+    } else {
+      alert(`Downloading ${item.title} - File not available yet`);
+    }
+  };
+
+  if (categoriesLoading || itemsLoading) {
+    return (
+      <div className="px-4 py-6 space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Information Hub</h2>
+          <p className="text-sm text-gray-400 mt-1">Access building information and resources</p>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 space-y-6">
@@ -63,98 +120,61 @@ const InfoHubPage = () => {
 
       <Tabs defaultValue="floor-plans" className="w-full">
         <TabsList className="grid grid-cols-4 mb-6 bg-card/50">
-          <TabsTrigger value="floor-plans" className="data-[state=active]:bg-plaza-blue">
-            <Building className="h-4 w-4 mr-2" />
-            Floor Plans
-          </TabsTrigger>
-          <TabsTrigger value="contacts" className="data-[state=active]:bg-plaza-blue">
-            <User className="h-4 w-4 mr-2" />
-            Contacts
-          </TabsTrigger>
-          <TabsTrigger value="resources" className="data-[state=active]:bg-plaza-blue">
-            <HardDrive className="h-4 w-4 mr-2" />
-            Resources
-          </TabsTrigger>
-          <TabsTrigger value="guidelines" className="data-[state=active]:bg-plaza-blue">
-            <Map className="h-4 w-4 mr-2" />
-            Guidelines
-          </TabsTrigger>
+          {categories.map((category) => (
+            <TabsTrigger 
+              key={category.id} 
+              value={category.name} 
+              className="data-[state=active]:bg-plaza-blue"
+            >
+              {getCategoryIcon(category.icon)}
+              {category.name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="floor-plans">
+        <TabsContent value="floor_plans">
           <Card className="bg-card/50 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-white text-lg">Floor Plans & Emergency Maps</CardTitle>
               <CardDescription>Building layouts and evacuation routes</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-white">Floor Plans</h3>
-                  {floorPlans.map((plan) => (
-                    <div 
-                      key={plan.id} 
-                      className="flex items-center justify-between p-3 border border-border rounded-md hover:bg-card/80 cursor-pointer"
-                      onClick={() => setSelectedFloorPlan(plan)}
-                    >
-                      <div className="flex items-center">
-                        <Building className="h-5 w-5 text-plaza-blue mr-3" />
-                        <div>
-                          <p className="font-medium text-white">{plan.name}</p>
-                          <p className="text-xs text-gray-400">Updated: {plan.updatedAt}</p>
-                        </div>
+              <div className="space-y-4">
+                {getItemsForCategory('floor_plans').map((plan) => (
+                  <div 
+                    key={plan.id} 
+                    className="flex items-center justify-between p-3 border border-border rounded-md hover:bg-card/80 cursor-pointer"
+                    onClick={() => setSelectedFloorPlan(plan)}
+                  >
+                    <div className="flex items-center">
+                      <Building className="h-5 w-5 text-plaza-blue mr-3" />
+                      <div>
+                        <p className="font-medium text-white">{plan.title}</p>
+                        <p className="text-sm text-gray-400">{plan.description}</p>
+                        <p className="text-xs text-gray-500">Updated: {new Date(plan.updated_at).toLocaleDateString()}</p>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(plan);
-                        }}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
                     </div>
-                  ))}
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-white">Emergency Maps</h3>
-                  {emergencyMaps.map((map) => (
-                    <div 
-                      key={map.id} 
-                      className="flex items-center justify-between p-3 border border-border rounded-md hover:bg-card/80 cursor-pointer"
-                      onClick={() => setSelectedFloorPlan(map)}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(plan);
+                      }}
                     >
-                      <div className="flex items-center">
-                        <Map className="h-5 w-5 text-red-500 mr-3" />
-                        <div>
-                          <p className="font-medium text-white">{map.name}</p>
-                          <p className="text-xs text-gray-400">Updated: {map.updatedAt}</p>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(map);
-                        }}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
               
               {selectedFloorPlan && (
                 <div className="mt-6">
-                  <h3 className="font-semibold text-white mb-3">{selectedFloorPlan.name}</h3>
+                  <h3 className="font-semibold text-white mb-3">{selectedFloorPlan.title}</h3>
                   <div className="border border-border rounded-md overflow-hidden">
                     <img 
-                      src={selectedFloorPlan.image} 
-                      alt={selectedFloorPlan.name} 
+                      src={selectedFloorPlan.image_url || '/placeholder.svg'} 
+                      alt={selectedFloorPlan.title} 
                       className="w-full h-auto max-h-[400px] object-contain bg-black/20"
                     />
                   </div>
@@ -182,18 +202,33 @@ const InfoHubPage = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {contacts.map((contact) => (
+                {getItemsForCategory('contacts').map((contact) => (
                   <div key={contact.id} className="p-4 border border-border rounded-md">
                     <div className="flex items-start">
                       <div className="bg-card/60 p-2 rounded-full mr-3">
                         <User className="h-5 w-5 text-plaza-blue" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-white">{contact.name}</h4>
-                        <p className="text-sm text-gray-400">{contact.role}</p>
+                        <h4 className="font-medium text-white">{contact.title}</h4>
+                        <p className="text-sm text-gray-400">{contact.contact_role}</p>
+                        <p className="text-xs text-gray-500 mt-1">{contact.description}</p>
                         <div className="space-y-1 mt-2 text-sm">
-                          <p className="text-gray-400">Email: <a href={`mailto:${contact.email}`} className="text-plaza-blue">{contact.email}</a></p>
-                          <p className="text-gray-400">Phone: <a href={`tel:${contact.phone}`} className="text-plaza-blue">{contact.phone}</a></p>
+                          {contact.contact_email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-plaza-blue" />
+                              <a href={`mailto:${contact.contact_email}`} className="text-plaza-blue hover:underline">
+                                {contact.contact_email}
+                              </a>
+                            </div>
+                          )}
+                          {contact.contact_phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-plaza-blue" />
+                              <a href={`tel:${contact.contact_phone}`} className="text-plaza-blue hover:underline">
+                                {contact.contact_phone}
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -212,20 +247,25 @@ const InfoHubPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {resources.map((resource) => (
+                {getItemsForCategory('resources').map((resource) => (
                   <div key={resource.id} className="flex items-center justify-between p-4 border border-border rounded-md">
                     <div className="flex items-center">
                       <div className="bg-card/60 p-2 rounded-full mr-3">
                         <HardDrive className="h-5 w-5 text-plaza-blue" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-white">{resource.name}</h4>
+                        <h4 className="font-medium text-white">{resource.title}</h4>
+                        <p className="text-sm text-gray-400">{resource.description}</p>
                         <div className="flex items-center space-x-2 text-xs text-gray-400 mt-1">
-                          <span>{resource.type}</span>
+                          {resource.file_type && <span>{resource.file_type}</span>}
+                          {resource.file_size && (
+                            <>
+                              <span>•</span>
+                              <span>{resource.file_size}</span>
+                            </>
+                          )}
                           <span>•</span>
-                          <span>{resource.size}</span>
-                          <span>•</span>
-                          <span>Updated: {resource.updatedAt}</span>
+                          <span>Updated: {new Date(resource.updated_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -248,7 +288,7 @@ const InfoHubPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {guidelines.map((guide) => (
+                {getItemsForCategory('guidelines').map((guide) => (
                   <div key={guide.id} className="space-y-2">
                     <h3 className="font-semibold text-white">{guide.title}</h3>
                     <p className="text-gray-400">{guide.content}</p>

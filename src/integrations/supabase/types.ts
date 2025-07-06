@@ -250,6 +250,104 @@ export type Database = {
         }
         Relationships: []
       }
+      info_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      info_items: {
+        Row: {
+          category_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          contact_role: string | null
+          content: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          file_size: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_role?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          file_size?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_role?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          file_size?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "info_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "info_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_points: {
         Row: {
           id: string
