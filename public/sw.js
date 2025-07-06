@@ -1,145 +1,174 @@
-const CACHE_NAME = 'ss-plaza-v2';
-const OFFLINE_CACHE = 'ss-plaza-offline-v1';
+const CACHE_NAME = 'plaza-nexus-v2';
+const STATIC_CACHE = 'plaza-nexus-static-v2';
+const RUNTIME_CACHE = 'plaza-nexus-runtime-v2';
 
-const urlsToCache = [
+// Static assets to cache on install
+const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/auth',
-  // Add core fonts and assets
-  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap'
+  '/icon-192x192.png',
+  '/icon-512x512.png'
 ];
 
-const offlineUrls = [
-  '/auth',
-  '/'
+// Runtime caching patterns
+const RUNTIME_PATTERNS = [
+  /^https:\/\/fonts\.googleapis\.com/,
+  /^https:\/\/fonts\.gstatic\.com/,
+  /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+  /\.(?:js|css)$/
 ];
 
-// Install SW
+// Install event - cache static assets
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  console.log('Service Worker installing...');
   event.waitUntil(
-    Promise.all([
-      caches.open(CACHE_NAME).then((cache) => {
-        console.log('Opened main cache');
-        return cache.addAll(urlsToCache);
-      }),
-      caches.open(OFFLINE_CACHE).then((cache) => {
-        console.log('Opened offline cache');
-        return cache.addAll(offlineUrls);
-      })
-    ])
+    (async () => {
+      const cache = await caches.open(STATIC_CACHE);
+      await cache.addAll(STATIC_ASSETS);
+      await self.skipWaiting();
+    })()
   );
 });
 
-// Listen for requests
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activating...');
+  event.waitUntil(
+    (async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames
+          .filter(name => !name.includes('v2'))
+          .map(name => caches.delete(name))
+      );
+      await self.clients.claim();
+    })()
+  );
+});
+
+// Fetch event - serve from cache with network fallback
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip cross-origin requests and chrome-extension requests
+  if (url.origin !== location.origin && !url.origin.includes('supabase')) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached response if found
-        if (response) {
-          return response;
+    (async () => {
+      try {
+        // Try cache first for static assets
+        const cachedResponse = await caches.match(request);
+        
+        if (cachedResponse) {
+          // Return cached version and update in background for runtime cache
+          if (isRuntimeCacheable(request)) {
+            event.waitUntil(updateCache(request));
+          }
+          return cachedResponse;
         }
 
-        // Try to fetch from network
-        return fetch(event.request.clone())
-          .then((response) => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+        // Fetch from network
+        const networkResponse = await fetch(request);
+        
+        // Cache runtime assets
+        if (isRuntimeCacheable(request) && networkResponse.ok) {
+          event.waitUntil(
+            caches.open(RUNTIME_CACHE).then(cache => 
+              cache.put(request, networkResponse.clone())
+            )
+          );
+        }
 
-            // Cache successful responses
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch(() => {
-            // Return offline page for navigation requests
-            if (event.request.mode === 'navigate') {
-              return caches.match('/auth');
-            }
-            return new Response('Offline', { status: 503 });
-          });
-      })
+        return networkResponse;
+      } catch (error) {
+        console.log('Fetch failed:', error);
+        
+        // Return offline page for navigation requests
+        if (request.mode === 'navigate') {
+          return caches.match('/');
+        }
+        
+        throw error;
+      }
+    })()
   );
 });
 
-// Activate SW
-self.addEventListener('activate', (event) => {
-  self.clients.claim();
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== OFFLINE_CACHE) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
-
-// Background sync for offline requests
+// Background sync for offline actions
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'maintenance-request') {
-    event.waitUntil(
-      // Handle offline requests when back online
-      handleOfflineRequests()
-    );
+  if (event.tag === 'offline-sync') {
+    event.waitUntil(syncOfflineActions());
   }
 });
-
-async function handleOfflineRequests() {
-  // Implement offline request handling logic
-  console.log('Handling offline requests...');
-}
 
 // Push notifications
 self.addEventListener('push', (event) => {
   const options = {
-    body: event.data ? event.data.text() : 'New notification from SS Plaza',
+    body: event.data?.text() || 'You have a new notification',
     icon: '/icon-192x192.png',
     badge: '/badge-72x72.png',
-    tag: 'ss-plaza-notification',
-    renotify: true,
+    vibrate: [200, 100, 200],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: '1'
+    },
     actions: [
       {
-        action: 'view',
+        action: 'explore',
         title: 'View',
-        icon: '/action-view.png'
+        icon: '/icon-192x192.png'
       },
       {
-        action: 'dismiss',
-        title: 'Dismiss',
-        icon: '/action-dismiss.png'
+        action: 'close',
+        title: 'Close',
+        icon: '/icon-192x192.png'
       }
     ]
   };
 
   event.waitUntil(
-    self.registration.showNotification('SS Plaza', options)
+    self.registration.showNotification('Plaza Nexus', options)
   );
 });
 
-// Handle notification clicks
+// Notification click handling
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  if (event.action === 'view') {
+  if (event.action === 'explore') {
     event.waitUntil(
       clients.openWindow('/')
     );
   }
 });
+
+// Helper functions
+function isRuntimeCacheable(request) {
+  return RUNTIME_PATTERNS.some(pattern => pattern.test(request.url));
+}
+
+async function updateCache(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(RUNTIME_CACHE);
+      await cache.put(request, response);
+    }
+  } catch (error) {
+    console.log('Cache update failed:', error);
+  }
+}
+
+async function syncOfflineActions() {
+  try {
+    console.log('Syncing offline actions...');
+    // This would integrate with your offline sync logic
+    // Send stored actions to server when back online
+  } catch (error) {
+    console.log('Offline sync failed:', error);
+    throw error;
+  }
+}

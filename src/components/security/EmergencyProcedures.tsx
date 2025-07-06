@@ -12,7 +12,7 @@ export const EmergencyProcedures: React.FC = () => {
   const [emergencyType, setEmergencyType] = useState<string>('');
   const [emergencyDetails, setEmergencyDetails] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const { isOnline, storeOfflineAction } = useOfflineCapability();
+  const { isOnline, addOfflineAction } = useOfflineCapability();
 
   const emergencyTypes = [
     { value: 'fire', label: 'Fire Emergency', icon: '🔥', color: 'bg-red-600' },

@@ -6,9 +6,12 @@ import Header from './Header';
 import { useAuth } from './AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { ResponsiveLayout } from './layout/ResponsiveLayout';
+import { MobileHeader } from './layout/MobileHeader';
+import { MobileBottomNav } from './layout/MobileBottomNav';
 import { HelpSystem } from './help/HelpSystem';
 import ErrorBoundary from './common/ErrorBoundary';
 import { usePWA } from '@/hooks/usePWA';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const AppLayout: React.FC = () => {
   const { user } = useAuth();
@@ -17,6 +20,7 @@ const AppLayout: React.FC = () => {
   const [isStaff, setIsStaff] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const { requestNotificationPermission } = usePWA();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -95,6 +99,22 @@ const AppLayout: React.FC = () => {
       <ErrorBoundary>
         <ResponsiveLayout userRole={isAdmin ? 'admin' : 'staff'} />
         <HelpSystem />
+      </ErrorBoundary>
+    );
+  }
+
+  // Mobile layout for regular users
+  if (isMobile) {
+    return (
+      <ErrorBoundary>
+        <div className="min-h-screen bg-plaza-dark pb-16">
+          <MobileHeader />
+          <main className="pt-4">
+            <Outlet />
+          </main>
+          <MobileBottomNav />
+          <HelpSystem />
+        </div>
       </ErrorBoundary>
     );
   }
