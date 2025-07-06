@@ -2095,6 +2095,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      check_sla_breaches: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_amc_alerts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2134,6 +2138,10 @@ export type Database = {
           confirmed_at: string
           last_sign_in_at: string
         }[]
+      }
+      get_user_permissions: {
+        Args: { user_id: string }
+        Returns: Json
       }
       is_admin: {
         Args: { uid: string }
