@@ -1,5 +1,14 @@
-import { useOfflineSync } from './useOfflineSync';
+import { useEnhancedOfflineMode } from './useEnhancedOfflineMode';
 
 export const useOfflineCapability = () => {
-  return useOfflineSync();
+  // For backward compatibility, delegate to enhanced offline mode
+  const enhanced = useEnhancedOfflineMode();
+  
+  return {
+    isOnline: enhanced.isOnline,
+    isSyncing: enhanced.isSyncing,
+    offlineActions: enhanced.offlineActions,
+    addOfflineAction: (type: string, data: any) => enhanced.addOfflineAction(type as any, data, 'medium'),
+    syncOfflineActions: enhanced.syncOfflineActions
+  };
 };

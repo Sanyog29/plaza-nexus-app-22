@@ -3,16 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Phone, Users, Shield, FileText, Siren } from 'lucide-react';
+import { AlertTriangle, Phone, Users, Shield, FileText, Siren, Mic, MicOff } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useOfflineCapability } from '@/hooks/useOfflineCapability';
+import { useEnhancedOfflineMode } from '@/hooks/useEnhancedOfflineMode';
+import { useVoiceToText } from '@/hooks/useVoiceToText';
+import { useCrossModuleIntegration } from '@/hooks/useCrossModuleIntegration';
 
 export const EmergencyProcedures: React.FC = () => {
   const [emergencyType, setEmergencyType] = useState<string>('');
   const [emergencyDetails, setEmergencyDetails] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const { isOnline, addOfflineAction } = useOfflineCapability();
+  const { isOnline, addOfflineAction, criticalMode, pendingCriticalActions } = useEnhancedOfflineMode();
+  const { processVisitorEvent } = useCrossModuleIntegration();
+  
+  // Voice-to-text integration
+  const {
+    isListening,
+    transcript,
+    finalTranscript,
+    isSupported: isVoiceSupported,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useVoiceToText({
+    continuous: true,
+    interimResults: true
+  });
 
   const emergencyTypes = [
     { value: 'fire', label: 'Fire Emergency', icon: '🔥', color: 'bg-red-600' },
@@ -67,16 +84,27 @@ export const EmergencyProcedures: React.FC = () => {
 
         toast.success('Emergency alert sent to all contacts');
       } else {
-        // Store for offline sync
+        // Store for offline sync with critical priority
         addOfflineAction('emergency_alert', {
           ...emergencyData,
           emergencyContacts: ['admin@plaza.com', 'security@plaza.com']
-        });
+        }, 'critical');
         toast.warning('Emergency alert queued - will send when online');
+      }
+
+      // Trigger cross-module integration for emergency response
+      if (emergencyType === 'fire' || emergencyType === 'evacuation') {
+        await processVisitorEvent('emergency', 'facility_emergency', {
+          type: emergencyType,
+          details: emergencyDetails,
+          facilityDamage: true,
+          location: 'Building Wide'
+        });
       }
 
       setEmergencyType('');
       setEmergencyDetails('');
+      resetTranscript();
 
     } catch (error) {
       console.error('Error sending emergency alert:', error);
@@ -159,12 +187,42 @@ export const EmergencyProcedures: React.FC = () => {
               ))}
             </div>
 
-            <Textarea
-              placeholder="Provide detailed information about the emergency..."
-              value={emergencyDetails}
-              onChange={(e) => setEmergencyDetails(e.target.value)}
-              className="bg-input border-border text-white min-h-[100px]"
-            />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Emergency Details</span>
+                {isVoiceSupported && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={isListening ? stopListening : startListening}
+                    className={`${isListening ? 'bg-red-500/20 border-red-500' : 'border-border'}`}
+                  >
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    {isListening ? 'Stop' : 'Voice'}
+                  </Button>
+                )}
+              </div>
+              <Textarea
+                placeholder="Provide detailed information about the emergency... (or use voice input)"
+                value={emergencyDetails || finalTranscript}
+                onChange={(e) => {
+                  setEmergencyDetails(e.target.value);
+                  if (finalTranscript) resetTranscript();
+                }}
+                className="bg-input border-border text-white min-h-[100px]"
+              />
+              {isListening && (
+                <div className="text-xs text-blue-400 animate-pulse">
+                  🎤 Listening... (automatically stops after 3 seconds of silence)
+                </div>
+              )}
+              {transcript && !emergencyDetails && (
+                <div className="text-xs text-gray-400">
+                  Voice input detected. Click "Voice" again to use this text or continue typing.
+                </div>
+              )}
+            </div>
 
             <Button
               onClick={handleEmergencyAlert}
@@ -204,13 +262,38 @@ export const EmergencyProcedures: React.FC = () => {
             </Button>
           </div>
 
-          {/* Connection Status */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">Status:</span>
-            <span className={`flex items-center gap-2 ${isOnline ? 'text-green-400' : 'text-yellow-400'}`}>
-              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-              {isOnline ? 'Online - Alerts will send immediately' : 'Offline - Alerts queued for sync'}
-            </span>
+          {/* Enhanced Connection Status */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-400">System Status:</span>
+              <span className={`flex items-center gap-2 ${
+                isOnline ? 'text-green-400' : criticalMode ? 'text-red-400' : 'text-yellow-400'
+              }`}>
+                <div className={`w-2 h-2 rounded-full ${
+                  isOnline ? 'bg-green-400' : criticalMode ? 'bg-red-400 animate-pulse' : 'bg-yellow-400'
+                }`}></div>
+                {isOnline 
+                  ? 'Online - Alerts will send immediately' 
+                  : criticalMode 
+                    ? 'Critical Mode - Extended offline period'
+                    : 'Offline - Alerts queued for sync'
+                }
+              </span>
+            </div>
+            
+            {pendingCriticalActions > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Pending Critical Actions:</span>
+                <span className="text-red-400 font-medium">{pendingCriticalActions}</span>
+              </div>
+            )}
+            
+            {isVoiceSupported && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-400">Voice Input:</span>
+                <span className="text-green-400">Available</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
