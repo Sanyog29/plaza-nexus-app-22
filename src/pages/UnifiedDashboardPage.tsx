@@ -3,9 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SLADashboard } from '@/components/sla/SLADashboard';
 import { UnifiedRequestsList } from '@/components/unified/UnifiedRequestsList';
+import { AdvancedAnalytics } from '@/components/analytics/AdvancedAnalytics';
+import { CostControlSystem } from '@/components/analytics/CostControlSystem';
+import { ExecutiveDashboard } from '@/components/analytics/ExecutiveDashboard';
 import { UnifiedRequest } from '@/hooks/useUnifiedRequests';
 import { useAuth } from '@/components/AuthProvider';
-import { BarChart3, Clock, Users, AlertCircle } from 'lucide-react';
+import { BarChart3, Clock, Users, AlertCircle, DollarSign, TrendingUp } from 'lucide-react';
 
 export default function UnifiedDashboardPage() {
   const { isStaff, isAdmin, userRole } = useAuth();
@@ -93,18 +96,28 @@ export default function UnifiedDashboardPage() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 bg-card/50">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-card/50">
             <TabsTrigger value="requests" className="data-[state=active]:bg-primary">
-              Service Requests
+              Requests
             </TabsTrigger>
             {isStaff && (
               <TabsTrigger value="sla" className="data-[state=active]:bg-primary">
-                SLA Monitoring
+                SLA
+              </TabsTrigger>
+            )}
+            {(isAdmin || userRole === 'ops_supervisor') && (
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-primary">
+                Analytics
+              </TabsTrigger>
+            )}
+            {(isAdmin || userRole === 'ops_supervisor') && (
+              <TabsTrigger value="costs" className="data-[state=active]:bg-primary">
+                Costs
               </TabsTrigger>
             )}
             {isAdmin && (
-              <TabsTrigger value="analytics" className="data-[state=active]:bg-primary">
-                Analytics
+              <TabsTrigger value="executive" className="data-[state=active]:bg-primary">
+                Executive
               </TabsTrigger>
             )}
           </TabsList>
@@ -122,27 +135,21 @@ export default function UnifiedDashboardPage() {
             </TabsContent>
           )}
 
-          {isAdmin && (
+          {(isAdmin || userRole === 'ops_supervisor') && (
             <TabsContent value="analytics" className="space-y-6">
-              <Card className="bg-card/50 backdrop-blur">
-                <CardHeader>
-                  <CardTitle className="text-white">Analytics Dashboard</CardTitle>
-                  <CardDescription>
-                    Advanced analytics and reporting tools
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-white mb-2">
-                      Advanced Analytics Coming Soon
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Comprehensive reporting and data visualization tools will be available in Phase 3
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <AdvancedAnalytics />
+            </TabsContent>
+          )}
+
+          {(isAdmin || userRole === 'ops_supervisor') && (
+            <TabsContent value="costs" className="space-y-6">
+              <CostControlSystem />
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="executive" className="space-y-6">
+              <ExecutiveDashboard />
             </TabsContent>
           )}
         </Tabs>

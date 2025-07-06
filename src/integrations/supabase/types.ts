@@ -2189,6 +2189,7 @@ export type Database = {
         | "field_staff"
         | "tenant_manager"
         | "vendor"
+        | "staff"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status: "pending" | "in_progress" | "completed" | "cancelled"
       utility_type:
@@ -2319,6 +2320,7 @@ export const Constants = {
         "field_staff",
         "tenant_manager",
         "vendor",
+        "staff",
       ],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: ["pending", "in_progress", "completed", "cancelled"],
