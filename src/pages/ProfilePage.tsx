@@ -258,27 +258,27 @@ const ProfilePage = () => {
               )}
 
               {/* Role-specific Actions */}
-              {(userRole === 'admin' || userRole === 'staff') && (
+              {(isAdmin || isStaff) && (
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">
                     {userRole === 'admin' ? 'Admin' : 'Staff'} Dashboard Access
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button 
-                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                      onClick={() => navigate(`/${userRole}/dashboard`)}
-                    >
-                      <span className="text-plaza-blue text-xl mb-1">📊</span>
-                      <span>Go to Dashboard</span>
-                    </Button>
-                    
-                    <Button 
-                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                      onClick={() => navigate(`/${userRole}/requests`)}
-                    >
-                      <span className="text-plaza-blue text-xl mb-1">📋</span>
-                      <span>Manage Requests</span>
-                    </Button>
+                     <Button 
+                       className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                       onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/staff/dashboard')}
+                     >
+                       <span className="text-plaza-blue text-xl mb-1">📊</span>
+                       <span>Go to Dashboard</span>
+                     </Button>
+                     
+                     <Button 
+                       className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                       onClick={() => navigate(isAdmin ? '/admin/requests' : '/staff/requests')}
+                     >
+                       <span className="text-plaza-blue text-xl mb-1">📋</span>
+                       <span>Manage Requests</span>
+                     </Button>
                   </div>
                 </Card>
               )}
