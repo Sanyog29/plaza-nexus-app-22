@@ -65,6 +65,7 @@ export const UtilityManagementSystem: React.FC = () => {
 
     const meterData = {
       ...newMeter,
+      utility_type: newMeter.utility_type as 'electricity' | 'water' | 'gas' | 'internet' | 'hvac' | 'waste_management',
       meter_status: 'active',
       monthly_budget: newMeter.monthly_budget ? parseFloat(newMeter.monthly_budget) : undefined
     };
