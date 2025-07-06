@@ -245,11 +245,12 @@ export const usePredictiveMaintenance = () => {
     }, {} as Record<string, any[]>);
 
     for (const [category, categoryRequests] of Object.entries(categories)) {
-      const recentCount = categoryRequests.filter(req => 
+      const requests = categoryRequests as any[];
+      const recentCount = requests.filter(req => 
         new Date(req.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       ).length;
       
-      const previousCount = categoryRequests.filter(req => {
+      const previousCount = requests.filter(req => {
         const date = new Date(req.created_at);
         const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const twoMonthsAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
