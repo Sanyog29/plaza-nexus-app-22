@@ -58,107 +58,61 @@ export const SelfServicePortal: React.FC = () => {
   }, []);
 
   const loadSelfHelpContent = async () => {
-    // Mock self-help articles - in real implementation, these would come from a knowledge base
-    const mockArticles: SelfHelpArticle[] = [
-      {
-        id: '1',
-        title: 'Fix a Flickering Light Bulb',
-        category: 'Electrical',
-        difficulty: 'easy',
-        estimatedTime: 5,
-        steps: [
-          'Turn off the light switch',
-          'Wait for the bulb to cool down (2-3 minutes)',
-          'Gently unscrew the bulb counterclockwise',
-          'Check if the bulb is loose in the socket',
-          'Screw the bulb back in firmly (but not too tight)',
-          'Turn the light switch back on'
-        ],
-        tools: ['None required'],
-        safety: ['Always turn off power first', 'Let bulb cool before handling'],
-        successRate: 85,
-        timesUsed: 247
-      },
-      {
-        id: '2',
-        title: 'Unclog a Slow Drain',
-        category: 'Plumbing',
-        difficulty: 'easy',
-        estimatedTime: 10,
-        steps: [
-          'Remove visible debris from drain opening',
-          'Pour hot water down the drain',
-          'Mix 1/2 cup baking soda with 1/2 cup vinegar',
-          'Pour mixture down drain and cover with drain plug',
-          'Wait 15 minutes',
-          'Flush with hot water',
-          'Test drain flow'
-        ],
-        tools: ['Baking soda', 'Vinegar', 'Hot water', 'Drain plug'],
-        safety: ['Avoid mixing chemicals', 'Use gloves when handling drain'],
-        successRate: 78,
-        timesUsed: 189
-      },
-      {
-        id: '3',
-        title: 'Reset a Tripped Circuit Breaker',
-        category: 'Electrical',
-        difficulty: 'medium',
-        estimatedTime: 3,
-        steps: [
-          'Locate your electrical panel/breaker box',
-          'Identify the tripped breaker (switch in middle position)',
-          'Turn the breaker fully OFF first',
-          'Then turn it fully ON',
-          'Check if power is restored',
-          'If it trips again, contact maintenance immediately'
-        ],
-        tools: ['Flashlight (if needed)'],
-        safety: ['Never touch breakers with wet hands', 'Do not force switches'],
-        successRate: 92,
-        timesUsed: 156
-      }
-    ];
+    try {
+      // Load real knowledge base articles from database
+      const { data: kbArticles, error } = await supabase
+        .from('knowledge_base_articles')
+        .select('*')
+        .eq('is_active', true)
+        .order('success_rate', { ascending: false });
 
-    const mockCommonIssues: CommonIssue[] = [
-      {
-        id: '1',
-        title: 'Air Conditioning Not Cooling',
-        description: 'Room temperature not decreasing despite AC running',
-        category: 'HVAC',
-        quickFix: 'Check and replace air filter if dirty, ensure vents are not blocked',
+      if (error) throw error;
+
+      // Transform database articles to component format
+      const transformedArticles: SelfHelpArticle[] = (kbArticles || []).map(article => ({
+        id: article.id,
+        title: article.title,
+        category: article.category,
+        difficulty: article.difficulty as 'easy' | 'medium' | 'hard',
+        estimatedTime: article.estimated_time_minutes,
+        steps: Array.isArray(article.steps) 
+          ? article.steps.map(step => String(step)).filter(step => step) 
+          : [],
+        tools: article.required_tools || [],
+        safety: article.safety_warnings || [],
+        successRate: Number(article.success_rate) || 0,
+        timesUsed: article.times_used || 0,
+        videoUrl: article.video_url || undefined,
+      }));
+
+      // Generate common issues from articles
+      const commonIssues: CommonIssue[] = transformedArticles.slice(0, 5).map(article => ({
+        id: article.id,
+        title: `${article.title} - Common Issue`,
+        description: `Common problems related to ${article.title.toLowerCase()}`,
+        category: article.category,
+        quickFix: article.steps.slice(0, 3).join(', '),
         preventionTips: [
-          'Replace filters monthly',
-          'Keep vents clear of furniture',
-          'Schedule regular maintenance'
+          'Regular maintenance checks',
+          'Follow safety guidelines',
+          'Report issues early'
         ],
         escalateIf: [
-          'No cold air after filter replacement',
-          'Strange noises from unit',
-          'Ice formation on unit'
+          'Problem persists after following guide',
+          'Safety concerns identified',
+          'Complex repairs needed'
         ]
-      },
-      {
-        id: '2',
-        title: 'WiFi Connection Issues',
-        description: 'Internet connectivity problems or slow speeds',
-        category: 'IT',
-        quickFix: 'Unplug router for 30 seconds, then plug back in. Restart device.',
-        preventionTips: [
-          'Keep router in open area',
-          'Update device drivers regularly',
-          'Avoid interference from other devices'
-        ],
-        escalateIf: [
-          'No improvement after router reset',
-          'Multiple devices affected',
-          'Complete signal loss'
-        ]
-      }
-    ];
+      }));
 
-    setArticles(mockArticles);
-    setCommonIssues(mockCommonIssues);
+      setArticles(transformedArticles);
+      setCommonIssues(commonIssues);
+    } catch (error) {
+      console.error('Error loading knowledge base:', error);
+      toast.error('Failed to load self-help content');
+      // Fallback to empty arrays
+      setArticles([]);
+      setCommonIssues([]);
+    }
   };
 
   const analyzeTroubleshooting = async (query: string) => {
@@ -237,33 +191,82 @@ export const SelfServicePortal: React.FC = () => {
     }
   };
 
-  const markStepComplete = () => {
+  const markStepComplete = async () => {
     if (selectedArticle && currentStep < selectedArticle.steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      // Track completion in database
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && selectedArticle) {
+          await supabase
+            .from('knowledge_base_usage')
+            .insert({
+              article_id: selectedArticle.id,
+              user_id: user.id,
+              completed_at: new Date().toISOString(),
+              success: true
+            });
+
+          // Update article usage count
+          await supabase
+            .from('knowledge_base_articles')
+            .update({ 
+              times_used: selectedArticle.timesUsed + 1,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', selectedArticle.id);
+        }
+      } catch (error) {
+        console.error('Error tracking completion:', error);
+      }
+
       toast.success('Congratulations! You\'ve completed all steps.');
-      // In real implementation, track completion and update success rates
+      setSelectedArticle(null);
+      setCurrentStep(0);
     }
   };
 
   const escalateToMaintenance = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Please sign in to escalate to maintenance');
+        return;
+      }
+
       // Create maintenance request
-      const { error } = await supabase
+      const { data: newRequest, error } = await supabase
         .from('maintenance_requests')
         .insert({
           title: `Self-service escalation: ${searchQuery}`,
           description: `User attempted self-resolution but needs professional assistance. Troubleshooting attempted: ${troubleshootingResult?.recommendedSteps.join(', ')}`,
-          location: 'To be specified',
+          location: 'To be specified by user',
           priority: 'medium',
-          reported_by: (await supabase.auth.getUser()).data.user?.id
-        });
+          reported_by: user.id
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Track escalation in knowledge base usage
+      if (selectedArticle) {
+        await supabase
+          .from('knowledge_base_usage')
+          .insert({
+            article_id: selectedArticle.id,
+            user_id: user.id,
+            success: false,
+            escalated_to_maintenance: true,
+            escalation_request_id: newRequest.id
+          });
+      }
 
       toast.success('Request escalated to maintenance team');
       setTroubleshootingResult(null);
       setSearchQuery('');
+      setSelectedArticle(null);
     } catch (error) {
       console.error('Error escalating to maintenance:', error);
       toast.error('Failed to escalate request');

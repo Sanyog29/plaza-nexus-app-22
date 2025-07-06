@@ -127,16 +127,35 @@ export const AITaskDistribution: React.FC<AITaskDistributionProps> = ({ onTaskAs
 
       const currentLoad = Math.min((activeRequests?.length || 0) * 25, 100);
 
-      // Mock skills and performance data (in a real system, this would come from training records and performance history)
-      const skills = generateSkillsForRole(profile.role);
-      const performance = await calculatePerformanceMetrics(profile.id);
+      // Get real skills from database
+      const { data: userSkills } = await supabase
+        .from('staff_skills')
+        .select('skill_name, proficiency_level')
+        .eq('user_id', profile.id);
+
+      const skills = userSkills?.map(skill => skill.skill_name) || generateSkillsForRole(profile.role);
+      
+      // Get real performance metrics
+      const performance = await calculateRealPerformanceMetrics(profile.id);
+
+      // Check current availability based on attendance
+      const { data: todayAttendance } = await supabase
+        .from('staff_attendance')
+        .select('*')
+        .eq('staff_id', profile.id)
+        .gte('check_in_time', new Date().toISOString().split('T')[0])
+        .is('check_out_time', null)
+        .limit(1);
+
+      const isOnShift = todayAttendance && todayAttendance.length > 0;
+      const availability = !isOnShift ? 'offline' : currentLoad > 80 ? 'busy' : 'available';
 
       processedStaff.push({
         id: profile.id,
         name: `${profile.first_name} ${profile.last_name}`.trim() || 'Unknown',
         role: profile.role,
         currentLoad,
-        availability: currentLoad > 80 ? 'busy' : currentLoad > 50 ? 'available' : 'available',
+        availability,
         skills,
         performance,
         location: profile.floor || 'Ground Floor',
@@ -155,21 +174,58 @@ export const AITaskDistribution: React.FC<AITaskDistributionProps> = ({ onTaskAs
     return skillSets[role as keyof typeof skillSets] || ['General Maintenance'];
   };
 
-  const calculatePerformanceMetrics = async (staffId: string) => {
-    // In a real implementation, this would analyze historical performance data
+  const calculateRealPerformanceMetrics = async (staffId: string) => {
+    try {
+      // Get the latest performance score
+      const { data: latestScore } = await supabase
+        .from('user_performance_scores')
+        .select('*')
+        .eq('user_id', staffId)
+        .order('metric_date', { ascending: false })
+        .limit(1);
+
+      if (latestScore && latestScore.length > 0) {
+        const score = latestScore[0];
+        return {
+          efficiency: Number(score.efficiency_score) || 85,
+          quality: Number(score.quality_score) || 90,
+          speed: Number(score.productivity_score) || 75,
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching performance metrics:', error);
+    }
+
+    // Fallback to calculating based on recent requests
     const { data: completedRequests } = await supabase
       .from('maintenance_requests')
       .select('*')
       .eq('assigned_to', staffId)
       .eq('status', 'completed')
-      .limit(10);
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .limit(20);
 
     const requestCount = completedRequests?.length || 0;
     
+    // Calculate SLA compliance
+    const slaCompliant = completedRequests?.filter(req => 
+      !req.sla_breach_at || new Date(req.completed_at) <= new Date(req.sla_breach_at)
+    ).length || 0;
+    
+    const slaRate = requestCount > 0 ? (slaCompliant / requestCount) * 100 : 100;
+    
+    // Calculate average completion time
+    const avgCompletionHours = requestCount > 0 
+      ? completedRequests.reduce((acc, req) => {
+          const hours = (new Date(req.completed_at).getTime() - new Date(req.created_at).getTime()) / (1000 * 60 * 60);
+          return acc + hours;
+        }, 0) / requestCount
+      : 24;
+    
     return {
-      efficiency: Math.min(100, 70 + requestCount * 3),
-      quality: Math.min(100, 75 + requestCount * 2.5),
-      speed: Math.min(100, 65 + requestCount * 3.5),
+      efficiency: Math.min(100, Math.max(50, slaRate)),
+      quality: Math.min(100, Math.max(60, 100 - (avgCompletionHours - 2) * 5)),
+      speed: Math.min(100, Math.max(50, 80 + requestCount * 2)),
     };
   };
 
