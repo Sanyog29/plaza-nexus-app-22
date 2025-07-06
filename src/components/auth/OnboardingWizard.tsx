@@ -16,7 +16,7 @@ interface OnboardingWizardProps {
 interface OnboardingData {
   firstName: string;
   lastName: string;
-  apartmentNumber: string;
+  officeNumber: string;
   phoneNumber: string;
   avatarUrl: string | null;
 }
@@ -28,7 +28,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
   const [data, setData] = useState<OnboardingData>({
     firstName: '',
     lastName: '',
-    apartmentNumber: '',
+    officeNumber: '',
     phoneNumber: '',
     avatarUrl: null,
   });
@@ -56,7 +56,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
       return data.firstName.trim() && data.lastName.trim();
     }
     if (currentStep === 2) {
-      return data.apartmentNumber.trim() && data.phoneNumber.trim();
+      return data.officeNumber.trim() && data.phoneNumber.trim();
     }
     return true;
   };
@@ -75,31 +75,31 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
 
       if (existingProfile) {
         // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            first_name: data.firstName,
-            last_name: data.lastName,
-            apartment_number: data.apartmentNumber,
-            phone_number: data.phoneNumber,
-            avatar_url: data.avatarUrl,
-          })
-          .eq('id', user.id);
+          const { error } = await supabase
+            .from('profiles')
+            .update({
+              first_name: data.firstName,
+              last_name: data.lastName,
+              office_number: data.officeNumber,
+              phone_number: data.phoneNumber,
+              avatar_url: data.avatarUrl,
+            })
+            .eq('id', user.id);
 
         if (error) throw error;
       } else {
         // Create new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            apartment_number: data.apartmentNumber,
-            phone_number: data.phoneNumber,
-            avatar_url: data.avatarUrl,
-            role: 'tenant',
-          });
+          const { error } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              first_name: data.firstName,
+              last_name: data.lastName,
+              office_number: data.officeNumber,
+              phone_number: data.phoneNumber,
+              avatar_url: data.avatarUrl,
+              role: 'tenant',
+            });
 
         if (error) throw error;
       }
@@ -171,12 +171,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="apartment" className="text-white">Apartment Number</Label>
+                <Label htmlFor="office" className="text-white">Office/Seat Number</Label>
                 <Input
-                  id="apartment"
-                  value={data.apartmentNumber}
-                  onChange={(e) => setData(prev => ({ ...prev, apartmentNumber: e.target.value }))}
-                  placeholder="A-1001"
+                  id="office"
+                  value={data.officeNumber}
+                  onChange={(e) => setData(prev => ({ ...prev, officeNumber: e.target.value }))}
+                  placeholder="Floor 3, Seat 12"
                   className="bg-input border-border"
                 />
               </div>
@@ -218,7 +218,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
                 Welcome, {data.firstName} {data.lastName}!
               </h4>
               <p className="text-sm text-muted-foreground">
-                Apartment {data.apartmentNumber} • {data.phoneNumber}
+                Office {data.officeNumber} • {data.phoneNumber}
               </p>
             </div>
           </div>
