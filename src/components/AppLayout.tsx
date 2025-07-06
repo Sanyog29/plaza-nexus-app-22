@@ -91,11 +91,8 @@ const AppLayout: React.FC = () => {
     );
   }
 
-  // Use responsive layout for admin/staff areas
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const isStaffRoute = location.pathname.startsWith('/staff');
-  
-  if ((isAdminRoute && isAdmin) || (isStaffRoute && isStaff)) {
+  // Prioritize user role - staff/admin always get sidebar layout
+  if (isAdmin || isStaff) {
     return (
       <ErrorBoundary>
         <ResponsiveLayout userRole={isAdmin ? 'admin' : 'staff'} />
@@ -104,7 +101,7 @@ const AppLayout: React.FC = () => {
     );
   }
 
-  // Mobile layout for regular users
+  // Mobile layout for tenant users
   if (isMobile) {
     return (
       <ErrorBoundary>
@@ -121,7 +118,7 @@ const AppLayout: React.FC = () => {
     );
   }
 
-  // Default layout for regular users
+  // Default layout for tenant users
   return (
     <ErrorBoundary>
       <div className="flex flex-col min-h-screen bg-plaza-dark">
