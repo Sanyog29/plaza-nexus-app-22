@@ -32,8 +32,8 @@ import StaffAlertsPage from "./pages/StaffAlertsPage";
 import StaffReportsPage from "./pages/StaffReportsPage";
 import StaffSettingsPage from "./pages/StaffSettingsPage";
 import UserManualPage from "./pages/UserManualPage";
-import StaffOperationsPage from "./pages/StaffOperationsPage";
 import SecurityGuardPage from "./pages/SecurityGuardPage";
+import StaffOperationsPage from "./pages/StaffOperationsPage";
 
 const queryClient = new QueryClient();
 
