@@ -202,6 +202,69 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_checklists: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          checklist_items: Json
+          checklist_type: string
+          completed_at: string | null
+          completion_status: string
+          created_at: string
+          id: string
+          notes: string | null
+          photo_urls: string[] | null
+          staff_id: string
+          updated_at: string
+          zone: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checklist_items?: Json
+          checklist_type: string
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_urls?: string[] | null
+          staff_id: string
+          updated_at?: string
+          zone: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checklist_items?: Json
+          checklist_type?: string
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_urls?: string[] | null
+          staff_id?: string
+          updated_at?: string
+          zone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_checklists_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_checklists_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           category: string
@@ -656,35 +719,44 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          department: string | null
           first_name: string | null
+          floor: string | null
           id: string
           last_name: string | null
           office_number: string | null
           phone_number: string | null
           role: string
           updated_at: string
+          zone: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          department?: string | null
           first_name?: string | null
+          floor?: string | null
           id: string
           last_name?: string | null
           office_number?: string | null
           phone_number?: string | null
           role?: string
           updated_at?: string
+          zone?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          department?: string | null
           first_name?: string | null
+          floor?: string | null
           id?: string
           last_name?: string | null
           office_number?: string | null
           phone_number?: string | null
           role?: string
           updated_at?: string
+          zone?: string | null
         }
         Relationships: []
       }
@@ -1083,6 +1155,50 @@ export type Database = {
           },
         ]
       }
+      staff_attendance: {
+        Row: {
+          check_in_time: string
+          check_out_time: string | null
+          created_at: string
+          id: string
+          location: string | null
+          metadata: Json | null
+          staff_id: string
+          updated_at: string
+          zone_qr_code: string
+        }
+        Insert: {
+          check_in_time?: string
+          check_out_time?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          staff_id: string
+          updated_at?: string
+          zone_qr_code: string
+        }
+        Update: {
+          check_in_time?: string
+          check_out_time?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          staff_id?: string
+          updated_at?: string
+          zone_qr_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_attendance_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_role_requests: {
         Row: {
           created_at: string
@@ -1360,6 +1476,39 @@ export type Database = {
           },
         ]
       }
+      zone_qr_codes: {
+        Row: {
+          created_at: string
+          floor: string
+          id: string
+          is_active: boolean
+          location_description: string | null
+          qr_code_data: string
+          updated_at: string
+          zone_name: string
+        }
+        Insert: {
+          created_at?: string
+          floor: string
+          id?: string
+          is_active?: boolean
+          location_description?: string | null
+          qr_code_data: string
+          updated_at?: string
+          zone_name: string
+        }
+        Update: {
+          created_at?: string
+          floor?: string
+          id?: string
+          is_active?: boolean
+          location_description?: string | null
+          qr_code_data?: string
+          updated_at?: string
+          zone_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1405,6 +1554,10 @@ export type Database = {
         Args: { uid: string }
         Returns: boolean
       }
+      is_ops_staff: {
+        Args: { uid: string }
+        Returns: boolean
+      }
       is_staff: {
         Args: { uid: string }
         Returns: boolean
@@ -1421,6 +1574,13 @@ export type Database = {
       }
     }
     Enums: {
+      app_role:
+        | "tenant"
+        | "staff"
+        | "admin"
+        | "ops_l1"
+        | "ops_l2"
+        | "hk_security"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status: "pending" | "in_progress" | "completed" | "cancelled"
     }
@@ -1538,6 +1698,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["tenant", "staff", "admin", "ops_l1", "ops_l2", "hk_security"],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: ["pending", "in_progress", "completed", "cancelled"],
     },

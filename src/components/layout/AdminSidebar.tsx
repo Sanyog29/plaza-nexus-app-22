@@ -35,6 +35,7 @@ const adminMenuItems = [
 
 const staffMenuItems = [
   { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+  { title: "Operations", url: "/staff/operations", icon: ClipboardList },
   { title: "Requests", url: "/staff/requests", icon: Wrench },
   { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
   { title: "Reports", url: "/staff/reports", icon: BarChart3 },
