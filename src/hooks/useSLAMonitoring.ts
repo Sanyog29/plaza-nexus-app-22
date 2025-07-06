@@ -20,13 +20,10 @@ interface SLABreach {
   escalation_reason: string;
   created_at: string;
   metadata: any;
-  maintenance_requests?: {
-    id: string;
-    title: string;
-    priority: string;
-    status: string;
-    sla_breach_at: string;
-  };
+  request_title: string;
+  request_priority: string;
+  request_status: string;
+  request_sla_breach_at: string;
 }
 
 export const useSLAMonitoring = () => {
@@ -57,10 +54,14 @@ export const useSLAMonitoring = () => {
         .gte('created_at', thirtyDaysAgo.toISOString());
 
       // Fetch escalation logs (SLA breaches) using raw SQL query
-      const { data: breachesData } = await supabase
+      const { data: breachesData, error: breachError } = await supabase
         .rpc('get_recent_sla_breaches', { 
           days_back: 30 
-        }) as { data: SLABreach[] | null };
+        });
+
+      if (breachError) {
+        console.error('Error fetching breaches:', breachError);
+      }
 
       if (totalRequestsData) {
         const totalRequests = totalRequestsData.length;
@@ -169,27 +170,18 @@ export const useSLAMonitoring = () => {
 
     fetchSLAMetrics();
 
-    // Listen for new escalation logs
-    const escalationChannel = supabase
+    // Listen for maintenance request changes instead of escalation logs
+    const requestChannel = supabase
       .channel('sla-monitoring')
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
-          table: 'escalation_logs'
+          table: 'maintenance_requests'
         },
-        (payload) => {
-          console.log('New SLA escalation:', payload);
-          fetchSLAMetrics(); // Refresh metrics
-          
-          // Show notification for new breach
-          if (payload.new.escalation_type === 'sla_breach') {
-            toast.error(`SLA Breach Alert! Request ${payload.new.request_id}`, {
-              description: `Penalty: $${payload.new.penalty_amount || 0}`,
-              duration: 10000,
-            });
-          }
+        () => {
+          fetchSLAMetrics(); // Refresh metrics on any request change
         }
       )
       .subscribe();
@@ -200,7 +192,7 @@ export const useSLAMonitoring = () => {
     }, 5 * 60 * 1000);
 
     return () => {
-      supabase.removeChannel(escalationChannel);
+      supabase.removeChannel(requestChannel);
       clearInterval(interval);
     };
   }, [user, isStaff]);

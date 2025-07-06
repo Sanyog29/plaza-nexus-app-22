@@ -9,7 +9,12 @@ interface AuthContextType {
   userRole: string | null;
   isAdmin: boolean;
   isStaff: boolean;
+  isOpsSupervisor: boolean;
+  isFieldStaff: boolean;
+  isTenantManager: boolean;
+  isVendor: boolean;
   isLoading: boolean;
+  permissions: Record<string, boolean>;
   signOut: () => Promise<void>;
 }
 
@@ -19,7 +24,12 @@ const AuthContext = createContext<AuthContextType>({
   userRole: null,
   isAdmin: false,
   isStaff: false,
+  isOpsSupervisor: false,
+  isFieldStaff: false,
+  isTenantManager: false,
+  isVendor: false,
   isLoading: true,
+  permissions: {},
   signOut: async () => {},
 });
 
@@ -37,7 +47,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
+  const [isOpsSupervisor, setIsOpsSupervisor] = useState(false);
+  const [isFieldStaff, setIsFieldStaff] = useState(false);
+  const [isTenantManager, setIsTenantManager] = useState(false);
+  const [isVendor, setIsVendor] = useState(false);
+  const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
+
+  const updateRoleStates = (role: string) => {
+    setUserRole(role);
+    setIsAdmin(role === 'admin');
+    setIsOpsSupervisor(role === 'ops_supervisor');
+    setIsFieldStaff(role === 'field_staff');
+    setIsTenantManager(role === 'tenant_manager');
+    setIsVendor(role === 'vendor');
+    setIsStaff(['admin', 'ops_supervisor', 'field_staff'].includes(role));
+
+    // Set permissions based on role
+    const rolePermissions = {
+      admin: {
+        can_manage_users: true,
+        can_view_all_requests: true,
+        can_assign_requests: true,
+        can_configure_sla: true,
+        can_view_analytics: true,
+        can_manage_vendors: true,
+      },
+      ops_supervisor: {
+        can_manage_users: false,
+        can_view_all_requests: true,
+        can_assign_requests: true,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+      },
+      field_staff: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+      },
+      tenant_manager: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+      },
+      vendor: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+      },
+    };
+
+    setPermissions(rolePermissions[role as keyof typeof rolePermissions] || {});
+  };
 
   const checkUserRole = async (userId: string) => {
     try {
@@ -48,16 +119,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
       
       if (profile) {
-        setUserRole(profile.role);
-        setIsAdmin(profile.role === 'admin');
-        setIsStaff(['admin', 'ops_supervisor', 'field_staff'].includes(profile.role));
+        updateRoleStates(profile.role);
       }
     } catch (error) {
       console.error('Error fetching user role:', error);
-      setUserRole('tenant_manager');
-      setIsAdmin(false);
-      setIsStaff(false);
+      updateRoleStates('tenant_manager');
     }
+  };
+
+  const resetRoleStates = () => {
+    setUserRole(null);
+    setIsAdmin(false);
+    setIsStaff(false);
+    setIsOpsSupervisor(false);
+    setIsFieldStaff(false);
+    setIsTenantManager(false);
+    setIsVendor(false);
+    setPermissions({});
   };
 
   useEffect(() => {
@@ -72,9 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast("Signed out", {
             description: "You have been signed out successfully.",
           });
-          setUserRole(null);
-          setIsAdmin(false);
-          setIsStaff(false);
+          resetRoleStates();
         }
         
         setSession(session);
@@ -116,7 +192,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, userRole, isAdmin, isStaff, isLoading, signOut }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      userRole, 
+      isAdmin, 
+      isStaff, 
+      isOpsSupervisor,
+      isFieldStaff,
+      isTenantManager,
+      isVendor,
+      permissions,
+      isLoading, 
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );

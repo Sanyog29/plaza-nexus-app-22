@@ -2125,6 +2125,22 @@ export type Database = {
         Args: { visitor_id: string }
         Returns: Json
       }
+      get_recent_sla_breaches: {
+        Args: { days_back?: number }
+        Returns: {
+          id: string
+          request_id: string
+          escalation_type: string
+          penalty_amount: number
+          escalation_reason: string
+          created_at: string
+          metadata: Json
+          request_title: string
+          request_priority: string
+          request_status: string
+          request_sla_breach_at: string
+        }[]
+      }
       get_user_management_data: {
         Args: Record<PropertyKey, never> | { caller_id: string }
         Returns: {
