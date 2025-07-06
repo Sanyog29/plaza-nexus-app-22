@@ -670,6 +670,127 @@ export type Database = {
           },
         ]
       }
+      knowledge_base_articles: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          difficulty: string
+          estimated_time_minutes: number
+          id: string
+          image_urls: string[] | null
+          is_active: boolean | null
+          required_tools: string[] | null
+          safety_warnings: string[] | null
+          steps: Json
+          success_rate: number | null
+          tags: string[] | null
+          times_used: number | null
+          title: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          difficulty: string
+          estimated_time_minutes?: number
+          id?: string
+          image_urls?: string[] | null
+          is_active?: boolean | null
+          required_tools?: string[] | null
+          safety_warnings?: string[] | null
+          steps?: Json
+          success_rate?: number | null
+          tags?: string[] | null
+          times_used?: number | null
+          title: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          difficulty?: string
+          estimated_time_minutes?: number
+          id?: string
+          image_urls?: string[] | null
+          is_active?: boolean | null
+          required_tools?: string[] | null
+          safety_warnings?: string[] | null
+          steps?: Json
+          success_rate?: number | null
+          tags?: string[] | null
+          times_used?: number | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      knowledge_base_usage: {
+        Row: {
+          article_id: string
+          completed_at: string | null
+          escalated_to_maintenance: boolean | null
+          escalation_request_id: string | null
+          feedback_rating: number | null
+          feedback_text: string | null
+          id: string
+          started_at: string | null
+          success: boolean | null
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          completed_at?: string | null
+          escalated_to_maintenance?: boolean | null
+          escalation_request_id?: string | null
+          feedback_rating?: number | null
+          feedback_text?: string | null
+          id?: string
+          started_at?: string | null
+          success?: boolean | null
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          completed_at?: string | null
+          escalated_to_maintenance?: boolean | null
+          escalation_request_id?: string | null
+          feedback_rating?: number | null
+          feedback_text?: string | null
+          id?: string
+          started_at?: string | null
+          success?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_base_usage_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_base_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_base_usage_escalation_request_id_fkey"
+            columns: ["escalation_request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_base_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_points: {
         Row: {
           id: string
@@ -1454,6 +1575,69 @@ export type Database = {
           },
         ]
       }
+      shift_change_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          original_shift_end: string
+          original_shift_start: string
+          reason: string
+          requested_by: string
+          requested_shift_end: string
+          requested_shift_start: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          original_shift_end: string
+          original_shift_start: string
+          reason: string
+          requested_by: string
+          requested_shift_end: string
+          requested_shift_start: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          original_shift_end?: string
+          original_shift_start?: string
+          reason?: string
+          requested_by?: string
+          requested_shift_end?: string
+          requested_shift_start?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_change_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_change_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       simple_task_categories: {
         Row: {
           created_at: string
@@ -1599,6 +1783,57 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_skills: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_used_at: string | null
+          proficiency_level: number
+          skill_name: string
+          updated_at: string | null
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          proficiency_level: number
+          skill_name: string
+          updated_at?: string | null
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          proficiency_level?: number
+          skill_name?: string
+          updated_at?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_skills_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_skills_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_assignments: {
         Row: {
           actual_completion: string | null
@@ -1672,6 +1907,65 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_performance_scores: {
+        Row: {
+          attendance_rate: number | null
+          avg_response_time_hours: number | null
+          created_at: string | null
+          customer_satisfaction_score: number | null
+          efficiency_score: number | null
+          id: string
+          metric_date: string
+          productivity_score: number | null
+          quality_score: number | null
+          reliability_score: number | null
+          sla_compliance_rate: number | null
+          total_tasks_completed: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attendance_rate?: number | null
+          avg_response_time_hours?: number | null
+          created_at?: string | null
+          customer_satisfaction_score?: number | null
+          efficiency_score?: number | null
+          id?: string
+          metric_date: string
+          productivity_score?: number | null
+          quality_score?: number | null
+          reliability_score?: number | null
+          sla_compliance_rate?: number | null
+          total_tasks_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attendance_rate?: number | null
+          avg_response_time_hours?: number | null
+          created_at?: string | null
+          customer_satisfaction_score?: number | null
+          efficiency_score?: number | null
+          id?: string
+          metric_date?: string
+          productivity_score?: number | null
+          quality_score?: number | null
+          reliability_score?: number | null
+          sla_compliance_rate?: number | null
+          total_tasks_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_performance_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2090,6 +2384,10 @@ export type Database = {
       calculate_daily_metrics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      calculate_user_performance_score: {
+        Args: { target_user_id: string; score_date?: string }
+        Returns: Json
       }
       calculate_utility_consumption: {
         Args: Record<PropertyKey, never>
