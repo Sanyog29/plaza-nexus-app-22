@@ -99,6 +99,33 @@ export type Database = {
           },
         ]
       }
+      analytics_summaries: {
+        Row: {
+          calculated_at: string
+          id: string
+          metric_category: string
+          metric_data: Json
+          summary_date: string
+          summary_type: string
+        }
+        Insert: {
+          calculated_at?: string
+          id?: string
+          metric_category: string
+          metric_data?: Json
+          summary_date: string
+          summary_type: string
+        }
+        Update: {
+          calculated_at?: string
+          id?: string
+          metric_category?: string
+          metric_data?: Json
+          summary_date?: string
+          summary_type?: string
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           amc_contract_number: string | null
@@ -217,6 +244,47 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_allocations: {
+        Row: {
+          allocated_amount: number
+          allocation_month: string
+          category: string
+          cost_center_id: string
+          created_at: string
+          id: string
+          spent_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          allocated_amount: number
+          allocation_month: string
+          category: string
+          cost_center_id: string
+          created_at?: string
+          id?: string
+          spent_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allocated_amount?: number
+          allocation_month?: string
+          category?: string
+          cost_center_id?: string
+          created_at?: string
+          id?: string
+          spent_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_allocations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
             referencedColumns: ["id"]
           },
         ]
@@ -345,6 +413,53 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      cost_centers: {
+        Row: {
+          budget_annual: number | null
+          budget_monthly: number | null
+          code: string
+          created_at: string
+          department: string | null
+          id: string
+          is_active: boolean
+          manager_id: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          budget_annual?: number | null
+          budget_monthly?: number | null
+          code: string
+          created_at?: string
+          department?: string | null
+          id?: string
+          is_active?: boolean
+          manager_id?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          budget_annual?: number | null
+          budget_monthly?: number | null
+          code?: string
+          created_at?: string
+          department?: string | null
+          id?: string
+          is_active?: boolean
+          manager_id?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_centers_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_checklists: {
         Row: {
@@ -1561,6 +1676,135 @@ export type Database = {
           },
         ]
       }
+      utility_meters: {
+        Row: {
+          contract_end_date: string | null
+          contract_number: string | null
+          contract_start_date: string | null
+          created_at: string
+          floor: string
+          id: string
+          installation_date: string | null
+          last_reading_date: string | null
+          last_reading_value: number | null
+          location: string
+          meter_number: string
+          meter_status: string
+          monthly_budget: number | null
+          notes: string | null
+          supplier_name: string | null
+          unit_of_measurement: string
+          updated_at: string
+          utility_type: Database["public"]["Enums"]["utility_type"]
+          zone: string | null
+        }
+        Insert: {
+          contract_end_date?: string | null
+          contract_number?: string | null
+          contract_start_date?: string | null
+          created_at?: string
+          floor: string
+          id?: string
+          installation_date?: string | null
+          last_reading_date?: string | null
+          last_reading_value?: number | null
+          location: string
+          meter_number: string
+          meter_status?: string
+          monthly_budget?: number | null
+          notes?: string | null
+          supplier_name?: string | null
+          unit_of_measurement: string
+          updated_at?: string
+          utility_type: Database["public"]["Enums"]["utility_type"]
+          zone?: string | null
+        }
+        Update: {
+          contract_end_date?: string | null
+          contract_number?: string | null
+          contract_start_date?: string | null
+          created_at?: string
+          floor?: string
+          id?: string
+          installation_date?: string | null
+          last_reading_date?: string | null
+          last_reading_value?: number | null
+          location?: string
+          meter_number?: string
+          meter_status?: string
+          monthly_budget?: number | null
+          notes?: string | null
+          supplier_name?: string | null
+          unit_of_measurement?: string
+          updated_at?: string
+          utility_type?: Database["public"]["Enums"]["utility_type"]
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      utility_readings: {
+        Row: {
+          consumption: number | null
+          cost_per_unit: number | null
+          created_at: string
+          id: string
+          meter_id: string
+          notes: string | null
+          photo_url: string | null
+          reading_date: string
+          reading_method: string | null
+          reading_value: number
+          recorded_by: string | null
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          consumption?: number | null
+          cost_per_unit?: number | null
+          created_at?: string
+          id?: string
+          meter_id: string
+          notes?: string | null
+          photo_url?: string | null
+          reading_date: string
+          reading_method?: string | null
+          reading_value: number
+          recorded_by?: string | null
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          consumption?: number | null
+          cost_per_unit?: number | null
+          created_at?: string
+          id?: string
+          meter_id?: string
+          notes?: string | null
+          photo_url?: string | null
+          reading_date?: string
+          reading_method?: string | null
+          reading_value?: number
+          recorded_by?: string | null
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "utility_readings_meter_id_fkey"
+            columns: ["meter_id"]
+            isOneToOne: false
+            referencedRelation: "utility_meters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "utility_readings_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitor_categories: {
         Row: {
           color: string | null
@@ -1847,6 +2091,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      calculate_utility_consumption: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_amc_alerts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1864,6 +2112,10 @@ export type Database = {
       end_security_shift: {
         Args: { handover_notes?: string }
         Returns: boolean
+      }
+      generate_analytics_summary: {
+        Args: { summary_date: string; summary_type: string }
+        Returns: undefined
       }
       generate_visitor_qr_data: {
         Args: { visitor_id: string }
@@ -1916,6 +2168,13 @@ export type Database = {
         | "hk_security"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status: "pending" | "in_progress" | "completed" | "cancelled"
+      utility_type:
+        | "electricity"
+        | "water"
+        | "gas"
+        | "internet"
+        | "hvac"
+        | "waste_management"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2034,6 +2293,14 @@ export const Constants = {
       app_role: ["tenant", "staff", "admin", "ops_l1", "ops_l2", "hk_security"],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: ["pending", "in_progress", "completed", "cancelled"],
+      utility_type: [
+        "electricity",
+        "water",
+        "gas",
+        "internet",
+        "hvac",
+        "waste_management",
+      ],
     },
   },
 } as const

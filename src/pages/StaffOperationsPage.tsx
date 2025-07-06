@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, CheckSquare, Wrench, ClipboardList } from 'lucide-react';
+import { Clock, CheckSquare, Wrench, ClipboardList, BarChart3, Zap } from 'lucide-react';
 import { StaffAttendanceSystem } from '@/components/operations/StaffAttendanceSystem';
 import { DailyChecklistSystem } from '@/components/operations/DailyChecklistSystem';
 import { AssetManagementSystem } from '@/components/operations/AssetManagementSystem';
 import { SimplifiedTaskSystem } from '@/components/operations/SimplifiedTaskSystem';
+import { UtilityManagementSystem } from '@/components/operations/UtilityManagementSystem';
+import { AnalyticsDashboard } from '@/components/operations/AnalyticsDashboard';
 
 const StaffOperationsPage: React.FC = () => {
   return (
@@ -25,7 +27,7 @@ const StaffOperationsPage: React.FC = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="attendance" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-card/50">
+          <TabsList className="grid w-full grid-cols-6 bg-card/50">
             <TabsTrigger value="attendance" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Attendance
@@ -41,6 +43,14 @@ const StaffOperationsPage: React.FC = () => {
             <TabsTrigger value="tasks" className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4" />
               Tasks
+            </TabsTrigger>
+            <TabsTrigger value="utilities" className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Utilities
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -58,6 +68,14 @@ const StaffOperationsPage: React.FC = () => {
 
           <TabsContent value="tasks">
             <SimplifiedTaskSystem />
+          </TabsContent>
+
+          <TabsContent value="utilities">
+            <UtilityManagementSystem />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
           </TabsContent>
         </Tabs>
       </div>
