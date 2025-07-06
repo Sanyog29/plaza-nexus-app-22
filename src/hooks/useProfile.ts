@@ -8,7 +8,7 @@ interface Profile {
   first_name: string | null;
   last_name: string | null;
   role: string;
-  apartment_number: string | null;
+  office_number: string | null;
   phone_number: string | null;
   avatar_url: string | null;
   created_at: string;
@@ -18,7 +18,7 @@ interface Profile {
 interface ProfileUpdateData {
   first_name?: string;
   last_name?: string;
-  apartment_number?: string;
+  office_number?: string;
   phone_number?: string;
   avatar_url?: string | null;
 }
@@ -106,7 +106,7 @@ export const useProfile = () => {
           id: user.id,
           first_name: profileData.first_name || '',
           last_name: profileData.last_name || '',
-          apartment_number: profileData.apartment_number || null,
+          office_number: profileData.office_number || null,
           phone_number: profileData.phone_number || null,
           avatar_url: profileData.avatar_url || null,
           role: 'tenant',
@@ -142,7 +142,7 @@ export const useProfile = () => {
     return !!(
       profile.first_name &&
       profile.last_name &&
-      profile.apartment_number &&
+      profile.office_number &&
       profile.phone_number
     );
   };
@@ -153,7 +153,7 @@ export const useProfile = () => {
     const fields = [
       profile.first_name,
       profile.last_name,
-      profile.apartment_number,
+      profile.office_number,
       profile.phone_number,
       profile.avatar_url,
     ];

@@ -35,9 +35,9 @@ const settingsFormSchema = z.object({
     .min(10, { message: "Please enter a valid phone number" })
     .max(20, { message: "Phone number must be less than 20 characters" })
     .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
-  apartmentNumber: z.string()
-    .min(1, { message: "Apartment number is required" })
-    .max(10, { message: "Apartment number must be less than 10 characters" })
+  officeNumber: z.string()
+    .min(1, { message: "Office number is required" })
+    .max(10, { message: "Office number must be less than 10 characters" })
     .transform((val) => DOMPurify.sanitize(val, { ALLOWED_TAGS: [] })),
   notifications: z.boolean().default(true),
 })
@@ -57,7 +57,7 @@ export function SettingsForm() {
         lastName: "",
         email: "",
         phone: "",
-        apartmentNumber: "",
+        officeNumber: "",
         notifications: true,
       };
 
@@ -72,7 +72,7 @@ export function SettingsForm() {
         lastName: profile?.last_name ?? "",
         email: user.email ?? "",
         phone: profile?.phone_number ?? "",
-        apartmentNumber: profile?.apartment_number ?? "",
+        officeNumber: profile?.office_number ?? "",
         notifications: true,
       };
     },
@@ -88,7 +88,7 @@ export function SettingsForm() {
           first_name: data.firstName,
           last_name: data.lastName,
           phone_number: data.phone,
-          apartment_number: data.apartmentNumber,
+          office_number: data.officeNumber,
         })
         .eq('id', user?.id);
 
@@ -177,12 +177,12 @@ export function SettingsForm() {
 
             <FormField
               control={form.control}
-              name="apartmentNumber"
+              name="officeNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Apartment Number</FormLabel>
+                  <FormLabel>Office Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="A123" {...field} />
+                    <Input placeholder="101, A-205" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

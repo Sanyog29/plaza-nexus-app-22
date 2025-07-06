@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
 
 interface VisitorFormProps {
   onClose: () => void;
@@ -26,8 +28,12 @@ const formSchema = z.object({
   visitorName: z.string().min(2, {
     message: "Visitor name must be at least 2 characters.",
   }),
+  company: z.string().optional(),
   purpose: z.string().min(2, {
     message: "Purpose must be at least 2 characters.",
+  }),
+  categoryId: z.string().min(1, {
+    message: "Please select a visitor category.",
   }),
   mobile: z.string().min(10, {
     message: "Mobile number must be valid.",
@@ -41,28 +47,106 @@ const formSchema = z.object({
   }),
   vehicleNumber: z.string().optional(),
   parkingRequired: z.boolean().default(false),
+  notes: z.string().optional(),
 });
 
 const VisitorForm: React.FC<VisitorFormProps> = ({ onClose, onVisitorAdded }) => {
+  const { user } = useAuth();
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       visitorName: "",
+      company: "",
       purpose: "",
+      categoryId: "",
       mobile: "",
       date: new Date(),
       time: "",
       duration: "",
       vehicleNumber: "",
       parkingRequired: false,
+      notes: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    toast("Visitor Added", {
-      description: `${values.visitorName} has been scheduled for ${format(values.date, 'PPP')} at ${values.time}.`,
-    });
-    onVisitorAdded();
+  // Fetch visitor categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from('visitor_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (data) {
+        setCategories(data);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Create visitor record
+      const { data: visitor, error: visitorError } = await supabase
+        .from('visitors')
+        .insert({
+          name: values.visitorName,
+          company: values.company || null,
+          visit_purpose: values.purpose,
+          category_id: values.categoryId,
+          contact_number: values.mobile,
+          visit_date: values.date.toISOString().split('T')[0],
+          entry_time: values.time,
+          host_id: user.id,
+          notes: values.notes || null,
+          approval_status: 'pending',
+          status: 'scheduled'
+        })
+        .select()
+        .single();
+
+      if (visitorError) throw visitorError;
+
+      // Create parking request if needed
+      if (values.parkingRequired && values.vehicleNumber && visitor) {
+        const { error: parkingError } = await supabase
+          .from('parking_requests')
+          .insert({
+            visitor_id: visitor.id,
+            user_id: user.id,
+            vehicle_number: values.vehicleNumber,
+            visit_date: values.date.toISOString().split('T')[0],
+            duration: values.duration,
+            approved: false
+          });
+
+        if (parkingError) {
+          console.error('Error creating parking request:', parkingError);
+          // Don't fail the whole operation for parking
+        }
+      }
+
+      toast.success("Visitor Registered", {
+        description: `${values.visitorName} has been scheduled for ${format(values.date, 'PPP')} at ${values.time}. Approval pending.`,
+      });
+      
+      onVisitorAdded();
+    } catch (error: any) {
+      console.error('Error registering visitor:', error);
+      toast.error("Error", {
+        description: "Failed to register visitor. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -91,6 +175,64 @@ const VisitorForm: React.FC<VisitorFormProps> = ({ onClose, onVisitorAdded }) =>
               
               <FormField
                 control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter company name" {...field} className="bg-background/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Visitor Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select visitor category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            {category.icon && <span>{category.icon}</span>}
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="purpose"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Purpose of Visit</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter purpose" {...field} className="bg-background/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="mobile"
                 render={({ field }) => (
                   <FormItem>
@@ -103,20 +245,6 @@ const VisitorForm: React.FC<VisitorFormProps> = ({ onClose, onVisitorAdded }) =>
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="purpose"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Purpose of Visit</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter purpose" {...field} className="bg-background/50" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
@@ -254,20 +382,36 @@ const VisitorForm: React.FC<VisitorFormProps> = ({ onClose, onVisitorAdded }) =>
               />
             )}
 
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Additional Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Any special requirements or notes" {...field} className="bg-background/50" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <DialogFooter>
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={onClose}
                 className="mt-2 sm:mt-0"
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit"
                 className="bg-plaza-blue hover:bg-blue-700"
+                disabled={isSubmitting}
               >
-                Register Visitor
+                {isSubmitting ? "Registering..." : "Register Visitor"}
               </Button>
             </DialogFooter>
           </form>

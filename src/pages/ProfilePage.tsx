@@ -134,9 +134,9 @@ const ProfilePage = () => {
                     <p className="text-gray-400 text-sm mt-1">{user.email}</p>
                     
                     <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
-                      {profile.apartment_number && (
+                      {profile.office_number && (
                         <div className="bg-gray-800 px-3 py-1 rounded-full">
-                          <span className="text-sm text-gray-300">Apt: {profile.apartment_number}</span>
+                          <span className="text-sm text-gray-300">Office: {profile.office_number}</span>
                         </div>
                       )}
                       {profile.phone_number && (
@@ -179,11 +179,11 @@ const ProfilePage = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-300">Apartment Number</span>
+                      <span className="text-gray-300">Office Number</span>
                       <span className={`px-2 py-1 rounded text-xs ${
-                        profile.apartment_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                        profile.office_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
                       }`}>
-                        {profile.apartment_number ? 'Complete' : 'Incomplete'}
+                        {profile.office_number ? 'Complete' : 'Incomplete'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

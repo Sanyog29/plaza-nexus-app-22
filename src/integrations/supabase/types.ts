@@ -556,34 +556,34 @@ export type Database = {
       }
       profiles: {
         Row: {
-          apartment_number: string | null
           avatar_url: string | null
           created_at: string
           first_name: string | null
           id: string
           last_name: string | null
+          office_number: string | null
           phone_number: string | null
           role: string
           updated_at: string
         }
         Insert: {
-          apartment_number?: string | null
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id: string
           last_name?: string | null
+          office_number?: string | null
           phone_number?: string | null
           role?: string
           updated_at?: string
         }
         Update: {
-          apartment_number?: string | null
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
           last_name?: string | null
+          office_number?: string | null
           phone_number?: string | null
           role?: string
           updated_at?: string
@@ -977,47 +977,118 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       visitors: {
         Row: {
+          access_level: string | null
+          approval_status: string | null
+          category_id: string | null
+          check_in_time: string | null
+          check_out_time: string | null
           company: string | null
           contact_number: string | null
           created_at: string
           entry_time: string | null
           exit_time: string | null
+          host_department: string | null
           host_id: string
           id: string
           name: string
+          notes: string | null
+          office_number: string | null
           status: string | null
+          updated_at: string | null
           visit_date: string
           visit_purpose: string
+          visitor_badge_number: string | null
         }
         Insert: {
+          access_level?: string | null
+          approval_status?: string | null
+          category_id?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
           company?: string | null
           contact_number?: string | null
           created_at?: string
           entry_time?: string | null
           exit_time?: string | null
+          host_department?: string | null
           host_id: string
           id?: string
           name: string
+          notes?: string | null
+          office_number?: string | null
           status?: string | null
+          updated_at?: string | null
           visit_date: string
           visit_purpose: string
+          visitor_badge_number?: string | null
         }
         Update: {
+          access_level?: string | null
+          approval_status?: string | null
+          category_id?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
           company?: string | null
           contact_number?: string | null
           created_at?: string
           entry_time?: string | null
           exit_time?: string | null
+          host_department?: string | null
           host_id?: string
           id?: string
           name?: string
+          notes?: string | null
+          office_number?: string | null
           status?: string | null
+          updated_at?: string | null
           visit_date?: string
           visit_purpose?: string
+          visitor_badge_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "visitors_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "visitor_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
