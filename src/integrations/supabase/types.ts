@@ -39,6 +39,150 @@ export type Database = {
         }
         Relationships: []
       }
+      amc_alerts: {
+        Row: {
+          alert_date: string
+          alert_type: string
+          asset_id: string
+          created_at: string
+          due_date: string
+          id: string
+          is_resolved: boolean
+          is_sent: boolean
+          notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          alert_date: string
+          alert_type: string
+          asset_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          is_resolved?: boolean
+          is_sent?: boolean
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alert_date?: string
+          alert_type?: string
+          asset_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          is_resolved?: boolean
+          is_sent?: boolean
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amc_alerts_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "amc_alerts_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets: {
+        Row: {
+          amc_contract_number: string | null
+          amc_cost: number | null
+          amc_end_date: string | null
+          amc_start_date: string | null
+          amc_vendor: string | null
+          asset_name: string
+          asset_type: string
+          brand: string | null
+          created_at: string
+          floor: string
+          id: string
+          installation_date: string | null
+          last_service_date: string | null
+          location: string
+          model_number: string | null
+          next_service_due: string | null
+          notes: string | null
+          photo_urls: string[] | null
+          purchase_date: string | null
+          serial_number: string | null
+          service_frequency_months: number | null
+          status: string
+          updated_at: string
+          warranty_expiry: string | null
+          zone: string | null
+        }
+        Insert: {
+          amc_contract_number?: string | null
+          amc_cost?: number | null
+          amc_end_date?: string | null
+          amc_start_date?: string | null
+          amc_vendor?: string | null
+          asset_name: string
+          asset_type: string
+          brand?: string | null
+          created_at?: string
+          floor: string
+          id?: string
+          installation_date?: string | null
+          last_service_date?: string | null
+          location: string
+          model_number?: string | null
+          next_service_due?: string | null
+          notes?: string | null
+          photo_urls?: string[] | null
+          purchase_date?: string | null
+          serial_number?: string | null
+          service_frequency_months?: number | null
+          status?: string
+          updated_at?: string
+          warranty_expiry?: string | null
+          zone?: string | null
+        }
+        Update: {
+          amc_contract_number?: string | null
+          amc_cost?: number | null
+          amc_end_date?: string | null
+          amc_start_date?: string | null
+          amc_vendor?: string | null
+          asset_name?: string
+          asset_type?: string
+          brand?: string | null
+          created_at?: string
+          floor?: string
+          id?: string
+          installation_date?: string | null
+          last_service_date?: string | null
+          location?: string
+          model_number?: string | null
+          next_service_due?: string | null
+          notes?: string | null
+          photo_urls?: string[] | null
+          purchase_date?: string | null
+          serial_number?: string | null
+          service_frequency_months?: number | null
+          status?: string
+          updated_at?: string
+          warranty_expiry?: string | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
       broadcasts: {
         Row: {
           content: string
@@ -1117,6 +1261,114 @@ export type Database = {
           },
         ]
       }
+      service_records: {
+        Row: {
+          actions_taken: string | null
+          asset_id: string
+          cost: number | null
+          created_at: string
+          id: string
+          invoice_number: string | null
+          invoice_url: string | null
+          issues_found: string | null
+          next_service_date: string | null
+          parts_replaced: string | null
+          performed_by: string | null
+          performed_by_user_id: string | null
+          service_date: string
+          service_description: string
+          service_rating: number | null
+          service_type: string
+          updated_at: string
+          warranty_extended_until: string | null
+        }
+        Insert: {
+          actions_taken?: string | null
+          asset_id: string
+          cost?: number | null
+          created_at?: string
+          id?: string
+          invoice_number?: string | null
+          invoice_url?: string | null
+          issues_found?: string | null
+          next_service_date?: string | null
+          parts_replaced?: string | null
+          performed_by?: string | null
+          performed_by_user_id?: string | null
+          service_date: string
+          service_description: string
+          service_rating?: number | null
+          service_type: string
+          updated_at?: string
+          warranty_extended_until?: string | null
+        }
+        Update: {
+          actions_taken?: string | null
+          asset_id?: string
+          cost?: number | null
+          created_at?: string
+          id?: string
+          invoice_number?: string | null
+          invoice_url?: string | null
+          issues_found?: string | null
+          next_service_date?: string | null
+          parts_replaced?: string | null
+          performed_by?: string | null
+          performed_by_user_id?: string | null
+          service_date?: string
+          service_description?: string
+          service_rating?: number | null
+          service_type?: string
+          updated_at?: string
+          warranty_extended_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_records_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_records_performed_by_user_id_fkey"
+            columns: ["performed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simple_task_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          estimated_time_minutes: number | null
+          id: string
+          is_active: boolean
+          name: string
+          required_skills: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          estimated_time_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          required_skills?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          estimated_time_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          required_skills?: string[] | null
+        }
+        Relationships: []
+      }
       sla_configs: {
         Row: {
           category_id: string
@@ -1231,6 +1483,83 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      task_assignments: {
+        Row: {
+          actual_completion: string | null
+          approval_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          assigned_by: string
+          assigned_to: string
+          assignment_notes: string | null
+          created_at: string
+          estimated_completion: string | null
+          id: string
+          request_id: string
+          supervisor_approval: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          actual_completion?: string | null
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_by: string
+          assigned_to: string
+          assignment_notes?: string | null
+          created_at?: string
+          estimated_completion?: string | null
+          id?: string
+          request_id: string
+          supervisor_approval?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          actual_completion?: string | null
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_by?: string
+          assigned_to?: string
+          assignment_notes?: string | null
+          created_at?: string
+          estimated_completion?: string | null
+          id?: string
+          request_id?: string
+          supervisor_approval?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignments_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       visitor_categories: {
         Row: {
@@ -1515,6 +1844,10 @@ export type Database = {
     }
     Functions: {
       calculate_daily_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_amc_alerts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
