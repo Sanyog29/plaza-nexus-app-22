@@ -15,7 +15,8 @@ import {
   Wrench,
   Shield,
   Activity,
-  GraduationCap
+  GraduationCap,
+  Brain
 } from 'lucide-react';
 import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
 import { toast } from '@/hooks/use-toast';
@@ -228,6 +229,26 @@ const StaffDashboardPage = () => {
             >
               <Users className="h-6 w-6 text-purple-400 mb-2" />
               <span className="text-sm">My Profile</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Advanced Features Access for Supervisors */}
+      <Card className="bg-card/50 backdrop-blur mb-8">
+        <CardHeader>
+          <CardTitle className="text-white">Advanced Tools & Intelligence</CardTitle>
+          <CardDescription>Access AI-powered facility management tools</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <Button 
+              onClick={() => navigate('/operational-excellence')}
+              className="h-24 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30"
+            >
+              <Brain className="h-8 w-8 text-primary mb-2" />
+              <span className="text-sm font-medium">Operational Excellence</span>
+              <span className="text-xs text-muted-foreground">AI Analytics & Intelligence</span>
             </Button>
           </div>
         </CardContent>

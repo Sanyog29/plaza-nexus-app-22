@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
 import { 
   Activity, 
   Database, 
@@ -25,10 +26,13 @@ import {
   Clock,
   TrendingUp,
   Server,
-  Shield
+  Shield,
+  Brain,
+  Zap
 } from 'lucide-react';
 
 const AdminDashboardPage = () => {
+  const navigate = useNavigate();
   const { isAdmin, isLoading } = useAdminDashboard();
   const { 
     metrics: perfMetrics, 
@@ -69,6 +73,77 @@ const AdminDashboardPage = () => {
           <RealTimeMetrics />
           <AdvancedAnalytics />
           <StaffWorkloadBalancer />
+
+          {/* Advanced Features Access */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-primary" />
+                  Operational Excellence
+                </CardTitle>
+                <CardDescription>
+                  AI-powered staff management, predictive analytics, and intelligent automation
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <TrendingUp className="h-4 w-4" />
+                    <span>Staff Performance Analytics</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Activity className="h-4 w-4" />
+                    <span>AI Task Distribution</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <GraduationCap className="h-4 w-4" />
+                    <span>Training & Forecasting</span>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/operational-excellence')}
+                    className="w-full mt-4"
+                  >
+                    Access Operational Excellence
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Zap className="h-6 w-6 text-secondary" />
+                  Advanced Features
+                </CardTitle>
+                <CardDescription>
+                  Next-generation automation, client experience, and advanced insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Server className="h-4 w-4" />
+                    <span>Smart Request Routing</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Shield className="h-4 w-4" />
+                    <span>Tenant Satisfaction Scoring</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Database className="h-4 w-4" />
+                    <span>Carbon Footprint Tracking</span>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/advanced-features')}
+                    className="w-full mt-4"
+                  >
+                    Access Advanced Features
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
           {/* Quick Status Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

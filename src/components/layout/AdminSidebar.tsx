@@ -11,7 +11,9 @@ import {
   TrendingUp,
   User,
   Activity,
-  GraduationCap
+  GraduationCap,
+  Brain,
+  Zap
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -33,6 +35,8 @@ const adminMenuItems = [
   { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
   { title: "Reports", url: "/admin/reports", icon: BarChart3 },
   { title: "Content", url: "/admin/content", icon: FileText },
+  { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
+  { title: "Advanced Features", url: "/advanced-features", icon: Zap },
 ];
 
 const staffMenuItems = [
@@ -44,6 +48,7 @@ const staffMenuItems = [
   { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
   { title: "Reports", url: "/staff/reports", icon: BarChart3 },
   { title: "Settings", url: "/staff/settings", icon: Settings },
+  { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
 ];
 
 interface AdminSidebarProps {

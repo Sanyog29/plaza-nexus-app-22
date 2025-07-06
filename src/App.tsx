@@ -36,6 +36,8 @@ import UserManualPage from "./pages/UserManualPage";
 import SecurityGuardPage from "./pages/SecurityGuardPage";
 import StaffOperationsPage from "./pages/StaffOperationsPage";
 import UnifiedDashboardPage from "./pages/UnifiedDashboardPage";
+import OperationalExcellencePage from "./pages/OperationalExcellencePage";
+import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +85,8 @@ const App = () => (
               <Route path="/staff/operations" element={<StaffOperationsPage />} />
               <Route path="/security-guard" element={<SecurityGuardPage />} />
               <Route path="/unified-dashboard" element={<UnifiedDashboardPage />} />
+              <Route path="/operational-excellence" element={<OperationalExcellencePage />} />
+              <Route path="/advanced-features" element={<AdvancedFeaturesPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
