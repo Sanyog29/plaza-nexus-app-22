@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -10,6 +10,17 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function usePWA() {
+  // Guard against SSR or when React is not available
+  if (typeof window === 'undefined' || !React) {
+    return {
+      isInstalled: false,
+      isInstallable: false,
+      installApp: () => {},
+      requestNotificationPermission: async () => false,
+      sendNotification: () => {}
+    };
+  }
+
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);

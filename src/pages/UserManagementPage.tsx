@@ -35,17 +35,90 @@ const UserManagementPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_user_management_data', {
-        caller_id: user?.id
-      });
+      // Use the correct function signature based on available functions
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          role,
+          created_at,
+          updated_at
+        `)
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      setUsers(data);
+
+      // Get auth users data separately
+      const userIds = data?.map(profile => profile.id) || [];
+      const authUsers = [];
+      
+      // For each user ID, get auth data (this is a simplified approach)
+      for (const userId of userIds.slice(0, 20)) { // Limit to avoid too many requests
+        try {
+          const { data: authData } = await supabase.auth.admin.getUserById(userId);
+          if (authData.user) {
+            authUsers.push({
+              id: authData.user.id,
+              email: authData.user.email || '',
+              confirmed_at: authData.user.confirmed_at,
+              last_sign_in_at: authData.user.last_sign_in_at,
+            });
+          }
+        } catch (authError) {
+          // Skip failed auth lookups
+          console.warn('Failed to get auth data for user:', userId);
+        }
+      }
+
+      // Combine profile and auth data
+      const combinedUsers = data?.map(profile => {
+        const authUser = authUsers.find(auth => auth.id === profile.id);
+        return {
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          role: profile.role,
+          created_at: profile.created_at,
+          email: authUser?.email || 'N/A',
+          confirmed_at: authUser?.confirmed_at || null,
+          last_sign_in_at: authUser?.last_sign_in_at || null,
+        };
+      }) || [];
+
+      setUsers(combinedUsers);
     } catch (error: any) {
-      toast({
-        title: "Error fetching users",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Error fetching users:', error);
+      
+      // Fallback: just get profiles without auth data
+      try {
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (profileError) throw profileError;
+
+        const fallbackUsers = profiles?.map(profile => ({
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          role: profile.role,
+          created_at: profile.created_at,
+          email: 'N/A',
+          confirmed_at: null,
+          last_sign_in_at: null,
+        })) || [];
+
+        setUsers(fallbackUsers);
+      } catch (fallbackError: any) {
+        toast({
+          title: "Error fetching users",
+          description: fallbackError.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -53,11 +126,20 @@ const UserManagementPage = () => {
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      const { error } = await supabase.rpc('update_user_role', {
-        user_id: userId,
-        new_role: newRole,
-        caller_id: user?.id,
-      });
+      // Validate role against allowed values
+      const allowedRoles = ['admin', 'ops_supervisor', 'field_staff', 'tenant_manager', 'vendor', 'staff'];
+      if (!allowedRoles.includes(newRole)) {
+        throw new Error('Invalid role selected');
+      }
+
+      // Direct update to profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          role: newRole as 'admin' | 'ops_supervisor' | 'field_staff' | 'tenant_manager' | 'vendor' | 'staff',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
       
       if (error) throw error;
       
@@ -81,10 +163,16 @@ const UserManagementPage = () => {
     // Check if user is admin first
     const checkAdmin = async () => {
       try {
-        const { data: isAdmin, error } = await supabase.rpc('is_admin', { uid: user?.id });
+        // Check user role directly from profiles table
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user?.id)
+          .single();
+        
         if (error) throw error;
         
-        if (!isAdmin) {
+        if (profile?.role !== 'admin') {
           toast({
             title: "Access Denied",
             description: "You don't have permission to view this page.",
@@ -105,7 +193,9 @@ const UserManagementPage = () => {
       }
     };
 
-    checkAdmin();
+    if (user) {
+      checkAdmin();
+    }
   }, [user, navigate]);
 
   if (isLoading) {
@@ -150,8 +240,11 @@ const UserManagementPage = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
+                        <SelectItem value="field_staff">Field Staff</SelectItem>
                         <SelectItem value="staff">Staff</SelectItem>
-                        <SelectItem value="tenant">Tenant</SelectItem>
+                        <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
+                        <SelectItem value="vendor">Vendor</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
