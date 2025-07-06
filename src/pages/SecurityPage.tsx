@@ -1,72 +1,27 @@
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, User, Users, Car, QrCode, UserCheck, HardDrive } from 'lucide-react';
+import { CalendarDays, Clock, User, Users, Car, QrCode, UserCheck, Building } from 'lucide-react';
 import VisitorForm from '@/components/security/VisitorForm';
 import VisitorQrModal from '@/components/security/VisitorQrModal';
 import ParkingRequestForm from '@/components/security/ParkingRequestForm';
 import { format } from 'date-fns';
-
-// Sample visitor data
-const visitors = [
-  {
-    id: 'visit-001',
-    name: 'Amit Kumar',
-    purpose: 'Meeting',
-    date: '2025-04-28T14:00:00',
-    duration: '2 hours',
-    status: 'upcoming',
-    vehicle: 'KA-01-AB-1234',
-  },
-  {
-    id: 'visit-002',
-    name: 'Priya Sharma',
-    purpose: 'Delivery',
-    date: '2025-04-27T11:30:00',
-    duration: '30 mins',
-    status: 'active',
-    vehicle: '',
-  },
-  {
-    id: 'visit-003',
-    name: 'Rajan Patel',
-    purpose: 'Maintenance',
-    date: '2025-04-26T09:00:00',
-    duration: '4 hours',
-    status: 'completed',
-    vehicle: 'MH-02-CD-5678',
-  },
-];
-
-// Sample access log data
-const accessLogs = [
-  { id: 'log-001', name: 'Amit Kumar', type: 'entry', timestamp: '2025-04-27T14:05:23', location: 'Main Entrance' },
-  { id: 'log-002', name: 'Priya Sharma', type: 'entry', timestamp: '2025-04-27T11:32:45', location: 'Service Entrance' },
-  { id: 'log-003', name: 'Staff Member', type: 'exit', timestamp: '2025-04-27T17:15:10', location: 'Parking Exit' },
-];
-
-// Sample parking requests
-const parkingRequests = [
-  { id: 'park-001', visitorName: 'Kavita Gupta', vehicle: 'DL-05-AB-4567', date: '2025-04-30T10:00:00', status: 'approved' },
-  { id: 'park-002', visitorName: 'Rahul Verma', vehicle: 'MH-01-XY-9876', date: '2025-04-29T14:30:00', status: 'pending' },
-];
+import { supabase } from '@/integrations/supabase/client';
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case 'upcoming':
-      return <Badge className="bg-blue-600">Upcoming</Badge>;
-    case 'active':
-      return <Badge className="bg-green-600">Active</Badge>;
-    case 'completed':
+    case 'scheduled':
+      return <Badge className="bg-blue-600">Scheduled</Badge>;
+    case 'checked_in':
+      return <Badge className="bg-green-600">Checked In</Badge>;
+    case 'checked_out':
       return <Badge variant="secondary">Completed</Badge>;
-    case 'approved':
-      return <Badge className="bg-green-600">Approved</Badge>;
     case 'pending':
       return <Badge className="bg-yellow-600">Pending</Badge>;
+    case 'approved':
+      return <Badge className="bg-green-600">Approved</Badge>;
     case 'rejected':
       return <Badge variant="destructive">Rejected</Badge>;
     default:
@@ -80,6 +35,43 @@ const SecurityPage = () => {
   const [showQrModal, setShowQrModal] = useState(false);
   const [showParkingForm, setShowParkingForm] = useState(false);
   const [activeTab, setActiveTab] = useState('visitors');
+  const [visitors, setVisitors] = useState<any[]>([]);
+  const [parkingRequests, setParkingRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch all data
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [visitorsResult, parkingResult] = await Promise.all([
+          supabase
+            .from('visitors')
+            .select(`
+              *,
+              visitor_categories (name, icon, color)
+            `)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('parking_requests')
+            .select(`
+              *,
+              visitors (name)
+            `)
+            .order('created_at', { ascending: false })
+        ]);
+
+        if (visitorsResult.data) setVisitors(visitorsResult.data);
+        if (parkingResult.data) setParkingRequests(parkingResult.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAddVisitor = () => {
     setShowVisitorForm(true);
@@ -87,7 +79,19 @@ const SecurityPage = () => {
 
   const handleVisitorAdded = () => {
     setShowVisitorForm(false);
-    // In a real app, we'd refresh the visitor list here
+    // Refresh visitor data
+    const fetchVisitors = async () => {
+      const { data } = await supabase
+        .from('visitors')
+        .select(`
+          *,
+          visitor_categories (name, icon, color)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (data) setVisitors(data);
+    };
+    fetchVisitors();
   };
 
   const handleViewQr = (visitor: any) => {
@@ -103,13 +107,13 @@ const SecurityPage = () => {
     <div className="px-4 py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-white">Security Access</h2>
-          <p className="text-sm text-gray-400 mt-1">Manage visitor access and security</p>
+          <h2 className="text-2xl font-bold text-white">Security & Visitors</h2>
+          <p className="text-sm text-gray-400 mt-1">Manage office visitors and parking access</p>
         </div>
         <div className="flex gap-2">
           {activeTab === 'visitors' && (
             <Button className="bg-plaza-blue hover:bg-blue-700" onClick={handleAddVisitor}>
-              Add Visitor
+              Register Visitor
             </Button>
           )}
           {activeTab === 'parking' && (
@@ -137,80 +141,90 @@ const SecurityPage = () => {
         </TabsList>
 
         <TabsContent value="visitors" className="space-y-4">
-          {visitors.map((visitor) => (
-            <Card key={visitor.id} className="bg-card/50 backdrop-blur">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start">
-                    <div className="bg-card/60 p-2 rounded-full mr-3">
-                      <User size={18} className="text-plaza-blue" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-white">{visitor.name}</h4>
-                        {getStatusBadge(visitor.status)}
-                      </div>
-                      <p className="text-sm text-gray-400">{visitor.purpose}</p>
-                      <div className="flex flex-col gap-1 text-xs text-gray-500">
-                        <div className="flex items-center">
-                          <CalendarDays size={12} className="mr-1" />
-                          <span>{format(new Date(visitor.date), 'PPP')}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock size={12} className="mr-1" />
-                          <span>{format(new Date(visitor.date), 'p')} ({visitor.duration})</span>
-                        </div>
-                        {visitor.vehicle && (
-                          <div className="flex items-center">
-                            <Car size={12} className="mr-1" />
-                            <span>{visitor.vehicle}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="flex items-center" 
-                    onClick={() => handleViewQr(visitor)}
-                    disabled={visitor.status === 'completed'}
-                  >
-                    <QrCode size={14} className="mr-1" />
-                    QR Code
-                  </Button>
-                </div>
+          {loading ? (
+            <div className="text-center text-gray-400">Loading visitors...</div>
+          ) : visitors.length === 0 ? (
+            <Card className="bg-card/50 backdrop-blur">
+              <CardContent className="p-8 text-center">
+                <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-400">No visitors registered yet</p>
+                <p className="text-sm text-gray-500 mt-1">Click "Register Visitor" to add the first visitor</p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            visitors.map((visitor) => (
+              <Card key={visitor.id} className="bg-card/50 backdrop-blur">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start">
+                      <div className="bg-card/60 p-2 rounded-full mr-3">
+                        <User size={18} className="text-plaza-blue" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-white">{visitor.name}</h4>
+                          {getStatusBadge(visitor.approval_status || visitor.status)}
+                        </div>
+                        {visitor.company && (
+                          <p className="text-sm text-plaza-blue">{visitor.company}</p>
+                        )}
+                        <p className="text-sm text-gray-400">{visitor.visit_purpose}</p>
+                        {visitor.visitor_categories && (
+                          <div className="flex items-center gap-1">
+                            {visitor.visitor_categories.icon && (
+                              <span className="text-xs">{visitor.visitor_categories.icon}</span>
+                            )}
+                            <span className="text-xs text-gray-500">{visitor.visitor_categories.name}</span>
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1 text-xs text-gray-500">
+                          <div className="flex items-center">
+                            <CalendarDays size={12} className="mr-1" />
+                            <span>{format(new Date(visitor.visit_date), 'PPP')}</span>
+                          </div>
+                          {visitor.entry_time && (
+                            <div className="flex items-center">
+                              <Clock size={12} className="mr-1" />
+                              <span>{visitor.entry_time}</span>
+                            </div>
+                          )}
+                          {visitor.contact_number && (
+                            <div className="flex items-center">
+                              <span>📞 {visitor.contact_number}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="flex items-center" 
+                      onClick={() => handleViewQr(visitor)}
+                      disabled={visitor.approval_status === 'rejected'}
+                    >
+                      <QrCode size={14} className="mr-1" />
+                      QR Code
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
 
         <TabsContent value="access-logs">
           <Card className="bg-card/50 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-white text-lg">Access History</CardTitle>
-              <CardDescription>Recent entry and exit records</CardDescription>
+              <CardDescription>Recent entry and exit records - Coming Soon</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {accessLogs.map(log => (
-                  <div key={log.id} className="flex items-center justify-between p-3 border-b border-border">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-full ${log.type === 'entry' ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
-                        <UserCheck size={16} className={log.type === 'entry' ? 'text-green-500' : 'text-red-500'} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">{log.name}</p>
-                        <p className="text-xs text-gray-400">{log.location}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">{format(new Date(log.timestamp), 'PPP')}</p>
-                      <p className="text-xs font-medium text-white">{format(new Date(log.timestamp), 'p')}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-center py-8 text-gray-400">
+                <UserCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Access logging system will be implemented soon</p>
+                <p className="text-sm mt-1">This will show real-time visitor check-ins and check-outs</p>
               </div>
             </CardContent>
           </Card>
@@ -220,28 +234,39 @@ const SecurityPage = () => {
           <Card className="bg-card/50 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-white text-lg">Parking Requests</CardTitle>
-              <CardDescription>Request visitor parking spaces</CardDescription>
+              <CardDescription>Visitor parking space requests</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {parkingRequests.map(request => (
-                  <div key={request.id} className="p-3 border border-border rounded-md">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium text-white">{request.visitorName}</p>
-                        <div className="flex items-center text-xs text-gray-400 mt-1">
-                          <Car size={12} className="mr-1" />
-                          <span>{request.vehicle}</span>
+              {loading ? (
+                <div className="text-center text-gray-400">Loading parking requests...</div>
+              ) : parkingRequests.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <Car className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No parking requests yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {parkingRequests.map(request => (
+                    <div key={request.id} className="p-3 border border-border rounded-md">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-white">
+                            {request.visitors?.name || 'Unknown Visitor'}
+                          </p>
+                          <div className="flex items-center text-xs text-gray-400 mt-1">
+                            <Car size={12} className="mr-1" />
+                            <span>{request.vehicle_number}</span>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {format(new Date(request.visit_date), 'PPP')} - {request.duration}
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {format(new Date(request.date), 'PPP')} at {format(new Date(request.date), 'p')}
-                        </p>
+                        <div>{getStatusBadge(request.approved ? 'approved' : 'pending')}</div>
                       </div>
-                      <div>{getStatusBadge(request.status)}</div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
