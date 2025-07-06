@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Clock, User, Users, Camera, QrCode, LogIn, LogOut, Timer, AlertCircle } from 'lucide-react';
+import { Clock, User, Users, Camera, QrCode, LogIn, LogOut, Timer, AlertCircle, Settings } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
@@ -11,8 +11,13 @@ import { QRScanner } from '@/components/security/QRScanner';
 import { PhotoCapture } from '@/components/security/PhotoCapture';
 import { ShiftManagement } from '@/components/security/ShiftManagement';
 import { VisitorCheckIn } from '@/components/security/VisitorCheckIn';
+import { EmergencyProcedures } from '@/components/security/EmergencyProcedures';
+import { BulkVisitorActions } from '@/components/security/BulkVisitorActions';
+import { MobileSecurityInterface } from '@/components/security/MobileSecurityInterface';
 import { useVisitorNotifications } from '@/hooks/useVisitorNotifications';
 import { useAutomatedAlerts } from '@/hooks/useAutomatedAlerts';
+import { useOfflineCapability } from '@/hooks/useOfflineCapability';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const SecurityGuardPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -21,9 +26,11 @@ const SecurityGuardPage = () => {
   const [checkedInVisitors, setCheckedInVisitors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Initialize notification systems
+  // Initialize notification systems and capabilities
   useVisitorNotifications();
   useAutomatedAlerts();
+  const { isOnline, offlineActions } = useOfflineCapability();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchData();
@@ -191,24 +198,44 @@ const SecurityGuardPage = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="dashboard" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 mb-6 bg-card/50">
+      {/* Mobile Interface */}
+      {isMobile && (
+        <MobileSecurityInterface
+          onTabChange={setActiveTab}
+          stats={stats}
+        />
+      )}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className={`grid ${isMobile ? 'grid-cols-3' : 'grid-cols-6'} mb-6 bg-card/50`}>
           <TabsTrigger value="dashboard" className="data-[state=active]:bg-plaza-blue">
-            <Users className="h-4 w-4 mr-2" />
-            Dashboard
+            <Users className="h-4 w-4 mr-1" />
+            {isMobile ? 'Home' : 'Dashboard'}
           </TabsTrigger>
           <TabsTrigger value="scanner" className="data-[state=active]:bg-plaza-blue">
-            <QrCode className="h-4 w-4 mr-2" />
-            QR Scanner
+            <QrCode className="h-4 w-4 mr-1" />
+            {isMobile ? 'QR' : 'QR Scanner'}
           </TabsTrigger>
           <TabsTrigger value="checkin" className="data-[state=active]:bg-plaza-blue">
-            <LogIn className="h-4 w-4 mr-2" />
-            Check-In
+            <LogIn className="h-4 w-4 mr-1" />
+            {isMobile ? 'Check' : 'Check-In'}
           </TabsTrigger>
-          <TabsTrigger value="camera" className="data-[state=active]:bg-plaza-blue">
-            <Camera className="h-4 w-4 mr-2" />
-            Camera
-          </TabsTrigger>
+          {!isMobile && (
+            <>
+              <TabsTrigger value="camera" className="data-[state=active]:bg-plaza-blue">
+                <Camera className="h-4 w-4 mr-1" />
+                Camera
+              </TabsTrigger>
+              <TabsTrigger value="emergency" className="data-[state=active]:bg-plaza-blue">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                Emergency
+              </TabsTrigger>
+              <TabsTrigger value="bulk" className="data-[state=active]:bg-plaza-blue">
+                <Settings className="h-4 w-4 mr-1" />
+                Bulk Actions
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-4">
@@ -292,7 +319,28 @@ const SecurityGuardPage = () => {
         <TabsContent value="camera">
           <PhotoCapture />
         </TabsContent>
+
+        <TabsContent value="emergency">
+          <EmergencyProcedures />
+        </TabsContent>
+
+        <TabsContent value="bulk">
+          <BulkVisitorActions />
+        </TabsContent>
       </Tabs>
+
+      {/* Connection Status Banner */}
+      {!isOnline && (
+        <div className="fixed bottom-4 left-4 right-4 z-50">
+          <Card className="bg-yellow-600/90 backdrop-blur border-yellow-500">
+            <CardContent className="p-3 flex items-center justify-between">
+              <span className="text-white text-sm">
+                Working offline - {offlineActions} actions queued
+              </span>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
