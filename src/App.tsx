@@ -32,6 +32,7 @@ import StaffAlertsPage from "./pages/StaffAlertsPage";
 import StaffReportsPage from "./pages/StaffReportsPage";
 import StaffSettingsPage from "./pages/StaffSettingsPage";
 import UserManualPage from "./pages/UserManualPage";
+import SecurityGuardPage from "./pages/SecurityGuardPage";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
               <Route path="/staff/reports" element={<StaffReportsPage />} />
               <Route path="/staff/settings" element={<StaffSettingsPage />} />
+              <Route path="/security-guard" element={<SecurityGuardPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

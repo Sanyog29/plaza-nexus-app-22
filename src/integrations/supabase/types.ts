@@ -880,6 +880,47 @@ export type Database = {
         }
         Relationships: []
       }
+      security_shifts: {
+        Row: {
+          created_at: string
+          guard_id: string
+          handover_notes: string | null
+          id: string
+          notes: string | null
+          shift_end: string | null
+          shift_start: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guard_id: string
+          handover_notes?: string | null
+          id?: string
+          notes?: string | null
+          shift_end?: string | null
+          shift_start?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guard_id?: string
+          handover_notes?: string | null
+          id?: string
+          notes?: string | null
+          shift_end?: string | null
+          shift_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_shifts_guard_id_fkey"
+            columns: ["guard_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_bookings: {
         Row: {
           booking_date: string
@@ -1108,6 +1149,99 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_check_logs: {
+        Row: {
+          action_type: string
+          id: string
+          location: string | null
+          metadata: Json | null
+          notes: string | null
+          performed_by: string | null
+          timestamp: string
+          visitor_id: string
+        }
+        Insert: {
+          action_type: string
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          performed_by?: string | null
+          timestamp?: string
+          visitor_id: string
+        }
+        Update: {
+          action_type?: string
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          performed_by?: string | null
+          timestamp?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_check_logs_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_check_logs_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visitor_photos: {
+        Row: {
+          captured_at: string
+          captured_by: string | null
+          id: string
+          metadata: Json | null
+          photo_type: string
+          photo_url: string
+          visitor_id: string
+        }
+        Insert: {
+          captured_at?: string
+          captured_by?: string | null
+          id?: string
+          metadata?: Json | null
+          photo_type: string
+          photo_url: string
+          visitor_id: string
+        }
+        Update: {
+          captured_at?: string
+          captured_by?: string | null
+          id?: string
+          metadata?: Json | null
+          photo_type?: string
+          photo_url?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_photos_captured_by_fkey"
+            columns: ["captured_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_photos_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitor_timers: {
         Row: {
           created_at: string
@@ -1245,6 +1379,10 @@ export type Database = {
         }
         Returns: string
       }
+      end_security_shift: {
+        Args: { handover_notes?: string }
+        Returns: boolean
+      }
       generate_visitor_qr_data: {
         Args: { visitor_id: string }
         Returns: Json
@@ -1270,6 +1408,10 @@ export type Database = {
       is_staff: {
         Args: { uid: string }
         Returns: boolean
+      }
+      start_security_shift: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       update_user_role: {
         Args:
