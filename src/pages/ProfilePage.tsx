@@ -13,47 +13,20 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 
 const ProfilePage = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isStaff, isAdmin, userRole, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { profile, isLoading, isProfileComplete, completionPercentage, updateProfile } = useProfile();
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [userRole, setUserRole] = useState<string>('tenant');
 
   useEffect(() => {
-    const checkUserRole = async () => {
-      if (user) {
-        try {
-          const [adminResult, staffResult] = await Promise.all([
-            supabase.rpc('is_admin', { uid: user.id }),
-            supabase.rpc('is_staff', { uid: user.id })
-          ]);
-          
-          if (adminResult.data) {
-            setUserRole('admin');
-          } else if (staffResult.data) {
-            setUserRole('staff');
-          } else {
-            setUserRole('tenant');
-          }
-        } catch (error) {
-          console.error('Error checking user role:', error);
-          setUserRole('tenant');
-        }
-      }
-    };
-
-    checkUserRole();
-  }, [user]);
-
-  useEffect(() => {
-    // Show onboarding if profile doesn't exist or is incomplete on first visit (only for tenants)
-    if (!isLoading && (!profile || !isProfileComplete) && userRole === 'tenant') {
+    // Show onboarding only for tenant_manager users (not staff) if profile doesn't exist or is incomplete
+    if (!authLoading && !isLoading && !isStaff && userRole === 'tenant_manager' && (!profile || !isProfileComplete)) {
       const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
       if (!hasSeenOnboarding) {
         setShowOnboarding(true);
       }
     }
-  }, [profile, isLoading, isProfileComplete, userRole]);
+  }, [profile, isLoading, isProfileComplete, authLoading, isStaff, userRole]);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
