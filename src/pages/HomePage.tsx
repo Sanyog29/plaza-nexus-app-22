@@ -13,6 +13,7 @@ import {
   CheckCircle,
   AlertTriangle,
   Thermometer,
+  GraduationCap,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
@@ -21,6 +22,8 @@ import DashboardTile from '../components/DashboardTile';
 import { Card, CardContent } from '@/components/ui/card';
 import AISummaryCards from '../components/AISummaryCards';
 import { VisitorNotificationBanner } from '@/components/notifications/VisitorNotificationBanner';
+import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
+import { EnhancedHelpSystem } from '@/components/help/EnhancedHelpSystem';
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -126,50 +129,12 @@ const HomePage = () => {
 
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-2xl font-semibold text-white">Quick Status</h3>
+          <h3 className="text-2xl font-semibold text-white">System Status & Training</h3>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`${metrics.operationalSystems ? 'bg-green-500/20' : 'bg-red-500/20'} p-2 rounded-full`}>
-                  {metrics.operationalSystems ? (
-                    <CheckCircle size={20} className="text-green-500" />
-                  ) : (
-                    <AlertTriangle size={20} className="text-red-500" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">All Systems</p>
-                  <p className={`text-xs ${metrics.operationalSystems ? 'text-green-500' : 'text-red-500'}`}>
-                    {metrics.operationalSystems ? 'Operating normally' : 'Issues detected'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <SystemHealthWidget variant="detailed" showTraining={true} />
 
-          <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`${metrics.pendingMaintenance > 0 ? 'bg-yellow-500/20' : 'bg-green-500/20'} p-2 rounded-full`}>
-                  {metrics.pendingMaintenance > 0 ? (
-                    <AlertTriangle size={20} className="text-yellow-500" />
-                  ) : (
-                    <CheckCircle size={20} className="text-green-500" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Maintenance</p>
-                  <p className={`text-xs ${metrics.pendingMaintenance > 0 ? 'text-yellow-500' : 'text-green-500'}`}>
-                    {metrics.pendingMaintenance > 0 ? `${metrics.pendingMaintenance} pending` : 'All up to date'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
+        <div className="grid grid-cols-2 gap-4">
           <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -200,6 +165,26 @@ const HomePage = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Training Access */}
+      <div className="mt-8">
+        <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-500/20 p-2 rounded-lg">
+                  <GraduationCap size={24} className="text-purple-500" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-white">Interactive Training</h4>
+                  <p className="text-sm text-gray-400">Learn about system features and best practices</p>
+                </div>
+              </div>
+              <EnhancedHelpSystem />
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
       <div className="mt-8">

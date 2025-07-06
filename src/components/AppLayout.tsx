@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ResponsiveLayout } from './layout/ResponsiveLayout';
 import { MobileHeader } from './layout/MobileHeader';
 import { MobileBottomNav } from './layout/MobileBottomNav';
+import { MobileSystemStatus } from './layout/MobileSystemStatus';
 import { HelpSystem } from './help/HelpSystem';
 import ErrorBoundary from './common/ErrorBoundary';
 import { usePWA } from '@/hooks/usePWA';
@@ -109,6 +110,7 @@ const AppLayout: React.FC = () => {
       <ErrorBoundary>
         <div className="min-h-screen bg-plaza-dark pb-16">
           <MobileHeader />
+          <MobileSystemStatus />
           <main className="pt-4">
             <Outlet />
           </main>

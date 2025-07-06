@@ -27,30 +27,30 @@ const StaffOperationsPage: React.FC = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="attendance" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-card/50">
-            <TabsTrigger value="attendance" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-card/50 h-auto">
+            <TabsTrigger value="attendance" className="flex items-center gap-2 text-xs md:text-sm">
               <Clock className="h-4 w-4" />
-              Attendance
+              <span className="hidden sm:inline">Attendance</span>
             </TabsTrigger>
-            <TabsTrigger value="checklists" className="flex items-center gap-2">
+            <TabsTrigger value="checklists" className="flex items-center gap-2 text-xs md:text-sm">
               <CheckSquare className="h-4 w-4" />
-              Checklists
+              <span className="hidden sm:inline">Checklists</span>
             </TabsTrigger>
-            <TabsTrigger value="assets" className="flex items-center gap-2">
+            <TabsTrigger value="assets" className="flex items-center gap-2 text-xs md:text-sm">
               <Wrench className="h-4 w-4" />
-              Assets
+              <span className="hidden sm:inline">Assets</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <TabsTrigger value="tasks" className="flex items-center gap-2 text-xs md:text-sm">
               <ClipboardList className="h-4 w-4" />
-              Tasks
+              <span className="hidden sm:inline">Tasks</span>
             </TabsTrigger>
-            <TabsTrigger value="utilities" className="flex items-center gap-2">
+            <TabsTrigger value="utilities" className="flex items-center gap-2 text-xs md:text-sm">
               <Zap className="h-4 w-4" />
-              Utilities
+              <span className="hidden sm:inline">Utilities</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="analytics" className="flex items-center gap-2 text-xs md:text-sm">
               <BarChart3 className="h-4 w-4" />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
           </TabsList>
 

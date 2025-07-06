@@ -9,7 +9,9 @@ import {
   Wrench,
   ClipboardList,
   TrendingUp,
-  User
+  User,
+  Activity,
+  GraduationCap
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -37,6 +39,8 @@ const staffMenuItems = [
   { title: "Dashboard", url: "/staff/dashboard", icon: Home },
   { title: "Operations", url: "/staff/operations", icon: ClipboardList },
   { title: "Requests", url: "/staff/requests", icon: Wrench },
+  { title: "Performance", url: "/admin/dashboard", icon: Activity },
+  { title: "Training", url: "/profile", icon: GraduationCap },
   { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
   { title: "Reports", url: "/staff/reports", icon: BarChart3 },
   { title: "Settings", url: "/staff/settings", icon: Settings },
