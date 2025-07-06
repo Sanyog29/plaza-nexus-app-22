@@ -140,10 +140,10 @@ export const useProfile = () => {
   const isProfileComplete = () => {
     if (!profile) return false;
     return !!(
-      profile.first_name &&
-      profile.last_name &&
-      profile.office_number &&
-      profile.phone_number
+      profile.first_name?.trim() &&
+      profile.last_name?.trim() &&
+      profile.office_number?.trim() &&
+      profile.phone_number?.trim()
     );
   };
 

@@ -20,17 +20,33 @@ const ProfilePage = () => {
 
   useEffect(() => {
     // Show onboarding only for tenant_manager users (not staff) if profile doesn't exist or is incomplete
-    if (!authLoading && !isLoading && !isStaff && userRole === 'tenant_manager' && (!profile || !isProfileComplete)) {
-      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-      if (!hasSeenOnboarding) {
+    if (!authLoading && !isLoading && !isStaff && userRole === 'tenant_manager') {
+      // If no profile exists, definitely show onboarding
+      if (!profile) {
         setShowOnboarding(true);
+        return;
+      }
+      
+      // If profile exists but is incomplete, check localStorage to prevent infinite loops
+      if (!isProfileComplete) {
+        const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+        const profileSetupAttempts = parseInt(localStorage.getItem('profileSetupAttempts') || '0');
+        
+        // Only show onboarding if they haven't seen it or attempts are less than 3
+        if (!hasSeenOnboarding && profileSetupAttempts < 3) {
+          setShowOnboarding(true);
+        }
       }
     }
   }, [profile, isLoading, isProfileComplete, authLoading, isStaff, userRole]);
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
     localStorage.setItem('hasSeenOnboarding', 'true');
+    localStorage.removeItem('profileSetupAttempts'); // Clear attempts on success
+    
+    // Force refresh profile to ensure we have the latest data
+    window.location.reload();
   };
 
   const handleAvatarUpdate = async (url: string | null) => {
@@ -125,8 +141,8 @@ const ProfilePage = () => {
                 </div>
               </Card>
 
-              {/* Profile Completion - Only show for tenants */}
-              {userRole === 'tenant' && (
+              {/* Profile Completion - Only show for tenant_managers */}
+              {userRole === 'tenant_manager' && (
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Profile Completion</h3>
@@ -185,8 +201,8 @@ const ProfilePage = () => {
                 </Card>
               )}
 
-              {/* Quick Actions - Only show for tenants */}
-              {userRole === 'tenant' && (
+              {/* Quick Actions - Only show for tenant_managers */}
+              {userRole === 'tenant_manager' && (
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
