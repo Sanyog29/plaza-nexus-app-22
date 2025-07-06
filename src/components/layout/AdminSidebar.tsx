@@ -13,7 +13,15 @@ import {
   Activity,
   GraduationCap,
   Brain,
-  Zap
+  Zap,
+  Shield,
+  Info,
+  BookOpen,
+  Calendar,
+  ChefHat,
+  Building,
+  Layout,
+  HelpCircle
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -30,23 +38,33 @@ import {
 
 const adminMenuItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+  { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
   { title: "User Management", url: "/admin/users", icon: Users },
   { title: "Requests", url: "/admin/requests", icon: ClipboardList },
+  { title: "Maintenance", url: "/maintenance", icon: Wrench },
+  { title: "Security", url: "/security", icon: Shield },
+  { title: "Security Guard", url: "/security-guard", icon: Shield },
   { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
   { title: "Reports", url: "/admin/reports", icon: BarChart3 },
   { title: "Content", url: "/admin/content", icon: FileText },
+  { title: "Info Hub", url: "/info-hub", icon: Info },
+  { title: "User Manual", url: "/manual", icon: BookOpen },
   { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
   { title: "Advanced Features", url: "/advanced-features", icon: Zap },
 ];
 
 const staffMenuItems = [
   { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+  { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
   { title: "Operations", url: "/staff/operations", icon: ClipboardList },
   { title: "Requests", url: "/staff/requests", icon: Wrench },
-  { title: "Performance", url: "/admin/dashboard", icon: Activity },
-  { title: "Training", url: "/profile", icon: GraduationCap },
+  { title: "Maintenance", url: "/maintenance", icon: Wrench },
+  { title: "Security", url: "/security", icon: Shield },
+  { title: "Security Guard", url: "/security-guard", icon: Shield },
   { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
   { title: "Reports", url: "/staff/reports", icon: BarChart3 },
+  { title: "Info Hub", url: "/info-hub", icon: Info },
+  { title: "User Manual", url: "/manual", icon: BookOpen },
   { title: "Settings", url: "/staff/settings", icon: Settings },
   { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
 ];

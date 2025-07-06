@@ -3,16 +3,54 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, Bell, Wifi, WifiOff, Download } from 'lucide-react';
+import { Menu, Search, Bell, Wifi, WifiOff, Download, Home, Shield, Wrench, BarChart3, Settings, Info, BookOpen, Layout, Users, FileText, AlertTriangle, ClipboardList, Brain, Zap } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { usePWAContext } from '@/components/PWAProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { Link } from 'react-router-dom';
 
 export const MobileHeader: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin, isStaff } = useAuth();
   const { isOnline, isInstallable, isInstalled, installApp } = usePWAContext();
   const { metrics } = useDashboardMetrics();
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const adminMenuItems = [
+    { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+    { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
+    { title: "User Management", url: "/admin/users", icon: Users },
+    { title: "Requests", url: "/admin/requests", icon: ClipboardList },
+    { title: "Security", url: "/security", icon: Shield },
+    { title: "Security Guard", url: "/security-guard", icon: Shield },
+    { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
+    { title: "Reports", url: "/admin/reports", icon: BarChart3 },
+    { title: "Content", url: "/admin/content", icon: FileText },
+    { title: "Info Hub", url: "/info-hub", icon: Info },
+    { title: "User Manual", url: "/manual", icon: BookOpen },
+    { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
+    { title: "Advanced Features", url: "/advanced-features", icon: Zap },
+  ];
+
+  const staffMenuItems = [
+    { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+    { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
+    { title: "Operations", url: "/staff/operations", icon: ClipboardList },
+    { title: "Requests", url: "/staff/requests", icon: Wrench },
+    { title: "Security", url: "/security", icon: Shield },
+    { title: "Security Guard", url: "/security-guard", icon: Shield },
+    { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
+    { title: "Reports", url: "/staff/reports", icon: BarChart3 },
+    { title: "Info Hub", url: "/info-hub", icon: Info },
+    { title: "User Manual", url: "/manual", icon: BookOpen },
+    { title: "Settings", url: "/staff/settings", icon: Settings },
+    { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
+  ];
+
+  const getMenuItems = () => {
+    if (isAdmin) return adminMenuItems;
+    if (isStaff) return staffMenuItems;
+    return [];
+  };
 
   if (!user) return null;
 
@@ -37,8 +75,29 @@ export const MobileHeader: React.FC = () => {
                   <div className="text-sm text-muted-foreground capitalize">{user.role}</div>
                 </div>
 
+                {/* Navigation Menu for Staff/Admin */}
+                {(isAdmin || isStaff) && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                      {isAdmin ? 'Admin Tools' : 'Staff Tools'}
+                    </h3>
+                    <div className="space-y-1 max-h-96 overflow-y-auto">
+                      {getMenuItems().map((item) => (
+                        <Link
+                          key={item.title}
+                          to={item.url}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors hover:bg-muted"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.title}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Quick Actions */}
-                <div className="space-y-2">
+                <div className="space-y-2 mt-6">
                   {isInstallable && !isInstalled && (
                     <Button
                       onClick={installApp}
