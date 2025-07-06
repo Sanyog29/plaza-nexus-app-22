@@ -26,10 +26,6 @@ export interface UnifiedRequest {
     first_name: string;
     last_name: string;
   };
-  categories?: {
-    name: string;
-    icon: string;
-  };
 }
 
 interface RequestFilters {
@@ -68,8 +64,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           assigned_to_profile:profiles!maintenance_requests_assigned_to_fkey(
             first_name,
             last_name
-          ),
-          categories(name, icon)
+          )
         `, { count: 'exact' });
 
       // Apply role-based filtering
