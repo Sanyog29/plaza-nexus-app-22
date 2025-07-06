@@ -68,12 +68,9 @@ export const EmergencyProcedures: React.FC = () => {
         toast.success('Emergency alert sent to all contacts');
       } else {
         // Store for offline sync
-        storeOfflineAction({
-          type: 'emergency_alert',
-          data: {
-            ...emergencyData,
-            emergencyContacts: ['admin@plaza.com', 'security@plaza.com']
-          }
+        addOfflineAction('emergency_alert', {
+          ...emergencyData,
+          emergencyContacts: ['admin@plaza.com', 'security@plaza.com']
         });
         toast.warning('Emergency alert queued - will send when online');
       }
