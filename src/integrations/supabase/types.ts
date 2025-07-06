@@ -1108,6 +1108,44 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_timers: {
+        Row: {
+          created_at: string
+          id: string
+          is_sent: boolean | null
+          scheduled_time: string
+          timer_type: string
+          updated_at: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_sent?: boolean | null
+          scheduled_time: string
+          timer_type: string
+          updated_at?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_sent?: boolean | null
+          scheduled_time?: string
+          timer_type?: string
+          updated_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_timers_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitors: {
         Row: {
           access_level: string | null
@@ -1206,6 +1244,10 @@ export type Database = {
           action_url?: string
         }
         Returns: string
+      }
+      generate_visitor_qr_data: {
+        Args: { visitor_id: string }
+        Returns: Json
       }
       get_user_management_data: {
         Args: Record<PropertyKey, never> | { caller_id: string }

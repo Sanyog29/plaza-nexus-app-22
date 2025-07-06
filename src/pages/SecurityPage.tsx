@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, User, Users, Car, QrCode, UserCheck, Building } from 'lucide-react';
+import { CalendarDays, Clock, User, Users, Car, QrCode, UserCheck, Building, Timer, RefreshCw } from 'lucide-react';
 import VisitorForm from '@/components/security/VisitorForm';
 import VisitorQrModal from '@/components/security/VisitorQrModal';
 import ParkingRequestForm from '@/components/security/ParkingRequestForm';
-import { format } from 'date-fns';
+import { format, isToday, isPast, addHours } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
+import { toast } from '@/components/ui/sonner';
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -38,39 +40,62 @@ const SecurityPage = () => {
   const [visitors, setVisitors] = useState<any[]>([]);
   const [parkingRequests, setParkingRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch all data
+  // Enable real-time updates for visitors
+  useRealtimeUpdates({
+    table: 'visitors',
+    queryKeysToInvalidate: [['visitors']],
+  });
+
+  // Fetch all data with real-time subscription
+  const fetchData = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
+    try {
+      const [visitorsResult, parkingResult] = await Promise.all([
+        supabase
+          .from('visitors')
+          .select(`
+            *,
+            visitor_categories (name, icon, color)
+          `)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('parking_requests')
+          .select(`
+            *,
+            visitors (name)
+          `)
+          .order('created_at', { ascending: false })
+      ]);
+
+      if (visitorsResult.data) setVisitors(visitorsResult.data);
+      if (parkingResult.data) setParkingRequests(parkingResult.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      if (showLoader) setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [visitorsResult, parkingResult] = await Promise.all([
-          supabase
-            .from('visitors')
-            .select(`
-              *,
-              visitor_categories (name, icon, color)
-            `)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('parking_requests')
-            .select(`
-              *,
-              visitors (name)
-            `)
-            .order('created_at', { ascending: false })
-        ]);
-
-        if (visitorsResult.data) setVisitors(visitorsResult.data);
-        if (parkingResult.data) setParkingRequests(parkingResult.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('visitors-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'visitors' }, () => {
+        fetchData(false);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'parking_requests' }, () => {
+        fetchData(false);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleAddVisitor = () => {
@@ -103,6 +128,65 @@ const SecurityPage = () => {
     setShowParkingForm(true);
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+    toast.success('Data refreshed');
+  };
+
+  const scheduleVisitorTimer = async (visitor: any, timerType: string) => {
+    try {
+      let scheduledTime;
+      const visitDateTime = new Date(`${visitor.visit_date}T${visitor.entry_time}`);
+      
+      switch (timerType) {
+        case 'entry_reminder':
+          scheduledTime = new Date(visitDateTime.getTime() - 30 * 60000); // 30 min before
+          break;
+        case 'exit_reminder':
+          scheduledTime = addHours(visitDateTime, 2); // 2 hours after entry
+          break;
+        case 'overstay_alert':
+          scheduledTime = addHours(visitDateTime, 4); // 4 hours after entry
+          break;
+        default:
+          return;
+      }
+
+      await supabase.from('visitor_timers').insert({
+        visitor_id: visitor.id,
+        timer_type: timerType,
+        scheduled_time: scheduledTime.toISOString(),
+      });
+
+      toast.success(`${timerType.replace('_', ' ')} scheduled for ${visitor.name}`);
+    } catch (error) {
+      console.error('Error scheduling timer:', error);
+      toast.error('Failed to schedule timer');
+    }
+  };
+
+  const getVisitorStatusInfo = (visitor: any) => {
+    const visitDate = new Date(visitor.visit_date);
+    const now = new Date();
+    
+    if (isToday(visitDate)) {
+      if (visitor.check_in_time) {
+        return { color: 'text-green-400', text: 'Checked In Today' };
+      } else if (visitor.entry_time) {
+        const entryTime = new Date(`${visitor.visit_date}T${visitor.entry_time}`);
+        if (isPast(entryTime)) {
+          return { color: 'text-yellow-400', text: 'Expected but not checked in' };
+        } else {
+          return { color: 'text-blue-400', text: 'Scheduled for today' };
+        }
+      }
+    }
+    
+    return { color: 'text-gray-400', text: 'Future visit' };
+  };
+
   return (
     <div className="px-4 py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -111,6 +195,16 @@ const SecurityPage = () => {
           <p className="text-sm text-gray-400 mt-1">Manage office visitors and parking access</p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={refreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           {activeTab === 'visitors' && (
             <Button className="bg-plaza-blue hover:bg-blue-700" onClick={handleAddVisitor}>
               Register Visitor
@@ -165,6 +259,12 @@ const SecurityPage = () => {
                           <h4 className="font-medium text-white">{visitor.name}</h4>
                           {getStatusBadge(visitor.approval_status || visitor.status)}
                         </div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Clock size={10} />
+                          <span className={`text-xs ${getVisitorStatusInfo(visitor).color}`}>
+                            {getVisitorStatusInfo(visitor).text}
+                          </span>
+                        </div>
                         {visitor.company && (
                           <p className="text-sm text-plaza-blue">{visitor.company}</p>
                         )}
@@ -197,16 +297,29 @@ const SecurityPage = () => {
                       </div>
                     </div>
                     
-                    <Button 
-                      variant="secondary" 
-                      size="sm" 
-                      className="flex items-center" 
-                      onClick={() => handleViewQr(visitor)}
-                      disabled={visitor.approval_status === 'rejected'}
-                    >
-                      <QrCode size={14} className="mr-1" />
-                      QR Code
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="flex items-center" 
+                        onClick={() => handleViewQr(visitor)}
+                        disabled={visitor.approval_status === 'rejected'}
+                      >
+                        <QrCode size={14} className="mr-1" />
+                        QR Code
+                      </Button>
+                      {isToday(new Date(visitor.visit_date)) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center text-xs"
+                          onClick={() => scheduleVisitorTimer(visitor, 'exit_reminder')}
+                        >
+                          <Timer size={12} className="mr-1" />
+                          Set Timer
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
