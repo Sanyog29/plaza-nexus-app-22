@@ -19,10 +19,11 @@ import { format } from 'date-fns';
 type UserData = {
   id: string;
   email: string;
-  first_name: string | null;
-  last_name: string | null;
+  first_name: string;
+  last_name: string;
   role: string;
   created_at: string;
+  updated_at: string;
   confirmed_at: string | null;
   last_sign_in_at: string | null;
 };
@@ -35,90 +36,21 @@ const UserManagementPage = () => {
 
   const fetchUsers = async () => {
     try {
-      // Use the correct function signature based on available functions
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          role,
-          created_at,
-          updated_at
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Get auth users data separately
-      const userIds = data?.map(profile => profile.id) || [];
-      const authUsers = [];
+      setIsLoading(true);
       
-      // For each user ID, get auth data (this is a simplified approach)
-      for (const userId of userIds.slice(0, 20)) { // Limit to avoid too many requests
-        try {
-          const { data: authData } = await supabase.auth.admin.getUserById(userId);
-          if (authData.user) {
-            authUsers.push({
-              id: authData.user.id,
-              email: authData.user.email || '',
-              confirmed_at: authData.user.confirmed_at,
-              last_sign_in_at: authData.user.last_sign_in_at,
-            });
-          }
-        } catch (authError) {
-          // Skip failed auth lookups
-          console.warn('Failed to get auth data for user:', userId);
-        }
-      }
-
-      // Combine profile and auth data
-      const combinedUsers = data?.map(profile => {
-        const authUser = authUsers.find(auth => auth.id === profile.id);
-        return {
-          id: profile.id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          role: profile.role,
-          created_at: profile.created_at,
-          email: authUser?.email || 'N/A',
-          confirmed_at: authUser?.confirmed_at || null,
-          last_sign_in_at: authUser?.last_sign_in_at || null,
-        };
-      }) || [];
-
-      setUsers(combinedUsers);
+      // Use the RPC function to get user management data
+      const { data, error } = await supabase.rpc('get_user_management_data');
+      
+      if (error) throw error;
+      
+      setUsers(data || []);
     } catch (error: any) {
       console.error('Error fetching users:', error);
-      
-      // Fallback: just get profiles without auth data
-      try {
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (profileError) throw profileError;
-
-        const fallbackUsers = profiles?.map(profile => ({
-          id: profile.id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          role: profile.role,
-          created_at: profile.created_at,
-          email: 'N/A',
-          confirmed_at: null,
-          last_sign_in_at: null,
-        })) || [];
-
-        setUsers(fallbackUsers);
-      } catch (fallbackError: any) {
-        toast({
-          title: "Error fetching users",
-          description: fallbackError.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error fetching users",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
