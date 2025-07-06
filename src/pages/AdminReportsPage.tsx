@@ -53,7 +53,7 @@ const AdminReportsPage = () => {
       const { data: staff, error: staffError } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['staff', 'admin']);
+        .in('role', ['ops_supervisor', 'admin']);
 
       if (staffError) throw staffError;
 

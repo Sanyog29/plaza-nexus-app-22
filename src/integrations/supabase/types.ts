@@ -985,7 +985,7 @@ export type Database = {
           last_name: string | null
           office_number: string | null
           phone_number: string | null
-          role: string
+          role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           zone: string | null
         }
@@ -999,7 +999,7 @@ export type Database = {
           last_name?: string | null
           office_number?: string | null
           phone_number?: string | null
-          role?: string
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           zone?: string | null
         }
@@ -1013,7 +1013,7 @@ export type Database = {
           last_name?: string | null
           office_number?: string | null
           phone_number?: string | null
-          role?: string
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           zone?: string | null
         }
@@ -2160,12 +2160,11 @@ export type Database = {
     }
     Enums: {
       app_role:
-        | "tenant"
-        | "staff"
         | "admin"
-        | "ops_l1"
-        | "ops_l2"
-        | "hk_security"
+        | "ops_supervisor"
+        | "field_staff"
+        | "tenant_manager"
+        | "vendor"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status: "pending" | "in_progress" | "completed" | "cancelled"
       utility_type:
@@ -2290,7 +2289,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["tenant", "staff", "admin", "ops_l1", "ops_l2", "hk_security"],
+      app_role: [
+        "admin",
+        "ops_supervisor",
+        "field_staff",
+        "tenant_manager",
+        "vendor",
+      ],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: ["pending", "in_progress", "completed", "cancelled"],
       utility_type: [

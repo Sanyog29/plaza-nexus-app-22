@@ -175,7 +175,7 @@ export const useCrossModuleIntegration = () => {
           const { data: staffProfiles } = await supabase
             .from('profiles')
             .select('id')
-            .in('role', ['admin', 'staff']);
+            .in('role', ['admin', 'ops_supervisor']);
 
           if (staffProfiles) {
             for (const profile of staffProfiles) {

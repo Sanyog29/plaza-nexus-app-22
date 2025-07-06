@@ -80,7 +80,7 @@ export const usePerformanceBenchmarking = () => {
       const { data: staff } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['staff', 'ops_l1', 'ops_l2']);
+        .in('role', ['ops_supervisor', 'field_staff']);
 
       if (!requests) throw new Error('Failed to fetch maintenance data');
 

@@ -109,7 +109,7 @@ export const useProfile = () => {
           office_number: profileData.office_number || null,
           phone_number: profileData.phone_number || null,
           avatar_url: profileData.avatar_url || null,
-          role: 'tenant',
+          role: 'tenant_manager',
         })
         .select()
         .single();

@@ -138,7 +138,7 @@ export const useExecutiveDashboard = () => {
       const { data: staffData } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['staff', 'admin', 'ops_l1', 'ops_l2']);
+        .in('role', ['ops_supervisor', 'admin', 'field_staff']);
 
       const totalStaff = staffData?.length || 0;
 

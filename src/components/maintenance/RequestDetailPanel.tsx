@@ -88,7 +88,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['staff', 'admin']);
+        .in('role', ['ops_supervisor', 'admin']);
 
       if (error) throw error;
       setStaff(data || []);

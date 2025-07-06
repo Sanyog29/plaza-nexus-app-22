@@ -98,7 +98,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
               office_number: data.officeNumber,
               phone_number: data.phoneNumber,
               avatar_url: data.avatarUrl,
-              role: 'tenant',
+              role: 'tenant_manager',
             });
 
         if (error) throw error;

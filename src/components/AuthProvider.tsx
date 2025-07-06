@@ -50,11 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (profile) {
         setUserRole(profile.role);
         setIsAdmin(profile.role === 'admin');
-        setIsStaff(['admin', 'staff', 'ops_l1', 'ops_l2'].includes(profile.role));
+        setIsStaff(['admin', 'ops_supervisor', 'field_staff'].includes(profile.role));
       }
     } catch (error) {
       console.error('Error fetching user role:', error);
-      setUserRole('tenant');
+      setUserRole('tenant_manager');
       setIsAdmin(false);
       setIsStaff(false);
     }
