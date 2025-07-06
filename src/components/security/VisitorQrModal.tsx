@@ -58,24 +58,26 @@ const VisitorQrModal: React.FC<VisitorQrModalProps> = ({ isOpen, onClose, visito
               <CalendarDays size={16} className="text-plaza-blue" />
               <div>
                 <p className="text-sm font-medium text-gray-300">Date</p>
-                <p className="text-base text-white">{format(new Date(visitor.date), 'PPP')}</p>
+                <p className="text-base text-white">{format(new Date(visitor.visit_date), 'PPP')}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Clock size={16} className="text-plaza-blue" />
-              <div>
-                <p className="text-sm font-medium text-gray-300">Time & Duration</p>
-                <p className="text-base text-white">{format(new Date(visitor.date), 'p')} ({visitor.duration})</p>
-              </div>
-            </div>
-            
-            {visitor.vehicle && (
+            {visitor.entry_time && (
               <div className="flex items-center gap-2">
-                <Car size={16} className="text-plaza-blue" />
+                <Clock size={16} className="text-plaza-blue" />
                 <div>
-                  <p className="text-sm font-medium text-gray-300">Vehicle</p>
-                  <p className="text-base text-white">{visitor.vehicle}</p>
+                  <p className="text-sm font-medium text-gray-300">Entry Time</p>
+                  <p className="text-base text-white">{visitor.entry_time}</p>
+                </div>
+              </div>
+            )}
+            
+            {visitor.contact_number && (
+              <div className="flex items-center gap-2">
+                <span className="text-plaza-blue">📞</span>
+                <div>
+                  <p className="text-sm font-medium text-gray-300">Contact</p>
+                  <p className="text-base text-white">{visitor.contact_number}</p>
                 </div>
               </div>
             )}

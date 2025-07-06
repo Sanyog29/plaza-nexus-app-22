@@ -1,67 +1,49 @@
 
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-
-// Sample room data
-const roomsData = [
-  {
-    id: 'room-001',
-    name: 'Conference Room A',
-    capacity: 12,
-    floor: '4th Floor',
-    facilities: ['Projector', 'Video Conference'],
-    availability: [
-      { time: '09:00', available: true },
-      { time: '10:00', available: true },
-      { time: '11:00', available: false },
-      { time: '12:00', available: true },
-      { time: '13:00', available: true },
-      { time: '14:00', available: false },
-      { time: '15:00', available: false },
-      { time: '16:00', available: true },
-    ],
-  },
-  {
-    id: 'room-002',
-    name: 'Meeting Room B',
-    capacity: 6,
-    floor: '4th Floor',
-    facilities: ['TV Screen'],
-    availability: [
-      { time: '09:00', available: true },
-      { time: '10:00', available: true },
-      { time: '11:00', available: true },
-      { time: '12:00', available: false },
-      { time: '13:00', available: false },
-      { time: '14:00', available: true },
-      { time: '15:00', available: true },
-      { time: '16:00', available: true },
-    ],
-  },
-  {
-    id: 'room-003',
-    name: 'Training Room',
-    capacity: 20,
-    floor: '3rd Floor',
-    facilities: ['Projector', 'Whiteboards', 'Video Conference'],
-    availability: [
-      { time: '09:00', available: false },
-      { time: '10:00', available: false },
-      { time: '11:00', available: true },
-      { time: '12:00', available: true },
-      { time: '13:00', available: true },
-      { time: '14:00', available: true },
-      { time: '15:00', available: false },
-      { time: '16:00', available: false },
-    ],
-  },
-];
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
+import RoomsList from '@/components/rooms/RoomsList';
 
 const BookingsPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  const handleBookRoom = async (roomId: string, timeSlot: string) => {
+    if (!user) return;
+
+    const startTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${timeSlot}:00`);
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour booking
+
+    try {
+      const { error } = await supabase
+        .from('room_bookings')
+        .insert({
+          room_id: roomId,
+          user_id: user.id,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          title: 'Meeting',
+          status: 'confirmed'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Room Booked",
+        description: `Successfully booked for ${timeSlot} on ${selectedDate.toLocaleDateString()}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Booking Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <div className="px-4 py-6">
@@ -91,56 +73,12 @@ const BookingsPage = () => {
           </div>
         </div>
         
-        <div className="space-y-4">
-          {roomsData.map((room) => (
-            <div 
-              key={room.id}
-              className={`bg-card rounded-lg p-4 card-shadow ${
-                selectedRoom === room.id ? 'border-2 border-plaza-blue' : ''
-              }`}
-              onClick={() => setSelectedRoom(room.id)}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium text-white">{room.name}</h4>
-                  <p className="text-sm text-gray-400">
-                    {room.floor} • Capacity: {room.capacity}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {room.facilities.map((facility) => (
-                      <span 
-                        key={facility}
-                        className="text-xs px-2 py-1 rounded-full bg-muted text-gray-300"
-                      >
-                        {facility}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <h5 className="text-sm font-medium text-gray-300 mb-2">Availability</h5>
-                <div className="grid grid-cols-4 gap-2">
-                  {room.availability.map((slot) => (
-                    <Button
-                      key={slot.time}
-                      variant="outline"
-                      size="sm"
-                      disabled={!slot.available}
-                      className={slot.available 
-                        ? 'bg-muted hover:bg-plaza-blue hover:text-white' 
-                        : 'bg-muted opacity-50'
-                      }
-                    >
-                      {slot.time}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <RoomsList 
+          selectedDate={selectedDate}
+          selectedRoom={selectedRoom}
+          onSelectRoom={setSelectedRoom}
+          onBookRoom={handleBookRoom}
+        />
       </div>
     </div>
   );

@@ -1,67 +1,9 @@
 import React, { useState } from 'react';
-import { Coffee, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import OrderModal from '@/components/cafeteria/OrderModal';
 import LoyaltyCard from '@/components/cafeteria/LoyaltyCard';
+import MenuData from '@/components/cafeteria/MenuData';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-// Sample menu data
-const menuData = {
-  date: "Tuesday, April 27",
-  specials: [
-    {
-      id: 'special-001',
-      name: 'Teriyaki Bowl',
-      description: 'Glazed chicken, vegetables, and rice',
-      price: 12.99,
-      rating: 4.5,
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500&h=300'
-    }
-  ],
-  categories: [
-    {
-      id: 'cat-001',
-      name: 'Main Course',
-      items: [
-        {
-          id: 'item-001',
-          name: 'Grilled Chicken Salad',
-          description: 'Fresh greens with grilled chicken breast',
-          price: 9.99,
-          isVeg: false,
-        },
-        {
-          id: 'item-002',
-          name: 'Paneer Tikka',
-          description: 'Spiced cottage cheese with vegetables',
-          price: 8.99,
-          isVeg: true,
-        }
-      ]
-    },
-    {
-      id: 'cat-002',
-      name: 'Beverages',
-      items: [
-        {
-          id: 'item-003',
-          name: 'Fresh Lime Soda',
-          description: 'Refreshing lime soda, sweet or salty',
-          price: 2.99,
-          isVeg: true,
-        },
-        {
-          id: 'item-004',
-          name: 'Cold Coffee',
-          description: 'Creamy cold coffee with ice cream',
-          price: 3.99,
-          isVeg: true,
-        }
-      ]
-    }
-  ]
-};
 
 const CafeteriaPage = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -95,85 +37,7 @@ const CafeteriaPage = () => {
       
       <div className="px-4 mt-6">
         <LoyaltyCard />
-        
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-white">Today's Special</h3>
-          <span className="text-sm text-gray-400">{menuData.date}</span>
-        </div>
-        
-        {menuData.specials.map((special) => (
-          <div 
-            key={special.id} 
-            className="bg-card rounded-lg overflow-hidden card-shadow mb-8"
-          >
-            <img 
-              src={special.image} 
-              alt={special.name} 
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium text-white text-lg">{special.name}</h4>
-                  <p className="text-sm text-gray-400">{special.description}</p>
-                </div>
-                <div className="flex items-center bg-plaza-blue bg-opacity-20 px-2 py-1 rounded">
-                  <Star size={16} className="text-plaza-blue mr-1 fill-plaza-blue" />
-                  <span className="text-sm text-plaza-blue">{special.rating}</span>
-                </div>
-              </div>
-              <div className="mt-4 flex justify-between items-center">
-                <span className="text-lg font-medium text-white">${special.price}</span>
-                <Button 
-                  className="bg-plaza-blue hover:bg-blue-700"
-                  onClick={() => setSelectedItem(special)}
-                >
-                  Order Now
-                </Button>
-              </div>
-            </div>
-          </div>
-        ))}
-        
-        {menuData.categories.map((category) => (
-          <div key={category.id} className="mb-8">
-            <h3 className="text-lg font-semibold text-white mb-4">{category.name}</h3>
-            <div className="space-y-4">
-              {category.items.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="bg-card rounded-lg p-4 card-shadow"
-                >
-                  <div className="flex justify-between">
-                    <div>
-                      <div className="flex items-center">
-                        <h4 className="font-medium text-white">{item.name}</h4>
-                        {item.isVeg && (
-                          <span className="ml-2 w-4 h-4 rounded-full border border-green-500 flex items-center justify-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-400 mt-1">{item.description}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-white">${item.price}</span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mt-2 hover:bg-plaza-blue hover:text-white"
-                        onClick={() => setSelectedItem(item)}
-                      >
-                        <Coffee size={16} className="mr-1" />
-                        Order
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+        <MenuData onSelectItem={setSelectedItem} />
       </div>
 
       <OrderModal
