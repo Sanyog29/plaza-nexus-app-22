@@ -11,6 +11,8 @@ import { QRScanner } from '@/components/security/QRScanner';
 import { PhotoCapture } from '@/components/security/PhotoCapture';
 import { ShiftManagement } from '@/components/security/ShiftManagement';
 import { VisitorCheckIn } from '@/components/security/VisitorCheckIn';
+import { useVisitorNotifications } from '@/hooks/useVisitorNotifications';
+import { useAutomatedAlerts } from '@/hooks/useAutomatedAlerts';
 
 const SecurityGuardPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -18,6 +20,10 @@ const SecurityGuardPage = () => {
   const [activeShift, setActiveShift] = useState<any>(null);
   const [checkedInVisitors, setCheckedInVisitors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Initialize notification systems
+  useVisitorNotifications();
+  useAutomatedAlerts();
 
   useEffect(() => {
     fetchData();

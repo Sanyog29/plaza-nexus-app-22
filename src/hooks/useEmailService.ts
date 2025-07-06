@@ -129,10 +129,146 @@ export const useEmailService = () => {
     });
   };
 
+  const sendVisitorNotification = async (host: any, visitor: any, status: string) => {
+    const statusMessages = {
+      checked_in: {
+        subject: `Visitor Checked In - ${visitor.name}`,
+        title: 'Visitor Checked In',
+        color: '#16a34a',
+        message: 'Your visitor has successfully checked in at the security desk.'
+      },
+      checked_out: {
+        subject: `Visitor Checked Out - ${visitor.name}`,
+        title: 'Visitor Checked Out',
+        color: '#2563eb',
+        message: 'Your visitor has checked out and left the building.'
+      },
+      approved: {
+        subject: `Visitor Approved - ${visitor.name}`,
+        title: 'Visitor Approved',
+        color: '#16a34a',
+        message: 'Your visitor request has been approved by security.'
+      }
+    };
+
+    const statusInfo = statusMessages[status as keyof typeof statusMessages];
+    if (!statusInfo) return;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: ${statusInfo.color};">${statusInfo.title}</h2>
+        <p>Dear ${host.first_name || 'Resident'},</p>
+        <p>${statusInfo.message}</p>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${statusInfo.color};">
+          <h3>Visitor Details:</h3>
+          <p><strong>Name:</strong> ${visitor.name}</p>
+          <p><strong>Company:</strong> ${visitor.company || 'N/A'}</p>
+          <p><strong>Purpose:</strong> ${visitor.visit_purpose}</p>
+          <p><strong>Visit Date:</strong> ${new Date(visitor.visit_date).toLocaleDateString()}</p>
+          ${visitor.check_in_time ? `<p><strong>Check-in Time:</strong> ${new Date(visitor.check_in_time).toLocaleTimeString()}</p>` : ''}
+          ${visitor.check_out_time ? `<p><strong>Check-out Time:</strong> ${new Date(visitor.check_out_time).toLocaleTimeString()}</p>` : ''}
+          ${visitor.visitor_badge_number ? `<p><strong>Badge Number:</strong> ${visitor.visitor_badge_number}</p>` : ''}
+        </div>
+        
+        <p>For security inquiries, please contact the front desk.</p>
+        <p>Best regards,<br>SS Plaza Security Team</p>
+      </div>
+    `;
+
+    // Get host email from auth.users table via function call
+    const { data: userData } = await supabase.auth.admin.getUserById(host.id);
+    const hostEmail = userData.user?.email;
+
+    if (hostEmail) {
+      return sendEmail({
+        to: hostEmail,
+        subject: statusInfo.subject,
+        html,
+        type: 'visitor_approval'
+      });
+    }
+  };
+
+  const sendOverdueAlert = async (host: any, visitor: any, overdueMinutes: number) => {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #f59e0b;">Visitor Overdue Alert</h2>
+        <p>Dear ${host.first_name || 'Resident'},</p>
+        <p>Your visitor was expected but hasn't checked in yet.</p>
+        
+        <div style="background: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+          <h3>Visitor Details:</h3>
+          <p><strong>Name:</strong> ${visitor.name}</p>
+          <p><strong>Company:</strong> ${visitor.company || 'N/A'}</p>
+          <p><strong>Expected Time:</strong> ${visitor.entry_time}</p>
+          <p><strong>Overdue By:</strong> ${overdueMinutes} minutes</p>
+          <p><strong>Visit Purpose:</strong> ${visitor.visit_purpose}</p>
+        </div>
+        
+        <p>Please check with your visitor or contact security if needed.</p>
+        <p>Best regards,<br>SS Plaza Security Team</p>
+      </div>
+    `;
+
+    // Get host email from auth.users table via function call
+    const { data: userData } = await supabase.auth.admin.getUserById(host.id);
+    const hostEmail = userData.user?.email;
+
+    if (hostEmail) {
+      return sendEmail({
+        to: hostEmail,
+        subject: `Visitor Overdue - ${visitor.name}`,
+        html,
+        type: 'general'
+      });
+    }
+  };
+
+  const sendDailySecurityReport = async (adminEmail: string, reportData: any) => {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #1f2937;">Daily Security Report</h2>
+        <p>Security Summary for ${new Date().toLocaleDateString()}</p>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Visitor Statistics:</h3>
+          <p><strong>Total Expected:</strong> ${reportData.totalExpected}</p>
+          <p><strong>Checked In:</strong> ${reportData.checkedIn}</p>
+          <p><strong>Checked Out:</strong> ${reportData.checkedOut}</p>
+          <p><strong>Still In Building:</strong> ${reportData.stillInBuilding}</p>
+          <p><strong>No-Shows:</strong> ${reportData.noShows}</p>
+          <p><strong>Overdue Visitors:</strong> ${reportData.overdueCount}</p>
+        </div>
+
+        ${reportData.activeShifts?.length > 0 ? `
+          <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3>Active Security Shifts:</h3>
+            ${reportData.activeShifts.map((shift: any) => `
+              <p><strong>${shift.guard_name}:</strong> Started at ${new Date(shift.shift_start).toLocaleTimeString()}</p>
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        <p>Best regards,<br>SS Plaza Security System</p>
+      </div>
+    `;
+
+    return sendEmail({
+      to: adminEmail,
+      subject: `Daily Security Report - ${new Date().toLocaleDateString()}`,
+      html,
+      type: 'general'
+    });
+  };
+
   return {
     sendEmail,
     sendBookingConfirmation,
     sendVisitorApproval,
-    sendMaintenanceSLAAlert
+    sendMaintenanceSLAAlert,
+    sendVisitorNotification,
+    sendOverdueAlert,
+    sendDailySecurityReport
   };
 };

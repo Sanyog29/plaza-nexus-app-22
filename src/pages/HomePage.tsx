@@ -20,6 +20,7 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import DashboardTile from '../components/DashboardTile';
 import { Card, CardContent } from '@/components/ui/card';
 import AISummaryCards from '../components/AISummaryCards';
+import { VisitorNotificationBanner } from '@/components/notifications/VisitorNotificationBanner';
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -54,6 +55,8 @@ const HomePage = () => {
       </div>
 
       <AISummaryCards />
+      
+      <VisitorNotificationBanner />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <DashboardTile 
