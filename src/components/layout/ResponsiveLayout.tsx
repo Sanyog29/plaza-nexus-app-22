@@ -21,6 +21,11 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
 
+  // Guard clause to ensure we're in router context
+  if (!location) {
+    return <div>Loading...</div>;
+  }
+
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isStaffRoute = location.pathname.startsWith('/staff');
   
