@@ -47,6 +47,9 @@ import StaffTrainingPage from "./pages/StaffTrainingPage";
 import AdminMaintenancePage from "./pages/AdminMaintenancePage";
 import AdminSecurityPage from "./pages/AdminSecurityPage";
 import AdminServicesPage from "./pages/AdminServicesPage";
+import StaffMaintenancePage from "./pages/StaffMaintenancePage";
+import StaffSecurityPage from "./pages/StaffSecurityPage";
+import StaffServicesPage from "./pages/StaffServicesPage";
 
 const queryClient = new QueryClient();
 
@@ -106,9 +109,9 @@ const App = () => (
               <Route path="/staff/operations" element={<StaffOperationsPage />} />
               <Route path="/staff/performance" element={<StaffPerformancePage />} />
               <Route path="/staff/training" element={<StaffTrainingPage />} />
-              <Route path="/staff/maintenance" element={<MaintenancePage />} />
-              <Route path="/staff/security" element={<SecurityPage />} />
-              <Route path="/staff/services" element={<ServicesPage />} />
+              <Route path="/staff/maintenance" element={<StaffMaintenancePage />} />
+              <Route path="/staff/security" element={<StaffSecurityPage />} />
+              <Route path="/staff/services" element={<StaffServicesPage />} />
               
               {/* Special Access Routes */}
               <Route path="/security-guard" element={<SecurityGuardPage />} />
