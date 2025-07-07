@@ -39,6 +39,7 @@ import {
 
 const adminMenuItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+  { title: "Profile", url: "/profile", icon: User },
   { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
   { title: "User Management", url: "/admin/users", icon: Users },
   { title: "System Config", url: "/admin/system-config", icon: Settings },
@@ -63,6 +64,7 @@ const adminMenuItems = [
 
 const staffMenuItems = [
   { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+  { title: "Profile", url: "/profile", icon: User },
   { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
   { title: "Operations", url: "/staff/operations", icon: ClipboardList },
   { title: "Requests", url: "/staff/requests", icon: Wrench },
@@ -145,20 +147,6 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Profile Access */}
-        {!isCollapsed && (
-          <div className="mt-auto p-4 border-t border-border">
-            <div className="space-y-2">
-              <NavLink 
-                to="/profile" 
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <User className="h-4 w-4" />
-                Profile Settings
-              </NavLink>
-            </div>
-          </div>
-        )}
       </SidebarContent>
     </Sidebar>
   );

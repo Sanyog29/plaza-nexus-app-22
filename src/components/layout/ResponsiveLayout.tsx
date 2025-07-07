@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, NavLink } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from './AdminSidebar';
 import { useAuth } from '@/components/AuthProvider';
@@ -70,16 +70,18 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                 </Button>
 
                 {/* User Menu */}
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4" />
-                  </div>
-                  {!isMobile && (
-                    <span className="text-sm font-medium">
-                      {user?.email?.split('@')[0] || 'User'}
-                    </span>
-                  )}
-                </Button>
+                <NavLink to="/profile">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                    {!isMobile && (
+                      <span className="text-sm font-medium">
+                        {user?.email?.split('@')[0] || 'User'}
+                      </span>
+                    )}
+                  </Button>
+                </NavLink>
               </div>
             </div>
           </header>
