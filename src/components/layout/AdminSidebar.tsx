@@ -37,52 +37,78 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const adminMenuItems = [
-  { title: "Dashboard", url: "/admin/dashboard", icon: Home },
-  { title: "Profile", url: "/profile", icon: User },
-  { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
-  { title: "User Management", url: "/admin/users", icon: Users },
-  { title: "System Config", url: "/admin/system-config", icon: Settings },
-  { title: "Bulk Operations", url: "/admin/bulk-operations", icon: Edit },
-  { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
-  { title: "Requests", url: "/admin/requests", icon: ClipboardList },
-  { title: "Maintenance", url: "/maintenance", icon: Wrench },
-  { title: "Security", url: "/security", icon: Shield },
-  { title: "Security Guard", url: "/security-guard", icon: Shield },
-  { title: "Services", url: "/services", icon: Building },
-  { title: "Bookings", url: "/bookings", icon: Calendar },
-  { title: "Alerts", url: "/alerts", icon: AlertTriangle },
-  { title: "Cafeteria", url: "/cafeteria", icon: ChefHat },
-  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
-  { title: "Reports", url: "/admin/reports", icon: BarChart3 },
-  { title: "Content", url: "/admin/content", icon: FileText },
-  { title: "Info Hub", url: "/info-hub", icon: Info },
-  { title: "User Manual", url: "/manual", icon: BookOpen },
-  { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
-  { title: "Advanced Features", url: "/advanced-features", icon: Zap },
+// Simplified Admin Menu Structure
+const adminMenuGroups = [
+  {
+    label: "Core Operations",
+    items: [
+      { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+      { title: "Requests", url: "/admin/requests", icon: ClipboardList },
+      { title: "User Management", url: "/admin/users", icon: Users },
+    ]
+  },
+  {
+    label: "Building Management", 
+    items: [
+      { title: "Maintenance", url: "/maintenance", icon: Wrench },
+      { title: "Security & Visitors", url: "/security", icon: Shield },
+      { title: "Services Hub", url: "/services", icon: Building },
+    ]
+  },
+  {
+    label: "Insights",
+    items: [
+      { title: "Analytics & Reports", url: "/admin/analytics", icon: TrendingUp },
+      { title: "System Health", url: "/unified-dashboard", icon: Activity },
+    ]
+  },
+  {
+    label: "System",
+    items: [
+      { title: "Settings & Config", url: "/admin/system-config", icon: Settings },
+      { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
+    ]
+  },
+  {
+    label: "User",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
+    ]
+  }
 ];
 
-const staffMenuItems = [
-  { title: "Dashboard", url: "/staff/dashboard", icon: Home },
-  { title: "Profile", url: "/profile", icon: User },
-  { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
-  { title: "Operations", url: "/staff/operations", icon: ClipboardList },
-  { title: "Requests", url: "/staff/requests", icon: Wrench },
-  { title: "Maintenance", url: "/maintenance", icon: Wrench },
-  { title: "Security", url: "/security", icon: Shield },
-  { title: "Security Guard", url: "/security-guard", icon: Shield },
-  { title: "Services", url: "/services", icon: Building },
-  { title: "Bookings", url: "/bookings", icon: Calendar },
-  { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
-  { title: "Cafeteria", url: "/cafeteria", icon: ChefHat },
-  { title: "Reports", url: "/staff/reports", icon: BarChart3 },
-  { title: "Info Hub", url: "/info-hub", icon: Info },
-  { title: "User Manual", url: "/manual", icon: BookOpen },
-  { title: "Settings", url: "/staff/settings", icon: Settings },
-  { title: "Performance", url: "/staff/performance", icon: Activity },
-  { title: "Training", url: "/staff/training", icon: GraduationCap },
-  { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
-  { title: "Advanced Features", url: "/advanced-features", icon: Zap },
+// Simplified Staff Menu Structure  
+const staffMenuGroups = [
+  {
+    label: "Daily Work",
+    items: [
+      { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+      { title: "My Tasks", url: "/staff/operations", icon: ClipboardList },
+      { title: "Performance", url: "/staff/performance", icon: Activity },
+    ]
+  },
+  {
+    label: "Building Operations",
+    items: [
+      { title: "Maintenance", url: "/maintenance", icon: Wrench },
+      { title: "Security", url: "/security", icon: Shield },
+      { title: "Services", url: "/services", icon: Building },
+    ]
+  },
+  {
+    label: "Reporting",
+    items: [
+      { title: "Analytics", url: "/staff/reports", icon: BarChart3 },
+    ]
+  },
+  {
+    label: "Personal", 
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Settings", url: "/staff/settings", icon: Settings },
+    ]
+  }
 ];
 
 interface AdminSidebarProps {
@@ -94,7 +120,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const menuItems = userRole === 'admin' ? adminMenuItems : staffMenuItems;
+  const menuGroups = userRole === 'admin' ? adminMenuGroups : staffMenuGroups;
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
   const isCollapsed = state === 'collapsed';
 
@@ -126,26 +152,28 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           </div>
         </div>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className={isCollapsed ? 'sr-only' : ''}>
-            {userRole === 'admin' ? 'Administration' : 'Staff Tools'}
-          </SidebarGroupLabel>
-          
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="w-full">
-                    <NavLink to={item.url} className={getNavClass(item.url)}>
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {menuGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className={isCollapsed ? 'sr-only' : ''}>
+              {group.label}
+            </SidebarGroupLabel>
+            
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild className="w-full">
+                      <NavLink to={item.url} className={getNavClass(item.url)}>
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        {!isCollapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
       </SidebarContent>
     </Sidebar>
