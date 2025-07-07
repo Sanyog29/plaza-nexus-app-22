@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
       
       if (error) {
-        // User-friendly error handling instead of console.error
+        console.error('Error fetching profile:', error);
         updateRoleStates('tenant_manager');
         return;
       }
@@ -127,10 +127,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (profile) {
         updateRoleStates(profile.role);
       } else {
-        updateRoleStates('tenant_manager');
+        // Profile doesn't exist - create it
+        console.log('Profile not found for user, creating default profile...');
+        try {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              first_name: '',
+              last_name: '',
+              role: 'tenant_manager'
+            });
+          
+          if (insertError) {
+            console.error('Error creating profile:', insertError);
+          }
+          
+          updateRoleStates('tenant_manager');
+        } catch (createError) {
+          console.error('Failed to create profile:', createError);
+          updateRoleStates('tenant_manager');
+        }
       }
     } catch (error) {
-      // Graceful error handling
+      console.error('Error in checkUserRole:', error);
       updateRoleStates('tenant_manager');
     }
   };

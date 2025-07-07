@@ -66,78 +66,41 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
 
     setIsLoading(true);
     try {
-      // Increment setup attempts to prevent infinite loops
-      const attempts = parseInt(localStorage.getItem('profileSetupAttempts') || '0') + 1;
-      localStorage.setItem('profileSetupAttempts', attempts.toString());
-
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
+      // Update the profile with the entered data (profile should already exist from trigger)
+      const { error } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
+        .update({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          office_number: data.officeNumber,
+          phone_number: data.phoneNumber,
+          avatar_url: data.avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
 
-      if (existingProfile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            first_name: data.firstName,
-            last_name: data.lastName,
-            office_number: data.officeNumber,
-            phone_number: data.phoneNumber,
-            avatar_url: data.avatarUrl,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id);
-
-        if (error) throw error;
-      } else {
-        // Create new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            office_number: data.officeNumber,
-            phone_number: data.phoneNumber,
-            avatar_url: data.avatarUrl,
-            role: 'tenant_manager',
-          });
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Welcome to SS Plaza!",
         description: "Your profile has been set up successfully.",
       });
 
-      // Wait a bit to ensure database transaction completes
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Clear localStorage to prevent re-showing onboarding
+      localStorage.setItem('hasSeenOnboarding', 'true');
+      localStorage.removeItem('profileSetupAttempts');
       
+      // Complete the onboarding
       onComplete();
 
     } catch (error: any) {
       console.error('Onboarding error:', error);
       
-      // If we've tried too many times, show a different error
-      const attempts = parseInt(localStorage.getItem('profileSetupAttempts') || '0');
-      if (attempts >= 3) {
-        toast({
-          title: "Multiple setup attempts detected",
-          description: "Please try signing out and back in, or contact support if the issue persists.",
-          variant: "destructive",
-        });
-        localStorage.setItem('hasSeenOnboarding', 'true'); // Prevent further attempts
-      } else {
-        toast({
-          title: "Setup failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Setup failed",
+        description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

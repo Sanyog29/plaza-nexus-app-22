@@ -44,14 +44,32 @@ export const useProfile = () => {
 
       if (error) throw error;
       
-      setProfile(data);
+      if (!data) {
+        // Profile doesn't exist, create a basic one
+        console.log('No profile found, creating basic profile...');
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            first_name: '',
+            last_name: '',
+            role: 'tenant_manager'
+          })
+          .select()
+          .maybeSingle();
+          
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          // Don't throw error, just log it and continue
+        } else {
+          setProfile(newProfile);
+        }
+      } else {
+        setProfile(data);
+      }
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast({
-        title: "Error loading profile",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Don't show error toast on profile page load, it's too disruptive
     } finally {
       setIsLoading(false);
     }
