@@ -19,16 +19,10 @@ const ProfilePage = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // Show onboarding only for tenant_manager users (not staff) if profile doesn't exist or is incomplete
+    // Show onboarding only for tenant_manager users (not staff) if profile doesn't exist
     if (!authLoading && !isLoading && !isStaff && userRole === 'tenant_manager') {
-      // If no profile exists, definitely show onboarding
+      // Only show onboarding if no profile exists at all
       if (!profile) {
-        setShowOnboarding(true);
-        return;
-      }
-      
-      // If profile exists but is incomplete, check localStorage to prevent infinite loops
-      if (!isProfileComplete) {
         const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
         const profileSetupAttempts = parseInt(localStorage.getItem('profileSetupAttempts') || '0');
         
@@ -38,7 +32,7 @@ const ProfilePage = () => {
         }
       }
     }
-  }, [profile, isLoading, isProfileComplete, authLoading, isStaff, userRole]);
+  }, [profile, isLoading, authLoading, isStaff, userRole]);
 
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
