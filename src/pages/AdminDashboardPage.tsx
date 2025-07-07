@@ -1,5 +1,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CustomizableDashboard } from '@/components/dashboard/CustomizableDashboard';
+import { AdvancedNotificationCenter } from '@/components/notifications/AdvancedNotificationCenter';
 import { useAdminDashboard } from '@/hooks/useAdminDashboard';
 import { usePerformanceMonitoring } from '@/hooks/usePerformanceMonitoring';
 import { useDatabaseOptimization } from '@/hooks/useDatabaseOptimization';
@@ -60,6 +62,9 @@ const AdminDashboardPage = () => {
     <div className="px-4 py-6">
       <DashboardHeader />
       
+      <CustomizableDashboard userRole="admin" />
+      <AdvancedNotificationCenter />
+      
       <Tabs defaultValue="overview" className="mt-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -70,9 +75,6 @@ const AdminDashboardPage = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <RealTimeMetrics />
-          <AdvancedAnalytics />
-          <StaffWorkloadBalancer />
 
           {/* Advanced Features Access */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

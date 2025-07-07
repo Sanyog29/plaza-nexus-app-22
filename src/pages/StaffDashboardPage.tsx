@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CustomizableDashboard } from '@/components/dashboard/CustomizableDashboard';
+import { AdvancedNotificationCenter } from '@/components/notifications/AdvancedNotificationCenter';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -114,6 +116,9 @@ const StaffDashboardPage = () => {
         <h1 className="text-2xl font-bold text-white mb-2">Staff Dashboard</h1>
         <p className="text-gray-400">Monitor and manage facility operations</p>
       </div>
+
+      <CustomizableDashboard userRole="staff" />
+      <AdvancedNotificationCenter />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

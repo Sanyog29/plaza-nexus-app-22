@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { GlobalSearch } from '@/components/common/GlobalSearch';
 
 interface ResponsiveLayoutProps {
   userRole: 'admin' | 'staff';
@@ -52,13 +53,7 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
 
               <div className="flex items-center gap-4">
                 {!isMobile && (
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search..."
-                      className="pl-10 w-64 bg-background/50 border-border/50"
-                    />
-                  </div>
+                  <GlobalSearch className="w-64" />
                 )}
 
                 {/* Notification Bell */}

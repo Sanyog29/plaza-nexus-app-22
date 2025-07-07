@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DataExportTools } from '@/components/export/DataExportTools';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -231,6 +232,8 @@ const AdminReportsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      <DataExportTools />
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top Issues */}
