@@ -38,37 +38,72 @@ const UserManagementPage = () => {
     try {
       setIsLoading(true);
       
-      // Use the RPC function to get user management data with retry logic
+      // Enhanced retry logic with exponential backoff
       let retryCount = 0;
-      const maxRetries = 3;
+      const maxRetries = 5;
+      let lastError;
 
       while (retryCount < maxRetries) {
         try {
+          console.log(`Attempting to fetch user data - attempt ${retryCount + 1}/${maxRetries}`);
+          
+          // Check admin status first
+          const { data: currentUser, error: userError } = await supabase.auth.getUser();
+          if (userError) throw userError;
+          
+          if (!currentUser?.user) {
+            throw new Error('User not authenticated');
+          }
+
+          // Call the RPC function
           const { data, error } = await supabase.rpc('get_user_management_data');
           
           if (error) {
+            console.error('RPC error:', error);
             throw error;
           }
           
+          console.log('Successfully fetched user data:', data?.length || 0, 'users');
           setUsers(data || []);
           return; // Success, exit retry loop
+          
         } catch (rpcError: any) {
+          lastError = rpcError;
           retryCount++;
           console.error(`RPC attempt ${retryCount} failed:`, rpcError);
           
+          // If this is the last attempt, throw the error
           if (retryCount >= maxRetries) {
             throw rpcError;
           }
           
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          // Exponential backoff: wait longer between retries
+          const waitTime = Math.min(1000 * Math.pow(2, retryCount - 1), 5000);
+          console.log(`Waiting ${waitTime}ms before retry ${retryCount + 1}`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       }
     } catch (error: any) {
-      console.error('Error fetching users after retries:', error);
+      console.error('Final error after all retries:', error);
+      
+      // More specific error messages
+      let errorMessage = "Failed to load user data. Please try again.";
+      let errorTitle = "Error fetching users";
+      
+      if (error.message?.includes('Access denied') || error.message?.includes('Only administrators')) {
+        errorTitle = "Access Denied";
+        errorMessage = "You don't have permission to view user management data.";
+      } else if (error.message?.includes('function') && error.message?.includes('does not exist')) {
+        errorTitle = "System Error";
+        errorMessage = "User management function is not available. Please contact support.";
+      } else if (error.message?.includes('network') || error.code === 'NETWORK_ERROR') {
+        errorTitle = "Network Error";
+        errorMessage = "Please check your internet connection and try again.";
+      }
+      
       toast({
-        title: "Error fetching users",
-        description: error.message || "Failed to load user data. Please try again.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
