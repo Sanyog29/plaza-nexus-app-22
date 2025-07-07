@@ -37,18 +37,25 @@ const UserManagementPage = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching users...');
       
       // Use the RPC function to get user management data
       const { data, error } = await supabase.rpc('get_user_management_data');
       
-      if (error) throw error;
+      console.log('RPC response:', { data, error });
       
+      if (error) {
+        console.error('RPC error:', error);
+        throw error;
+      }
+      
+      console.log('Setting users:', data);
       setUsers(data || []);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       toast({
         title: "Error fetching users",
-        description: error.message,
+        description: error.message || "Failed to load user data",
         variant: "destructive",
       });
     } finally {
