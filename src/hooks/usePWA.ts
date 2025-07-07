@@ -10,8 +10,12 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function usePWA() {
-  // Guard against SSR or when React is not available
-  if (typeof window === 'undefined' || !React) {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  // Guard against SSR - return early functionality but hooks must be called first
+  if (typeof window === 'undefined') {
     return {
       isInstalled: false,
       isInstallable: false,
@@ -20,10 +24,6 @@ export function usePWA() {
       sendNotification: () => {}
     };
   }
-
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
     // Check if app is already installed
