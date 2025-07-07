@@ -38,6 +38,9 @@ import StaffOperationsPage from "./pages/StaffOperationsPage";
 import UnifiedDashboardPage from "./pages/UnifiedDashboardPage";
 import OperationalExcellencePage from "./pages/OperationalExcellencePage";
 import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
+import SystemConfigPage from "./pages/SystemConfigPage";
+import BulkOperationsPage from "./pages/BulkOperationsPage";
+import AuditLogsPage from "./pages/AuditLogsPage";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +90,9 @@ const App = () => (
               <Route path="/unified-dashboard" element={<UnifiedDashboardPage />} />
               <Route path="/operational-excellence" element={<OperationalExcellencePage />} />
               <Route path="/advanced-features" element={<AdvancedFeaturesPage />} />
+              <Route path="/admin/system-config" element={<SystemConfigPage />} />
+              <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
+              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

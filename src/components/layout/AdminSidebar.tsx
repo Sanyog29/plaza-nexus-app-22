@@ -21,7 +21,8 @@ import {
   ChefHat,
   Building,
   Layout,
-  HelpCircle
+  HelpCircle,
+  Edit
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -40,6 +41,9 @@ const adminMenuItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: Home },
   { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
   { title: "User Management", url: "/admin/users", icon: Users },
+  { title: "System Config", url: "/admin/system-config", icon: Settings },
+  { title: "Bulk Operations", url: "/admin/bulk-operations", icon: Edit },
+  { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
   { title: "Requests", url: "/admin/requests", icon: ClipboardList },
   { title: "Maintenance", url: "/maintenance", icon: Wrench },
   { title: "Security", url: "/security", icon: Shield },
