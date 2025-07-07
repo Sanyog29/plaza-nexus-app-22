@@ -577,6 +577,67 @@ export type Database = {
         }
         Relationships: []
       }
+      escalation_logs: {
+        Row: {
+          created_at: string
+          escalated_from: string | null
+          escalated_to: string | null
+          escalation_reason: string | null
+          escalation_type: string
+          id: string
+          metadata: Json | null
+          penalty_amount: number | null
+          request_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          escalated_from?: string | null
+          escalated_to?: string | null
+          escalation_reason?: string | null
+          escalation_type: string
+          id?: string
+          metadata?: Json | null
+          penalty_amount?: number | null
+          request_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          escalated_from?: string | null
+          escalated_to?: string | null
+          escalation_reason?: string | null
+          escalation_type?: string
+          id?: string
+          metadata?: Json | null
+          penalty_amount?: number | null
+          request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalation_logs_escalated_from_fkey"
+            columns: ["escalated_from"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_logs_escalated_to_fkey"
+            columns: ["escalated_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_logs_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       info_categories: {
         Row: {
           created_at: string

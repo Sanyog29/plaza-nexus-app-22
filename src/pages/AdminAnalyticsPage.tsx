@@ -4,15 +4,23 @@ import { VisitorAnalytics } from '@/components/analytics/VisitorAnalytics';
 import { SecurityAnalytics } from '@/components/analytics/SecurityAnalytics';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import AdvancedAnalytics from '@/components/admin/AdvancedAnalytics';
+import { useAuth } from '@/components/AuthProvider';
+import { Navigate } from 'react-router-dom';
 
 const AdminAnalyticsPage = () => {
+  const { isAdmin } = useAuth();
   const [selectedTab, setSelectedTab] = useState('visitor');
+
+  // Redirect non-admin users
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Analytics & Reports Dashboard</h1>
-        <p className="text-gray-400">Comprehensive analytics for visitor management and security operations</p>
+        <h1 className="text-2xl font-bold text-foreground">Analytics & Reports Dashboard</h1>
+        <p className="text-muted-foreground">Comprehensive analytics for visitor management and security operations</p>
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">

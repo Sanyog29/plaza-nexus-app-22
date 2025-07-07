@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { EmptyAnalyticsState } from './EmptyAnalyticsState';
+import { AnalyticsLoadingSkeleton } from './AnalyticsLoadingSkeleton';
+import { toast } from '@/hooks/use-toast';
 
 interface VisitorMetrics {
   totalVisitors: number;
@@ -32,6 +35,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 export const VisitorAnalytics: React.FC = () => {
   const [metrics, setMetrics] = useState<VisitorMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState('7'); // days
   const [selectedTab, setSelectedTab] = useState('overview');
 
@@ -41,13 +45,14 @@ export const VisitorAnalytics: React.FC = () => {
 
   const fetchAnalytics = async () => {
     setLoading(true);
+    setError(null);
     try {
       const daysBack = parseInt(dateRange);
       const startDate = startOfDay(subDays(new Date(), daysBack));
       const endDate = endOfDay(new Date());
 
       // Get visitor data
-      const { data: visitors } = await supabase
+      const { data: visitors, error: fetchError } = await supabase
         .from('visitors')
         .select(`
           *,
@@ -57,12 +62,34 @@ export const VisitorAnalytics: React.FC = () => {
         .gte('visit_date', startDate.toISOString().split('T')[0])
         .lte('visit_date', endDate.toISOString().split('T')[0]);
 
-      if (visitors) {
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      if (visitors && visitors.length > 0) {
         const processedMetrics = processVisitorData(visitors, daysBack);
         setMetrics(processedMetrics);
+      } else {
+        setMetrics({
+          totalVisitors: 0,
+          checkedIn: 0,
+          checkedOut: 0,
+          noShows: 0,
+          averageVisitDuration: 0,
+          peakHours: [],
+          dailyTrends: [],
+          categoryBreakdown: [],
+          companyStats: []
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching analytics:', error);
+      setError(error.message || 'Failed to load analytics data');
+      toast({
+        title: "Error loading analytics",
+        description: error.message || 'Failed to load analytics data',
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -190,20 +217,34 @@ export const VisitorAnalytics: React.FC = () => {
   };
 
   if (loading) {
+    return <AnalyticsLoadingSkeleton />;
+  }
+
+  if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-white">Loading analytics...</div>
-      </div>
+      <EmptyAnalyticsState 
+        title="Error Loading Data"
+        description={error}
+        type="visitor"
+      />
     );
   }
 
-  if (!metrics) return null;
+  if (!metrics || metrics.totalVisitors === 0) {
+    return (
+      <EmptyAnalyticsState 
+        title="No Visitor Data"
+        description="No visitor data found for the selected time period. Visitor analytics will appear here once you have visitor check-ins."
+        type="visitor"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Visitor Analytics</h2>
+        <h2 className="text-2xl font-bold text-foreground">Visitor Analytics</h2>
         <div className="flex gap-4">
           <Select value={dateRange} onValueChange={setDateRange}>
             <SelectTrigger className="w-32">
@@ -229,8 +270,8 @@ export const VisitorAnalytics: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Total Visitors</p>
-                <p className="text-2xl font-bold text-white">{metrics.totalVisitors}</p>
+                <p className="text-sm text-muted-foreground">Total Visitors</p>
+                <p className="text-2xl font-bold text-foreground">{metrics.totalVisitors}</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
             </div>
@@ -241,8 +282,8 @@ export const VisitorAnalytics: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Check-in Rate</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-sm text-muted-foreground">Check-in Rate</p>
+                <p className="text-2xl font-bold text-foreground">
                   {((metrics.checkedIn + metrics.checkedOut) / metrics.totalVisitors * 100).toFixed(1)}%
                 </p>
               </div>
@@ -255,8 +296,8 @@ export const VisitorAnalytics: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">No-Show Rate</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-sm text-muted-foreground">No-Show Rate</p>
+                <p className="text-2xl font-bold text-foreground">
                   {(metrics.noShows / metrics.totalVisitors * 100).toFixed(1)}%
                 </p>
               </div>
@@ -269,8 +310,8 @@ export const VisitorAnalytics: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Avg Visit Duration</p>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-sm text-muted-foreground">Avg Visit Duration</p>
+                <p className="text-2xl font-bold text-foreground">
                   {Math.round(metrics.averageVisitDuration)}m
                 </p>
               </div>
