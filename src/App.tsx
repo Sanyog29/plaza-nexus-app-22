@@ -41,6 +41,8 @@ import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
 import SystemConfigPage from "./pages/SystemConfigPage";
 import BulkOperationsPage from "./pages/BulkOperationsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
+import StaffPerformancePage from "./pages/StaffPerformancePage";
+import StaffTrainingPage from "./pages/StaffTrainingPage";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,8 @@ const App = () => (
               <Route path="/staff/reports" element={<StaffReportsPage />} />
               <Route path="/staff/settings" element={<StaffSettingsPage />} />
               <Route path="/staff/operations" element={<StaffOperationsPage />} />
+              <Route path="/staff/performance" element={<StaffPerformancePage />} />
+              <Route path="/staff/training" element={<StaffTrainingPage />} />
               <Route path="/security-guard" element={<SecurityGuardPage />} />
               <Route path="/unified-dashboard" element={<UnifiedDashboardPage />} />
               <Route path="/operational-excellence" element={<OperationalExcellencePage />} />

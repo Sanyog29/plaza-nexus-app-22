@@ -77,7 +77,10 @@ const staffMenuItems = [
   { title: "Info Hub", url: "/info-hub", icon: Info },
   { title: "User Manual", url: "/manual", icon: BookOpen },
   { title: "Settings", url: "/staff/settings", icon: Settings },
+  { title: "Performance", url: "/staff/performance", icon: Activity },
+  { title: "Training", url: "/staff/training", icon: GraduationCap },
   { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
+  { title: "Advanced Features", url: "/advanced-features", icon: Zap },
 ];
 
 interface AdminSidebarProps {
