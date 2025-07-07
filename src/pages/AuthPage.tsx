@@ -62,26 +62,44 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-background mobile-safe">
-      <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center animate-fade-in-up">
-        <div className="hidden lg:block">
-          <WelcomeCard />
+    <div className="min-h-screen flex flex-col bg-background mobile-safe">
+      {/* Header with branding to match main app */}
+      <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container max-w-7xl mx-auto px-6 h-16 flex items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">SP</span>
+            </div>
+            <div>
+              <h1 className="font-semibold text-foreground">SS Plaza</h1>
+              <p className="text-xs text-muted-foreground">Building Management System</p>
+            </div>
+          </div>
         </div>
-        <div className="w-full max-w-md mx-auto lg:max-w-none">
-          <AuthForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            isLoading={isLoading}
-            isSignUp={isSignUp}
-            setIsSignUp={setIsSignUp}
-            showEmailSentMessage={showEmailSentMessage}
-            setShowEmailSentMessage={setShowEmailSentMessage}
-            onSubmit={handleSubmit}
-          />
+      </header>
+
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center animate-fade-in-up">
+          <div className="hidden lg:block">
+            <WelcomeCard />
+          </div>
+          <div className="w-full max-w-md mx-auto lg:max-w-none">
+            <AuthForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              isLoading={isLoading}
+              isSignUp={isSignUp}
+              setIsSignUp={setIsSignUp}
+              showEmailSentMessage={showEmailSentMessage}
+              setShowEmailSentMessage={setShowEmailSentMessage}
+              onSubmit={handleSubmit}
+            />
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
