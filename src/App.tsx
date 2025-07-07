@@ -44,6 +44,9 @@ import BulkOperationsPage from "./pages/BulkOperationsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
 import StaffPerformancePage from "./pages/StaffPerformancePage";
 import StaffTrainingPage from "./pages/StaffTrainingPage";
+import AdminMaintenancePage from "./pages/AdminMaintenancePage";
+import AdminSecurityPage from "./pages/AdminSecurityPage";
+import AdminServicesPage from "./pages/AdminServicesPage";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +89,9 @@ const App = () => (
               <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
+              <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
+              <Route path="/admin/security" element={<AdminSecurityPage />} />
+              <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/system-config" element={<SystemConfigPage />} />
               <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
@@ -100,6 +106,9 @@ const App = () => (
               <Route path="/staff/operations" element={<StaffOperationsPage />} />
               <Route path="/staff/performance" element={<StaffPerformancePage />} />
               <Route path="/staff/training" element={<StaffTrainingPage />} />
+              <Route path="/staff/maintenance" element={<MaintenancePage />} />
+              <Route path="/staff/security" element={<SecurityPage />} />
+              <Route path="/staff/services" element={<ServicesPage />} />
               
               {/* Special Access Routes */}
               <Route path="/security-guard" element={<SecurityGuardPage />} />

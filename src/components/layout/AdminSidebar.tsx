@@ -57,9 +57,9 @@ const adminMenuGroups = [
   {
     label: "Building Management", 
     items: [
-      { title: "Maintenance", url: "/maintenance", icon: Wrench },
-      { title: "Security & Visitors", url: "/security", icon: Shield },
-      { title: "Services Hub", url: "/services", icon: Building },
+      { title: "Maintenance", url: "/admin/maintenance", icon: Wrench },
+      { title: "Security & Visitors", url: "/admin/security", icon: Shield },
+      { title: "Services Hub", url: "/admin/services", icon: Building },
     ]
   },
   {
@@ -100,9 +100,9 @@ const staffMenuGroups = [
   {
     label: "Facility Management",
     items: [
-      { title: "Maintenance Hub", url: "/maintenance", icon: Wrench },
-      { title: "Security Center", url: "/security", icon: Shield },
-      { title: "Services Portal", url: "/services", icon: Building },
+      { title: "Maintenance Hub", url: "/staff/maintenance", icon: Wrench },
+      { title: "Security Center", url: "/staff/security", icon: Shield },
+      { title: "Services Portal", url: "/staff/services", icon: Building },
       { title: "Training Center", url: "/staff/training", icon: GraduationCap },
     ]
   },
