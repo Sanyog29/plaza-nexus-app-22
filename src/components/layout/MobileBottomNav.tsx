@@ -13,7 +13,46 @@ export const MobileBottomNav: React.FC = () => {
   if (!user) return null;
 
   const getNavItems = () => {
-    const baseItems = [
+    // Role-based navigation - different items for different users
+    if (isAdmin || isStaff) {
+      return [
+        {
+          href: isAdmin ? '/admin/dashboard' : '/staff/dashboard',
+          icon: Home,
+          label: 'Dashboard',
+          active: location.pathname.includes('/dashboard')
+        },
+        {
+          href: isStaff ? '/staff/requests' : '/admin/requests',
+          icon: Wrench,
+          label: 'Requests',
+          active: location.pathname.includes('/requests'),
+          badge: metrics?.activeRequests || 0
+        },
+        {
+          href: '/security',
+          icon: Shield,
+          label: 'Security',
+          active: location.pathname === '/security'
+        },
+        {
+          href: isStaff ? '/staff/alerts' : '/alerts',
+          icon: Bell,
+          label: 'Alerts',
+          active: location.pathname.includes('/alerts'),
+          badge: metrics?.activeAlerts || 0
+        },
+        {
+          href: '/profile',
+          icon: User,
+          label: 'Profile',
+          active: location.pathname === '/profile'
+        }
+      ];
+    }
+
+    // Tenant navigation
+    return [
       {
         href: '/',
         icon: Home,
@@ -39,27 +78,14 @@ export const MobileBottomNav: React.FC = () => {
         label: 'Alerts',
         active: location.pathname === '/alerts',
         badge: metrics?.activeAlerts || 0
+      },
+      {
+        href: '/profile',
+        icon: User,
+        label: 'Profile',
+        active: location.pathname === '/profile'
       }
     ];
-
-    // Add role-specific items using proper role checks
-    if (isAdmin || isStaff) {
-      baseItems.splice(2, 0, {
-        href: '/security',
-        icon: Shield,
-        label: 'Security',
-        active: location.pathname === '/security'
-      });
-    }
-
-    baseItems.push({
-      href: '/profile',
-      icon: User,
-      label: 'Profile',
-      active: location.pathname === '/profile'
-    });
-
-    return baseItems;
   };
 
   const navItems = getNavItems();

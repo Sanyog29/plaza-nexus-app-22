@@ -36,23 +36,18 @@ export const MobileHeader: React.FC = () => {
     { title: "Advanced Features", url: "/advanced-features", icon: Zap },
   ];
 
+  // Streamlined Staff Menu - Essential Tools Only
   const staffMenuItems = [
     { title: "Dashboard", url: "/staff/dashboard", icon: Home },
-    { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
-    { title: "Operations", url: "/staff/operations", icon: ClipboardList },
-    { title: "Requests", url: "/staff/requests", icon: Wrench },
+    { title: "My Tasks", url: "/staff/operations", icon: ClipboardList },
+    { title: "Active Requests", url: "/staff/requests", icon: Wrench },
     { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Security", url: "/security", icon: Shield },
-    { title: "Security Guard", url: "/security-guard", icon: Shield },
     { title: "Services", url: "/services", icon: Building },
-    { title: "Bookings", url: "/bookings", icon: Calendar },
+    { title: "System Health", url: "/unified-dashboard", icon: Layout },
     { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
-    { title: "Cafeteria", url: "/cafeteria", icon: ChefHat },
     { title: "Reports", url: "/staff/reports", icon: BarChart3 },
-    { title: "Info Hub", url: "/info-hub", icon: Info },
-    { title: "User Manual", url: "/manual", icon: BookOpen },
     { title: "Settings", url: "/staff/settings", icon: Settings },
-    { title: "Operational Excellence", url: "/operational-excellence", icon: Brain },
   ];
 
   const getMenuItems = () => {

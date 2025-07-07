@@ -181,59 +181,43 @@ const StaffDashboardPage = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Streamlined */}
       <Card className="bg-card/50 backdrop-blur mb-8">
         <CardHeader>
           <CardTitle className="text-white">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button 
               onClick={() => navigate('/staff/requests')}
-              className="h-20 flex flex-col bg-plaza-blue/10 hover:bg-plaza-blue/20 border border-plaza-blue/30"
+              className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30"
             >
-              <ClipboardList className="h-6 w-6 text-plaza-blue mb-2" />
-              <span className="text-sm">View Requests</span>
+              <ClipboardList className="h-6 w-6 text-primary mb-2" />
+              <span className="text-sm">My Requests</span>
             </Button>
             
             <Button 
               onClick={() => navigate('/staff/alerts')}
-              className="h-20 flex flex-col bg-red-500/10 hover:bg-red-500/20 border border-red-500/30"
+              className="h-20 flex flex-col bg-destructive/10 hover:bg-destructive/20 border border-destructive/30"
             >
-              <AlertTriangle className="h-6 w-6 text-red-400 mb-2" />
+              <AlertTriangle className="h-6 w-6 text-destructive mb-2" />
               <span className="text-sm">Active Alerts</span>
             </Button>
             
             <Button 
-              onClick={() => navigate('/staff/reports')}
+              onClick={() => navigate('/staff/performance')}
               className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30"
             >
-              <TrendingUp className="h-6 w-6 text-green-400 mb-2" />
-              <span className="text-sm">View Reports</span>
-            </Button>
-            
-            <Button 
-              onClick={() => navigate('/admin/dashboard')}
-              className="h-20 flex flex-col bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30"
-            >
-              <Activity className="h-6 w-6 text-orange-400 mb-2" />
+              <Activity className="h-6 w-6 text-green-400 mb-2" />
               <span className="text-sm">Performance</span>
             </Button>
             
             <Button 
-              onClick={() => navigate('/profile')}
-              className="h-20 flex flex-col bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30"
+              onClick={() => navigate('/staff/training')}
+              className="h-20 flex flex-col bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
             >
-              <GraduationCap className="h-6 w-6 text-indigo-400 mb-2" />
+              <GraduationCap className="h-6 w-6 text-blue-400 mb-2" />
               <span className="text-sm">Training</span>
-            </Button>
-            
-            <Button 
-              onClick={() => navigate('/profile')}
-              className="h-20 flex flex-col bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30"
-            >
-              <Users className="h-6 w-6 text-purple-400 mb-2" />
-              <span className="text-sm">My Profile</span>
             </Button>
           </div>
         </CardContent>

@@ -86,35 +86,40 @@ const adminMenuGroups = [
   }
 ];
 
-// Simplified Staff Menu Structure  
+// Enhanced Staff Menu Structure - Task-Focused Workflow
 const staffMenuGroups = [
   {
-    label: "Daily Work",
+    label: "Daily Operations",
     items: [
       { title: "Dashboard", url: "/staff/dashboard", icon: Home },
       { title: "My Tasks", url: "/staff/operations", icon: ClipboardList },
-      { title: "Performance", url: "/staff/performance", icon: Activity },
+      { title: "Active Requests", url: "/staff/requests", icon: Wrench },
+      { title: "Performance Metrics", url: "/staff/performance", icon: Activity },
     ]
   },
   {
-    label: "Building Operations",
+    label: "Facility Management",
     items: [
-      { title: "Maintenance", url: "/maintenance", icon: Wrench },
-      { title: "Security", url: "/security", icon: Shield },
-      { title: "Services", url: "/services", icon: Building },
+      { title: "Maintenance Hub", url: "/maintenance", icon: Wrench },
+      { title: "Security Center", url: "/security", icon: Shield },
+      { title: "Services Portal", url: "/services", icon: Building },
+      { title: "Training Center", url: "/staff/training", icon: GraduationCap },
     ]
   },
   {
-    label: "Reporting",
+    label: "Analytics & Reports",
     items: [
-      { title: "Analytics", url: "/staff/reports", icon: BarChart3 },
+      { title: "System Health", url: "/unified-dashboard", icon: Activity },
+      { title: "Staff Reports", url: "/staff/reports", icon: BarChart3 },
+      { title: "Alerts Center", url: "/staff/alerts", icon: AlertTriangle },
     ]
   },
   {
-    label: "Personal", 
+    label: "Tools & Settings", 
     items: [
       { title: "Profile", url: "/profile", icon: User },
-      { title: "Settings", url: "/staff/settings", icon: Settings },
+      { title: "Staff Settings", url: "/staff/settings", icon: Settings },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
     ]
   }
 ];
