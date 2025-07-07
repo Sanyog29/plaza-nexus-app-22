@@ -87,7 +87,6 @@ const InfoHubPage = () => {
   };
   
   const handleDownload = (item: InfoItem) => {
-    console.log(`Downloading ${item.title}`);
     if (item.file_url && item.file_url !== '#') {
       window.open(item.file_url, '_blank');
     } else {

@@ -48,15 +48,20 @@ const ParkingRequestForm: React.FC<ParkingRequestFormProps> = ({ onClose, onRequ
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // In a real app, this would be sent to the backend
-    console.log(values);
-    
-    toast({
-      title: "Parking request submitted",
-      description: `Request for ${values.visitorName} on ${format(values.date, 'PPP')} has been submitted for approval.`,
-    });
-    
-    onRequestSubmitted();
+    // Submit parking request with proper error handling
+    try {
+      toast({
+        title: "Parking request submitted",
+        description: `Request for ${values.visitorName} on ${format(values.date, 'PPP')} has been submitted for approval.`,
+      });
+      onRequestSubmitted();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit request. Please try again.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (

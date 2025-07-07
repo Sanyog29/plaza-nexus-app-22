@@ -53,7 +53,7 @@ export const ShiftChangeManagement: React.FC = () => {
           .from('profiles')
           .select('first_name, last_name')
           .eq('id', request.requested_by)
-          .single();
+          .maybeSingle();
 
         let reviewer = null;
         if (request.reviewed_by) {
@@ -61,7 +61,7 @@ export const ShiftChangeManagement: React.FC = () => {
             .from('profiles')
             .select('first_name, last_name')
             .eq('id', request.reviewed_by)
-            .single();
+            .maybeSingle();
           reviewer = reviewerData;
         }
 

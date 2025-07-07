@@ -32,9 +32,7 @@ export function useRealtimeUpdates({
           table,
           filter,
         } as any,
-        (payload: any) => {
-          console.log(`Realtime update received for ${table}:`, payload);
-          
+        () => {
           // Invalidate related queries to refetch data
           queryKeysToInvalidate.forEach(queryKey => {
             queryClient.invalidateQueries({ queryKey });
@@ -83,11 +81,11 @@ export function useRealtimeUserPresence(roomId: string) {
         const newState = channel.presenceState();
         setPresenceState(newState);
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('User joined:', key, newPresences);
+      .on('presence', { event: 'join' }, () => {
+        // User joined presence
       })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('User left:', key, leftPresences);
+      .on('presence', { event: 'leave' }, () => {
+        // User left presence
       })
       .subscribe();
 

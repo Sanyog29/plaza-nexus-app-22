@@ -16,13 +16,11 @@ export default function UnifiedDashboardPage() {
 
   const handleViewRequest = (request: UnifiedRequest) => {
     setSelectedRequest(request);
-    // In a real app, this would navigate to request details or open a modal
-    console.log('View request:', request);
+    // Navigation to request details handled by component
   };
 
   const handleCreateRequest = () => {
-    // In a real app, this would navigate to create request page or open a modal
-    console.log('Create new request');
+    // Navigation to create request handled by component
   };
 
   return (

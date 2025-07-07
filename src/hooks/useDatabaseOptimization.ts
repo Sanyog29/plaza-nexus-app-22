@@ -191,11 +191,9 @@ export const useDatabaseOptimization = () => {
       // Note: In a real implementation, this would execute via a migration
       const indexSQL = `CREATE INDEX CONCURRENTLY ${indexName} ON ${recommendation.tableName} USING ${recommendation.indexType} (${columnList});`;
       
-      console.log('Index SQL to implement:', indexSQL);
-      
       // Update recommendation status
       setIndexRecommendations(prev => 
-        prev.map(rec => 
+        prev.map(rec =>
           rec === recommendation 
             ? { ...rec, implemented: true }
             : rec

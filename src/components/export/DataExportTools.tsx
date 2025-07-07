@@ -88,7 +88,7 @@ export function DataExportTools({ className }: DataExportToolsProps) {
       .from('profiles')
       .select('role')
       .eq('id', user?.id)
-      .single();
+      .maybeSingle();
     return profile?.role === 'admin';
   };
 

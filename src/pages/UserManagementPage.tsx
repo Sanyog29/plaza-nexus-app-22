@@ -37,24 +37,19 @@ const UserManagementPage = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching users...');
       
       // Use the RPC function to get user management data with retry logic
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           const { data, error } = await supabase.rpc('get_user_management_data');
           
-          console.log('RPC response:', { data, error, attempt: retryCount + 1 });
-          
           if (error) {
-            console.error('RPC error:', error);
             throw error;
           }
           
-          console.log('Setting users:', data);
           setUsers(data || []);
           return; // Success, exit retry loop
         } catch (rpcError: any) {

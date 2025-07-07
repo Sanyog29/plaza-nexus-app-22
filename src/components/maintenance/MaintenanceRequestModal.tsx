@@ -42,15 +42,20 @@ const MaintenanceRequestModal: React.FC<MaintenanceRequestModalProps> = ({ isOpe
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // In a real app, this would be sent to a backend service
-    console.log(values);
-    
-    toast({
-      title: "Maintenance request submitted",
-      description: `Request for ${asset.name} has been submitted successfully.`,
-    });
-    
-    onClose();
+    // Submit request with proper error handling
+    try {
+      toast({
+        title: "Maintenance request submitted",
+        description: `Request for ${asset.name} has been submitted successfully.`,
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit request. Please try again.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (

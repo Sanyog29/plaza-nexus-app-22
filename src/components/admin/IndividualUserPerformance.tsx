@@ -84,7 +84,7 @@ export const IndividualUserPerformance: React.FC = () => {
         .from('profiles')
         .select('*')
         .eq('id', targetUserId)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
 

@@ -7,6 +7,7 @@ import { AuthProvider } from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import { PWAProvider } from "./components/PWAProvider";
+import { GlobalErrorHandler } from "./components/common/GlobalErrorHandler";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import RequestsPage from "./pages/RequestsPage";
@@ -48,12 +49,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <PWAProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+    <GlobalErrorHandler>
+      <AuthProvider>
+        <PWAProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
             <Route element={
@@ -100,10 +102,11 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-        </TooltipProvider>
-      </PWAProvider>
-    </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </PWAProvider>
+      </AuthProvider>
+    </GlobalErrorHandler>
   </QueryClientProvider>
 );
 

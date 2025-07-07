@@ -66,7 +66,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           status: 'pending' as RequestStatus
         })
         .select()
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
 

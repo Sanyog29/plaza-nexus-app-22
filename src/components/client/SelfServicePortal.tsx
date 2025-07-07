@@ -246,7 +246,7 @@ export const SelfServicePortal: React.FC = () => {
           reported_by: user.id
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

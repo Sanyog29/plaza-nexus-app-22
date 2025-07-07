@@ -34,7 +34,7 @@ export const useCrossModuleIntegration = () => {
         .from('maintenance_requests')
         .insert(maintenanceData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -65,7 +65,7 @@ export const useCrossModuleIntegration = () => {
         .from('alerts')
         .insert(alertData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -106,7 +106,7 @@ export const useCrossModuleIntegration = () => {
           profiles!visitors_host_id_fkey (first_name, last_name, role)
         `)
         .eq('id', visitorId)
-        .single();
+        .maybeSingle();
 
       if (!visitor) return;
 

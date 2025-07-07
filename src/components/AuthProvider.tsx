@@ -149,39 +149,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        // Check for existing session first
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          if (mounted) {
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            await checkUserRole(session.user.id);
-          }
-          setIsLoading(false);
-        }
-      } catch (error) {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
 
+        // Handle auth events
         if (event === 'SIGNED_IN') {
           toast("Welcome back!", {
             description: "You have successfully logged in.",
@@ -193,19 +166,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           resetRoleStates();
         }
         
+        // Update state synchronously
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
-          // Use setTimeout to avoid potential recursion issues
-          setTimeout(() => {
-            if (mounted) {
-              checkUserRole(session.user.id);
-            }
-          }, 100);
+        // Handle role checking separately
+        if (session?.user && mounted) {
+          setTimeout(() => checkUserRole(session.user.id), 0);
+        } else if (mounted) {
+          setIsLoading(false);
         }
       }
     );
+
+    // Initialize auth state AFTER setting up listener
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          if (!error && session) {
+            setSession(session);
+            setUser(session.user);
+            if (session.user) {
+              await checkUserRole(session.user.id);
+            }
+          }
+          setIsLoading(false);
+        }
+      } catch (error) {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
     initializeAuth();
 

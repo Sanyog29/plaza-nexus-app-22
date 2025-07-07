@@ -40,7 +40,7 @@ export const VisitorNotificationBanner: React.FC = () => {
             .from('visitors')
             .select('name, host_id')
             .eq('id', payload.new.visitor_id)
-            .single();
+            .maybeSingle();
 
           if (visitor && visitor.host_id === user.id) {
             const newActivity: VisitorActivity = {

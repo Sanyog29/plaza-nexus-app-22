@@ -212,8 +212,6 @@ export const useAutomatedWorkflows = () => {
       });
 
       if (conditionsMet) {
-        console.log(`Executing workflow: ${rule.id}`, context);
-        
         // Execute all actions for this rule
         for (const action of rule.actions) {
           await executeWorkflowAction(action, context);
