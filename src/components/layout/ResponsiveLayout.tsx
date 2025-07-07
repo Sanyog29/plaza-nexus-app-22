@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, NavLink } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from './AdminSidebar';
@@ -11,16 +11,43 @@ import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { GlobalSearch } from '@/components/common/GlobalSearch';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ResponsiveLayoutProps {
-  userRole: 'admin' | 'staff';
+  userRole: string;
 }
 
 export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
-  const { user } = useAuth();
+  const { user, userRole: authUserRole } = useAuth();
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
+  const [userDepartment, setUserDepartment] = useState<string | undefined>();
+
+  // Fetch user profile data to get department information
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('department')
+            .eq('id', user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching user profile:', error);
+          } else {
+            setUserDepartment(profile?.department);
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
 
   // Guard clause to ensure we're in router context
   if (!location) {
@@ -41,7 +68,7 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-background">
-        <AdminSidebar userRole={userRole} />
+        <AdminSidebar userRole={authUserRole || userRole} userDepartment={userDepartment} />
         
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}

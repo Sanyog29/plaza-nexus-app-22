@@ -14,7 +14,7 @@ import { usePWA } from '@/hooks/usePWA';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const AppLayout: React.FC = () => {
-  const { user, isAdmin, isStaff, isLoading } = useAuth(); // Use role states from AuthProvider
+  const { user, isAdmin, isStaff, isLoading, userRole } = useAuth(); // Use role states from AuthProvider
   const location = useLocation();
   const navigate = useNavigate();
   const { requestNotificationPermission } = usePWA();
@@ -63,7 +63,7 @@ const AppLayout: React.FC = () => {
   if (isAdmin || isStaff) {
     return (
       <ErrorBoundary>
-        <ResponsiveLayout userRole={isAdmin ? 'admin' : 'staff'} />
+        <ResponsiveLayout userRole={userRole || (isAdmin ? 'admin' : 'staff')} />
         <HelpSystem />
       </ErrorBoundary>
     );

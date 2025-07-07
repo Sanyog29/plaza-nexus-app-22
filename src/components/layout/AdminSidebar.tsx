@@ -86,54 +86,206 @@ const adminMenuGroups = [
   }
 ];
 
-// Enhanced Staff Menu Structure - Task-Focused Workflow
-const staffMenuGroups = [
+// Operations Supervisor Menu Structure
+const opsSupervisorMenuGroups = [
+  {
+    label: "Supervision",
+    items: [
+      { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+      { title: "Staff Management", url: "/staff/operations", icon: Users },
+      { title: "Staff Performance", url: "/staff/performance", icon: Activity },
+      { title: "Task Assignment", url: "/staff/requests", icon: ClipboardList },
+    ]
+  },
+  {
+    label: "Operations",
+    items: [
+      { title: "Maintenance Hub", url: "/staff/maintenance", icon: Wrench },
+      { title: "Security Operations", url: "/staff/security", icon: Shield },
+      { title: "Services Management", url: "/staff/services", icon: Building },
+    ]
+  },
+  {
+    label: "Analytics & Reports",
+    items: [
+      { title: "Performance Analytics", url: "/staff/reports", icon: BarChart3 },
+      { title: "System Health", url: "/unified-dashboard", icon: Activity },
+      { title: "Staff Alerts", url: "/staff/alerts", icon: AlertTriangle },
+    ]
+  },
+  {
+    label: "Training & Settings",
+    items: [
+      { title: "Staff Training", url: "/staff/training", icon: GraduationCap },
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Settings", url: "/staff/settings", icon: Settings },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
+// Security Staff Menu Structure
+const securityStaffMenuGroups = [
+  {
+    label: "Security Operations",
+    items: [
+      { title: "Security Dashboard", url: "/security", icon: Shield },
+      { title: "Visitor Management", url: "/staff/security", icon: Users },
+      { title: "Security Rounds", url: "/staff/security", icon: Activity },
+      { title: "Incident Reports", url: "/staff/security", icon: AlertTriangle },
+    ]
+  },
+  {
+    label: "Daily Tasks",
+    items: [
+      { title: "My Tasks", url: "/staff/operations", icon: ClipboardList },
+      { title: "Active Requests", url: "/staff/requests", icon: Wrench },
+      { title: "Daily Checklists", url: "/staff/maintenance", icon: Calendar },
+    ]
+  },
+  {
+    label: "Resources",
+    items: [
+      { title: "Performance Metrics", url: "/staff/performance", icon: BarChart3 },
+      { title: "Training Center", url: "/staff/training", icon: GraduationCap },
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
+// Housekeeping Staff Menu Structure
+const housekeepingStaffMenuGroups = [
+  {
+    label: "Housekeeping Operations",
+    items: [
+      { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+      { title: "Cleaning Tasks", url: "/staff/operations", icon: ClipboardList },
+      { title: "Supply Management", url: "/staff/maintenance", icon: Building },
+      { title: "Area Inspections", url: "/staff/requests", icon: Activity },
+    ]
+  },
+  {
+    label: "Daily Management",
+    items: [
+      { title: "Active Requests", url: "/staff/requests", icon: Wrench },
+      { title: "Daily Checklists", url: "/staff/maintenance", icon: Calendar },
+      { title: "Performance Metrics", url: "/staff/performance", icon: BarChart3 },
+    ]
+  },
+  {
+    label: "Resources",
+    items: [
+      { title: "Training Center", url: "/staff/training", icon: GraduationCap },
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
+// General Field Staff Menu Structure
+const fieldStaffMenuGroups = [
   {
     label: "Daily Operations",
     items: [
       { title: "Dashboard", url: "/staff/dashboard", icon: Home },
       { title: "My Tasks", url: "/staff/operations", icon: ClipboardList },
       { title: "Active Requests", url: "/staff/requests", icon: Wrench },
+      { title: "Maintenance Hub", url: "/staff/maintenance", icon: Building },
+    ]
+  },
+  {
+    label: "Performance & Training",
+    items: [
       { title: "Performance Metrics", url: "/staff/performance", icon: Activity },
-    ]
-  },
-  {
-    label: "Facility Management",
-    items: [
-      { title: "Maintenance Hub", url: "/staff/maintenance", icon: Wrench },
-      { title: "Security Center", url: "/staff/security", icon: Shield },
-      { title: "Services Portal", url: "/staff/services", icon: Building },
       { title: "Training Center", url: "/staff/training", icon: GraduationCap },
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
     ]
-  },
+  }
+];
+
+// Tenant Manager Menu Structure
+const tenantManagerMenuGroups = [
   {
-    label: "Analytics & Reports",
+    label: "Tenant Services",
     items: [
-      { title: "System Health", url: "/unified-dashboard", icon: Activity },
-      { title: "Staff Reports", url: "/staff/reports", icon: BarChart3 },
-      { title: "Alerts Center", url: "/staff/alerts", icon: AlertTriangle },
+      { title: "Dashboard", url: "/", icon: Home },
+      { title: "My Requests", url: "/requests", icon: ClipboardList },
+      { title: "New Request", url: "/new-request", icon: Wrench },
+      { title: "Services", url: "/services", icon: Building },
     ]
   },
   {
-    label: "Tools & Settings", 
+    label: "Facility Access",
+    items: [
+      { title: "Room Bookings", url: "/bookings", icon: Calendar },
+      { title: "Cafeteria", url: "/cafeteria", icon: ChefHat },
+      { title: "Info Hub", url: "/info-hub", icon: Info },
+    ]
+  },
+  {
+    label: "Personal",
     items: [
       { title: "Profile", url: "/profile", icon: User },
-      { title: "Staff Settings", url: "/staff/settings", icon: Settings },
+      { title: "Help & Manual", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
+// Vendor Menu Structure
+const vendorMenuGroups = [
+  {
+    label: "Vendor Operations",
+    items: [
+      { title: "Dashboard", url: "/", icon: Home },
+      { title: "Assigned Tasks", url: "/requests", icon: ClipboardList },
+      { title: "Work Orders", url: "/maintenance", icon: Wrench },
+    ]
+  },
+  {
+    label: "Resources",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
       { title: "Help & Manual", url: "/manual", icon: HelpCircle },
     ]
   }
 ];
 
 interface AdminSidebarProps {
-  userRole: 'admin' | 'staff';
+  userRole: string;
+  userDepartment?: string;
 }
 
-export function AdminSidebar({ userRole }: AdminSidebarProps) {
+export function AdminSidebar({ userRole, userDepartment }: AdminSidebarProps) {
   const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const menuGroups = userRole === 'admin' ? adminMenuGroups : staffMenuGroups;
+  const getMenuGroups = () => {
+    switch (userRole) {
+      case 'admin':
+        return adminMenuGroups;
+      case 'ops_supervisor':
+        return opsSupervisorMenuGroups;
+      case 'field_staff':
+        // Department-specific menus for field staff
+        if (userDepartment === 'security') {
+          return securityStaffMenuGroups;
+        } else if (userDepartment === 'housekeeping') {
+          return housekeepingStaffMenuGroups;
+        }
+        return fieldStaffMenuGroups;
+      case 'tenant_manager':
+        return tenantManagerMenuGroups;
+      case 'vendor':
+        return vendorMenuGroups;
+      default:
+        return tenantManagerMenuGroups; // Default fallback
+    }
+  };
+
+  const menuGroups = getMenuGroups();
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
   const isCollapsed = state === 'collapsed';
 
@@ -158,7 +310,13 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
                 </div>
                 <div>
                   <h2 className="font-semibold text-foreground">SS Plaza</h2>
-                  <p className="text-xs text-muted-foreground capitalize">{userRole} Panel</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {userRole === 'ops_supervisor' ? 'Operations Supervisor' : 
+                     userRole === 'field_staff' ? `${userDepartment || 'Field'} Staff` :
+                     userRole === 'tenant_manager' ? 'Tenant' :
+                     userRole === 'vendor' ? 'Vendor' :
+                     userRole} Panel
+                  </p>
                 </div>
               </>
             )}
