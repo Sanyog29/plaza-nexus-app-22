@@ -63,6 +63,7 @@ const App = () => (
                 <AppLayout />
               </ProtectedRoute>
             }>
+              {/* General Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/requests" element={<RequestsPage />} />
               <Route path="/requests/:requestId" element={<RequestDetailsPage />} />
@@ -76,13 +77,20 @@ const App = () => (
               <Route path="/info-hub" element={<InfoHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/manual" element={<UserManualPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/content" element={<AdminContentPage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
-          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          <Route path="/admin/content" element={<AdminContentPage />} />
-          <Route path="/admin/requests" element={<AdminRequestsPage />} />
-          <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
+              <Route path="/admin/requests" element={<AdminRequestsPage />} />
+              <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
+              <Route path="/admin/system-config" element={<SystemConfigPage />} />
+              <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
+              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+              
+              {/* Staff Routes */}
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
               <Route path="/staff/requests" element={<StaffRequestsPage />} />
               <Route path="/staff/requests/:requestId" element={<RequestDetailsPage />} />
@@ -92,13 +100,12 @@ const App = () => (
               <Route path="/staff/operations" element={<StaffOperationsPage />} />
               <Route path="/staff/performance" element={<StaffPerformancePage />} />
               <Route path="/staff/training" element={<StaffTrainingPage />} />
+              
+              {/* Special Access Routes */}
               <Route path="/security-guard" element={<SecurityGuardPage />} />
               <Route path="/unified-dashboard" element={<UnifiedDashboardPage />} />
               <Route path="/operational-excellence" element={<OperationalExcellencePage />} />
               <Route path="/advanced-features" element={<AdvancedFeaturesPage />} />
-              <Route path="/admin/system-config" element={<SystemConfigPage />} />
-              <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
-              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
