@@ -39,23 +39,41 @@ const UserManagementPage = () => {
       setIsLoading(true);
       console.log('Fetching users...');
       
-      // Use the RPC function to get user management data
-      const { data, error } = await supabase.rpc('get_user_management_data');
+      // Use the RPC function to get user management data with retry logic
+      let retryCount = 0;
+      const maxRetries = 3;
       
-      console.log('RPC response:', { data, error });
-      
-      if (error) {
-        console.error('RPC error:', error);
-        throw error;
+      while (retryCount < maxRetries) {
+        try {
+          const { data, error } = await supabase.rpc('get_user_management_data');
+          
+          console.log('RPC response:', { data, error, attempt: retryCount + 1 });
+          
+          if (error) {
+            console.error('RPC error:', error);
+            throw error;
+          }
+          
+          console.log('Setting users:', data);
+          setUsers(data || []);
+          return; // Success, exit retry loop
+        } catch (rpcError: any) {
+          retryCount++;
+          console.error(`RPC attempt ${retryCount} failed:`, rpcError);
+          
+          if (retryCount >= maxRetries) {
+            throw rpcError;
+          }
+          
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        }
       }
-      
-      console.log('Setting users:', data);
-      setUsers(data || []);
     } catch (error: any) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching users after retries:', error);
       toast({
         title: "Error fetching users",
-        description: error.message || "Failed to load user data",
+        description: error.message || "Failed to load user data. Please try again.",
         variant: "destructive",
       });
     } finally {

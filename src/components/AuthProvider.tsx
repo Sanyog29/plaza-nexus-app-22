@@ -112,14 +112,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = async (userId: string) => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching user role:', error);
+        updateRoleStates('tenant_manager');
+        return;
+      }
       
       if (profile) {
         updateRoleStates(profile.role);
+      } else {
+        updateRoleStates('tenant_manager');
       }
     } catch (error) {
       console.error('Error fetching user role:', error);
@@ -139,9 +147,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state listener first
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        // Check for existing session first
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          if (mounted) {
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            await checkUserRole(session.user.id);
+          }
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+
         if (event === 'SIGNED_IN') {
           toast("Welcome back!", {
             description: "You have successfully logged in.",
@@ -157,26 +199,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          checkUserRole(session.user.id);
-        } else {
-          setIsLoading(false);
+          // Use setTimeout to avoid potential recursion issues
+          setTimeout(() => {
+            if (mounted) {
+              checkUserRole(session.user.id);
+            }
+          }, 100);
         }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        checkUserRole(session.user.id).then(() => setIsLoading(false));
-      } else {
-        setIsLoading(false);
-      }
-    });
+    initializeAuth();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);

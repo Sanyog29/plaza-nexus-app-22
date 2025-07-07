@@ -27,23 +27,38 @@ const AppLayout: React.FC = () => {
     const checkUserRole = async () => {
       if (user) {
         try {
-          const [adminResult, staffResult] = await Promise.all([
-            supabase.rpc('is_admin', { uid: user.id }),
-            supabase.rpc('is_staff', { uid: user.id })
-          ]);
+          // Get role from profiles table instead of RPC functions
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
           
-          setIsAdmin(adminResult.data || false);
-          setIsStaff(staffResult.data || false);
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            setIsAdmin(false);
+            setIsStaff(false);
+          } else if (profile) {
+            const userRole = profile.role;
+            setIsAdmin(userRole === 'admin');
+            setIsStaff(['admin', 'ops_supervisor', 'field_staff'].includes(userRole));
 
-          // Request notification permissions for staff/admin
-          if (adminResult.data || staffResult.data) {
-            requestNotificationPermission();
+            // Request notification permissions for staff/admin
+            if (userRole === 'admin' || ['ops_supervisor', 'field_staff'].includes(userRole)) {
+              requestNotificationPermission();
+            }
+          } else {
+            setIsAdmin(false);
+            setIsStaff(false);
           }
         } catch (error) {
           console.error('Error checking user role:', error);
           setIsAdmin(false);
           setIsStaff(false);
         }
+      } else {
+        setIsAdmin(false);
+        setIsStaff(false);
       }
       setIsLoading(false);
     };
