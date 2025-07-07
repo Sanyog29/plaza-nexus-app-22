@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, Bell, Wifi, WifiOff, Download, Home, Shield, Wrench, BarChart3, Settings, Info, BookOpen, Layout, Users, FileText, AlertTriangle, ClipboardList, Brain, Zap } from 'lucide-react';
+import { Menu, Search, Bell, Wifi, WifiOff, Download, Home, Shield, Wrench, BarChart3, Settings, Info, BookOpen, Layout, Users, FileText, AlertTriangle, ClipboardList, Brain, Zap, Building, Calendar, ChefHat } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { usePWAContext } from '@/components/PWAProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -20,8 +20,13 @@ export const MobileHeader: React.FC = () => {
     { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
     { title: "User Management", url: "/admin/users", icon: Users },
     { title: "Requests", url: "/admin/requests", icon: ClipboardList },
+    { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Security", url: "/security", icon: Shield },
     { title: "Security Guard", url: "/security-guard", icon: Shield },
+    { title: "Services", url: "/services", icon: Building },
+    { title: "Bookings", url: "/bookings", icon: Calendar },
+    { title: "Alerts", url: "/alerts", icon: AlertTriangle },
+    { title: "Cafeteria", url: "/cafeteria", icon: ChefHat },
     { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
     { title: "Reports", url: "/admin/reports", icon: BarChart3 },
     { title: "Content", url: "/admin/content", icon: FileText },
@@ -36,9 +41,13 @@ export const MobileHeader: React.FC = () => {
     { title: "Unified Dashboard", url: "/unified-dashboard", icon: Layout },
     { title: "Operations", url: "/staff/operations", icon: ClipboardList },
     { title: "Requests", url: "/staff/requests", icon: Wrench },
+    { title: "Maintenance", url: "/maintenance", icon: Wrench },
     { title: "Security", url: "/security", icon: Shield },
     { title: "Security Guard", url: "/security-guard", icon: Shield },
+    { title: "Services", url: "/services", icon: Building },
+    { title: "Bookings", url: "/bookings", icon: Calendar },
     { title: "Alerts", url: "/staff/alerts", icon: AlertTriangle },
+    { title: "Cafeteria", url: "/cafeteria", icon: ChefHat },
     { title: "Reports", url: "/staff/reports", icon: BarChart3 },
     { title: "Info Hub", url: "/info-hub", icon: Info },
     { title: "User Manual", url: "/manual", icon: BookOpen },
