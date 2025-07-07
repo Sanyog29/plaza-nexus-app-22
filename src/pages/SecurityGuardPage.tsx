@@ -92,7 +92,7 @@ const SecurityGuardPage = () => {
         .from('security_shifts')
         .select('*')
         .is('shift_end', null)
-        .single();
+        .maybeSingle();
       
       if (shift) setActiveShift(shift);
     } catch (error) {

@@ -61,7 +61,7 @@ export const useVisitorNotifications = () => {
         .from('profiles')
         .select('*')
         .eq('id', newVisitor.host_id)
-        .single();
+        .maybeSingle();
 
       if (!host) return;
 
@@ -117,7 +117,7 @@ export const useVisitorNotifications = () => {
           profiles!visitors_host_id_fkey (*)
         `)
         .eq('id', checkLog.visitor_id)
-        .single();
+        .maybeSingle();
 
       if (!visitorWithHost) return;
 

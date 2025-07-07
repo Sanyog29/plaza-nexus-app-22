@@ -142,7 +142,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           status: 'pending',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

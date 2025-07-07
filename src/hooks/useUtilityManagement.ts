@@ -167,7 +167,7 @@ export function useUtilityManagement() {
         .from('utility_meters')
         .insert(meterData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -195,7 +195,7 @@ export function useUtilityManagement() {
           recorded_by: user.id
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

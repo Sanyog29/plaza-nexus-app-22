@@ -7,7 +7,7 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAdmin, isStaff } = useAuth(); // Use proper role states
   const { metrics } = useDashboardMetrics();
 
   if (!user) return null;
@@ -25,7 +25,7 @@ export const MobileBottomNav: React.FC = () => {
         icon: Wrench,
         label: 'Requests',
         active: location.pathname.startsWith('/requests'),
-        badge: metrics.activeRequests
+        badge: metrics?.activeRequests || 0
       },
       {
         href: '/bookings',
@@ -38,12 +38,12 @@ export const MobileBottomNav: React.FC = () => {
         icon: Bell,
         label: 'Alerts',
         active: location.pathname === '/alerts',
-        badge: metrics.activeAlerts
+        badge: metrics?.activeAlerts || 0
       }
     ];
 
-    // Add role-specific items
-    if (user.role === 'admin' || user.role === 'staff') {
+    // Add role-specific items using proper role checks
+    if (isAdmin || isStaff) {
       baseItems.splice(2, 0, {
         href: '/security',
         icon: Shield,

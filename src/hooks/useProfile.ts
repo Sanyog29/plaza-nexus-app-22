@@ -70,7 +70,7 @@ export const useProfile = () => {
         })
         .eq('id', user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -112,7 +112,7 @@ export const useProfile = () => {
           role: 'tenant_manager',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

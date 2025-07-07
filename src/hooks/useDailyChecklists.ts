@@ -139,7 +139,7 @@ export function useDailyChecklists() {
           checklist_items: template as unknown as Json
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

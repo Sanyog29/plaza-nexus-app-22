@@ -54,7 +54,7 @@ const RequestDetailsPage = () => {
           category:category_id(name)
         `)
         .eq('id', requestId)
-        .single();
+        .maybeSingle();
         
       if (error) throw error;
       setRequest(data);

@@ -37,7 +37,7 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
         .select('*')
         .eq('is_available', true)
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;

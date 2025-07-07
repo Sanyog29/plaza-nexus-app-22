@@ -144,7 +144,7 @@ export function useAssetManagement() {
         .from('assets')
         .insert(assetData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -207,7 +207,7 @@ export function useAssetManagement() {
           performed_by_user_id: user.id
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

@@ -111,7 +111,7 @@ const VisitorForm: React.FC<VisitorFormProps> = ({ onClose, onVisitorAdded }) =>
           status: 'scheduled'
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (visitorError) throw visitorError;
 

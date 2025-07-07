@@ -81,7 +81,9 @@ export const MobileHeader: React.FC = () => {
                 {/* User Info */}
                 <div className="p-4 bg-muted/50 rounded-lg mb-4">
                   <div className="font-medium">{user.email?.split('@')[0]}</div>
-                  <div className="text-sm text-muted-foreground capitalize">{user.role}</div>
+                  <div className="text-sm text-muted-foreground capitalize">
+                    {isAdmin ? 'Admin' : isStaff ? 'Staff' : 'Tenant'}
+                  </div>
                 </div>
 
                 {/* Navigation Menu for Staff/Admin */}

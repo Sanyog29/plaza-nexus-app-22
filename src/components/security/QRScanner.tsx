@@ -90,7 +90,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onVisitorScanned }) => {
         .from('visitors')
         .select('*, profiles!visitors_host_id_fkey (first_name, last_name)')
         .eq('id', qrData.visitor_id)
-        .single();
+        .maybeSingle();
 
       if (visitorError || !visitor) {
         toast.error('Visitor not found');

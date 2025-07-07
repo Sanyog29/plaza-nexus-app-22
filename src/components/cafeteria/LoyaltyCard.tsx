@@ -11,7 +11,7 @@ const LoyaltyCard: React.FC = () => {
       const { data, error } = await supabase
         .from('loyalty_points')
         .select('*')
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;

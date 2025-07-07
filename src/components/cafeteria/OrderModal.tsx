@@ -46,7 +46,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
           pickup_time: pickupTime.toISOString(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (orderError) throw orderError;
 

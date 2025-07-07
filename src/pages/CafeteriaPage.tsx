@@ -14,7 +14,7 @@ const CafeteriaPage = () => {
       const { data } = await supabase
         .from('loyalty_points')
         .select('points')
-        .single();
+        .maybeSingle();
       return data?.points || 0;
     },
   });

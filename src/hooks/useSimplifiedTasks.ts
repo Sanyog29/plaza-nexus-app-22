@@ -109,7 +109,7 @@ export function useSimplifiedTasks() {
           status: 'pending'
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -139,7 +139,7 @@ export function useSimplifiedTasks() {
           estimated_completion: estimatedCompletion
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

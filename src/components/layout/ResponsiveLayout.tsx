@@ -23,7 +23,11 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
 
   // Guard clause to ensure we're in router context
   if (!location) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -64,12 +68,12 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                 {/* Notification Bell */}
                 <Button variant="ghost" size="sm" className="relative">
                   <Bell className="h-5 w-5" />
-                  {metrics.activeAlerts > 0 && (
+                  {metrics?.activeAlerts && metrics.activeAlerts > 0 && (
                     <Badge 
                       variant="destructive" 
                       className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                     >
-                      {metrics.activeAlerts}
+                      {metrics?.activeAlerts || 0}
                     </Badge>
                   )}
                 </Button>

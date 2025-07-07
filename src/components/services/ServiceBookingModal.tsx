@@ -49,7 +49,7 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
           total_amount: service.price || 0
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -58,7 +58,7 @@ const ServiceBookingModal: React.FC<ServiceBookingModalProps> = ({ isOpen, onClo
         .from('profiles')
         .select('first_name, last_name')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (user.email) {
         await sendBookingConfirmation(user.email, {

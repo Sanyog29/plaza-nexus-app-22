@@ -194,7 +194,7 @@ export const usePerformanceMonitoring = () => {
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       return data?.role === 'admin';
     } catch {

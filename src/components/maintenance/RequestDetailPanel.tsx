@@ -63,7 +63,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           assignee:assigned_to(first_name, last_name)
         `)
         .eq('id', requestId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       

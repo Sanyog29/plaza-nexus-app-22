@@ -74,7 +74,7 @@ export function GlobalSearch({ className, placeholder = "Search across all modul
         .from('profiles')
         .select('role')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (profile?.role === 'admin' && (!selectedFilters.length || selectedFilters.includes('user'))) {
         const { data: users } = await supabase

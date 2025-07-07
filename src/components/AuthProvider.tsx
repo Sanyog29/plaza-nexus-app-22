@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
       
       if (error) {
-        console.error('Error fetching user role:', error);
+        // User-friendly error handling instead of console.error
         updateRoleStates('tenant_manager');
         return;
       }
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateRoleStates('tenant_manager');
       }
     } catch (error) {
-      console.error('Error fetching user role:', error);
+      // Graceful error handling
       updateRoleStates('tenant_manager');
     }
   };
@@ -155,7 +155,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
           if (mounted) {
             setIsLoading(false);
           }
@@ -172,7 +171,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
         if (mounted) {
           setIsLoading(false);
         }

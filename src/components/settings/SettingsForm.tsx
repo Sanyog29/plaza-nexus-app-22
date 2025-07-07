@@ -65,7 +65,7 @@ export function SettingsForm() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       return {
         firstName: profile?.first_name ?? "",

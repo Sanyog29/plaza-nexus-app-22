@@ -1,10 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import BottomNavigation from './BottomNavigation';
 import Header from './Header';
 import { useAuth } from './AuthProvider';
-import { supabase } from '@/integrations/supabase/client';
 import { ResponsiveLayout } from './layout/ResponsiveLayout';
 import { MobileHeader } from './layout/MobileHeader';
 import { MobileBottomNav } from './layout/MobileBottomNav';
@@ -15,88 +14,42 @@ import { usePWA } from '@/hooks/usePWA';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const AppLayout: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin, isStaff, isLoading } = useAuth(); // Use role states from AuthProvider
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [isStaff, setIsStaff] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   const { requestNotificationPermission } = usePWA();
   const isMobile = useIsMobile();
 
+  // Request notification permissions for staff/admin when they load
   useEffect(() => {
-    const checkUserRole = async () => {
-      if (user) {
-        try {
-          // Get role from profiles table instead of RPC functions
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .maybeSingle();
-          
-          if (error) {
-            console.error('Error fetching user profile:', error);
-            setIsAdmin(false);
-            setIsStaff(false);
-          } else if (profile) {
-            const userRole = profile.role;
-            setIsAdmin(userRole === 'admin');
-            setIsStaff(['admin', 'ops_supervisor', 'field_staff'].includes(userRole));
+    if (user && (isAdmin || isStaff)) {
+      requestNotificationPermission();
+    }
+  }, [user, isAdmin, isStaff, requestNotificationPermission]);
 
-            // Request notification permissions for staff/admin
-            if (userRole === 'admin' || ['ops_supervisor', 'field_staff'].includes(userRole)) {
-              requestNotificationPermission();
-            }
-          } else {
-            setIsAdmin(false);
-            setIsStaff(false);
-          }
-        } catch (error) {
-          console.error('Error checking user role:', error);
-          setIsAdmin(false);
-          setIsStaff(false);
-        }
-      } else {
-        setIsAdmin(false);
-        setIsStaff(false);
-      }
-      setIsLoading(false);
-    };
-
-    checkUserRole();
-  }, [user, requestNotificationPermission]);
-
-  // Handle redirects separately to avoid infinite loops
+  // Handle redirects - clean navigation logic
   useEffect(() => {
     if (isLoading || !user) return;
 
-    // Redirect admin/staff users to their appropriate routes only for specific cases
+    // Redirect admin/staff users to their appropriate routes for tenant request URLs
     const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
                                   !location.pathname.includes('/admin/') && 
                                   !location.pathname.includes('/staff/');
     
     if (isOnTenantRequestRoute && (isAdmin || isStaff)) {
       const requestId = location.pathname.split('/requests/')[1];
-      if (isAdmin) {
-        window.location.replace(`/admin/requests/${requestId}`);
-        return;
-      } else if (isStaff) {
-        window.location.replace(`/staff/requests/${requestId}`);
-        return;
-      }
+      const newPath = isAdmin ? `/admin/requests/${requestId}` : `/staff/requests/${requestId}`;
+      navigate(newPath, { replace: true });
+      return;
     }
     
-    // Only redirect to dashboard when first landing on home page
+    // Redirect to appropriate dashboard from home page
     if (location.pathname === '/' && (isAdmin || isStaff)) {
-      if (isAdmin) {
-        window.location.replace('/admin/dashboard');
-        return;
-      } else if (isStaff) {
-        window.location.replace('/staff/dashboard');
-        return;
-      }
+      const dashboardPath = isAdmin ? '/admin/dashboard' : '/staff/dashboard';
+      navigate(dashboardPath, { replace: true });
+      return;
     }
-  }, [location.pathname, isAdmin, isStaff, isLoading, user]);
+  }, [location.pathname, isAdmin, isStaff, isLoading, user, navigate]);
 
   if (isLoading) {
     return (

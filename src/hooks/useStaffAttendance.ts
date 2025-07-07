@@ -89,7 +89,7 @@ export function useStaffAttendance() {
           metadata: qrData
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
