@@ -205,17 +205,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (mounted) {
-          if (!error && session) {
+          if (!error && session?.user) {
             setSession(session);
             setUser(session.user);
-            if (session.user) {
-              await checkUserRole(session.user.id);
-            }
+            await checkUserRole(session.user.id);
+          } else {
+            // No valid session found
+            resetRoleStates();
           }
           setIsLoading(false);
         }
       } catch (error) {
+        console.error('Auth initialization error:', error);
         if (mounted) {
+          resetRoleStates();
           setIsLoading(false);
         }
       }
