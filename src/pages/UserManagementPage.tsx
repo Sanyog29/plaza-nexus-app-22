@@ -55,8 +55,10 @@ const UserManagementPage = () => {
             throw new Error('User not authenticated');
           }
 
-          // Call the RPC function
-          const { data, error } = await supabase.rpc('get_user_management_data');
+          // Call the RPC function with caller_id
+          const { data, error } = await supabase.rpc('get_user_management_data', {
+            caller_id: currentUser.user.id
+          });
           
           if (error) {
             console.error('RPC error:', error);
