@@ -37,7 +37,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-// Simplified Admin Menu Structure
+// Enhanced Admin Menu Structure
 const adminMenuGroups = [
   {
     label: "Core Operations",
@@ -45,6 +45,13 @@ const adminMenuGroups = [
       { title: "Dashboard", url: "/admin/dashboard", icon: Home },
       { title: "Requests", url: "/admin/requests", icon: ClipboardList },
       { title: "User Management", url: "/admin/users", icon: Users },
+    ]
+  },
+  {
+    label: "Content Management",
+    items: [
+      { title: "Content Manager", url: "/admin/content", icon: Edit },
+      { title: "System Config", url: "/admin/system-config", icon: Settings },
     ]
   },
   {
@@ -56,17 +63,18 @@ const adminMenuGroups = [
     ]
   },
   {
-    label: "Insights",
+    label: "Analytics & Insights",
     items: [
-      { title: "Analytics & Reports", url: "/admin/analytics", icon: TrendingUp },
+      { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
+      { title: "Reports", url: "/admin/reports", icon: BarChart3 },
       { title: "System Health", url: "/unified-dashboard", icon: Activity },
     ]
   },
   {
-    label: "System",
+    label: "Administration",
     items: [
-      { title: "Settings & Config", url: "/admin/system-config", icon: Settings },
       { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
+      { title: "Bulk Operations", url: "/admin/bulk-operations", icon: Calendar },
     ]
   },
   {

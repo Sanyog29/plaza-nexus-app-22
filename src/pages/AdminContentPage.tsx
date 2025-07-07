@@ -145,19 +145,32 @@ const AdminContentPage = () => {
       ]);
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast({ 
+        title: "Error loading content", 
+        description: "Failed to load some content. Please refresh the page.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const fetchServiceData = async () => {
-    const [categoriesResult, itemsResult] = await Promise.all([
-      supabase.from('service_categories').select('*').order('name'),
-      supabase.from('service_items').select('*').order('name')
-    ]);
-    
-    if (categoriesResult.data) setServiceCategories(categoriesResult.data);
-    if (itemsResult.data) setServiceItems(itemsResult.data);
+    try {
+      const [categoriesResult, itemsResult] = await Promise.all([
+        supabase.from('service_categories').select('*').order('name'),
+        supabase.from('service_items').select('*').order('name')
+      ]);
+      
+      if (categoriesResult.error) throw categoriesResult.error;
+      if (itemsResult.error) throw itemsResult.error;
+      
+      if (categoriesResult.data) setServiceCategories(categoriesResult.data);
+      if (itemsResult.data) setServiceItems(itemsResult.data);
+    } catch (error) {
+      console.error('Error fetching service data:', error);
+      // Don't show toast here as parent will handle it
+    }
   };
 
   const fetchMenuData = async () => {

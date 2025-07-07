@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { GlobalSearch } from '@/components/common/GlobalSearch';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 interface ResponsiveLayoutProps {
   userRole: 'admin' | 'staff';
@@ -98,7 +99,9 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
           {/* Main content */}
           <main className="flex-1 overflow-auto">
             <div className="container max-w-7xl mx-auto p-6">
-              <Outlet />
+              <ErrorBoundary>
+                <Outlet />
+              </ErrorBoundary>
             </div>
           </main>
         </div>
