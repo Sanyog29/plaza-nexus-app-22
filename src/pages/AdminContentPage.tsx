@@ -91,6 +91,10 @@ interface Equipment {
   status: string;
   last_maintenance_date: string | null;
   next_maintenance_date: string | null;
+  warranty_expiry: string | null;
+  purchase_date: string | null;
+  purchase_cost: number | null;
+  notes: string | null;
 }
 
 interface Alert {
@@ -560,6 +564,70 @@ const AdminContentPage = () => {
       await supabase.from('rooms').delete().eq('id', id);
       toast({ title: "Room deleted successfully" });
       fetchRooms();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleSaveEquipment = async (formData: FormData) => {
+    setIsSubmitting(true);
+    
+    const equipmentData = {
+      name: formData.get('name') as string,
+      category: formData.get('category') as string,
+      location: formData.get('location') as string,
+      status: formData.get('status') as string,
+      notes: formData.get('notes') as string || null,
+      last_maintenance_date: formData.get('last_maintenance_date') ? new Date(formData.get('last_maintenance_date') as string).toISOString().split('T')[0] : null,
+      next_maintenance_date: formData.get('next_maintenance_date') ? new Date(formData.get('next_maintenance_date') as string).toISOString().split('T')[0] : null,
+      warranty_expiry: formData.get('warranty_expiry') ? new Date(formData.get('warranty_expiry') as string).toISOString().split('T')[0] : null,
+      purchase_date: formData.get('purchase_date') ? new Date(formData.get('purchase_date') as string).toISOString().split('T')[0] : null,
+      purchase_cost: formData.get('purchase_cost') ? parseFloat(formData.get('purchase_cost') as string) : null
+    };
+
+    try {
+      let result;
+      if (selectedEquipment?.id) {
+        result = await supabase
+          .from('equipment')
+          .update(equipmentData)
+          .eq('id', selectedEquipment.id)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Equipment updated successfully" });
+      } else {
+        result = await supabase
+          .from('equipment')
+          .insert(equipmentData)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Equipment created successfully" });
+      }
+      
+      await fetchEquipment();
+      setIsDialogOpen(false);
+      setSelectedEquipment(null);
+    } catch (error: any) {
+      console.error('Error saving equipment:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to save equipment", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteEquipment = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this equipment?')) return;
+    
+    try {
+      await supabase.from('equipment').delete().eq('id', id);
+      toast({ title: "Equipment deleted successfully" });
+      fetchEquipment();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
@@ -1267,12 +1335,203 @@ const AdminContentPage = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="equipment">
+        {/* Equipment Management */}
+        <TabsContent value="equipment" className="space-y-6">
           <Card className="bg-card/50 backdrop-blur">
-            <CardContent className="p-8 text-center">
-              <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">Equipment Management</h3>
-              <p className="text-gray-400">Equipment management interface coming next...</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Equipment Management</CardTitle>
+              <Dialog open={isDialogOpen && selectedEquipment !== null} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" onClick={() => setSelectedEquipment({} as Equipment)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Equipment
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card text-white max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {selectedEquipment?.id ? 'Edit Equipment' : 'Add Equipment'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSaveEquipment(new FormData(e.currentTarget));
+                  }} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="name">Equipment Name</Label>
+                        <Input name="name" defaultValue={selectedEquipment?.name || ''} required />
+                      </div>
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <Select name="category" defaultValue={selectedEquipment?.category || ''} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="HVAC">HVAC</SelectItem>
+                            <SelectItem value="Electrical">Electrical</SelectItem>
+                            <SelectItem value="Plumbing">Plumbing</SelectItem>
+                            <SelectItem value="Fire Safety">Fire Safety</SelectItem>
+                            <SelectItem value="Security">Security</SelectItem>
+                            <SelectItem value="Elevator">Elevator</SelectItem>
+                            <SelectItem value="Generator">Generator</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input name="location" defaultValue={selectedEquipment?.location || ''} required />
+                      </div>
+                      <div>
+                        <Label htmlFor="status">Status</Label>
+                        <Select name="status" defaultValue={selectedEquipment?.status || 'operational'}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="operational">Operational</SelectItem>
+                            <SelectItem value="maintenance">Under Maintenance</SelectItem>
+                            <SelectItem value="repair">Needs Repair</SelectItem>
+                            <SelectItem value="decommissioned">Decommissioned</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="purchase_date">Purchase Date</Label>
+                        <Input 
+                          name="purchase_date" 
+                          type="date" 
+                          defaultValue={selectedEquipment?.purchase_date || ''} 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="purchase_cost">Purchase Cost (₹)</Label>
+                        <Input 
+                          name="purchase_cost" 
+                          type="number" 
+                          step="0.01"
+                          defaultValue={selectedEquipment?.purchase_cost || ''} 
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="last_maintenance_date">Last Maintenance</Label>
+                        <Input 
+                          name="last_maintenance_date" 
+                          type="date" 
+                          defaultValue={selectedEquipment?.last_maintenance_date || ''} 
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="next_maintenance_date">Next Maintenance</Label>
+                        <Input 
+                          name="next_maintenance_date" 
+                          type="date" 
+                          defaultValue={selectedEquipment?.next_maintenance_date || ''} 
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="warranty_expiry">Warranty Expiry</Label>
+                      <Input 
+                        name="warranty_expiry" 
+                        type="date" 
+                        defaultValue={selectedEquipment?.warranty_expiry || ''} 
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="notes">Notes</Label>
+                      <Textarea name="notes" defaultValue={selectedEquipment?.notes || ''} />
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Saving...' : 'Save Equipment'}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {equipment.filter(item => 
+                  item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  item.category.toLowerCase().includes(searchTerm.toLowerCase())
+                ).map((item) => (
+                  <div key={item.id} className="bg-gray-800 rounded-lg p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <h4 className="font-medium text-white">{item.name}</h4>
+                        <Badge variant={
+                          item.status === 'operational' ? 'default' :
+                          item.status === 'maintenance' ? 'secondary' :
+                          item.status === 'repair' ? 'destructive' : 'outline'
+                        }>
+                          {item.status}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge variant="outline">{item.category}</Badge>
+                          <Badge variant="outline">{item.location}</Badge>
+                        </div>
+                        
+                        {item.last_maintenance_date && (
+                          <p className="text-xs text-gray-400">
+                            Last maintenance: {format(new Date(item.last_maintenance_date), 'MMM d, yyyy')}
+                          </p>
+                        )}
+                        
+                        {item.next_maintenance_date && (
+                          <p className="text-xs text-gray-400">
+                            Next maintenance: {format(new Date(item.next_maintenance_date), 'MMM d, yyyy')}
+                          </p>
+                        )}
+                        
+                        {item.warranty_expiry && (
+                          <p className="text-xs text-gray-400">
+                            Warranty expires: {format(new Date(item.warranty_expiry), 'MMM d, yyyy')}
+                          </p>
+                        )}
+                        
+                        {item.notes && (
+                          <p className="text-sm text-gray-300 truncate" title={item.notes}>
+                            {item.notes}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setSelectedEquipment(item);
+                          setIsDialogOpen(true);
+                        }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => 
+                          handleDeleteEquipment(item.id)
+                        }>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {equipment.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  No equipment available. Create your first equipment entry to get started.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
