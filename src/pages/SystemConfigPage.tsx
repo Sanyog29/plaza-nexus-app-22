@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
+import { useSystemSettings, SystemConfig } from '@/hooks/useSystemSettings';
 import { 
   Settings, 
   Shield, 
@@ -26,63 +27,9 @@ import {
   Trash2
 } from 'lucide-react';
 
-interface SystemConfig {
-  maintenance: {
-    autoAssignment: boolean;
-    defaultSlaHours: number;
-    escalationEnabled: boolean;
-    notificationEmail: string;
-  };
-  security: {
-    sessionTimeout: number;
-    maxLoginAttempts: number;
-    requirePasswordChange: boolean;
-    twoFactorEnabled: boolean;
-  };
-  notifications: {
-    emailEnabled: boolean;
-    smsEnabled: boolean;
-    pushEnabled: boolean;
-    alertThreshold: number;
-  };
-  system: {
-    maintenanceMode: boolean;
-    debugMode: boolean;
-    backupFrequency: string;
-    logRetention: number;
-  };
-}
-
 const SystemConfigPage = () => {
   const { isAdmin } = useAuth();
-  const [config, setConfig] = useState<SystemConfig>({
-    maintenance: {
-      autoAssignment: true,
-      defaultSlaHours: 24,
-      escalationEnabled: true,
-      notificationEmail: 'admin@ssplaza.com'
-    },
-    security: {
-      sessionTimeout: 60,
-      maxLoginAttempts: 5,
-      requirePasswordChange: false,
-      twoFactorEnabled: false
-    },
-    notifications: {
-      emailEnabled: true,
-      smsEnabled: false,
-      pushEnabled: true,
-      alertThreshold: 5
-    },
-    system: {
-      maintenanceMode: false,
-      debugMode: false,
-      backupFrequency: 'daily',
-      logRetention: 30
-    }
-  });
-
-  const [isLoading, setIsLoading] = useState(false);
+  const { config, isLoading, updateConfig, saveSection } = useSystemSettings();
   const [activeTab, setActiveTab] = useState('maintenance');
 
   if (!isAdmin) {
@@ -100,34 +47,7 @@ const SystemConfigPage = () => {
   }
 
   const handleSave = async (section: keyof SystemConfig) => {
-    setIsLoading(true);
-    try {
-      // Simulate API call to save configuration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Configuration saved",
-        description: `${section} settings have been updated successfully.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save configuration. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateConfig = (section: keyof SystemConfig, field: string, value: any) => {
-    setConfig(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
-    }));
+    await saveSection(section);
   };
 
   return (

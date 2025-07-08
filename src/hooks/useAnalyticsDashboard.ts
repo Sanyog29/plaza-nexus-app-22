@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
+import { useAuditLogs } from './useAuditLogs';
 
 interface AnalyticsSummary {
   id: string;
