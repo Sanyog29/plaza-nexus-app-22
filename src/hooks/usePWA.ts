@@ -14,18 +14,10 @@ export function usePWA() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
 
-  // Guard against SSR - return early functionality but hooks must be called first
-  if (typeof window === 'undefined') {
-    return {
-      isInstalled: false,
-      isInstallable: false,
-      installApp: () => {},
-      requestNotificationPermission: async () => false,
-      sendNotification: () => {}
-    };
-  }
-
   useEffect(() => {
+    // Guard against SSR
+    if (typeof window === 'undefined') return;
+    
     // Check if app is already installed
     const checkInstalled = () => {
       if (window.matchMedia('(display-mode: standalone)').matches || 
@@ -71,7 +63,7 @@ export function usePWA() {
   }, []);
 
   const installApp = async () => {
-    if (!deferredPrompt) return;
+    if (typeof window === 'undefined' || !deferredPrompt) return;
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -83,21 +75,20 @@ export function usePWA() {
   };
 
   const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
-    }
-    return false;
+    if (typeof window === 'undefined' || !('Notification' in window)) return false;
+    
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
   };
 
   const sendNotification = (title: string, options?: NotificationOptions) => {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, {
-        icon: '/icon-192x192.png',
-        badge: '/badge-72x72.png',
-        ...options
-      });
-    }
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') return;
+    
+    new Notification(title, {
+      icon: '/icon-192x192.png',
+      badge: '/badge-72x72.png',
+      ...options
+    });
   };
 
   return {
