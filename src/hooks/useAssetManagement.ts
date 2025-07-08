@@ -314,3 +314,6 @@ export function useAssetManagement() {
     refetch: () => Promise.all([fetchAssets(), fetchAmcAlerts(), fetchServiceRecords()])
   };
 }
+
+// Note: src/hooks/useAssetManagement.ts is getting long (316 lines). 
+// Consider refactoring this into smaller, focused hooks after completing the current features.
