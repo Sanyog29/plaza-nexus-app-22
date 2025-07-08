@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { IconPicker } from '@/components/ui/icon-picker';
 import { AdminPermissionCheck } from '@/components/admin/AdminPermissionCheck';
+import { UserStatusDisplay } from '@/components/admin/UserStatusDisplay';
 import { 
   FileText, 
   Plus, 
@@ -404,7 +405,9 @@ const AdminContentPage = () => {
   return (
     <AdminPermissionCheck>
       <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
+        <UserStatusDisplay />
+        
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Content Management</h1>
           <p className="text-gray-400">Manage all application content and settings</p>
