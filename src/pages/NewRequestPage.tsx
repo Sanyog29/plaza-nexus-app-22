@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
 import RequestFormHeader from '@/components/maintenance/RequestFormHeader';
-import MaintenanceRequestForm from '@/components/maintenance/MaintenanceRequestForm';
+import EnhancedRequestForm from '@/components/maintenance/EnhancedRequestForm';
 import { Loader2 } from 'lucide-react';
 
 const NewRequestPage = () => {
@@ -46,7 +46,7 @@ const NewRequestPage = () => {
           <Loader2 className="h-8 w-8 text-plaza-blue animate-spin" />
         </div>
       ) : (
-        <MaintenanceRequestForm 
+        <EnhancedRequestForm 
           categories={categories}
           isLoading={isLoading}
           userId={user?.id}
