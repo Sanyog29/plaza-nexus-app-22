@@ -503,6 +503,68 @@ const AdminContentPage = () => {
     }
   };
 
+  const handleSaveRoom = async (formData: FormData) => {
+    setIsSubmitting(true);
+    
+    const facilitiesArray = formData.get('facilities') ? (formData.get('facilities') as string).split(',').map(f => f.trim()) : [];
+    
+    const roomData = {
+      name: formData.get('name') as string,
+      description: formData.get('description') as string || null,
+      location: formData.get('location') as string,
+      capacity: parseInt(formData.get('capacity') as string),
+      facilities: facilitiesArray,
+      image_url: formData.get('image_url') as string || null
+    };
+
+    try {
+      let result;
+      if (selectedRoom?.id) {
+        result = await supabase
+          .from('rooms')
+          .update(roomData)
+          .eq('id', selectedRoom.id)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Room updated successfully" });
+      } else {
+        result = await supabase
+          .from('rooms')
+          .insert(roomData)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Room created successfully" });
+      }
+      
+      await fetchRooms();
+      setIsDialogOpen(false);
+      setSelectedRoom(null);
+    } catch (error: any) {
+      console.error('Error saving room:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to save room", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteRoom = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this room?')) return;
+    
+    try {
+      await supabase.from('rooms').delete().eq('id', id);
+      toast({ title: "Room deleted successfully" });
+      fetchRooms();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'destructive';
@@ -1083,12 +1145,124 @@ const AdminContentPage = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="rooms">
+        {/* Room Management */}
+        <TabsContent value="rooms" className="space-y-6">
           <Card className="bg-card/50 backdrop-blur">
-            <CardContent className="p-8 text-center">
-              <Bed className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">Room Management</h3>
-              <p className="text-gray-400">Room management interface coming next...</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Room Management</CardTitle>
+              <Dialog open={isDialogOpen && selectedRoom !== null} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" onClick={() => setSelectedRoom({} as Room)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Room
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card text-white">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {selectedRoom?.id ? 'Edit Room' : 'Add Room'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSaveRoom(new FormData(e.currentTarget));
+                  }} className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Room Name</Label>
+                      <Input name="name" defaultValue={selectedRoom?.name || ''} required />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea name="description" defaultValue={selectedRoom?.description || ''} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input name="location" defaultValue={selectedRoom?.location || ''} required />
+                      </div>
+                      <div>
+                        <Label htmlFor="capacity">Capacity</Label>
+                        <Input 
+                          name="capacity" 
+                          type="number" 
+                          defaultValue={selectedRoom?.capacity || ''} 
+                          required 
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="facilities">Facilities (comma-separated)</Label>
+                      <Input 
+                        name="facilities" 
+                        defaultValue={selectedRoom?.facilities?.join(', ') || ''} 
+                        placeholder="Projector, Whiteboard, AC, WiFi"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="image_url">Image URL</Label>
+                      <Input name="image_url" defaultValue={selectedRoom?.image_url || ''} placeholder="https://..." />
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Saving...' : 'Save Room'}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rooms.filter(room => 
+                  room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  room.location.toLowerCase().includes(searchTerm.toLowerCase())
+                ).map((room) => (
+                  <div key={room.id} className="bg-gray-800 rounded-lg p-4">
+                    {room.image_url && (
+                      <img 
+                        src={room.image_url} 
+                        alt={room.name} 
+                        className="w-full h-32 object-cover rounded mb-3" 
+                      />
+                    )}
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-white">{room.name}</h4>
+                      <p className="text-sm text-gray-400">{room.description}</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge variant="outline">{room.location}</Badge>
+                        <Badge>{room.capacity} people</Badge>
+                      </div>
+                      {room.facilities && room.facilities.length > 0 && (
+                        <div className="flex gap-1 flex-wrap">
+                          {room.facilities.map((facility, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {facility}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setSelectedRoom(room);
+                          setIsDialogOpen(true);
+                        }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => 
+                          handleDeleteRoom(room.id)
+                        }>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {rooms.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  No rooms available. Create your first room to get started.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
