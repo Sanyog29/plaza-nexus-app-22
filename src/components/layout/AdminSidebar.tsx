@@ -68,13 +68,17 @@ const adminMenuGroups = [
       { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
       { title: "Reports", url: "/admin/reports", icon: BarChart3 },
       { title: "System Health", url: "/unified-dashboard", icon: Activity },
+      { title: "Operational Excellence", url: "/operational-excellence", icon: Zap },
+      { title: "Advanced Features", url: "/advanced-features", icon: Brain },
     ]
   },
   {
     label: "Administration",
     items: [
-      { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
-      { title: "Bulk Operations", url: "/admin/bulk-operations", icon: Calendar },
+      { title: "User Management", url: "/user-management", icon: Users },
+      { title: "Audit Logs", url: "/audit-logs", icon: FileText },
+      { title: "Bulk Operations", url: "/bulk-operations", icon: Calendar },
+      { title: "System Config", url: "/system-config", icon: Settings },
     ]
   },
   {
@@ -111,6 +115,8 @@ const opsSupervisorMenuGroups = [
       { title: "Performance Analytics", url: "/staff/reports", icon: BarChart3 },
       { title: "System Health", url: "/unified-dashboard", icon: Activity },
       { title: "Staff Alerts", url: "/staff/alerts", icon: AlertTriangle },
+      { title: "Operational Excellence", url: "/operational-excellence", icon: Zap },
+      { title: "Advanced Features", url: "/advanced-features", icon: Brain },
     ]
   },
   {
