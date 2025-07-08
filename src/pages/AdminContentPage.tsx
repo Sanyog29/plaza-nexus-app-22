@@ -17,6 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { IconPicker } from '@/components/ui/icon-picker';
+import { AdminPermissionCheck } from '@/components/admin/AdminPermissionCheck';
 import { 
   FileText, 
   Plus, 
@@ -109,6 +111,11 @@ const AdminContentPage = () => {
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([]);
   const [selectedServiceCategory, setSelectedServiceCategory] = useState<ServiceCategory | null>(null);
   const [selectedServiceItem, setSelectedServiceItem] = useState<ServiceItem | null>(null);
+  
+  // UI State
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [selectedIcon, setSelectedIcon] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Menu Management State
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
@@ -208,31 +215,61 @@ const AdminContentPage = () => {
   };
 
   const handleSaveServiceCategory = async (formData: FormData) => {
+    setIsSubmitting(true);
+    
     const categoryData = {
       name: formData.get('name') as string,
       description: formData.get('description') as string || null,
-      icon: formData.get('icon') as string || null,
+      icon: selectedIcon || formData.get('icon') as string || null,
       is_active: formData.get('is_active') === 'true'
     };
 
+    console.log('Saving service category:', categoryData);
+
     try {
-      if (selectedServiceCategory) {
-        await supabase.from('service_categories').update(categoryData).eq('id', selectedServiceCategory.id);
+      let result;
+      if (selectedServiceCategory?.id) {
+        result = await supabase
+          .from('service_categories')
+          .update(categoryData)
+          .eq('id', selectedServiceCategory.id)
+          .select();
+        
+        console.log('Update result:', result);
+        
+        if (result.error) throw result.error;
         toast({ title: "Service category updated successfully" });
       } else {
-        await supabase.from('service_categories').insert(categoryData);
+        result = await supabase
+          .from('service_categories')
+          .insert(categoryData)
+          .select();
+        
+        console.log('Insert result:', result);
+        
+        if (result.error) throw result.error;
         toast({ title: "Service category created successfully" });
       }
       
-      fetchServiceData();
+      await fetchServiceData();
       setIsDialogOpen(false);
       setSelectedServiceCategory(null);
+      setSelectedIcon('');
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error('Error saving service category:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to save service category", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSaveServiceItem = async (formData: FormData) => {
+    setIsSubmitting(true);
+    
     const itemData = {
       category_id: formData.get('category_id') as string,
       name: formData.get('name') as string,
@@ -242,20 +279,45 @@ const AdminContentPage = () => {
       is_available: formData.get('is_available') === 'true'
     };
 
+    console.log('Saving service item:', itemData);
+
     try {
-      if (selectedServiceItem) {
-        await supabase.from('service_items').update(itemData).eq('id', selectedServiceItem.id);
+      let result;
+      if (selectedServiceItem?.id) {
+        result = await supabase
+          .from('service_items')
+          .update(itemData)
+          .eq('id', selectedServiceItem.id)
+          .select();
+          
+        console.log('Update result:', result);
+        
+        if (result.error) throw result.error;
         toast({ title: "Service item updated successfully" });
       } else {
-        await supabase.from('service_items').insert(itemData);
+        result = await supabase
+          .from('service_items')
+          .insert(itemData)
+          .select();
+          
+        console.log('Insert result:', result);
+        
+        if (result.error) throw result.error;
         toast({ title: "Service item created successfully" });
       }
       
-      fetchServiceData();
+      await fetchServiceData();
       setIsDialogOpen(false);
       setSelectedServiceItem(null);
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error('Error saving service item:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to save service item", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -340,7 +402,8 @@ const AdminContentPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <AdminPermissionCheck>
+      <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Content Management</h1>
@@ -402,24 +465,33 @@ const AdminContentPage = () => {
                       </div>
                       <div>
                         <Label htmlFor="icon">Icon</Label>
-                        <Select name="icon" defaultValue={selectedServiceCategory?.icon || ''}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an icon" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Sparkles">Sparkles (Cleaning)</SelectItem>
-                            <SelectItem value="Wrench">Wrench (Maintenance)</SelectItem>
-                            <SelectItem value="Truck">Truck (Transport)</SelectItem>
-                            <SelectItem value="Shield">Shield (Security)</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                          <Input 
+                            value={selectedIcon || selectedServiceCategory?.icon || ''} 
+                            placeholder="Select an icon"
+                            readOnly
+                            className="flex-1"
+                          />
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => {
+                              setSelectedIcon(selectedServiceCategory?.icon || '');
+                              setIsIconPickerOpen(true);
+                            }}
+                          >
+                            Browse Icons
+                          </Button>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Switch name="is_active" defaultChecked={selectedServiceCategory?.is_active !== false} />
                         <Label>Active</Label>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Save Category</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Saving...' : 'Save Category'}
+                        </Button>
                       </DialogFooter>
                     </form>
                   </DialogContent>
@@ -525,7 +597,9 @@ const AdminContentPage = () => {
                         <Label>Available</Label>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Save Service</Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Saving...' : 'Save Service'}
+                        </Button>
                       </DialogFooter>
                     </form>
                   </DialogContent>
@@ -726,7 +800,16 @@ const AdminContentPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Icon Picker */}
+      <IconPicker
+        isOpen={isIconPickerOpen}
+        onClose={() => setIsIconPickerOpen(false)}
+        onSelect={setSelectedIcon}
+        selectedIcon={selectedIcon}
+      />
     </div>
+    </AdminPermissionCheck>
   );
 };
 
