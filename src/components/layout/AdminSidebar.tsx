@@ -75,14 +75,12 @@ const adminMenuGroups = [
   {
     label: "Administration",
     items: [
-      { title: "User Management", url: "/user-management", icon: Users },
-      { title: "Audit Logs", url: "/audit-logs", icon: FileText },
-      { title: "Bulk Operations", url: "/bulk-operations", icon: Calendar },
-      { title: "System Config", url: "/system-config", icon: Settings },
+      { title: "Audit Logs", url: "/admin/audit-logs", icon: FileText },
+      { title: "Bulk Operations", url: "/admin/bulk-operations", icon: Calendar },
     ]
   },
   {
-    label: "User",
+    label: "Personal",
     items: [
       { title: "Profile", url: "/profile", icon: User },
       { title: "Help & Manual", url: "/manual", icon: HelpCircle },
