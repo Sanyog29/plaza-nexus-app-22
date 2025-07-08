@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   userRole: string | null;
+  userDepartment: string | null;
   isAdmin: boolean;
   isStaff: boolean;
   isOpsSupervisor: boolean;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   userRole: null,
+  userDepartment: null,
   isAdmin: false,
   isStaff: false,
   isOpsSupervisor: false,
@@ -45,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userDepartment, setUserDepartment] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [isOpsSupervisor, setIsOpsSupervisor] = useState(false);
@@ -112,20 +115,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = React.useCallback(async (userId: string) => {
     try {
+      console.log('Checking user role for:', userId);
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, department')
         .eq('id', userId)
         .maybeSingle();
       
       if (error) {
         console.error('Error fetching profile:', error);
         updateRoleStates('tenant_manager');
+        setUserDepartment(null);
         return;
       }
       
       if (profile) {
+        console.log('Profile found:', profile);
         updateRoleStates(profile.role);
+        setUserDepartment(profile.department || null);
       } else {
         // Profile doesn't exist - create it
         console.log('Profile not found for user, creating default profile...');
@@ -143,20 +150,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Error creating profile:', insertError);
           }
           
+          console.log('Created default profile');
           updateRoleStates('tenant_manager');
+          setUserDepartment(null);
         } catch (createError) {
           console.error('Failed to create profile:', createError);
           updateRoleStates('tenant_manager');
+          setUserDepartment(null);
         }
       }
     } catch (error) {
       console.error('Error in checkUserRole:', error);
       updateRoleStates('tenant_manager');
+      setUserDepartment(null);
     }
   }, [updateRoleStates]);
 
   const resetRoleStates = () => {
+    console.log('Resetting role states');
     setUserRole(null);
+    setUserDepartment(null);
     setIsAdmin(false);
     setIsStaff(false);
     setIsOpsSupervisor(false);
@@ -247,6 +260,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session, 
       user, 
       userRole, 
+      userDepartment,
       isAdmin, 
       isStaff, 
       isOpsSupervisor,

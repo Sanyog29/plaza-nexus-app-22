@@ -18,36 +18,13 @@ interface ResponsiveLayoutProps {
 }
 
 export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
-  const { user, userRole: authUserRole } = useAuth();
+  const { user, userRole: authUserRole, userDepartment } = useAuth();
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
-  const [userDepartment, setUserDepartment] = useState<string | undefined>();
 
-  // Fetch user profile data to get department information
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user?.id) {
-        try {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('department')
-            .eq('id', user.id)
-            .single();
-          
-          if (error) {
-            console.error('Error fetching user profile:', error);
-          } else {
-            setUserDepartment(profile?.department);
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-      }
-    };
 
-    fetchUserProfile();
-  }, [user?.id]);
+  console.log('ResponsiveLayout - Role:', authUserRole, 'Department:', userDepartment);
 
   // Guard clause to ensure we're in router context
   if (!location) {
