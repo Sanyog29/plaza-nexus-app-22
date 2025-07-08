@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 
 interface MaintenanceRequest {
   id: string;
@@ -38,6 +39,11 @@ const RequestsPage = () => {
     active: 0,
     pending: 0,
     resolved: 0
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; request: MaintenanceRequest | null; loading: boolean }>({
+    open: false,
+    request: null,
+    loading: false
   });
 
   useEffect(() => {
@@ -126,6 +132,43 @@ const RequestsPage = () => {
     }
   };
 
+  const handleDeleteRequest = async () => {
+    if (!deleteDialog.request || !user) return;
+    
+    setDeleteDialog(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Delete attachments and comments first
+      await supabase
+        .from('request_attachments')
+        .delete()
+        .eq('request_id', deleteDialog.request.id);
+
+      await supabase
+        .from('request_comments')
+        .delete()
+        .eq('request_id', deleteDialog.request.id);
+
+      // Delete the request
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .delete()
+        .eq('id', deleteDialog.request.id);
+
+      if (error) throw error;
+
+      toast("Request deleted successfully");
+      setDeleteDialog({ open: false, request: null, loading: false });
+      await fetchRequests(); // Refresh the list
+    } catch (error: any) {
+      console.error('Error deleting request:', error);
+      toast("Failed to delete request", {
+        description: error.message,
+      });
+      setDeleteDialog(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="px-4 py-6">
@@ -200,50 +243,84 @@ const RequestsPage = () => {
       ) : (
         <div className="space-y-4">
           {requests.map((request) => (
-            <Link key={request.id} to={`/requests/${request.id}`}>
-              <Card className="bg-card hover:bg-card/80 transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start">
-                      <div className="bg-plaza-blue bg-opacity-20 p-2 rounded-full mr-3 mt-1">
-                        <MessageSquare size={18} className="text-plaza-blue" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium text-white">{request.title}</h4>
-                          {getPriorityBadge(request.priority)}
-                        </div>
-                        <p className="text-sm text-gray-400 mt-1">
-                          {request.maintenance_categories?.name || 'General'}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">{request.location}</p>
-                        <div className="mt-2 space-y-1">
-                          <p className="text-xs text-gray-500">
-                            Created: {new Date(request.created_at).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Updated: {new Date(request.updated_at).toLocaleString()}
-                          </p>
-                          {request.assigned_to && (
-                            <p className="text-xs text-gray-500">
-                              Assigned to staff member
-                            </p>
-                          )}
-                        </div>
-                      </div>
+            <Card key={request.id} className="bg-card hover:bg-card/80 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start flex-1">
+                    <div className="bg-plaza-blue bg-opacity-20 p-2 rounded-full mr-3 mt-1">
+                      <MessageSquare size={18} className="text-plaza-blue" />
                     </div>
-                    <div className="ml-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                        {getStatusDisplayName(request.status)}
-                      </span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium text-white">{request.title}</h4>
+                        {getPriorityBadge(request.priority)}
+                      </div>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {request.maintenance_categories?.name || 'General'}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">{request.location}</p>
+                      <div className="mt-2 space-y-1">
+                        <p className="text-xs text-gray-500">
+                          Created: {new Date(request.created_at).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Updated: {new Date(request.updated_at).toLocaleString()}
+                        </p>
+                        {request.assigned_to && (
+                          <p className="text-xs text-gray-500">
+                            Assigned to staff member
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  
+                  <div className="flex items-center gap-2 ml-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                      {getStatusDisplayName(request.status)}
+                    </span>
+                    
+                    <div className="flex items-center gap-1">
+                      <Link to={`/requests/${request.id}`}>
+                        <Button variant="outline" size="sm">
+                          View
+                        </Button>
+                      </Link>
+                      
+                      {request.status === 'pending' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setDeleteDialog({ open: true, request, loading: false });
+                          }}
+                          className="text-red-400 hover:text-red-300 border-red-400/20 hover:border-red-400/40"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Delete Request"
+        description="This action cannot be undone. This will permanently delete the request and all associated data."
+        itemName={deleteDialog.request?.title}
+        deleteText="Delete Request"
+        onConfirm={handleDeleteRequest}
+        loading={deleteDialog.loading}
+        destructive={true}
+      />
     </div>
   );
 };

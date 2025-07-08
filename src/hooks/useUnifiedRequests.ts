@@ -234,6 +234,87 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     }
   };
 
+  const deleteRequest = async (requestId: string) => {
+    if (!user) return false;
+
+    try {
+      // Check if the request can be deleted (must be pending)
+      const { data: request, error: fetchError } = await supabase
+        .from('maintenance_requests')
+        .select('status, reported_by')
+        .eq('id', requestId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Validate deletion is allowed
+      if (request.status !== 'pending') {
+        toast.error('Only pending requests can be deleted');
+        return false;
+      }
+
+      // For non-staff users, ensure they can only delete their own requests
+      if (!isStaff && request.reported_by !== user.id) {
+        toast.error('You can only delete your own requests');
+        return false;
+      }
+
+      // Delete attachments first (they should cascade but let's be explicit)
+      await supabase
+        .from('request_attachments')
+        .delete()
+        .eq('request_id', requestId);
+
+      // Delete comments
+      await supabase
+        .from('request_comments')
+        .delete()
+        .eq('request_id', requestId);
+
+      // Delete the request
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .delete()
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast.success('Request deleted successfully');
+      await fetchRequests();
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting request:', error);
+      toast.error('Failed to delete request: ' + error.message);
+      return false;
+    }
+  };
+
+  const cancelRequest = async (requestId: string, reason?: string) => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update({
+          status: 'cancelled',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast.success('Request cancelled successfully');
+      await fetchRequests();
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error cancelling request:', error);
+      toast.error('Failed to cancel request: ' + error.message);
+      return false;
+    }
+  };
+
   // Real-time subscription
   useEffect(() => {
     if (!user) return;
@@ -269,5 +350,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     updateRequest,
     assignRequest,
     completeRequest,
+    deleteRequest,
+    cancelRequest,
   };
 };

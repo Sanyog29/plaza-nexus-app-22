@@ -4,10 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Clock, MapPin, User, AlertCircle, Search, Filter, Plus } from 'lucide-react';
+import { Clock, MapPin, User, AlertCircle, Search, Filter, Plus, Trash2, XCircle } from 'lucide-react';
 import { useUnifiedRequests, UnifiedRequest } from '@/hooks/useUnifiedRequests';
 import { useSLAMonitoring } from '@/hooks/useSLAMonitoring';
 import { useAuth } from '@/components/AuthProvider';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 
 interface UnifiedRequestsListProps {
   onCreateRequest?: () => void;
@@ -18,12 +19,22 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
   onCreateRequest,
   onViewRequest,
 }) => {
-  const { isStaff, permissions } = useAuth();
+  const { isStaff, permissions, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; request: UnifiedRequest | null; loading: boolean }>({
+    open: false,
+    request: null,
+    loading: false
+  });
+  const [cancelDialog, setCancelDialog] = useState<{ open: boolean; request: UnifiedRequest | null; loading: boolean }>({
+    open: false,
+    request: null,
+    loading: false
+  });
   
-  const { requests, isLoading, assignRequest, completeRequest } = useUnifiedRequests({
+  const { requests, isLoading, assignRequest, completeRequest, deleteRequest, cancelRequest } = useUnifiedRequests({
     status: statusFilter !== 'all' ? [statusFilter as any] : undefined,
     priority: priorityFilter !== 'all' ? [priorityFilter as any] : undefined,
   });
@@ -83,6 +94,42 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
         {timeInfo}
       </div>
     );
+  };
+
+  const handleDeleteRequest = async () => {
+    if (!deleteDialog.request) return;
+    
+    setDeleteDialog(prev => ({ ...prev, loading: true }));
+    const success = await deleteRequest(deleteDialog.request.id);
+    
+    if (success) {
+      setDeleteDialog({ open: false, request: null, loading: false });
+    } else {
+      setDeleteDialog(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    if (!cancelDialog.request) return;
+    
+    setCancelDialog(prev => ({ ...prev, loading: true }));
+    const success = await cancelRequest(cancelDialog.request.id);
+    
+    if (success) {
+      setCancelDialog({ open: false, request: null, loading: false });
+    } else {
+      setCancelDialog(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const canDelete = (request: UnifiedRequest): boolean => {
+    if (request.status !== 'pending') return false;
+    return isStaff || request.reported_by === user?.id;
+  };
+
+  const canCancel = (request: UnifiedRequest): boolean => {
+    if (request.status === 'completed' || request.status === 'cancelled') return false;
+    return isStaff || request.reported_by === user?.id;
   };
 
   if (isLoading) {
@@ -218,7 +265,7 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
                       </Button>
                     )}
                     
-                    {isStaff && request.status === 'pending' && permissions.can_assign_requests && (
+                    {isStaff && request.status === 'pending' && permissions?.can_assign_requests && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -237,6 +284,30 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
                         Complete
                       </Button>
                     )}
+
+                    {canCancel(request) && request.status !== 'pending' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCancelDialog({ open: true, request, loading: false })}
+                        className="text-yellow-400 hover:text-yellow-300"
+                      >
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Cancel
+                      </Button>
+                    )}
+                    
+                    {canDelete(request) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setDeleteDialog({ open: true, request, loading: false })}
+                        className="text-red-400 hover:text-red-300 border-red-400/20 hover:border-red-400/40"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -244,6 +315,32 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
           ))
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Delete Request"
+        description="This action cannot be undone. This will permanently delete the request and all associated data."
+        itemName={deleteDialog.request?.title}
+        deleteText="Delete Request"
+        onConfirm={handleDeleteRequest}
+        loading={deleteDialog.loading}
+        destructive={true}
+      />
+
+      {/* Cancel Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={cancelDialog.open}
+        onOpenChange={(open) => setCancelDialog(prev => ({ ...prev, open }))}
+        title="Cancel Request"
+        description="This will mark the request as cancelled. The request will remain in the system for audit purposes but no further work will be done."
+        itemName={cancelDialog.request?.title}
+        deleteText="Cancel Request"
+        onConfirm={handleCancelRequest}
+        loading={cancelDialog.loading}
+        destructive={false}
+      />
     </div>
   );
 };

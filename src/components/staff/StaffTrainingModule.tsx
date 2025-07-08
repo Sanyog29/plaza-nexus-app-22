@@ -191,13 +191,25 @@ export const StaffTrainingModule: React.FC = () => {
         isRequired: false,
         content: { lessons: 7, videos: 5, assessments: 3, practicalExercises: 4 },
       },
+      {
+        id: '7',
+        title: 'Data Management & Deletion Procedures',
+        description: 'Learn proper procedures for managing and deleting maintenance requests, including when deletion is appropriate and data retention policies',
+        category: 'compliance',
+        difficulty: 'beginner',
+        duration: 25,
+        prerequisites: ['Compliance and Documentation'],
+        skills: ['Data Management', 'Audit Trail', 'Compliance'],
+        isRequired: true,
+        content: { lessons: 4, videos: 2, assessments: 1, practicalExercises: 3 },
+      },
     ];
   };
 
   const generateStaffProgress = (profiles: any[]): StaffTrainingProgress[] => {
     return profiles.map(profile => {
       const completedModules = Math.floor(Math.random() * 4) + 1;
-      const totalModules = 6;
+      const totalModules = 7;
       const overallProgress = Math.round((completedModules / totalModules) * 100);
 
       return {
