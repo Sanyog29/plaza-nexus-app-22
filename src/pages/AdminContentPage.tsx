@@ -385,6 +385,124 @@ const AdminContentPage = () => {
     }
   };
 
+  const handleSaveMenuCategory = async (formData: FormData) => {
+    setIsSubmitting(true);
+    
+    const categoryData = {
+      name: formData.get('name') as string,
+      description: formData.get('description') as string || null,
+      image_url: formData.get('image_url') as string || null
+    };
+
+    try {
+      let result;
+      if (selectedMenuCategory?.id) {
+        result = await supabase
+          .from('cafeteria_menu_categories')
+          .update(categoryData)
+          .eq('id', selectedMenuCategory.id)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Menu category updated successfully" });
+      } else {
+        result = await supabase
+          .from('cafeteria_menu_categories')
+          .insert(categoryData)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Menu category created successfully" });
+      }
+      
+      await fetchMenuData();
+      setIsDialogOpen(false);
+      setSelectedMenuCategory(null);
+    } catch (error: any) {
+      console.error('Error saving menu category:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to save menu category", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveMenuItem = async (formData: FormData) => {
+    setIsSubmitting(true);
+    
+    const itemData = {
+      category_id: formData.get('category_id') as string,
+      name: formData.get('name') as string,
+      description: formData.get('description') as string || null,
+      price: parseFloat(formData.get('price') as string),
+      is_vegetarian: formData.get('is_vegetarian') === 'on',
+      is_vegan: formData.get('is_vegan') === 'on',
+      is_available: formData.get('is_available') === 'on'
+    };
+
+    try {
+      let result;
+      if (selectedMenuItem?.id) {
+        result = await supabase
+          .from('cafeteria_menu_items')
+          .update(itemData)
+          .eq('id', selectedMenuItem.id)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Menu item updated successfully" });
+      } else {
+        result = await supabase
+          .from('cafeteria_menu_items')
+          .insert(itemData)
+          .select();
+        
+        if (result.error) throw result.error;
+        toast({ title: "Menu item created successfully" });
+      }
+      
+      await fetchMenuData();
+      setIsDialogOpen(false);
+      setSelectedMenuItem(null);
+    } catch (error: any) {
+      console.error('Error saving menu item:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to save menu item", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteMenuCategory = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+    
+    try {
+      await supabase.from('cafeteria_menu_categories').delete().eq('id', id);
+      toast({ title: "Menu category deleted successfully" });
+      fetchMenuData();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteMenuItem = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      await supabase.from('cafeteria_menu_items').delete().eq('id', id);
+      toast({ title: "Menu item deleted successfully" });
+      fetchMenuData();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'destructive';
@@ -772,15 +890,197 @@ const AdminContentPage = () => {
           </Card>
         </TabsContent>
 
-        {/* Placeholder tabs for Menu, Rooms, Equipment */}
-        <TabsContent value="menu">
-          <Card className="bg-card/50 backdrop-blur">
-            <CardContent className="p-8 text-center">
-              <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">Menu Management</h3>
-              <p className="text-gray-400">Menu management interface coming next...</p>
-            </CardContent>
-          </Card>
+        {/* Menu Management */}
+        <TabsContent value="menu" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Menu Categories */}
+            <Card className="bg-card/50 backdrop-blur">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Menu Categories</CardTitle>
+                <Dialog open={isDialogOpen && selectedMenuCategory !== null} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" onClick={() => setSelectedMenuCategory({} as MenuCategory)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-card text-white">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {selectedMenuCategory?.id ? 'Edit Menu Category' : 'Add Menu Category'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveMenuCategory(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="name">Name</Label>
+                        <Input name="name" defaultValue={selectedMenuCategory?.name || ''} required />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea name="description" defaultValue={selectedMenuCategory?.description || ''} />
+                      </div>
+                      <div>
+                        <Label htmlFor="image_url">Image URL</Label>
+                        <Input name="image_url" defaultValue={selectedMenuCategory?.image_url || ''} placeholder="https://..." />
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Saving...' : 'Save Category'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {menuCategories.filter(cat => 
+                    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  ).map((category) => (
+                    <div key={category.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {category.image_url && (
+                          <img src={category.image_url} alt={category.name} className="w-10 h-10 rounded object-cover" />
+                        )}
+                        <div>
+                          <h4 className="font-medium text-white">{category.name}</h4>
+                          <p className="text-sm text-gray-400">{category.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setSelectedMenuCategory(category);
+                          setIsDialogOpen(true);
+                        }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => 
+                          handleDeleteMenuCategory(category.id)
+                        }>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Menu Items */}
+            <Card className="bg-card/50 backdrop-blur">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Menu Items</CardTitle>
+                <Dialog open={isDialogOpen && selectedMenuItem !== null} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" onClick={() => setSelectedMenuItem({} as MenuItem)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Item
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-card text-white">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {selectedMenuItem?.id ? 'Edit Menu Item' : 'Add Menu Item'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveMenuItem(new FormData(e.currentTarget));
+                    }} className="space-y-4">
+                      <div>
+                        <Label htmlFor="category_id">Category</Label>
+                        <Select name="category_id" defaultValue={selectedMenuItem?.category_id || ''} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {menuCategories.map(cat => (
+                              <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="name">Item Name</Label>
+                        <Input name="name" defaultValue={selectedMenuItem?.name || ''} required />
+                      </div>
+                      <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea name="description" defaultValue={selectedMenuItem?.description || ''} />
+                      </div>
+                      <div>
+                        <Label htmlFor="price">Price (₹)</Label>
+                        <Input 
+                          name="price" 
+                          type="number" 
+                          step="0.01" 
+                          defaultValue={selectedMenuItem?.price || ''} 
+                          required 
+                        />
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Switch name="is_vegetarian" defaultChecked={selectedMenuItem?.is_vegetarian || false} />
+                          <Label>Vegetarian</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch name="is_vegan" defaultChecked={selectedMenuItem?.is_vegan || false} />
+                          <Label>Vegan</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch name="is_available" defaultChecked={selectedMenuItem?.is_available !== false} />
+                          <Label>Available</Label>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? 'Saving...' : 'Save Item'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {menuItems.filter(item => 
+                    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  ).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                      <div>
+                        <h4 className="font-medium text-white">{item.name}</h4>
+                        <p className="text-sm text-gray-400">{item.description}</p>
+                        <div className="flex gap-2 mt-1">
+                          <Badge>₹{item.price}</Badge>
+                          {item.is_vegetarian && <Badge variant="outline">Veg</Badge>}
+                          {item.is_vegan && <Badge variant="outline">Vegan</Badge>}
+                          <Badge variant={item.is_available ? 'default' : 'secondary'}>
+                            {item.is_available ? 'Available' : 'Unavailable'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => {
+                          setSelectedMenuItem(item);
+                          setIsDialogOpen(true);
+                        }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => 
+                          handleDeleteMenuItem(item.id)
+                        }>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="rooms">
