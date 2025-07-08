@@ -121,14 +121,12 @@ const UserManagementPage = () => {
         throw new Error('Invalid role selected');
       }
 
-      // Direct update to profiles table
+      // Use the safe role update function
       const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          role: newRole as 'admin' | 'ops_supervisor' | 'field_staff' | 'tenant_manager' | 'vendor' | 'staff',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
+        .rpc('update_user_role_safe', {
+          target_user_id: userId,
+          new_role_text: newRole
+        });
       
       if (error) throw error;
       

@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const updateRoleStates = (role: string) => {
+  const updateRoleStates = React.useCallback((role: string) => {
     setUserRole(role);
     setIsAdmin(role === 'admin');
     setIsOpsSupervisor(role === 'ops_supervisor');
@@ -108,9 +108,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setPermissions(rolePermissions[role as keyof typeof rolePermissions] || {});
-  };
+  }, []);
 
-  const checkUserRole = async (userId: string) => {
+  const checkUserRole = React.useCallback(async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Error in checkUserRole:', error);
       updateRoleStates('tenant_manager');
     }
-  };
+  }, [updateRoleStates]);
 
   const resetRoleStates = () => {
     setUserRole(null);
@@ -230,7 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [checkUserRole]);
 
   const signOut = async () => {
     try {

@@ -263,6 +263,7 @@ export function AdminSidebar({ userRole, userDepartment }: AdminSidebarProps) {
   const currentPath = location.pathname;
 
   const getMenuGroups = () => {
+    console.log('Getting menu groups for role:', userRole, 'department:', userDepartment);
     switch (userRole) {
       case 'admin':
         return adminMenuGroups;
@@ -281,6 +282,7 @@ export function AdminSidebar({ userRole, userDepartment }: AdminSidebarProps) {
       case 'vendor':
         return vendorMenuGroups;
       default:
+        console.log('Using default tenant manager menu for role:', userRole);
         return tenantManagerMenuGroups; // Default fallback
     }
   };

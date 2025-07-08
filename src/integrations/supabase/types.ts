@@ -2569,6 +2569,10 @@ export type Database = {
           | { user_id: string; new_role: string; caller_id: string }
         Returns: boolean
       }
+      update_user_role_safe: {
+        Args: { target_user_id: string; new_role_text: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
