@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +7,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/components/AuthProvider';
 import { useContentManagement } from '@/hooks/useContentManagement';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 import { 
   FileText, 
   Plus, 
@@ -19,10 +25,13 @@ import {
   Eye, 
   Upload,
   Tag,
-  Calendar,
+  Calendar as CalendarIcon,
   User,
   Globe,
-  Settings
+  Settings,
+  Search,
+  Coffee,
+  Bed
 } from 'lucide-react';
 
 interface ServiceCategory {
