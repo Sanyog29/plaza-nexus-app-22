@@ -1772,6 +1772,39 @@ export type Database = {
           },
         ]
       }
+      sla_escalation_rules: {
+        Row: {
+          category_filter: string | null
+          created_at: string | null
+          escalation_level: number | null
+          id: string
+          is_active: boolean | null
+          priority: string
+          target_minutes: number
+          updated_at: string | null
+        }
+        Insert: {
+          category_filter?: string | null
+          created_at?: string | null
+          escalation_level?: number | null
+          id?: string
+          is_active?: boolean | null
+          priority: string
+          target_minutes: number
+          updated_at?: string | null
+        }
+        Update: {
+          category_filter?: string | null
+          created_at?: string | null
+          escalation_level?: number | null
+          id?: string
+          is_active?: boolean | null
+          priority?: string
+          target_minutes?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       staff_attendance: {
         Row: {
           check_in_time: string
