@@ -21,7 +21,7 @@ const NewRequestPage = () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('maintenance_categories')
+        .from('categories')
         .select('*');
       
       if (error) throw error;
