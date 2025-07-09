@@ -13,7 +13,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Thermometer,
-  GraduationCap,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
@@ -23,7 +22,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import AISummaryCards from '../components/AISummaryCards';
 import { VisitorNotificationBanner } from '@/components/notifications/VisitorNotificationBanner';
 import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
-import { EnhancedHelpSystem } from '@/components/help/EnhancedHelpSystem';
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -167,25 +165,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Training Access */}
-      <div className="mt-8">
-        <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-500/20 p-2 rounded-lg">
-                  <GraduationCap size={24} className="text-purple-500" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-white">Interactive Training</h4>
-                  <p className="text-sm text-gray-400">Learn about system features and best practices</p>
-                </div>
-              </div>
-              <EnhancedHelpSystem />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
       
       <div className="mt-8">
         <div className="flex justify-between items-center mb-4">
