@@ -791,6 +791,50 @@ export type Database = {
           },
         ]
       }
+      escalation_predictions: {
+        Row: {
+          actual_escalated: boolean | null
+          escalation_date: string | null
+          id: string
+          model_version: string | null
+          predicted_escalation_probability: number
+          prediction_date: string
+          recommended_actions: Json | null
+          request_id: string | null
+          risk_factors: Json | null
+        }
+        Insert: {
+          actual_escalated?: boolean | null
+          escalation_date?: string | null
+          id?: string
+          model_version?: string | null
+          predicted_escalation_probability: number
+          prediction_date?: string
+          recommended_actions?: Json | null
+          request_id?: string | null
+          risk_factors?: Json | null
+        }
+        Update: {
+          actual_escalated?: boolean | null
+          escalation_date?: string | null
+          id?: string
+          model_version?: string | null
+          predicted_escalation_probability?: number
+          prediction_date?: string
+          recommended_actions?: Json | null
+          request_id?: string | null
+          risk_factors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escalation_predictions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       info_categories: {
         Row: {
           created_at: string
@@ -2195,6 +2239,60 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_feedback: {
+        Row: {
+          communication_rating: number | null
+          created_at: string
+          feedback_text: string | null
+          id: string
+          quality_rating: number | null
+          rating: number
+          request_id: string | null
+          response_time_rating: number | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          communication_rating?: number | null
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          quality_rating?: number | null
+          rating: number
+          request_id?: string | null
+          response_time_rating?: number | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          communication_rating?: number | null
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          quality_rating?: number | null
+          rating?: number
+          request_id?: string | null
+          response_time_rating?: number | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_feedback_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
