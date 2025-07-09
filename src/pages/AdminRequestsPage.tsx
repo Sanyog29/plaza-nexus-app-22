@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Filter, Clock, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, Clock, AlertTriangle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,6 +36,9 @@ const AdminRequestsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<MaintenanceRequest | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -127,6 +131,66 @@ const AdminRequestsPage = () => {
   const isOverdue = (slaBreachAt: string | undefined) => {
     if (!slaBreachAt) return false;
     return new Date(slaBreachAt) < new Date();
+  };
+
+  const handleDeleteRequest = async () => {
+    if (!requestToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      // Check if request can be deleted (only pending requests)
+      if (requestToDelete.status !== 'pending') {
+        toast({
+          title: "Cannot delete request",
+          description: "Only pending requests can be deleted",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Delete attachments first
+      await supabase
+        .from('request_attachments')
+        .delete()
+        .eq('request_id', requestToDelete.id);
+
+      // Delete comments
+      await supabase
+        .from('request_comments')
+        .delete()
+        .eq('request_id', requestToDelete.id);
+
+      // Delete the request
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .delete()
+        .eq('id', requestToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Request deleted successfully",
+      });
+
+      // Refresh the requests list
+      await fetchRequests();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setRequestToDelete(null);
+    }
+  };
+
+  const openDeleteDialog = (request: MaintenanceRequest) => {
+    setRequestToDelete(request);
+    setDeleteDialogOpen(true);
   };
 
   const categorizeRequests = () => {
@@ -263,21 +327,31 @@ const AdminRequestsPage = () => {
         </TabsList>
         
         <TabsContent value="all" className="mt-4">
-          <RequestsList requests={filteredRequests} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} />
+          <RequestsList requests={filteredRequests} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
         </TabsContent>
         
         <TabsContent value="pending" className="mt-4">
-          <RequestsList requests={pending} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} />
+          <RequestsList requests={pending} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
         </TabsContent>
         
         <TabsContent value="overdue" className="mt-4">
-          <RequestsList requests={overdue} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} />
+          <RequestsList requests={overdue} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
         </TabsContent>
         
         <TabsContent value="in_progress" className="mt-4">
-          <RequestsList requests={inProgress} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} />
+          <RequestsList requests={inProgress} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
         </TabsContent>
       </Tabs>
+
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Request"
+        description={`Are you sure you want to delete "${requestToDelete?.title}"? This action cannot be undone and will also delete all associated attachments and comments.`}
+        itemName={requestToDelete?.title}
+        onConfirm={handleDeleteRequest}
+        loading={isDeleting}
+      />
     </div>
   );
 };
@@ -289,6 +363,7 @@ interface RequestsListProps {
   getStatusColor: (status: string) => string;
   getPriorityColor: (priority: string) => string;
   isOverdue: (slaBreachAt: string | undefined) => boolean;
+  onDeleteRequest: (request: MaintenanceRequest) => void;
 }
 
 const RequestsList: React.FC<RequestsListProps> = ({ 
@@ -297,7 +372,8 @@ const RequestsList: React.FC<RequestsListProps> = ({
   getStatusIcon, 
   getStatusColor, 
   getPriorityColor, 
-  isOverdue 
+  isOverdue,
+  onDeleteRequest 
 }) => {
   if (requests.length === 0) {
     return (
@@ -312,10 +388,10 @@ const RequestsList: React.FC<RequestsListProps> = ({
   return (
     <div className="space-y-4">
       {requests.map((request) => (
-        <Card key={request.id} className="bg-card/50 backdrop-blur hover:bg-card/70 transition-colors cursor-pointer">
-          <CardContent className="p-4" onClick={() => navigate(`/admin/requests/${request.id}`)}>
+        <Card key={request.id} className="bg-card/50 backdrop-blur hover:bg-card/70 transition-colors">
+          <CardContent className="p-4">
             <div className="flex items-start justify-between">
-              <div className="flex-1">
+              <div className="flex-1 cursor-pointer" onClick={() => navigate(`/admin/requests/${request.id}`)}>
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-white">{request.title}</h3>
                   {isOverdue(request.sla_breach_at) && (
@@ -346,6 +422,23 @@ const RequestsList: React.FC<RequestsListProps> = ({
                   </span>
                   <span>{format(new Date(request.created_at), 'MMM d, yyyy HH:mm')}</span>
                 </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 ml-4">
+                {request.status === 'pending' && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteRequest(request);
+                    }}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
