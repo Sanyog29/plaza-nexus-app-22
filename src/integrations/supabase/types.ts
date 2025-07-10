@@ -1360,6 +1360,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string
           department: string | null
@@ -1369,11 +1372,15 @@ export type Database = {
           last_name: string | null
           office_number: string | null
           phone_number: string | null
+          rejection_reason: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
           zone: string | null
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           department?: string | null
@@ -1383,11 +1390,15 @@ export type Database = {
           last_name?: string | null
           office_number?: string | null
           phone_number?: string | null
+          rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           zone?: string | null
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           department?: string | null
@@ -1397,11 +1408,20 @@ export type Database = {
           last_name?: string | null
           office_number?: string | null
           phone_number?: string | null
+          rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           zone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       request_attachments: {
         Row: {
@@ -2909,6 +2929,10 @@ export type Database = {
         Args: { uid: string }
         Returns: boolean
       }
+      is_approved_user: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       is_ops_staff: {
         Args: { uid: string }
         Returns: boolean
@@ -2960,6 +2984,7 @@ export type Database = {
         | "tenant_manager"
         | "vendor"
         | "staff"
+      approval_status: "pending" | "approved" | "rejected"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status: "pending" | "in_progress" | "completed" | "cancelled"
       utility_type:
@@ -3104,6 +3129,7 @@ export const Constants = {
         "vendor",
         "staff",
       ],
+      approval_status: ["pending", "approved", "rejected"],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: ["pending", "in_progress", "completed", "cancelled"],
       utility_type: [

@@ -64,6 +64,10 @@ interface User {
   last_name: string;
   email: string;
   role: string;
+  approval_status: 'pending' | 'approved' | 'rejected';
+  approved_by: string | null;
+  approved_at: string | null;
+  rejection_reason: string | null;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
