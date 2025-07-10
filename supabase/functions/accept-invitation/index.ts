@@ -7,9 +7,10 @@ const corsHeaders = {
 };
 
 interface AcceptInvitationRequest {
+  action?: string;
   invitation_token: string;
-  password: string;
-  confirm_password: string;
+  password?: string;
+  confirm_password?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,28 +28,13 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const {
+      action,
       invitation_token,
       password,
       confirm_password
     }: AcceptInvitationRequest = await req.json();
 
-    // Validate passwords match
-    if (password !== confirm_password) {
-      return new Response(JSON.stringify({ error: 'Passwords do not match' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Validate password strength
-    if (password.length < 8) {
-      return new Response(JSON.stringify({ error: 'Password must be at least 8 characters long' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Get invitation details
+    // Get invitation details first
     const { data: invitation, error: inviteError } = await supabaseAdmin
       .from('user_invitations')
       .select('*')
@@ -66,6 +52,37 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if invitation has expired
     if (new Date(invitation.expires_at) < new Date()) {
       return new Response(JSON.stringify({ error: 'Invitation has expired' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Handle validation request
+    if (action === 'validate_invitation') {
+      return new Response(JSON.stringify(invitation), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Handle acceptance request - validate passwords
+    if (!password || !confirm_password) {
+      return new Response(JSON.stringify({ error: 'Password is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (password !== confirm_password) {
+      return new Response(JSON.stringify({ error: 'Passwords do not match' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ error: 'Password must be at least 8 characters long' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

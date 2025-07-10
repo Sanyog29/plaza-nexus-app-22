@@ -46,12 +46,16 @@ const InvitationAcceptance: React.FC = () => {
 
   const fetchInvitationDetails = async () => {
     try {
-      // Use RPC to get invitation details since types aren't updated yet
-      const { data, error } = await supabase
-        .rpc('get_invitation_details', { token: invitationToken });
+      // Call edge function to get invitation details
+      const { data, error } = await supabase.functions.invoke('accept-invitation', {
+        body: { 
+          action: 'validate_invitation',
+          invitation_token: invitationToken 
+        }
+      });
 
-      if (error || !data) {
-        setError('Invalid or expired invitation');
+      if (error || !data || data.error) {
+        setError(data?.error || 'Invalid or expired invitation');
         return;
       }
 
@@ -61,7 +65,7 @@ const InvitationAcceptance: React.FC = () => {
         return;
       }
 
-      setInvitation(data);
+      setInvitation(data as InvitationDetails);
     } catch (err) {
       console.error('Error fetching invitation:', err);
       setError('Failed to load invitation details');
