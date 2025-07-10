@@ -40,13 +40,22 @@ interface RequestFilters {
 }
 
 export const useUnifiedRequests = (filters?: RequestFilters) => {
-  const { user, isStaff, userRole } = useAuth();
+  const { user, isStaff, userRole, approvalStatus, isAdmin } = useAuth();
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchRequests = async (page = 1, limit = 50) => {
     if (!user) return;
+
+    // Check if user is approved (admins bypass this check)
+    if (!isAdmin && approvalStatus !== 'approved') {
+      console.log('User not approved, skipping request fetch');
+      setRequests([]);
+      setTotalCount(0);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -114,7 +123,12 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
       setTotalCount(count || 0);
     } catch (error: any) {
       console.error('Error fetching unified requests:', error);
-      toast.error('Failed to load requests: ' + error.message);
+      // Only show error toast if it's not a permission issue
+      if (!error.message?.includes('Failed to fetch') && !error.message?.includes('permission')) {
+        toast.error('Failed to load requests: ' + error.message);
+      }
+      setRequests([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -318,8 +332,16 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
   // Real-time subscription
   useEffect(() => {
     if (!user) return;
+    
+    // Only fetch if user is approved (admins bypass this check)
+    if (isAdmin || approvalStatus === 'approved') {
+      fetchRequests();
+    }
 
-    fetchRequests();
+    // Only set up real-time subscription for approved users
+    if (!isAdmin && approvalStatus !== 'approved') {
+      return;
+    }
 
     const channel = supabase
       .channel('unified-requests')
@@ -339,7 +361,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, filters]);
+  }, [user, filters, approvalStatus, isAdmin]);
 
   return {
     requests,

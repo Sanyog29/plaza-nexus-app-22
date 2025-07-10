@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   userRole: string | null;
   userDepartment: string | null;
+  approvalStatus: 'pending' | 'approved' | 'rejected' | null;
   isAdmin: boolean;
   isStaff: boolean;
   isOpsSupervisor: boolean;
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userRole: null,
   userDepartment: null,
+  approvalStatus: null,
   isAdmin: false,
   isStaff: false,
   isOpsSupervisor: false,
@@ -48,6 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userDepartment, setUserDepartment] = useState<string | null>(null);
+  const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [isOpsSupervisor, setIsOpsSupervisor] = useState(false);
@@ -115,10 +118,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = React.useCallback(async (userId: string) => {
     try {
-      console.log('Checking user role for:', userId);
+      console.log('Checking user role and approval status for:', userId);
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role, department')
+        .select('role, department, approval_status')
         .eq('id', userId)
         .maybeSingle();
       
@@ -126,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error fetching profile:', error);
         updateRoleStates('tenant_manager');
         setUserDepartment(null);
+        setApprovalStatus('pending');
         return;
       }
       
@@ -133,6 +137,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Profile found:', profile);
         updateRoleStates(profile.role);
         setUserDepartment(profile.department || null);
+        setApprovalStatus(profile.approval_status || 'pending');
+        
+        // Sign out unapproved users (except admins)
+        if (profile.approval_status !== 'approved' && profile.role !== 'admin') {
+          console.log('User not approved, signing out...');
+          setTimeout(() => {
+            supabase.auth.signOut();
+          }, 1000);
+          return;
+        }
       } else {
         // Profile doesn't exist - create it
         console.log('Profile not found for user, creating default profile...');
@@ -143,26 +157,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: userId,
               first_name: '',
               last_name: '',
-              role: 'tenant_manager'
+              role: 'tenant_manager',
+              approval_status: 'pending'
             });
           
           if (insertError) {
             console.error('Error creating profile:', insertError);
           }
           
-          console.log('Created default profile');
+          console.log('Created default profile with pending approval');
           updateRoleStates('tenant_manager');
           setUserDepartment(null);
+          setApprovalStatus('pending');
+          
+          // Sign out since user needs approval
+          setTimeout(() => {
+            supabase.auth.signOut();
+          }, 1000);
         } catch (createError) {
           console.error('Failed to create profile:', createError);
           updateRoleStates('tenant_manager');
           setUserDepartment(null);
+          setApprovalStatus('pending');
         }
       }
     } catch (error) {
       console.error('Error in checkUserRole:', error);
       updateRoleStates('tenant_manager');
       setUserDepartment(null);
+      setApprovalStatus('pending');
     }
   }, [updateRoleStates]);
 
@@ -170,6 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('Resetting role states');
     setUserRole(null);
     setUserDepartment(null);
+    setApprovalStatus(null);
     setIsAdmin(false);
     setIsStaff(false);
     setIsOpsSupervisor(false);
@@ -261,6 +285,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user, 
       userRole, 
       userDepartment,
+      approvalStatus,
       isAdmin, 
       isStaff, 
       isOpsSupervisor,
