@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
@@ -45,8 +45,18 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchRequests = async (page = 1, limit = 50) => {
-    if (!user) return;
+  // Memoize the serialized filters to prevent unnecessary re-renders
+  const serializedFilters = useMemo(() => {
+    return JSON.stringify(filters || {});
+  }, [filters]);
+
+  const fetchRequests = useCallback(async (page = 1, limit = 50) => {
+    if (!user) {
+      setRequests([]);
+      setTotalCount(0);
+      setIsLoading(false);
+      return;
+    }
 
     // Check if user is approved (admins bypass this check)
     if (!isAdmin && approvalStatus !== 'approved') {
@@ -59,6 +69,9 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
 
     try {
       setIsLoading(true);
+
+      // Parse filters back from serialized form
+      const parsedFilters = JSON.parse(serializedFilters) as RequestFilters;
 
       // Build the query based on user role and permissions
       let query = supabase
@@ -87,26 +100,26 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
       // Admin and ops_supervisor can see all requests (no additional filter)
 
       // Apply filters
-      if (filters?.status?.length) {
-        query = query.in('status', filters.status);
+      if (parsedFilters.status?.length) {
+        query = query.in('status', parsedFilters.status);
       }
 
-      if (filters?.priority?.length) {
-        query = query.in('priority', filters.priority);
+      if (parsedFilters.priority?.length) {
+        query = query.in('priority', parsedFilters.priority);
       }
 
-      if (filters?.category?.length) {
-        query = query.in('category_id', filters.category);
+      if (parsedFilters.category?.length) {
+        query = query.in('category_id', parsedFilters.category);
       }
 
-      if (filters?.assigned_to) {
-        query = query.eq('assigned_to', filters.assigned_to);
+      if (parsedFilters.assigned_to) {
+        query = query.eq('assigned_to', parsedFilters.assigned_to);
       }
 
-      if (filters?.date_range) {
+      if (parsedFilters.date_range) {
         query = query
-          .gte('created_at', filters.date_range.start)
-          .lte('created_at', filters.date_range.end);
+          .gte('created_at', parsedFilters.date_range.start)
+          .lte('created_at', parsedFilters.date_range.end);
       }
 
       // Order by priority and creation date
@@ -132,7 +145,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, isStaff, userRole, isAdmin, approvalStatus, serializedFilters]);
 
   const createRequest = async (requestData: {
     title: string;
@@ -329,7 +342,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     }
   };
 
-  // Real-time subscription
+  // Stable effect that only runs when necessary dependencies change
   useEffect(() => {
     if (!user) return;
     
@@ -337,6 +350,11 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     if (isAdmin || approvalStatus === 'approved') {
       fetchRequests();
     }
+  }, [fetchRequests]);
+
+  // Real-time subscription with stable dependencies
+  useEffect(() => {
+    if (!user) return;
 
     // Only set up real-time subscription for approved users
     if (!isAdmin && approvalStatus !== 'approved') {
@@ -361,7 +379,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, filters, approvalStatus, isAdmin]);
+  }, [user?.id, approvalStatus, isAdmin, fetchRequests]);
 
   return {
     requests,
