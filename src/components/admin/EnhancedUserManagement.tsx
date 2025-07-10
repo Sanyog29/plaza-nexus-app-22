@@ -16,6 +16,17 @@ import {
   DialogFooter 
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -37,7 +48,8 @@ import {
   UserPlus,
   Settings,
   Eye,
-  MoreVertical
+  MoreVertical,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,6 +87,8 @@ const EnhancedUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user: currentUser, isAdmin } = useAuth();
 
   const fetchUsers = async () => {
@@ -145,6 +159,37 @@ const EnhancedUserManagement = () => {
       title: "Success",
       description: "User invitation sent successfully.",
     });
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      
+      const { error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { user_id: userToDelete.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `User ${userToDelete.email} has been deleted successfully.`,
+      });
+
+      setUserToDelete(null);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const filteredUsers = users.filter(user => {
@@ -387,16 +432,52 @@ const EnhancedUserManagement = () => {
                         {getUserStatusBadge(user)}
                       </td>
                       <td className="p-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setShowUserDetails(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowUserDetails(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {user.id !== currentUser?.id && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setUserToDelete(user)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete {user.email}? This action cannot be undone.
+                                    All user data, including their requests and activities, will be permanently removed.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel onClick={() => setUserToDelete(null)}>
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={handleDeleteUser}
+                                    disabled={isDeleting}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    {isDeleting ? 'Deleting...' : 'Delete User'}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
