@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import DashboardTile from '../components/DashboardTile';
 import { Card, CardContent } from '@/components/ui/card';
 import AISummaryCards from '../components/AISummaryCards';
@@ -31,7 +32,8 @@ import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
 
 const HomePage = () => {
   const { user } = useAuth();
-  const { metrics, isLoading } = useDashboardMetrics();
+  const { metrics: oldMetrics, isLoading: oldLoading } = useDashboardMetrics();
+  const { metrics: newMetrics, isLoading: newLoading } = useDashboardData();
   const firstName = user?.user_metadata?.first_name || 'Tenant';
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -41,7 +43,7 @@ const HomePage = () => {
   });
 
   // Show loading state
-  if (isLoading) {
+  if (oldLoading || newLoading) {
     return (
       <div className="px-4 py-6 flex items-center justify-center min-h-screen">
         <div className="flex items-center gap-2 text-white">
@@ -81,9 +83,9 @@ const HomePage = () => {
             icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />}
             to="/requests/new"
             bgColor="bg-gradient-to-br from-plaza-blue to-blue-700"
-            count={metrics.totalRequests}
+            count={newMetrics.totalRequests}
             status={{
-              text: `${metrics.activeRequests} Active Tickets`,
+              text: `${newMetrics.pendingRequests} Active Tickets`,
               color: "bg-blue-500/20 text-blue-200"
             }}
           />
@@ -94,9 +96,9 @@ const HomePage = () => {
             icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />}
             to="/security"
             bgColor="bg-gradient-to-br from-indigo-600 to-indigo-800"
-            count={metrics.totalVisitors}
+            count={newMetrics.totalVisitors}
             status={{
-              text: `${metrics.pendingVisitors} Pending Approval`,
+              text: `${newMetrics.activeVisitors} Active Visitors`,
               color: "bg-indigo-400/20 text-indigo-200"
             }}
           />
@@ -107,9 +109,9 @@ const HomePage = () => {
             icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />}
             to="/bookings"
             bgColor="bg-gradient-to-br from-purple-600 to-purple-800"
-            count={metrics.totalRooms}
+            count={newMetrics.upcomingBookings}
             status={{
-              text: `${metrics.availableRooms} Available Now`,
+              text: `Available Today`,
               color: "bg-purple-400/20 text-purple-200"
             }}
           />
@@ -135,9 +137,9 @@ const HomePage = () => {
             icon={<Bell size={28} className="text-white" strokeWidth={1.5} />}
             to="/alerts"
             bgColor="bg-gradient-to-br from-red-600 to-red-800"
-            count={metrics.activeAlerts}
+            count={newMetrics.systemAlerts}
             status={{
-              text: `${metrics.criticalAlerts} Require Attention`,
+              text: `${newMetrics.systemAlerts > 0 ? 'Require Attention' : 'All Clear'}`,
               color: "bg-red-400/20 text-red-200"
             }}
           />
@@ -181,7 +183,7 @@ const HomePage = () => {
                 </div>
                 <div>
                   <p className="font-medium text-white">Building Occupancy</p>
-                  <p className="text-sm text-blue-400">{metrics.occupancyRate}% • {metrics.totalOccupants.toLocaleString()} people</p>
+                  <p className="text-sm text-blue-400">{oldMetrics.occupancyRate}% • {oldMetrics.totalOccupants.toLocaleString()} people</p>
                 </div>
               </div>
               
@@ -192,7 +194,7 @@ const HomePage = () => {
                 <div>
                   <p className="font-medium text-white">Climate Control</p>
                   <p className="text-sm text-emerald-400">
-                    {metrics.currentTemperature}°C • {metrics.currentTemperature >= 22 && metrics.currentTemperature <= 26 ? 'Optimal' : 'Adjusting'}
+                    {oldMetrics.currentTemperature}°C • {oldMetrics.currentTemperature >= 22 && oldMetrics.currentTemperature <= 26 ? 'Optimal' : 'Adjusting'}
                   </p>
                 </div>
               </div>
