@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { PredictiveAnalytics } from '@/components/analytics/PredictiveAnalytics';
+import { SystemReliability } from '@/components/system/SystemReliability';
 import { 
   Shield, 
   Activity, 
@@ -815,6 +817,12 @@ export const SystemHealthDashboard = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Advanced Analytics */}
+      <PredictiveAnalytics />
+
+      {/* System Reliability Monitor */}
+      <SystemReliability />
     </div>
   );
 };
