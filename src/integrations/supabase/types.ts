@@ -2841,6 +2841,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_user: {
+        Args: { target_user_id: string; approver_id: string }
+        Returns: boolean
+      }
       calculate_daily_metrics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2950,6 +2954,10 @@ export type Database = {
           new_values?: Json
         }
         Returns: string
+      }
+      reject_user: {
+        Args: { target_user_id: string; approver_id: string; reason: string }
+        Returns: boolean
       }
       set_system_setting: {
         Args: {

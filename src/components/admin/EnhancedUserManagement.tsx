@@ -172,6 +172,57 @@ const EnhancedUserManagement = () => {
     }
   };
 
+  const handleApproveUser = async (userId: string) => {
+    try {
+      const { error } = await supabase.rpc('approve_user', {
+        target_user_id: userId,
+        approver_id: currentUser?.id
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "User approved successfully.",
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error approving user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve user. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRejectUser = async (userId: string, reason: string) => {
+    try {
+      const { error } = await supabase.rpc('reject_user', {
+        target_user_id: userId,
+        approver_id: currentUser?.id,
+        reason: reason
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "User rejected successfully.",
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject user. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCreateUserSuccess = () => {
     setShowCreateUser(false);
     fetchUsers();
@@ -415,6 +466,7 @@ const EnhancedUserManagement = () => {
                     <th className="text-left p-4">User</th>
                     <th className="text-left p-4">Email</th>
                     <th className="text-left p-4">Role</th>
+                    <th className="text-left p-4">Approval Status</th>
                     <th className="text-left p-4">Joined</th>
                     <th className="text-left p-4">Status</th>
                     <th className="text-left p-4">Actions</th>
@@ -453,6 +505,16 @@ const EnhancedUserManagement = () => {
                         </Select>
                       </td>
                       <td className="p-4">
+                        <Badge 
+                          variant={
+                            user.approval_status === 'approved' ? 'default' :
+                            user.approval_status === 'rejected' ? 'destructive' : 'secondary'
+                          }
+                        >
+                          {user.approval_status.toUpperCase()}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
                         {format(new Date(user.created_at), 'MMM d, yyyy')}
                       </td>
                       <td className="p-4">
@@ -470,6 +532,30 @@ const EnhancedUserManagement = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
+                          
+                          {user.approval_status === 'pending' && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleApproveUser(user.id)}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRejectUser(user.id, 'Admin rejected')}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <AlertTriangle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                          
                           {user.id !== currentUser?.id && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>

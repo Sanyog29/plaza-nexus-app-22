@@ -362,12 +362,17 @@ export const useDatabaseOptimization = () => {
     if (!user) return;
 
     const initializeOptimization = async () => {
-      await generateIndexRecommendations();
-      await analyzeDatabaseHealth();
+      try {
+        await generateIndexRecommendations();
+        await analyzeDatabaseHealth();
+      } catch (error) {
+        console.error('Error initializing database optimization:', error);
+      }
     };
 
+    // Only run once when user is available
     initializeOptimization();
-  }, [user, generateIndexRecommendations, analyzeDatabaseHealth]);
+  }, [user]); // Remove the problematic dependencies
 
   return {
     queryAnalyses,
