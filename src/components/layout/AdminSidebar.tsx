@@ -22,7 +22,8 @@ import {
   Building,
   Layout,
   HelpCircle,
-  Edit
+  Edit,
+  Monitor
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -67,9 +68,8 @@ const adminMenuGroups = [
     items: [
       { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
       { title: "Reports", url: "/admin/reports", icon: BarChart3 },
-      { title: "System Health", url: "/unified-dashboard", icon: Activity },
-      { title: "Operational Excellence", url: "/operational-excellence", icon: Zap },
-      { title: "Advanced Features", url: "/advanced-features", icon: Brain },
+      { title: "System Health", url: "/admin/system-health", icon: Activity },
+      { title: "Unified Dashboard", url: "/unified-dashboard", icon: Monitor },
     ]
   },
   {

@@ -27,6 +27,7 @@ import AdminContentPage from "./pages/AdminContentPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import AdminRequestsPage from "./pages/AdminRequestsPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import SystemHealthPage from "./pages/SystemHealthPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
 import StaffDashboardPage from "./pages/StaffDashboardPage";
 import StaffRequestsPage from "./pages/StaffRequestsPage";
@@ -91,6 +92,7 @@ const App = () => (
               <Route path="/admin/requests" element={<AdminRequestsPage />} />
               <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+              <Route path="/admin/system-health" element={<SystemHealthPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
               <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
               <Route path="/admin/security" element={<AdminSecurityPage />} />
