@@ -13,7 +13,7 @@ interface EmailRequest {
   to: string;
   subject: string;
   html: string;
-  type: 'booking_confirmation' | 'visitor_approval' | 'maintenance_sla' | 'general';
+  type: 'booking_confirmation' | 'visitor_approval' | 'maintenance_sla' | 'general' | 'user_invitation' | 'welcome' | 'password_reset';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -63,6 +63,12 @@ function getFromEmail(type: string): string {
       return "Security <security@resend.dev>";
     case 'maintenance_sla':
       return "Maintenance <maintenance@resend.dev>";
+    case 'user_invitation':
+      return "Plaza Management <invitations@resend.dev>";
+    case 'welcome':
+      return "Plaza Management <welcome@resend.dev>";
+    case 'password_reset':
+      return "Plaza Support <support@resend.dev>";
     default:
       return "Plaza App <noreply@resend.dev>";
   }
