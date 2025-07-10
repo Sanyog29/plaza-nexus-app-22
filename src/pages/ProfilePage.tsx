@@ -11,6 +11,7 @@ import { OnboardingWizard } from '@/components/auth/OnboardingWizard';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ProfileErrorBoundary } from '@/components/ProfileErrorBoundary';
+import { ActivityFeed } from '@/components/profile/ActivityFeed';
 
 const ProfilePage = () => {
   const { user, signOut, isStaff, isAdmin, userRole, isLoading: authLoading } = useAuth();
@@ -114,15 +115,25 @@ const ProfilePage = () => {
                       <p className="text-plaza-blue font-medium capitalize">{profile.role}</p>
                       <p className="text-gray-400 text-sm mt-1">{user.email}</p>
                       
-                      <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
+                      <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">
                         {profile.office_number && (
-                          <div className="bg-gray-800 px-3 py-1 rounded-full">
-                            <span className="text-sm text-gray-300">Office: {profile.office_number}</span>
+                          <div className="bg-card px-3 py-1 rounded-full border">
+                            <span className="text-sm text-muted-foreground">Office: {profile.office_number}</span>
+                          </div>
+                        )}
+                        {profile.department && (
+                          <div className="bg-card px-3 py-1 rounded-full border">
+                            <span className="text-sm text-muted-foreground">{profile.department}</span>
+                          </div>
+                        )}
+                        {profile.floor && (
+                          <div className="bg-card px-3 py-1 rounded-full border">
+                            <span className="text-sm text-muted-foreground">Floor: {profile.floor}</span>
                           </div>
                         )}
                         {profile.phone_number && (
-                          <div className="bg-gray-800 px-3 py-1 rounded-full">
-                            <span className="text-sm text-gray-300">{profile.phone_number}</span>
+                          <div className="bg-card px-3 py-1 rounded-full border">
+                            <span className="text-sm text-muted-foreground">{profile.phone_number}</span>
                           </div>
                         )}
                       </div>
@@ -144,46 +155,53 @@ const ProfilePage = () => {
                     
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-300">Basic Information</span>
+                        <span className="text-muted-foreground">Basic Information</span>
                         <span className={`px-2 py-1 rounded text-xs ${
-                          profile.first_name && profile.last_name ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                          profile.first_name && profile.last_name ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                         }`}>
                           {profile.first_name && profile.last_name ? 'Complete' : 'Incomplete'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-300">Contact Details</span>
+                        <span className="text-muted-foreground">Contact Details</span>
                         <span className={`px-2 py-1 rounded text-xs ${
-                          profile.phone_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                          profile.phone_number ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                         }`}>
                           {profile.phone_number ? 'Complete' : 'Incomplete'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-300">Office Number</span>
+                        <span className="text-muted-foreground">Office & Department</span>
                         <span className={`px-2 py-1 rounded text-xs ${
-                          profile.office_number ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                          profile.office_number && profile.department ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'
                         }`}>
-                          {profile.office_number ? 'Complete' : 'Incomplete'}
+                          {profile.office_number && profile.department ? 'Complete' : 'Incomplete'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-300">Profile Picture</span>
+                        <span className="text-muted-foreground">Emergency Contact</span>
                         <span className={`px-2 py-1 rounded text-xs ${
-                          profile.avatar_url ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
+                          profile.emergency_contact_name && profile.emergency_contact_phone ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'
+                        }`}>
+                          {profile.emergency_contact_name && profile.emergency_contact_phone ? 'Complete' : 'Recommended'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Profile Picture</span>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          profile.avatar_url ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'
                         }`}>
                           {profile.avatar_url ? 'Complete' : 'Optional'}
                         </span>
                       </div>
                       {!isProfileComplete && (
                         <div className="flex items-center justify-between pt-2">
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm text-muted-foreground">
                             Complete your profile to access all features.
                           </p>
                           <Button 
                             size="sm" 
                             onClick={() => setShowOnboarding(true)}
-                            className="bg-plaza-blue hover:bg-blue-700"
                           >
                             Complete Now
                           </Button>
@@ -249,26 +267,29 @@ const ProfilePage = () => {
                   </Card>
                 )}
 
+                {/* Activity Feed - Show for all users */}
+                <ActivityFeed />
+
                 {/* Role-specific Actions */}
                 {(isAdmin || isStaff) && (
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">
                       {userRole === 'admin' ? 'Admin' : 'Staff'} Dashboard Access
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                        <Button 
-                         className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                         className="h-20 flex-col bg-card hover:bg-muted border"
                          onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/staff/dashboard')}
                        >
-                         <span className="text-plaza-blue text-xl mb-1">📊</span>
+                         <span className="text-primary text-xl mb-1">📊</span>
                          <span>Go to Dashboard</span>
                        </Button>
                        
                        <Button 
-                         className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                         className="h-20 flex-col bg-card hover:bg-muted border"
                          onClick={() => navigate(isAdmin ? '/admin/requests' : '/staff/requests')}
                        >
-                         <span className="text-plaza-blue text-xl mb-1">📋</span>
+                         <span className="text-primary text-xl mb-1">📋</span>
                          <span>Manage Requests</span>
                        </Button>
                     </div>
@@ -279,10 +300,9 @@ const ProfilePage = () => {
           </TabsContent>
 
           <TabsContent value="settings">
-            <Card className="mt-6 p-6">
-              <h2 className="text-2xl font-bold text-white mb-6">Account Settings</h2>
+            <div className="mt-6">
               <SettingsForm />
-            </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -3,6 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
 
+interface NotificationPreferences {
+  maintenance: boolean;
+  announcements: boolean;
+  security: boolean;
+  events: boolean;
+  marketing: boolean;
+}
+
 interface Profile {
   id: string;
   first_name: string | null;
@@ -11,6 +19,17 @@ interface Profile {
   office_number: string | null;
   phone_number: string | null;
   avatar_url: string | null;
+  department: string | null;
+  floor: string | null;
+  zone: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  emergency_contact_relationship: string | null;
+  profile_visibility: string;
+  notification_preferences: NotificationPreferences | any;
+  bio: string | null;
+  skills: string[] | null;
+  interests: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +40,17 @@ interface ProfileUpdateData {
   office_number?: string;
   phone_number?: string;
   avatar_url?: string | null;
+  department?: string;
+  floor?: string;
+  zone?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  profile_visibility?: string;
+  notification_preferences?: NotificationPreferences | any;
+  bio?: string;
+  skills?: string[];
+  interests?: string[];
 }
 
 export const useProfile = () => {
@@ -53,23 +83,28 @@ export const useProfile = () => {
             id: user.id,
             first_name: '',
             last_name: '',
-            role: 'tenant_manager'
+            role: 'tenant_manager',
+            notification_preferences: {
+              maintenance: true,
+              announcements: true,
+              security: true,
+              events: false,
+              marketing: false
+            }
           })
           .select()
           .maybeSingle();
           
         if (createError) {
           console.error('Error creating profile:', createError);
-          // Don't throw error, just log it and continue
         } else {
-          setProfile(newProfile);
+          setProfile(newProfile as Profile);
         }
       } else {
-        setProfile(data);
+        setProfile(data as Profile);
       }
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      // Don't show error toast on profile page load, it's too disruptive
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +127,7 @@ export const useProfile = () => {
 
       if (error) throw error;
 
-      setProfile(data);
+      setProfile(data as Profile);
       
       toast({
         title: "Profile updated",
@@ -127,6 +162,23 @@ export const useProfile = () => {
           office_number: profileData.office_number || null,
           phone_number: profileData.phone_number || null,
           avatar_url: profileData.avatar_url || null,
+          department: profileData.department || null,
+          floor: profileData.floor || null,
+          zone: profileData.zone || null,
+          emergency_contact_name: profileData.emergency_contact_name || null,
+          emergency_contact_phone: profileData.emergency_contact_phone || null,
+          emergency_contact_relationship: profileData.emergency_contact_relationship || null,
+          profile_visibility: profileData.profile_visibility || 'public',
+          notification_preferences: profileData.notification_preferences || {
+            maintenance: true,
+            announcements: true,
+            security: true,
+            events: false,
+            marketing: false
+          },
+          bio: profileData.bio || null,
+          skills: profileData.skills || null,
+          interests: profileData.interests || null,
           role: 'tenant_manager',
         })
         .select()
@@ -134,7 +186,7 @@ export const useProfile = () => {
 
       if (error) throw error;
 
-      setProfile(data);
+      setProfile(data as Profile);
       
       toast({
         title: "Profile created",
@@ -161,23 +213,37 @@ export const useProfile = () => {
       profile.first_name?.trim() &&
       profile.last_name?.trim() &&
       profile.office_number?.trim() &&
-      profile.phone_number?.trim()
+      profile.phone_number?.trim() &&
+      profile.department?.trim()
     );
   };
 
   const getCompletionPercentage = () => {
     if (!profile) return 0;
     
-    const fields = [
+    const requiredFields = [
       profile.first_name,
       profile.last_name,
       profile.office_number,
       profile.phone_number,
-      profile.avatar_url,
+      profile.department,
     ];
     
-    const completedFields = fields.filter(field => field && field.trim()).length;
-    return Math.round((completedFields / fields.length) * 100);
+    const optionalFields = [
+      profile.avatar_url,
+      profile.floor,
+      profile.emergency_contact_name,
+      profile.bio,
+    ];
+    
+    const completedRequired = requiredFields.filter(field => field && field.trim()).length;
+    const completedOptional = optionalFields.filter(field => field && field.trim()).length;
+    
+    // Required fields are worth 80%, optional fields 20%
+    const requiredScore = (completedRequired / requiredFields.length) * 80;
+    const optionalScore = (completedOptional / optionalFields.length) * 20;
+    
+    return Math.round(requiredScore + optionalScore);
   };
 
   // Set up real-time updates

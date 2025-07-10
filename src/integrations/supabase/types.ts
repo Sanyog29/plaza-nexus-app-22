@@ -1358,22 +1358,78 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_audit_logs: {
+        Row: {
+          action_type: string
+          changed_by: string
+          changes: Json
+          id: string
+          ip_address: unknown | null
+          profile_id: string
+          timestamp: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          changed_by: string
+          changes: Json
+          id?: string
+          ip_address?: unknown | null
+          profile_id: string
+          timestamp?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          changed_by?: string
+          changes?: Json
+          id?: string
+          ip_address?: unknown | null
+          profile_id?: string
+          timestamp?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_audit_logs_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_audit_logs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           approval_status: Database["public"]["Enums"]["approval_status"]
           approved_at: string | null
           approved_by: string | null
           avatar_url: string | null
+          bio: string | null
           created_at: string
           department: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
           first_name: string | null
           floor: string | null
           id: string
+          interests: string[] | null
           last_name: string | null
+          notification_preferences: Json | null
           office_number: string | null
           phone_number: string | null
+          profile_visibility: string | null
           rejection_reason: string | null
           role: Database["public"]["Enums"]["app_role"]
+          skills: string[] | null
           updated_at: string
           zone: string | null
         }
@@ -1382,16 +1438,24 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           department?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           first_name?: string | null
           floor?: string | null
           id: string
+          interests?: string[] | null
           last_name?: string | null
+          notification_preferences?: Json | null
           office_number?: string | null
           phone_number?: string | null
+          profile_visibility?: string | null
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          skills?: string[] | null
           updated_at?: string
           zone?: string | null
         }
@@ -1400,16 +1464,24 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           department?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           first_name?: string | null
           floor?: string | null
           id?: string
+          interests?: string[] | null
           last_name?: string | null
+          notification_preferences?: Json | null
           office_number?: string | null
           phone_number?: string | null
+          profile_visibility?: string | null
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          skills?: string[] | null
           updated_at?: string
           zone?: string | null
         }
