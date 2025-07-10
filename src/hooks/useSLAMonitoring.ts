@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
@@ -39,7 +39,7 @@ export const useSLAMonitoring = () => {
   const [recentBreaches, setRecentBreaches] = useState<SLABreach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchSLAMetrics = async () => {
+  const fetchSLAMetrics = useCallback(async () => {
     if (!user || !isStaff) return;
 
     try {
@@ -111,9 +111,9 @@ export const useSLAMonitoring = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, isStaff]);
 
-  const runSLAChecker = async () => {
+  const runSLAChecker = useCallback(async () => {
     if (!isAdmin) return;
 
     try {
@@ -130,7 +130,7 @@ export const useSLAMonitoring = () => {
       console.error('Error running SLA check:', error);
       toast.error('Failed to run SLA check: ' + error.message);
     }
-  };
+  }, [isAdmin, fetchSLAMetrics]);
 
   const getSLAStatusColor = (request: any) => {
     if (!request.sla_breach_at) return 'gray';
@@ -164,11 +164,15 @@ export const useSLAMonitoring = () => {
     return `${hours}h ${minutes}m remaining`;
   };
 
-  // Set up real-time monitoring
+  // Initial data fetch
   useEffect(() => {
     if (!user || !isStaff) return;
-
     fetchSLAMetrics();
+  }, [fetchSLAMetrics]);
+
+  // Set up real-time monitoring with stable dependencies
+  useEffect(() => {
+    if (!user || !isStaff) return;
 
     // Listen for maintenance request changes instead of escalation logs
     const requestChannel = supabase
@@ -195,7 +199,7 @@ export const useSLAMonitoring = () => {
       supabase.removeChannel(requestChannel);
       clearInterval(interval);
     };
-  }, [user, isStaff]);
+  }, [user?.id, isStaff, fetchSLAMetrics]);
 
   return {
     metrics,

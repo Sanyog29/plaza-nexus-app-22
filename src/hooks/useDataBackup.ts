@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
@@ -63,8 +63,8 @@ export const useDataBackup = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Available tables for backup
-  const availableTables = [
+  // Available tables for backup - memoized to prevent recreation
+  const availableTables = useMemo(() => [
     'maintenance_requests',
     'visitors',
     'profiles',
@@ -76,7 +76,7 @@ export const useDataBackup = () => {
     'daily_checklists',
     'alerts',
     'service_records'
-  ];
+  ], []);
 
   // Create backup job
   const createBackupJob = useCallback(async (
@@ -307,7 +307,7 @@ export const useDataBackup = () => {
     }
   }, [recoveryPoints]);
 
-  // Update backup statistics
+  // Update backup statistics - stable reference
   const updateBackupStats = useCallback(async () => {
     const completedBackups = backupJobs.filter(job => job.status === 'completed');
     const failedBackups = backupJobs.filter(job => job.status === 'failed');
@@ -387,6 +387,7 @@ export const useDataBackup = () => {
     toast.success('Backup configuration exported');
   }, [backupSchedules]);
 
+  // Initialize backup system only once per user
   useEffect(() => {
     if (!user) return;
 
@@ -421,7 +422,7 @@ export const useDataBackup = () => {
         ];
         
         setBackupSchedules(defaultSchedules);
-        await updateBackupStats();
+        // Remove updateBackupStats from here to prevent infinite loop
         
       } catch (error) {
         console.error('Error initializing backup system:', error);
@@ -432,7 +433,14 @@ export const useDataBackup = () => {
     };
 
     initializeBackupSystem();
-  }, [user, calculateNextRun, availableTables, updateBackupStats]);
+  }, [user?.id, calculateNextRun, availableTables]); // Remove updateBackupStats dependency
+
+  // Update backup stats when backup jobs change
+  useEffect(() => {
+    if (backupJobs.length > 0) {
+      updateBackupStats();
+    }
+  }, [backupJobs, updateBackupStats]);
 
   return {
     backupJobs,
