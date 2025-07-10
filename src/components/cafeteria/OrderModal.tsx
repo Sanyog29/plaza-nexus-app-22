@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { addHours, format } from 'date-fns';
+import { UPIPaymentModal } from './UPIPaymentModal';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -17,12 +18,15 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
   const [quantity, setQuantity] = React.useState(1);
   const [notes, setNotes] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPayment, setShowPayment] = React.useState(false);
+  const [orderId, setOrderId] = React.useState<string>('');
+  const [orderItems, setOrderItems] = React.useState<Array<{ name: string; quantity: number; price: number }>>([]);
   const { toast } = useToast();
 
   const handleOrder = async () => {
     setIsLoading(true);
     try {
-      const pickupTime = addHours(new Date(), 1); // Default pickup in 1 hour
+      const pickupTime = addHours(new Date(), 1);
       const totalAmount = item.price * quantity;
 
       // Get current user
@@ -44,6 +48,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
           user_id: user.id,
           total_amount: totalAmount,
           pickup_time: pickupTime.toISOString(),
+          status: 'pending_payment'
         })
         .select()
         .maybeSingle();
@@ -62,11 +67,14 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
 
       if (itemError) throw itemError;
 
-      toast({
-        title: "Order placed successfully!",
-        description: `Pickup time: ${format(pickupTime, 'h:mm a')}`,
-      });
-      onClose();
+      // Prepare for payment
+      setOrderId(order.id);
+      setOrderItems([{ 
+        name: item.name, 
+        quantity, 
+        price: item.price 
+      }]);
+      setShowPayment(true);
     } catch (error) {
       console.error('Error placing order:', error);
       toast({
@@ -79,59 +87,88 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    try {
+      // Update order status to confirmed
+      await supabase
+        .from('cafeteria_orders')
+        .update({ status: 'confirmed' })
+        .eq('id', orderId);
+
+      setShowPayment(false);
+      onClose();
+    } catch (error) {
+      console.error('Error updating order status:', error);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Place Order - {item?.name}</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between">
-            <span>Price: ${item?.price}</span>
-            <span className="text-plaza-blue">Points: {loyaltyPoints}</span>
-          </div>
+    <>
+      <Dialog open={isOpen && !showPayment} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Place Order - {item?.name}</DialogTitle>
+          </DialogHeader>
           
-          <div className="flex items-center space-x-4">
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between">
+              <span>Price: ₹{item?.price}</span>
+              <span className="text-primary">Points: {loyaltyPoints}</span>
+            </div>
+            
+            <div className="flex items-center justify-center space-x-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                disabled={quantity <= 1}
+              >
+                -
+              </Button>
+              <span className="px-4 py-2 bg-muted rounded">{quantity}</span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setQuantity(quantity + 1)}
+              >
+                +
+              </Button>
+            </div>
+
+            <textarea
+              className="w-full p-3 border rounded-md bg-background resize-none"
+              placeholder="Special instructions (optional)..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+
+            <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+              <span className="font-semibold">Total:</span>
+              <span className="font-bold text-lg">₹{(item?.price * quantity).toFixed(2)}</span>
+            </div>
+
             <Button 
-              variant="outline" 
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              disabled={quantity <= 1}
+              className="w-full"
+              onClick={handleOrder}
+              disabled={isLoading}
+              size="lg"
             >
-              -
-            </Button>
-            <span>{quantity}</span>
-            <Button 
-              variant="outline" 
-              onClick={() => setQuantity(quantity + 1)}
-            >
-              +
+              {isLoading ? "Processing..." : "Proceed to Payment"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
 
-          <textarea
-            className="w-full p-2 border rounded-md bg-background"
-            placeholder="Special instructions..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-          />
-
-          <div className="flex justify-between font-semibold">
-            <span>Total:</span>
-            <span>${(item?.price * quantity).toFixed(2)}</span>
-          </div>
-
-          <Button 
-            className="w-full"
-            onClick={handleOrder}
-            disabled={isLoading}
-          >
-            {isLoading ? "Placing Order..." : "Place Order"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <UPIPaymentModal
+        isOpen={showPayment}
+        onClose={() => setShowPayment(false)}
+        orderId={orderId}
+        amount={item?.price * quantity}
+        items={orderItems}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+    </>
   );
 };
 

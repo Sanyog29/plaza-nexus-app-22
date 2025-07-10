@@ -101,3 +101,14 @@ export function useRealtimeUserPresence(roomId: string) {
 
   return { presenceState, trackPresence };
 }
+
+export function useRealtimeNotifications(userId?: string) {
+  return useRealtimeUpdates({
+    table: 'notifications',
+    filter: userId ? `user_id=eq.${userId}` : undefined,
+    queryKeysToInvalidate: [
+      ['notifications'],
+      ...(userId ? [['notifications', userId]] : []),
+    ],
+  });
+}
