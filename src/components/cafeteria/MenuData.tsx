@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Star, Coffee } from 'lucide-react';
+import { Star, Coffee, Heart, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import NutritionalInfo from './NutritionalInfo';
 
 interface MenuDataProps {
   onSelectItem: (item: any) => void;
+  searchTerm: string;
+  filters: {
+    vegetarian: boolean;
+    vegan: boolean;
+    available: boolean;
+    priceRange: string;
+  };
 }
 
-const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
+const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }) => {
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['menu-categories'],
     queryFn: async () => {
@@ -36,6 +46,7 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
         .from('cafeteria_menu_items')
         .select('*')
         .eq('is_available', true)
+        .order('price', { ascending: false })
         .limit(1)
         .maybeSingle();
       
@@ -43,6 +54,61 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
       return data;
     },
   });
+
+  // Filter and search functionality
+  const filteredCategories = useMemo(() => {
+    if (!categories) return [];
+    
+    return categories.map(category => {
+      const filteredItems = category.cafeteria_menu_items?.filter((item: any) => {
+        // Search filter
+        if (searchTerm && !item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            !item.description?.toLowerCase().includes(searchTerm.toLowerCase())) {
+          return false;
+        }
+
+        // Availability filter
+        if (filters.available && !item.is_available) return false;
+
+        // Dietary filters
+        if (filters.vegetarian && !item.is_vegetarian) return false;
+        if (filters.vegan && !item.is_vegan) return false;
+
+        // Price range filter
+        if (filters.priceRange) {
+          const [min, max] = filters.priceRange.split('-').map(v => v === '+' ? Infinity : parseInt(v));
+          if (item.price < min || (max !== Infinity && item.price > max)) return false;
+        }
+
+        return true;
+      }) || [];
+
+      return {
+        ...category,
+        cafeteria_menu_items: filteredItems
+      };
+    }).filter(category => category.cafeteria_menu_items.length > 0);
+  }, [categories, searchTerm, filters]);
+
+  const toggleFavorite = (itemId: string) => {
+    setFavorites(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
+
+  const incrementViewCount = (itemId: string) => {
+    setViewCounts(prev => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 0) + 1
+    }));
+  };
+
+  const handleItemClick = (item: any) => {
+    incrementViewCount(item.id);
+    onSelectItem(item);
+  };
 
   if (isLoading) {
     return (
@@ -94,12 +160,25 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
               </div>
               <div className="mt-4 flex justify-between items-center">
                 <span className="text-lg font-medium text-white">${todaySpecial.price}</span>
-                <Button 
-                  className="bg-plaza-blue hover:bg-blue-700"
-                  onClick={() => onSelectItem(todaySpecial)}
-                >
-                  Order Now
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleFavorite(todaySpecial.id)}
+                    className="p-2"
+                  >
+                    <Heart 
+                      className={`h-4 w-4 ${favorites.includes(todaySpecial.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                    />
+                  </Button>
+                  <NutritionalInfo item={todaySpecial} />
+                  <Button 
+                    className="bg-plaza-blue hover:bg-blue-700"
+                    onClick={() => handleItemClick(todaySpecial)}
+                  >
+                    Order Now
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -107,13 +186,19 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
       )}
 
       {/* Menu Categories */}
-      {categories.map((category) => (
+      {filteredCategories.length === 0 && searchTerm && (
+        <div className="text-center py-8">
+          <Coffee className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">No items found matching your criteria</p>
+          <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+        </div>
+      )}
+      
+      {filteredCategories.map((category) => (
         <div key={category.id} className="mb-8">
           <h3 className="text-lg font-semibold text-white mb-4">{category.name}</h3>
           <div className="space-y-4">
-            {category.cafeteria_menu_items
-              ?.filter((item: any) => item.is_available)
-              .map((item: any) => (
+            {category.cafeteria_menu_items?.map((item: any) => (
                 <div 
                   key={item.id} 
                   className="bg-card rounded-lg p-4 card-shadow"
@@ -134,18 +219,37 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem }) => {
                         )}
                       </div>
                       <p className="text-sm text-gray-400 mt-1">{item.description}</p>
+                      {viewCounts[item.id] && (
+                        <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                          <Eye className="h-3 w-3 mr-1" />
+                          {viewCounts[item.id]} views
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <span className="text-white">${item.price}</span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mt-2 hover:bg-plaza-blue hover:text-white"
-                        onClick={() => onSelectItem(item)}
-                      >
-                        <Coffee size={16} className="mr-1" />
-                        Order
-                      </Button>
+                    <div className="text-right flex flex-col items-end gap-2">
+                      <span className="text-white font-medium">₹{item.price}</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleFavorite(item.id)}
+                          className="p-1 h-8 w-8"
+                        >
+                          <Heart 
+                            className={`h-3 w-3 ${favorites.includes(item.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                          />
+                        </Button>
+                        <NutritionalInfo item={item} />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="hover:bg-plaza-blue hover:text-white"
+                          onClick={() => handleItemClick(item)}
+                        >
+                          <Coffee size={14} className="mr-1" />
+                          Order
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
