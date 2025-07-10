@@ -48,25 +48,20 @@ import UserInvitationModal from './UserInvitationModal';
 
 interface User {
   id: string;
-  email: string;
   first_name: string;
   last_name: string;
+  email: string;
   role: string;
-  department?: string;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
   last_sign_in_at: string | null;
-  phone_number?: string;
-  office_number?: string;
-  floor?: string;
 }
 
 interface UserActivity {
   id: string;
   user_id: string;
   action: string;
-  resource_type: string;
   created_at: string;
 }
 
@@ -88,13 +83,14 @@ const EnhancedUserManagement = () => {
       const { data, error } = await supabase.rpc('get_user_management_data', {
         caller_id: currentUser?.id
       });
-      
+
       if (error) throw error;
       setUsers(data || []);
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error fetching users:', error);
       toast({
-        title: "Error fetching users",
-        description: error.message,
+        title: "Error",
+        description: "Failed to fetch users. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -106,14 +102,14 @@ const EnhancedUserManagement = () => {
     try {
       const { data, error } = await supabase
         .from('audit_logs')
-        .select('*')
+        .select('id, user_id, action, created_at')
         .order('created_at', { ascending: false })
         .limit(50);
-      
+
       if (error) throw error;
       setActivities(data || []);
     } catch (error) {
-      console.error('Error fetching activities:', error);
+      console.error('Error fetching user activities:', error);
     }
   };
 
@@ -123,68 +119,67 @@ const EnhancedUserManagement = () => {
         target_user_id: userId,
         new_role_text: newRole
       });
-      
+
       if (error) throw error;
-      
+
       toast({
-        title: "Role updated",
-        description: "User role has been updated successfully.",
+        title: "Success",
+        description: "User role updated successfully.",
       });
-      
+
       fetchUsers();
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error updating user role:', error);
       toast({
-        title: "Error updating role",
-        description: error.message,
+        title: "Error",
+        description: "Failed to update user role. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   const handleCreateUserSuccess = () => {
+    setShowCreateUser(false);
     fetchUsers();
+    toast({
+      title: "Success",
+      description: "User invitation sent successfully.",
+    });
   };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
+      user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'verified' && user.confirmed_at) ||
       (statusFilter === 'unverified' && !user.confirmed_at);
-    
+
     return matchesSearch && matchesRole && matchesStatus;
   });
 
   const getUserStatusBadge = (user: User) => {
     if (!user.confirmed_at) {
-      return <Badge variant="destructive">Unverified</Badge>;
+      return <Badge variant="secondary">Unverified</Badge>;
     }
-    if (user.last_sign_in_at) {
-      const lastSignIn = new Date(user.last_sign_in_at);
-      const daysSince = (Date.now() - lastSignIn.getTime()) / (1000 * 60 * 60 * 24);
-      
-      if (daysSince < 7) {
-        return <Badge variant="default" className="bg-green-500">Active</Badge>;
-      } else if (daysSince < 30) {
-        return <Badge variant="secondary">Inactive</Badge>;
-      }
+    if (user.last_sign_in_at && new Date(user.last_sign_in_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) {
+      return <Badge variant="default">Active</Badge>;
     }
-    return <Badge variant="outline">Never Signed In</Badge>;
+    return <Badge variant="outline">Inactive</Badge>;
   };
 
   const getRoleColor = (role: string) => {
-    const colors = {
-      admin: 'bg-red-100 text-red-800',
-      ops_supervisor: 'bg-blue-100 text-blue-800',
-      field_staff: 'bg-green-100 text-green-800',
-      staff: 'bg-purple-100 text-purple-800',
-      tenant_manager: 'bg-gray-100 text-gray-800',
-      vendor: 'bg-orange-100 text-orange-800',
-    };
-    return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'ops_supervisor': return 'bg-blue-100 text-blue-800';
+      case 'field_staff': return 'bg-green-100 text-green-800';
+      case 'tenant_manager': return 'bg-yellow-100 text-yellow-800';
+      case 'vendor': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   useEffect(() => {
@@ -232,10 +227,10 @@ const EnhancedUserManagement = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-500" />
+              <Users className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                <p className="text-2xl font-bold text-foreground">{users.length}</p>
+                <p className="text-2xl font-bold">{users.length}</p>
               </div>
             </div>
           </CardContent>
@@ -243,10 +238,10 @@ const EnhancedUserManagement = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Verified</p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-2xl font-bold">
                   {users.filter(u => u.confirmed_at).length}
                 </p>
               </div>
@@ -256,13 +251,11 @@ const EnhancedUserManagement = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Activity className="h-8 w-8 text-purple-500" />
+              <Clock className="h-8 w-8 text-yellow-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {users.filter(u => u.last_sign_in_at && 
-                    (Date.now() - new Date(u.last_sign_in_at).getTime()) < 7 * 24 * 60 * 60 * 1000
-                  ).length}
+                <p className="text-sm font-medium text-muted-foreground">Pending</p>
+                <p className="text-2xl font-bold">
+                  {users.filter(u => !u.confirmed_at).length}
                 </p>
               </div>
             </div>
@@ -271,10 +264,10 @@ const EnhancedUserManagement = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Shield className="h-8 w-8 text-red-500" />
+              <Shield className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Admins</p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-2xl font-bold">
                   {users.filter(u => u.role === 'admin').length}
                 </p>
               </div>
@@ -285,43 +278,53 @@ const EnhancedUserManagement = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
+        <CardHeader>
+          <CardTitle>Filter Users</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
+              <Label htmlFor="search">Search</Label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users..."
+                  id="search"
+                  placeholder="Search by name or email..."
+                  className="pl-8"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
                 />
               </div>
             </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border border-border z-50">
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
-                <SelectItem value="field_staff">Field Staff</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                <SelectItem value="vendor">Vendor</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent className="bg-popover border border-border z-50">
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="verified">Verified</SelectItem>
-                <SelectItem value="unverified">Unverified</SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <Label htmlFor="role-filter">Role</Label>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="ops_supervisor">Ops Supervisor</SelectItem>
+                  <SelectItem value="field_staff">Field Staff</SelectItem>
+                  <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
+                  <SelectItem value="vendor">Vendor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="status-filter">Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="verified">Verified</SelectItem>
+                  <SelectItem value="unverified">Unverified</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -337,12 +340,12 @@ const EnhancedUserManagement = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-4 font-medium">User</th>
-                    <th className="text-left p-4 font-medium">Role</th>
-                    <th className="text-left p-4 font-medium">Department</th>
-                    <th className="text-left p-4 font-medium">Last Activity</th>
-                    <th className="text-left p-4 font-medium">Status</th>
-                    <th className="text-left p-4 font-medium">Actions</th>
+                    <th className="text-left p-4">User</th>
+                    <th className="text-left p-4">Email</th>
+                    <th className="text-left p-4">Role</th>
+                    <th className="text-left p-4">Joined</th>
+                    <th className="text-left p-4">Status</th>
+                    <th className="text-left p-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -350,45 +353,35 @@ const EnhancedUserManagement = () => {
                     <tr key={user.id} className="border-b hover:bg-muted/50">
                       <td className="p-4">
                         <div>
-                          <div className="font-medium text-foreground">
+                          <p className="font-medium">
                             {user.first_name && user.last_name 
                               ? `${user.first_name} ${user.last_name}`
                               : 'No name set'
                             }
-                          </div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                          </p>
+                          <p className="text-sm text-muted-foreground">ID: {user.id.slice(0, 8)}...</p>
                         </div>
                       </td>
+                      <td className="p-4">{user.email}</td>
                       <td className="p-4">
                         <Select
                           value={user.role}
-                          onValueChange={(value) => handleRoleChange(user.id, value)}
+                          onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
                         >
-                          <SelectTrigger className="w-[160px]">
+                          <SelectTrigger className="w-40">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-popover border border-border z-50">
+                          <SelectContent>
                             <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
+                            <SelectItem value="ops_supervisor">Ops Supervisor</SelectItem>
                             <SelectItem value="field_staff">Field Staff</SelectItem>
-                            <SelectItem value="staff">Staff</SelectItem>
                             <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
                             <SelectItem value="vendor">Vendor</SelectItem>
                           </SelectContent>
                         </Select>
                       </td>
                       <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {user.department || '-'}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {user.last_sign_in_at 
-                            ? formatDistanceToNow(new Date(user.last_sign_in_at), { addSuffix: true })
-                            : 'Never'
-                          }
-                        </span>
+                        {format(new Date(user.created_at), 'MMM d, yyyy')}
                       </td>
                       <td className="p-4">
                         {getUserStatusBadge(user)}
@@ -445,18 +438,18 @@ const EnhancedUserManagement = () => {
                 </div>
                 <div>
                   <Label>Role</Label>
-                  <Badge className={getRoleColor(selectedUser.role)}>
-                    {selectedUser.role.replace('_', ' ').toUpperCase()}
-                  </Badge>
+                  <p className="text-sm text-muted-foreground">{selectedUser.role}</p>
                 </div>
                 <div>
-                  <Label>Department</Label>
-                  <p className="text-sm text-muted-foreground">{selectedUser.department || '-'}</p>
-                </div>
-                <div>
-                  <Label>Created</Label>
+                  <Label>Status</Label>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(selectedUser.created_at), 'MMM d, yyyy')}
+                    {getUserStatusBadge(selectedUser)}
+                  </p>
+                </div>
+                <div>
+                  <Label>Joined</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(selectedUser.created_at), 'MMM d, yyyy HH:mm')}
                   </p>
                 </div>
                 <div>
