@@ -43,6 +43,11 @@
     --success-foreground: 210 40% 98%;
     --warning: 38 92% 50%;
     --warning-foreground: 220 20% 6%;
+    
+    /* Enhanced UI colors */
+    --success-subtle: 142 76% 36% / 0.1;
+    --error-subtle: 0 84% 60% / 0.1;
+    --info-subtle: 217 100% 50% / 0.1;
 
     /* UI elements */
     --border: 215 9% 20%;
