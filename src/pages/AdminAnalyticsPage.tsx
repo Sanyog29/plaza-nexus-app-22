@@ -32,11 +32,11 @@ const AdminAnalyticsPage = () => {
         </TabsList>
 
         <TabsContent value="visitor" className="mt-6">
-          <VisitorAnalytics />
+          <VisitorAnalytics period="30" />
         </TabsContent>
 
         <TabsContent value="security" className="mt-6">
-          <SecurityAnalytics />
+          <SecurityAnalytics period="30" />
         </TabsContent>
 
         <TabsContent value="maintenance" className="mt-6">
