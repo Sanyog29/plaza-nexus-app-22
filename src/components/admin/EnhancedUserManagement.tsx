@@ -103,7 +103,23 @@ const EnhancedUserManagement = () => {
       });
 
       if (error) throw error;
-      setUsers(data || []);
+      // Map the data to ensure all required fields are present
+      const usersData = (data || []).map((user: any) => ({
+        id: user.id,
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        email: user.email || '',
+        role: user.role,
+        approval_status: user.approval_status || 'pending',
+        approved_by: user.approved_by || null,
+        approved_at: user.approved_at || null,
+        rejection_reason: user.rejection_reason || null,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        confirmed_at: user.confirmed_at || null,
+        last_sign_in_at: user.last_sign_in_at || null,
+      }));
+      setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
