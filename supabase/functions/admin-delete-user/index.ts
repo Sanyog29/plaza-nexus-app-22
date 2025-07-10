@@ -124,26 +124,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Log the deletion action
-    await supabaseAdmin.rpc('log_audit_event', {
-      action_type: 'user_deleted',
-      resource_type: 'user',
-      resource_id: user_id,
-      old_values: {
-        email: userToDelete.user.email,
-        deleted_by: user.id,
-        deleted_at: new Date().toISOString()
-      }
-    });
-
-    // Create notification for successful deletion
-    await supabaseAdmin.rpc('create_notification', {
-      target_user_id: user.id,
-      notification_title: 'User Deleted',
-      notification_message: `User ${userToDelete.user.email} has been successfully deleted from the system.`,
-      notification_type: 'success'
-    });
-
     console.log(`User ${userToDelete.user.email} deleted by admin ${user.email}`);
 
     return new Response(

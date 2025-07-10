@@ -167,11 +167,18 @@ const EnhancedUserManagement = () => {
     try {
       setIsDeleting(true);
       
-      const { error } = await supabase.functions.invoke('admin-delete-user', {
+      console.log('Attempting to delete user:', userToDelete.id);
+      
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
         body: { user_id: userToDelete.id }
       });
 
-      if (error) throw error;
+      console.log('Delete response:', { data, error });
+
+      if (error) {
+        console.error('Function invoke error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",
