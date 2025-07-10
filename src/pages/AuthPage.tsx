@@ -1,13 +1,23 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeCard from '@/components/auth/WelcomeCard';
 import AuthForm from '@/components/auth/AuthForm';
+import InvitationAcceptance from '@/components/auth/InvitationAcceptance';
 
 const AuthPage = () => {
+  const [searchParams] = useSearchParams();
+  const invitation = searchParams.get('invitation');
+  
+  // If there's an invitation token, show the invitation acceptance form
+  if (invitation) {
+    return <InvitationAcceptance />;
+  }
+
+  // Otherwise, show the regular auth form
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);

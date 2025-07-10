@@ -2863,6 +2863,10 @@ export type Database = {
         Args: { visitor_id: string }
         Returns: Json
       }
+      get_invitation_details: {
+        Args: { token: string }
+        Returns: Json
+      }
       get_recent_sla_breaches: {
         Args: { days_back?: number }
         Returns: {

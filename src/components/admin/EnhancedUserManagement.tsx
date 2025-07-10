@@ -44,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
+import UserInvitationModal from './UserInvitationModal';
 
 interface User {
   id: string;
@@ -80,18 +81,6 @@ const EnhancedUserManagement = () => {
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const { user: currentUser, isAdmin } = useAuth();
-
-  // New user form state
-  const [newUser, setNewUser] = useState({
-    email: '',
-    first_name: '',
-    last_name: '',
-    role: 'tenant_manager',
-    department: '',
-    phone_number: '',
-    office_number: '',
-    floor: '',
-  });
 
   const fetchUsers = async () => {
     try {
@@ -152,22 +141,8 @@ const EnhancedUserManagement = () => {
     }
   };
 
-  const handleCreateUser = async () => {
-    try {
-      // This would typically call an admin endpoint to create users
-      // For now, we'll show a message that this feature requires backend setup
-      toast({
-        title: "Feature Coming Soon",
-        description: "User creation will be available with admin authentication setup.",
-      });
-      setShowCreateUser(false);
-    } catch (error: any) {
-      toast({
-        title: "Error creating user",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const handleCreateUserSuccess = () => {
+    fetchUsers();
   };
 
   const filteredUsers = users.filter(user => {
@@ -245,73 +220,10 @@ const EnhancedUserManagement = () => {
             <Activity className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Dialog open={showCreateUser} onOpenChange={setShowCreateUser}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add User
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New User</DialogTitle>
-                <DialogDescription>
-                  Add a new user to the system with specified role and permissions.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="first_name">First Name</Label>
-                    <Input
-                      id="first_name"
-                      value={newUser.first_name}
-                      onChange={(e) => setNewUser(prev => ({ ...prev, first_name: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="last_name">Last Name</Label>
-                    <Input
-                      id="last_name"
-                      value={newUser.last_name}
-                      onChange={(e) => setNewUser(prev => ({ ...prev, last_name: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newUser.email}
-                    onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="role">Role</Label>
-                  <Select value={newUser.role} onValueChange={(value) => setNewUser(prev => ({ ...prev, role: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border border-border z-50">
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
-                      <SelectItem value="field_staff">Field Staff</SelectItem>
-                      <SelectItem value="staff">Staff</SelectItem>
-                      <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                      <SelectItem value="vendor">Vendor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowCreateUser(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateUser}>Create User</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setShowCreateUser(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Invite User
+          </Button>
         </div>
       </div>
 
@@ -501,6 +413,13 @@ const EnhancedUserManagement = () => {
           </LoadingWrapper>
         </CardContent>
       </Card>
+
+      {/* User Invitation Modal */}
+      <UserInvitationModal
+        open={showCreateUser}
+        onOpenChange={setShowCreateUser}
+        onSuccess={handleCreateUserSuccess}
+      />
 
       {/* User Details Modal */}
       <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
