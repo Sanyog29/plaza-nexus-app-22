@@ -1760,6 +1760,36 @@ export type Database = {
           },
         ]
       }
+      service_penalty_matrix: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          priority: string
+        }
+        Insert: {
+          amount?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          priority: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: string
+        }
+        Relationships: []
+      }
       service_records: {
         Row: {
           actions_taken: string | null
