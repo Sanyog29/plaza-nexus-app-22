@@ -23,12 +23,14 @@ const RoomsList: React.FC<RoomsListProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('rooms')
-        .select('*')
+        .select('id, name, location, capacity, facilities, image_url')
         .order('name');
       
       if (error) throw error;
       return data || [];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const { data: bookings = [] } = useQuery({
@@ -37,14 +39,16 @@ const RoomsList: React.FC<RoomsListProps> = ({
       const dateStr = selectedDate.toISOString().split('T')[0];
       const { data, error } = await supabase
         .from('room_bookings')
-        .select('*')
+        .select('room_id, start_time, end_time')
         .gte('start_time', `${dateStr}T00:00:00`)
-        .lt('start_time', `${dateStr}T23:59:59`)
+        .lte('start_time', `${dateStr}T23:59:59`)
         .eq('status', 'confirmed');
       
       if (error) throw error;
       return data || [];
     },
+    enabled: !!selectedDate,
+    staleTime: 30 * 1000, // 30 seconds
   });
 
   const getTimeSlots = () => {
@@ -55,15 +59,30 @@ const RoomsList: React.FC<RoomsListProps> = ({
     return slots;
   };
 
-  const isSlotAvailable = (roomId: string, timeSlot: string) => {
-    const slotDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${timeSlot}:00`);
-    return !bookings.some(booking => {
-      const startTime = new Date(booking.start_time);
-      const endTime = new Date(booking.end_time);
-      return booking.room_id === roomId && 
-             slotDateTime >= startTime && 
-             slotDateTime < endTime;
+  // Memoize availability calculation for performance
+  const roomAvailability = React.useMemo(() => {
+    const availability: Record<string, Record<string, boolean>> = {};
+    const timeSlots = getTimeSlots();
+    
+    rooms.forEach(room => {
+      availability[room.id] = {};
+      timeSlots.forEach(slot => {
+        const slotDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${slot}:00`);
+        availability[room.id][slot] = !bookings.some(booking => {
+          const startTime = new Date(booking.start_time);
+          const endTime = new Date(booking.end_time);
+          return booking.room_id === room.id && 
+                 slotDateTime >= startTime && 
+                 slotDateTime < endTime;
+        });
+      });
     });
+    
+    return availability;
+  }, [rooms, bookings, selectedDate]);
+
+  const isSlotAvailable = (roomId: string, timeSlot: string) => {
+    return roomAvailability[roomId]?.[timeSlot] ?? false;
   };
 
   if (isLoading) {
