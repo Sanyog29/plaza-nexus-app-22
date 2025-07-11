@@ -262,6 +262,51 @@ export type Database = {
           },
         ]
       }
+      booking_templates: {
+        Row: {
+          buffer_time_minutes: number | null
+          capacity_needed: number | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          equipment_needed: Json | null
+          id: string
+          room_type_preference: string | null
+          template_name: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buffer_time_minutes?: number | null
+          capacity_needed?: number | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          equipment_needed?: Json | null
+          id?: string
+          room_type_preference?: string | null
+          template_name: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buffer_time_minutes?: number | null
+          capacity_needed?: number | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          equipment_needed?: Json | null
+          id?: string
+          room_type_preference?: string | null
+          template_name?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       broadcasts: {
         Row: {
           content: string
@@ -1612,39 +1657,73 @@ export type Database = {
       }
       room_bookings: {
         Row: {
+          attendee_count: number | null
+          buffer_time_minutes: number | null
           created_at: string
           description: string | null
+          duration_minutes: number | null
           end_time: string
+          equipment_needed: Json | null
           id: string
+          is_recurring: boolean | null
+          meeting_agenda: string | null
+          parent_booking_id: string | null
+          recurrence_rule: Json | null
           room_id: string
           start_time: string
           status: string
+          template_id: string | null
           title: string
           user_id: string
         }
         Insert: {
+          attendee_count?: number | null
+          buffer_time_minutes?: number | null
           created_at?: string
           description?: string | null
+          duration_minutes?: number | null
           end_time: string
+          equipment_needed?: Json | null
           id?: string
+          is_recurring?: boolean | null
+          meeting_agenda?: string | null
+          parent_booking_id?: string | null
+          recurrence_rule?: Json | null
           room_id: string
           start_time: string
           status?: string
+          template_id?: string | null
           title: string
           user_id: string
         }
         Update: {
+          attendee_count?: number | null
+          buffer_time_minutes?: number | null
           created_at?: string
           description?: string | null
+          duration_minutes?: number | null
           end_time?: string
+          equipment_needed?: Json | null
           id?: string
+          is_recurring?: boolean | null
+          meeting_agenda?: string | null
+          parent_booking_id?: string | null
+          recurrence_rule?: Json | null
           room_id?: string
           start_time?: string
           status?: string
+          template_id?: string | null
           title?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "room_bookings_parent_booking_id_fkey"
+            columns: ["parent_booking_id"]
+            isOneToOne: false
+            referencedRelation: "room_bookings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "room_bookings_room_id_fkey"
             columns: ["room_id"]
