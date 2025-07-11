@@ -3034,6 +3034,14 @@ export type Database = {
         Args: { summary_date: string; summary_type: string }
         Returns: undefined
       }
+      generate_recurring_bookings: {
+        Args: {
+          base_booking_id: string
+          recurrence_rule: Json
+          end_date: string
+        }
+        Returns: number
+      }
       generate_visitor_qr_data: {
         Args: { visitor_id: string }
         Returns: Json

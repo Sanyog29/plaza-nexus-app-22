@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Users, MapPin, Monitor } from 'lucide-react';
+import EnhancedBookingDialog from './EnhancedBookingDialog';
 
 interface RoomsListProps {
   selectedDate: Date;
@@ -18,6 +19,17 @@ const RoomsList: React.FC<RoomsListProps> = ({
   onSelectRoom,
   onBookRoom 
 }) => {
+  const [bookingDialog, setBookingDialog] = useState<{
+    isOpen: boolean;
+    roomId: string;
+    roomName: string;
+    timeSlot: string;
+  }>({
+    isOpen: false,
+    roomId: '',
+    roomName: '',
+    timeSlot: ''
+  });
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ['rooms'],
     queryFn: async () => {
@@ -96,8 +108,9 @@ const RoomsList: React.FC<RoomsListProps> = ({
   }
 
   return (
-    <div className="space-y-4">
-      {rooms.map((room) => (
+    <>
+      <div className="space-y-4">
+        {rooms.map((room) => (
         <div 
           key={room.id}
           className={`bg-card rounded-lg p-4 card-shadow cursor-pointer transition-colors ${
@@ -152,7 +165,12 @@ const RoomsList: React.FC<RoomsListProps> = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (available) {
-                        onBookRoom(room.id, slot);
+                        setBookingDialog({
+                          isOpen: true,
+                          roomId: room.id,
+                          roomName: room.name,
+                          timeSlot: slot
+                        });
                       }
                     }}
                   >
@@ -162,9 +180,19 @@ const RoomsList: React.FC<RoomsListProps> = ({
               })}
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+          </div>
+        ))}
+      </div>
+
+      <EnhancedBookingDialog
+        isOpen={bookingDialog.isOpen}
+        onClose={() => setBookingDialog(prev => ({ ...prev, isOpen: false }))}
+        roomId={bookingDialog.roomId}
+        roomName={bookingDialog.roomName}
+        selectedDate={selectedDate}
+        selectedTime={bookingDialog.timeSlot}
+      />
+    </>
   );
 };
 
