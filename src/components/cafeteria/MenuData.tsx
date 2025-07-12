@@ -20,17 +20,23 @@ interface MenuDataProps {
 const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }) => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
-  const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['menu-categories'],
+  // Fetch vendors with their menu items
+  const { data: vendors = [], isLoading } = useQuery({
+    queryKey: ['vendors-with-menu'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('cafeteria_menu_categories')
+        .from('vendors')
         .select(`
           *,
-          cafeteria_menu_items (
+          vendor_menu_items (
+            *,
+            category:cafeteria_menu_categories(name, id)
+          ),
+          cafeteria_menu_categories (
             *
           )
         `)
+        .eq('is_active', true)
         .order('name');
       
       if (error) throw error;
@@ -41,12 +47,15 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
   const { data: todaySpecial } = useQuery({
     queryKey: ['today-special'],
     queryFn: async () => {
-      // Get a featured item (could be based on popularity, admin selection, etc.)
+      // Get a featured item from vendor menu items
       const { data, error } = await supabase
-        .from('cafeteria_menu_items')
-        .select('*')
+        .from('vendor_menu_items')
+        .select(`
+          *,
+          vendor:vendors(name, logo_url)
+        `)
         .eq('is_available', true)
-        .order('price', { ascending: false })
+        .eq('is_featured', true)
         .limit(1)
         .maybeSingle();
       
@@ -55,12 +64,29 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
     },
   });
 
-  // Filter and search functionality
-  const filteredCategories = useMemo(() => {
-    if (!categories) return [];
+  // Check if vendor is open
+  const isVendorOpen = (vendor: any) => {
+    const now = new Date();
+    const today = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
     
-    return categories.map(category => {
-      const filteredItems = category.cafeteria_menu_items?.filter((item: any) => {
+    const schedule = vendor.operating_hours?.[today];
+    if (!schedule || schedule.closed) return false;
+    
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
+    const openTime = openHour * 60 + openMin;
+    const closeTime = closeHour * 60 + closeMin;
+    
+    return currentTime >= openTime && currentTime <= closeTime;
+  };
+
+  // Filter and search functionality for vendors
+  const filteredVendors = useMemo(() => {
+    if (!vendors) return [];
+    
+    return vendors.map(vendor => {
+      const filteredItems = vendor.vendor_menu_items?.filter((item: any) => {
         // Search filter
         if (searchTerm && !item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
             !item.description?.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -70,9 +96,9 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
         // Availability filter
         if (filters.available && !item.is_available) return false;
 
-        // Dietary filters
-        if (filters.vegetarian && !item.is_vegetarian) return false;
-        if (filters.vegan && !item.is_vegan) return false;
+        // Dietary filters (check dietary tags)
+        if (filters.vegetarian && !item.dietary_tags?.includes('vegetarian')) return false;
+        if (filters.vegan && !item.dietary_tags?.includes('vegan')) return false;
 
         // Price range filter
         if (filters.priceRange) {
@@ -84,11 +110,12 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
       }) || [];
 
       return {
-        ...category,
-        cafeteria_menu_items: filteredItems
+        ...vendor,
+        vendor_menu_items: filteredItems,
+        isOpen: isVendorOpen(vendor)
       };
-    }).filter(category => category.cafeteria_menu_items.length > 0);
-  }, [categories, searchTerm, filters]);
+    }).filter(vendor => vendor.vendor_menu_items.length > 0);
+  }, [vendors, searchTerm, filters]);
 
   const toggleFavorite = (itemId: string) => {
     setFavorites(prev => 
@@ -171,7 +198,6 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
                       className={`h-4 w-4 ${favorites.includes(todaySpecial.id) ? 'fill-red-500 text-red-500' : ''}`} 
                     />
                   </Button>
-                  <NutritionalInfo item={todaySpecial} />
                   <Button 
                     className="bg-plaza-blue hover:bg-blue-700"
                     onClick={() => handleItemClick(todaySpecial)}
@@ -180,13 +206,20 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
                   </Button>
                 </div>
               </div>
+              {todaySpecial.vendor && (
+                <div className="px-4 pb-2">
+                  <span className="text-sm text-gray-400">
+                    by {todaySpecial.vendor.name}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Menu Categories */}
-      {filteredCategories.length === 0 && searchTerm && (
+      {/* Vendor Menus */}
+      {filteredVendors.length === 0 && searchTerm && (
         <div className="text-center py-8">
           <Coffee className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">No items found matching your criteria</p>
@@ -194,66 +227,116 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
         </div>
       )}
       
-      {filteredCategories.map((category) => (
-        <div key={category.id} className="mb-8">
-          <h3 className="text-lg font-semibold text-white mb-4">{category.name}</h3>
-          <div className="space-y-4">
-            {category.cafeteria_menu_items?.map((item: any) => (
-                <div 
-                  key={item.id} 
-                  className="bg-card rounded-lg p-4 card-shadow"
-                >
-                  <div className="flex justify-between">
-                    <div>
-                      <div className="flex items-center">
-                        <h4 className="font-medium text-white">{item.name}</h4>
-                        {item.is_vegetarian && (
-                          <span className="ml-2 w-4 h-4 rounded-full border border-green-500 flex items-center justify-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                          </span>
-                        )}
-                        {item.is_vegan && (
-                          <span className="ml-2 text-xs px-2 py-1 bg-green-600 text-white rounded-full">
-                            VEGAN
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-400 mt-1">{item.description}</p>
-                      {viewCounts[item.id] && (
-                        <div className="flex items-center mt-1 text-xs text-muted-foreground">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {viewCounts[item.id]} views
-                        </div>
+      {filteredVendors.map((vendor) => (
+        <div key={vendor.id} className="mb-8">
+          {/* Vendor Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              {vendor.logo_url && (
+                <img 
+                  src={vendor.logo_url} 
+                  alt={vendor.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              )}
+              <div>
+                <h3 className="text-lg font-semibold text-white">{vendor.name}</h3>
+                <p className="text-sm text-gray-400">{vendor.cuisine_type}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`px-2 py-1 rounded-full text-xs ${
+                vendor.isOpen 
+                  ? 'bg-green-500/20 text-green-400' 
+                  : 'bg-red-500/20 text-red-400'
+              }`}>
+                {vendor.isOpen ? 'Open' : 'Closed'}
+              </div>
+              {vendor.average_rating > 0 && (
+                <div className="flex items-center bg-plaza-blue bg-opacity-20 px-2 py-1 rounded">
+                  <Star size={12} className="text-plaza-blue mr-1 fill-plaza-blue" />
+                  <span className="text-xs text-plaza-blue">{vendor.average_rating.toFixed(1)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Vendor Menu Items */}
+          <div className="space-y-3">
+            {vendor.vendor_menu_items?.map((item: any) => (
+              <div 
+                key={item.id} 
+                className={`bg-card rounded-lg p-4 card-shadow ${
+                  !vendor.isOpen ? 'opacity-60' : ''
+                }`}
+              >
+                <div className="flex justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-white">{item.name}</h4>
+                      {item.dietary_tags?.includes('vegetarian') && (
+                        <span className="w-3 h-3 rounded-full border border-green-500 flex items-center justify-center">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                        </span>
+                      )}
+                      {item.dietary_tags?.includes('vegan') && (
+                        <span className="text-xs px-1.5 py-0.5 bg-green-600 text-white rounded-full">
+                          V
+                        </span>
+                      )}
+                      {item.is_featured && (
+                        <span className="text-xs px-1.5 py-0.5 bg-yellow-600 text-white rounded-full">
+                          Featured
+                        </span>
                       )}
                     </div>
-                    <div className="text-right flex flex-col items-end gap-2">
-                      <span className="text-white font-medium">₹{item.price}</span>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleFavorite(item.id)}
-                          className="p-1 h-8 w-8"
-                        >
-                          <Heart 
-                            className={`h-3 w-3 ${favorites.includes(item.id) ? 'fill-red-500 text-red-500' : ''}`} 
-                          />
-                        </Button>
-                        <NutritionalInfo item={item} />
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="hover:bg-plaza-blue hover:text-white"
-                          onClick={() => handleItemClick(item)}
-                        >
-                          <Coffee size={14} className="mr-1" />
-                          Order
-                        </Button>
+                    <p className="text-sm text-gray-400 mt-1">{item.description}</p>
+                    {item.preparation_time_minutes && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Prep time: {item.preparation_time_minutes} mins
+                      </p>
+                    )}
+                    {viewCounts[item.id] && (
+                      <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                        <Eye className="h-3 w-3 mr-1" />
+                        {viewCounts[item.id]} views
                       </div>
+                    )}
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-2 ml-4">
+                    <span className="text-white font-medium">₹{item.price}</span>
+                    {item.average_rating > 0 && (
+                      <div className="flex items-center text-xs text-gray-400">
+                        <Star size={12} className="mr-1 fill-yellow-400 text-yellow-400" />
+                        {item.average_rating.toFixed(1)}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleFavorite(item.id)}
+                        className="p-1 h-7 w-7"
+                      >
+                        <Heart 
+                          className={`h-3 w-3 ${favorites.includes(item.id) ? 'fill-red-500 text-red-500' : ''}`} 
+                        />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="hover:bg-plaza-blue hover:text-white text-xs px-2"
+                        onClick={() => handleItemClick(item)}
+                        disabled={!vendor.isOpen}
+                      >
+                        <Coffee size={12} className="mr-1" />
+                        {vendor.isOpen ? 'Order' : 'Closed'}
+                      </Button>
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </div>
       ))}

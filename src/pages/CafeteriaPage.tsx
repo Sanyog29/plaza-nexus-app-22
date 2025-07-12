@@ -5,6 +5,7 @@ import MenuData from '@/components/cafeteria/MenuData';
 import SearchAndFilters from '@/components/cafeteria/SearchAndFilters';
 import LiveOrderTracking from '@/components/cafeteria/LiveOrderTracking';
 import OrderHistory from '@/components/cafeteria/OrderHistory';
+import VendorOffers from '@/components/cafeteria/VendorOffers';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,8 +42,8 @@ const CafeteriaPage = () => {
           />
         </div>
         <div className="absolute bottom-0 left-0 p-4">
-          <h2 className="text-2xl font-bold text-white">Terrace Café</h2>
-          <p className="text-gray-300">SS Plaza · 12th Floor</p>
+          <h2 className="text-2xl font-bold text-white">Autopilot Café</h2>
+          <p className="text-gray-300">Multi-Brand Food Court · SS Plaza, BTM Layout</p>
         </div>
       </div>
       
@@ -57,6 +58,7 @@ const CafeteriaPage = () => {
           </TabsList>
           
           <TabsContent value="menu" className="space-y-4">
+            <VendorOffers />
             <SearchAndFilters
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
