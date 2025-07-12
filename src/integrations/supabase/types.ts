@@ -1809,36 +1809,54 @@ export type Database = {
       }
       service_bookings: {
         Row: {
+          assigned_at: string | null
           booking_date: string
           booking_time: string
+          completed_at: string | null
           created_at: string
           id: string
           notes: string | null
+          rating: number | null
+          review_text: string | null
           service_item_id: string | null
+          service_provider_id: string | null
+          started_at: string | null
           status: string
           total_amount: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          assigned_at?: string | null
           booking_date: string
           booking_time: string
+          completed_at?: string | null
           created_at?: string
           id?: string
           notes?: string | null
+          rating?: number | null
+          review_text?: string | null
           service_item_id?: string | null
+          service_provider_id?: string | null
+          started_at?: string | null
           status?: string
           total_amount?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          assigned_at?: string | null
           booking_date?: string
           booking_time?: string
+          completed_at?: string | null
           created_at?: string
           id?: string
           notes?: string | null
+          rating?: number | null
+          review_text?: string | null
           service_item_id?: string | null
+          service_provider_id?: string | null
+          started_at?: string | null
           status?: string
           total_amount?: number | null
           updated_at?: string
@@ -1850,6 +1868,13 @@ export type Database = {
             columns: ["service_item_id"]
             isOneToOne: false
             referencedRelation: "service_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_bookings_service_provider_id_fkey"
+            columns: ["service_provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
             referencedColumns: ["id"]
           },
         ]
@@ -1960,6 +1985,81 @@ export type Database = {
           priority?: string
         }
         Relationships: []
+      }
+      service_providers: {
+        Row: {
+          availability_schedule: Json | null
+          background_verified: boolean | null
+          certification_documents: string[] | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          hourly_rate: number | null
+          id: string
+          is_active: boolean | null
+          provider_name: string
+          rating: number | null
+          specializations: string[] | null
+          total_completed_services: number | null
+          updated_at: string | null
+          user_id: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          availability_schedule?: Json | null
+          background_verified?: boolean | null
+          certification_documents?: string[] | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          provider_name: string
+          rating?: number | null
+          specializations?: string[] | null
+          total_completed_services?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          availability_schedule?: Json | null
+          background_verified?: boolean | null
+          certification_documents?: string[] | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          provider_name?: string
+          rating?: number | null
+          specializations?: string[] | null
+          total_completed_services?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_providers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_providers_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_records: {
         Row: {
