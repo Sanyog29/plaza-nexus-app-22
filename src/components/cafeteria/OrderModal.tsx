@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { addHours, format } from 'date-fns';
-import { UPIPaymentModal } from './UPIPaymentModal';
+import { EnhancedUPIPaymentModal } from './EnhancedUPIPaymentModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -248,7 +248,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
         </DialogContent>
       </Dialog>
 
-      <UPIPaymentModal
+      <EnhancedUPIPaymentModal
         isOpen={showPayment}
         onClose={() => setShowPayment(false)}
         orderId={orderId}

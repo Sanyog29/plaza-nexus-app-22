@@ -51,6 +51,10 @@ import AdminServicesPage from "./pages/AdminServicesPage";
 import StaffMaintenancePage from "./pages/StaffMaintenancePage";
 import StaffSecurityPage from "./pages/StaffSecurityPage";
 import StaffServicesPage from "./pages/StaffServicesPage";
+import VendorPortalPage from "./pages/VendorPortalPage";
+import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
+import { NotificationProvider } from "./components/notifications/NotificationProvider";
+import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
 
 const queryClient = new QueryClient();
 
@@ -58,10 +62,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <GlobalErrorHandler>
       <AuthProvider>
-        <PWAProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
+        <NotificationProvider>
+          <PWANotificationManager>
+            <PWAProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
             <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
@@ -78,6 +84,7 @@ const App = () => (
               <Route path="/bookings" element={<BookingsPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cafeteria" element={<CafeteriaPage />} />
+              <Route path="/vendor-portal" element={<VendorPortalPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/maintenance" element={<MaintenancePage />} />
@@ -97,6 +104,7 @@ const App = () => (
               <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
               <Route path="/admin/security" element={<AdminSecurityPage />} />
               <Route path="/admin/services" element={<AdminServicesPage />} />
+              <Route path="/admin/cafeteria" element={<AdminCafeteriaPage />} />
               <Route path="/admin/system-config" element={<SystemConfigPage />} />
               <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
@@ -124,8 +132,10 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
             </BrowserRouter>
-          </TooltipProvider>
-        </PWAProvider>
+              </TooltipProvider>
+            </PWAProvider>
+          </PWANotificationManager>
+        </NotificationProvider>
       </AuthProvider>
     </GlobalErrorHandler>
   </QueryClientProvider>
