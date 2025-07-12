@@ -1,0 +1,6 @@
+-- Insert sample vendors with proper UUIDs
+INSERT INTO public.vendors (name, description, logo_url, contact_email, contact_phone, commission_rate, is_active, stall_location, cuisine_type, average_rating) VALUES
+('Tasty Bites', 'Delicious North Indian cuisine with authentic flavors', 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400', 'contact@tastybites.com', '+91-9876543210', 15.00, true, 'Stall A1', 'North Indian', 4.5),
+('South Spice', 'Traditional South Indian dishes and filter coffee', 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400', 'orders@southspice.com', '+91-9876543211', 12.00, true, 'Stall B2', 'South Indian', 4.3),
+('Burger Junction', 'Fast food burgers, fries and shakes', 'https://images.unsplash.com/photo-1571091655789-405eb7a3a3a8?w=400', 'info@burgerjunction.com', '+91-9876543212', 18.00, true, 'Stall C3', 'Fast Food', 4.2),
+('Green Garden', 'Fresh salads, healthy wraps and smoothies', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400', 'hello@greengarden.com', '+91-9876543213', 10.00, true, 'Stall D4', 'Healthy', 4.6);
