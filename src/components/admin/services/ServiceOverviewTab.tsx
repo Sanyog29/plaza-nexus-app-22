@@ -13,18 +13,12 @@ interface ServiceBooking {
   status: string;
   total_amount: number;
   rating: number;
+  user_id: string;
   service_items: {
     name: string;
     service_categories: {
       name: string;
     };
-  };
-  profiles: {
-    first_name: string;
-    last_name: string;
-  };
-  service_providers: {
-    provider_name: string;
   };
 }
 
@@ -55,19 +49,13 @@ const ServiceOverviewTab = () => {
           status,
           total_amount,
           rating,
-          service_items (
+          service_items!inner (
             name,
-            service_categories (
+            service_categories!inner (
               name
             )
           ),
-          profiles (
-            first_name,
-            last_name
-          ),
-          service_providers (
-            provider_name
-          )
+          user_id
         `)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -243,26 +231,18 @@ const ServiceOverviewTab = () => {
                         {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                       </Badge>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>
-                          {booking.profiles?.first_name} {booking.profiles?.last_name}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3" />
-                        <span>
-                          {format(new Date(booking.booking_date), 'MMM d')}, {booking.booking_time}
-                        </span>
-                      </div>
-                      {booking.service_providers && (
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <div className="flex items-center space-x-1">
                           <User className="h-3 w-3" />
-                          <span>Provider: {booking.service_providers.provider_name}</span>
+                          <span>User ID: {booking.user_id.slice(0, 8)}...</span>
                         </div>
-                      )}
-                    </div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            {format(new Date(booking.booking_date), 'MMM d')}, {booking.booking_time}
+                          </span>
+                        </div>
+                      </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     {booking.total_amount && (

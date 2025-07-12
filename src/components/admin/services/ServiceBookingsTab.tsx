@@ -20,21 +20,13 @@ interface ServiceBooking {
   assigned_at: string;
   started_at: string;
   completed_at: string;
+  user_id: string;
   service_items: {
     name: string;
     duration_minutes: number;
     service_categories: {
       name: string;
     };
-  };
-  profiles: {
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-  };
-  service_providers: {
-    provider_name: string;
-    contact_phone: string;
   };
 }
 
@@ -70,21 +62,13 @@ const ServiceBookingsTab = () => {
           assigned_at,
           started_at,
           completed_at,
-          service_items (
+          user_id,
+          service_items!inner (
             name,
             duration_minutes,
-            service_categories (
+            service_categories!inner (
               name
             )
-          ),
-          profiles (
-            first_name,
-            last_name,
-            phone_number
-          ),
-          service_providers (
-            provider_name,
-            contact_phone
           )
         `)
         .order('created_at', { ascending: false });
@@ -122,9 +106,7 @@ const ServiceBookingsTab = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(booking =>
-        booking.service_items?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        `${booking.profiles?.first_name} ${booking.profiles?.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.service_providers?.provider_name?.toLowerCase().includes(searchTerm.toLowerCase())
+        booking.service_items?.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -288,12 +270,10 @@ const ServiceBookingsTab = () => {
                         </Badge>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <User className="h-4 w-4" />
-                          <span>
-                            {booking.profiles?.first_name} {booking.profiles?.last_name}
-                          </span>
+                          <span>User ID: {booking.user_id.slice(0, 8)}...</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
@@ -301,19 +281,7 @@ const ServiceBookingsTab = () => {
                             {format(new Date(booking.booking_date), 'MMM d')}, {booking.booking_time}
                           </span>
                         </div>
-                        {booking.profiles?.phone_number && (
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-4 w-4" />
-                            <span>{booking.profiles.phone_number}</span>
-                          </div>
-                        )}
                       </div>
-
-                      {booking.service_providers && (
-                        <div className="text-sm text-muted-foreground">
-                          <span className="font-medium">Assigned to:</span> {booking.service_providers.provider_name}
-                        </div>
-                      )}
 
                       {booking.notes && (
                         <div className="text-sm text-muted-foreground">

@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import ServiceOverviewTab from '@/components/admin/services/ServiceOverviewTab';
+import ServiceBookingsTab from '@/components/admin/services/ServiceBookingsTab';
 import { Building, Calendar, Users, DollarSign, TrendingUp, Settings } from 'lucide-react';
 
 const AdminServicesPage = () => {
@@ -77,69 +79,11 @@ const AdminServicesPage = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Bookings</CardTitle>
-                <CardDescription>Latest service bookings from tenants</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { service: 'Conference Room A', tenant: 'Tech Corp', time: '2:00 PM - 4:00 PM', status: 'Confirmed' },
-                  { service: 'Cleaning Service', tenant: 'Marketing Inc', time: '9:00 AM', status: 'In Progress' },
-                  { service: 'IT Support', tenant: 'Design Studio', time: '11:30 AM', status: 'Pending' },
-                ].map((booking, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{booking.service}</p>
-                      <p className="text-sm text-muted-foreground">{booking.tenant} • {booking.time}</p>
-                    </div>
-                    <Badge variant={booking.status === 'Confirmed' ? 'secondary' : booking.status === 'In Progress' ? 'outline' : 'destructive'}>
-                      {booking.status}
-                    </Badge>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Service Categories</CardTitle>
-                <CardDescription>Most popular service categories</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { category: 'Meeting Rooms', bookings: 45, revenue: '₹25,000' },
-                  { category: 'Cleaning Services', bookings: 32, revenue: '₹18,000' },
-                  { category: 'IT Support', bookings: 28, revenue: '₹22,000' },
-                  { category: 'Catering', bookings: 15, revenue: '₹12,000' },
-                ].map((category, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{category.category}</p>
-                      <p className="text-sm text-muted-foreground">{category.bookings} bookings this month</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{category.revenue}</p>
-                      <p className="text-sm text-muted-foreground">revenue</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
+          <ServiceOverviewTab />
         </TabsContent>
 
         <TabsContent value="bookings">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Service Bookings</CardTitle>
-              <CardDescription>Manage and track all service bookings across the building</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Service bookings management interface would be implemented here...</p>
-            </CardContent>
-          </Card>
+          <ServiceBookingsTab />
         </TabsContent>
 
         <TabsContent value="providers">
