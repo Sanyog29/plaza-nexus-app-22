@@ -5,7 +5,7 @@ import { useAuth } from './AuthProvider';
 import { PageLoader } from './LoadingSpinner';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading, approvalStatus, isAdmin } = useAuth();
+  const { user, isLoading, approvalStatus, isAdmin, userRole } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -24,6 +24,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         <PendingApprovalPage />
       </React.Suspense>
     );
+  }
+
+  // Vendor access control - restrict vendors to only their portal
+  if (userRole === 'vendor') {
+    const allowedVendorPaths = ['/vendor-portal', '/profile', '/auth'];
+    const isAllowedPath = allowedVendorPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      return <Navigate to="/vendor-portal" replace />;
+    }
   }
 
   return <>{children}</>;

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +21,21 @@ import VendorMenuManagement from '@/components/vendor/VendorMenuManagement';
 import VendorAnalytics from '@/components/vendor/VendorAnalytics';
 
 const VendorPortalPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Handle URL-based tab navigation
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['dashboard', 'orders', 'menu', 'analytics'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setSearchParams(tab === 'dashboard' ? {} : { tab });
+  };
 
   // Get current vendor info
   const { data: vendorInfo } = useQuery({
@@ -142,7 +157,7 @@ const VendorPortalPage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
@@ -215,11 +230,11 @@ const VendorPortalPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex gap-4">
-                <Button onClick={() => setActiveTab('orders')}>
+                <Button onClick={() => handleTabChange('orders')}>
                   <Clock className="h-4 w-4 mr-2" />
                   View Orders ({todayMetrics?.pendingOrders || 0})
                 </Button>
-                <Button variant="outline" onClick={() => setActiveTab('menu')}>
+                <Button variant="outline" onClick={() => handleTabChange('menu')}>
                   Update Menu
                 </Button>
                 <Button variant="outline">

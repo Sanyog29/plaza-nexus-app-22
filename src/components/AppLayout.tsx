@@ -31,6 +31,12 @@ const AppLayout: React.FC = () => {
   useEffect(() => {
     if (isLoading || !user) return;
 
+    // Vendor-specific redirects - redirect vendors to portal from home
+    if (userRole === 'vendor' && location.pathname === '/') {
+      navigate('/vendor-portal', { replace: true });
+      return;
+    }
+
     // Redirect admin/staff users to their appropriate routes for tenant request URLs
     const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
                                   !location.pathname.includes('/admin/') && 
@@ -49,13 +55,29 @@ const AppLayout: React.FC = () => {
       navigate(dashboardPath, { replace: true });
       return;
     }
-  }, [location.pathname, isAdmin, isStaff, isLoading, user, navigate]);
+  }, [location.pathname, isAdmin, isStaff, isLoading, user, navigate, userRole]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
       </div>
+    );
+  }
+
+  // Vendor layout - simplified mobile-first layout
+  if (userRole === 'vendor') {
+    return (
+      <ErrorBoundary>
+        <div className="min-h-screen bg-plaza-dark pb-16">
+          <MobileHeader />
+          <main className="pt-4">
+            <Outlet />
+          </main>
+          <MobileBottomNav />
+          <HelpSystem />
+        </div>
+      </ErrorBoundary>
     );
   }
 

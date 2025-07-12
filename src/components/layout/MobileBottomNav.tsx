@@ -7,12 +7,48 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
-  const { user, isAdmin, isStaff } = useAuth(); // Use proper role states
+  const { user, isAdmin, isStaff, userRole } = useAuth(); // Use proper role states
   const { metrics } = useDashboardMetrics();
 
   if (!user) return null;
 
   const getNavItems = () => {
+    // Vendor navigation - restricted to vendor services only
+    if (userRole === 'vendor') {
+      return [
+        {
+          href: '/vendor-portal',
+          icon: ChefHat,
+          label: 'Dashboard',
+          active: location.pathname === '/vendor-portal'
+        },
+        {
+          href: '/vendor-portal?tab=orders',
+          icon: Wrench,
+          label: 'Orders',
+          active: location.pathname === '/vendor-portal' && location.search.includes('tab=orders')
+        },
+        {
+          href: '/vendor-portal?tab=menu',
+          icon: Calendar,
+          label: 'Menu',
+          active: location.pathname === '/vendor-portal' && location.search.includes('tab=menu')
+        },
+        {
+          href: '/vendor-portal?tab=analytics',
+          icon: Bell,
+          label: 'Analytics',
+          active: location.pathname === '/vendor-portal' && location.search.includes('tab=analytics')
+        },
+        {
+          href: '/profile',
+          icon: User,
+          label: 'Profile',
+          active: location.pathname === '/profile'
+        }
+      ];
+    }
+
     // Role-based navigation - different items for different users
     if (isAdmin || isStaff) {
       return [
