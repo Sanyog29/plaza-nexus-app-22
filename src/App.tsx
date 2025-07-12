@@ -7,7 +7,8 @@ import { AuthProvider } from "./components/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import { PWAProvider } from "./components/PWAProvider";
-import { GlobalErrorHandler } from "./components/common/GlobalErrorHandler";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { NotificationProvider } from "./components/notifications/NotificationProvider";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import RequestsPage from "./pages/RequestsPage";
@@ -53,14 +54,13 @@ import StaffSecurityPage from "./pages/StaffSecurityPage";
 import StaffServicesPage from "./pages/StaffServicesPage";
 import VendorPortalPage from "./pages/VendorPortalPage";
 import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
-import { NotificationProvider } from "./components/notifications/NotificationProvider";
 import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <GlobalErrorHandler>
+    <ErrorBoundary>
       <AuthProvider>
         <NotificationProvider>
           <PWANotificationManager>
@@ -137,7 +137,7 @@ const App = () => (
           </PWANotificationManager>
         </NotificationProvider>
       </AuthProvider>
-    </GlobalErrorHandler>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
 

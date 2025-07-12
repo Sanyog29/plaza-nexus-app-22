@@ -118,7 +118,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = React.useCallback(async (userId: string) => {
     try {
-      console.log('Checking user role and approval status for:', userId);
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('role, department, approval_status')
@@ -126,7 +125,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
       
       if (error) {
-        console.error('Error fetching profile:', error);
         updateRoleStates('tenant_manager');
         setUserDepartment(null);
         setApprovalStatus('pending');
@@ -134,22 +132,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (profile) {
-        console.log('Profile found:', profile);
         updateRoleStates(profile.role);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
         
-        // Sign out unapproved users (except admins)
-        if (profile.approval_status !== 'approved' && profile.role !== 'admin') {
-          console.log('User not approved, signing out...');
-          setTimeout(() => {
-            supabase.auth.signOut();
-          }, 1000);
-          return;
-        }
+        // Allow pending users to stay logged in for better UX
       } else {
         // Profile doesn't exist - create it
-        console.log('Profile not found for user, creating default profile...');
         try {
           const { error: insertError } = await supabase
             .from('profiles')
@@ -161,19 +150,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               approval_status: 'pending'
             });
           
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-          }
-          
-          console.log('Created default profile with pending approval');
           updateRoleStates('tenant_manager');
           setUserDepartment(null);
           setApprovalStatus('pending');
           
-          // Sign out since user needs approval
-          setTimeout(() => {
-            supabase.auth.signOut();
-          }, 1000);
+          // Allow user to complete profile setup instead of signing out
         } catch (createError) {
           console.error('Failed to create profile:', createError);
           updateRoleStates('tenant_manager');
@@ -190,7 +171,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [updateRoleStates]);
 
   const resetRoleStates = () => {
-    console.log('Resetting role states');
     setUserRole(null);
     setUserDepartment(null);
     setApprovalStatus(null);
