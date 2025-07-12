@@ -390,25 +390,42 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          display_order: number | null
           id: string
           image_url: string | null
+          is_featured: boolean | null
           name: string
+          vendor_id: string | null
         }
         Insert: {
           created_at?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string | null
+          is_featured?: boolean | null
           name: string
+          vendor_id?: string | null
         }
         Update: {
           created_at?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string | null
+          is_featured?: boolean | null
           name?: string
+          vendor_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cafeteria_menu_categories_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cafeteria_menu_items: {
         Row: {
@@ -459,33 +476,80 @@ export type Database = {
       }
       cafeteria_orders: {
         Row: {
+          commission_amount: number | null
           created_at: string
+          customer_instructions: string | null
+          discount_applied: number | null
+          feedback_submitted_at: string | null
+          feedback_text: string | null
           id: string
+          is_scheduled: boolean | null
+          offer_code_used: string | null
+          order_type: string | null
           pickup_time: string
+          preparation_time_minutes: number | null
+          rating: number | null
+          scheduled_pickup_time: string | null
           status: string
           total_amount: number
           updated_at: string
           user_id: string
+          vendor_id: string | null
+          vendor_payout_amount: number | null
         }
         Insert: {
+          commission_amount?: number | null
           created_at?: string
+          customer_instructions?: string | null
+          discount_applied?: number | null
+          feedback_submitted_at?: string | null
+          feedback_text?: string | null
           id?: string
+          is_scheduled?: boolean | null
+          offer_code_used?: string | null
+          order_type?: string | null
           pickup_time: string
+          preparation_time_minutes?: number | null
+          rating?: number | null
+          scheduled_pickup_time?: string | null
           status?: string
           total_amount: number
           updated_at?: string
           user_id: string
+          vendor_id?: string | null
+          vendor_payout_amount?: number | null
         }
         Update: {
+          commission_amount?: number | null
           created_at?: string
+          customer_instructions?: string | null
+          discount_applied?: number | null
+          feedback_submitted_at?: string | null
+          feedback_text?: string | null
           id?: string
+          is_scheduled?: boolean | null
+          offer_code_used?: string | null
+          order_type?: string | null
           pickup_time?: string
+          preparation_time_minutes?: number | null
+          rating?: number | null
+          scheduled_pickup_time?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
           user_id?: string
+          vendor_id?: string | null
+          vendor_payout_amount?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cafeteria_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
@@ -510,6 +574,60 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      commission_records: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          order_amount: number
+          order_id: string
+          processed_at: string | null
+          status: string | null
+          vendor_id: string
+          vendor_payout_amount: number
+        }
+        Insert: {
+          commission_amount: number
+          commission_rate: number
+          created_at?: string
+          id?: string
+          order_amount: number
+          order_id: string
+          processed_at?: string | null
+          status?: string | null
+          vendor_id: string
+          vendor_payout_amount: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string
+          processed_at?: string | null
+          status?: string | null
+          vendor_id?: string
+          vendor_payout_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_records_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_records_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       content_categories: {
         Row: {
@@ -880,6 +998,62 @@ export type Database = {
           },
         ]
       }
+      financial_reports: {
+        Row: {
+          average_order_value: number | null
+          created_at: string
+          customer_satisfaction_score: number | null
+          id: string
+          peak_hours: Json | null
+          report_date: string
+          report_type: string
+          top_selling_items: Json | null
+          total_commission_amount: number
+          total_orders: number
+          total_payout_amount: number
+          total_sales_amount: number
+          vendor_id: string | null
+        }
+        Insert: {
+          average_order_value?: number | null
+          created_at?: string
+          customer_satisfaction_score?: number | null
+          id?: string
+          peak_hours?: Json | null
+          report_date: string
+          report_type: string
+          top_selling_items?: Json | null
+          total_commission_amount?: number
+          total_orders?: number
+          total_payout_amount?: number
+          total_sales_amount?: number
+          vendor_id?: string | null
+        }
+        Update: {
+          average_order_value?: number | null
+          created_at?: string
+          customer_satisfaction_score?: number | null
+          id?: string
+          peak_hours?: Json | null
+          report_date?: string
+          report_type?: string
+          top_selling_items?: Json | null
+          total_commission_amount?: number
+          total_orders?: number
+          total_payout_amount?: number
+          total_sales_amount?: number
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_reports_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       info_categories: {
         Row: {
           created_at: string
@@ -974,6 +1148,51 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "info_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_feedback: {
+        Row: {
+          created_at: string
+          feedback_text: string | null
+          id: string
+          order_item_id: string
+          rating: number
+          user_id: string
+          vendor_item_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          order_item_id: string
+          rating: number
+          user_id: string
+          vendor_item_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          order_item_id?: string
+          rating?: number
+          user_id?: string
+          vendor_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_feedback_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_feedback_vendor_item_id_fkey"
+            columns: ["vendor_item_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_menu_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1107,6 +1326,7 @@ export type Database = {
           total_spent: number
           updated_at: string
           user_id: string
+          vendor_specific_points: Json | null
         }
         Insert: {
           id?: string
@@ -1115,6 +1335,7 @@ export type Database = {
           total_spent?: number
           updated_at?: string
           user_id: string
+          vendor_specific_points?: Json | null
         }
         Update: {
           id?: string
@@ -1123,6 +1344,7 @@ export type Database = {
           total_spent?: number
           updated_at?: string
           user_id?: string
+          vendor_specific_points?: Json | null
         }
         Relationships: []
       }
@@ -1135,6 +1357,7 @@ export type Database = {
           points: number
           transaction_type: string
           user_id: string
+          vendor_id: string | null
         }
         Insert: {
           created_at?: string
@@ -1144,6 +1367,7 @@ export type Database = {
           points: number
           transaction_type: string
           user_id: string
+          vendor_id?: string | null
         }
         Update: {
           created_at?: string
@@ -1153,6 +1377,7 @@ export type Database = {
           points?: number
           transaction_type?: string
           user_id?: string
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -1160,6 +1385,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -1294,33 +1526,105 @@ export type Database = {
         }
         Relationships: []
       }
+      order_feedback: {
+        Row: {
+          created_at: string
+          feedback_text: string | null
+          hygiene_rating: number | null
+          id: string
+          is_anonymous: boolean | null
+          order_id: string
+          overall_rating: number
+          service_rating: number | null
+          speed_rating: number | null
+          taste_rating: number | null
+          user_id: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_text?: string | null
+          hygiene_rating?: number | null
+          id?: string
+          is_anonymous?: boolean | null
+          order_id: string
+          overall_rating: number
+          service_rating?: number | null
+          speed_rating?: number | null
+          taste_rating?: number | null
+          user_id: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback_text?: string | null
+          hygiene_rating?: number | null
+          id?: string
+          is_anonymous?: boolean | null
+          order_id?: string
+          overall_rating?: number
+          service_rating?: number | null
+          speed_rating?: number | null
+          taste_rating?: number | null
+          user_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_feedback_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_feedback_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
           id: string
+          item_feedback: string | null
           item_id: string
+          item_rating: number | null
           notes: string | null
           order_id: string | null
           quantity: number
+          special_instructions: string | null
           unit_price: number
+          vendor_item_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          item_feedback?: string | null
           item_id: string
+          item_rating?: number | null
           notes?: string | null
           order_id?: string | null
           quantity: number
+          special_instructions?: string | null
           unit_price: number
+          vendor_item_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          item_feedback?: string | null
           item_id?: string
+          item_rating?: number | null
           notes?: string | null
           order_id?: string | null
           quantity?: number
+          special_instructions?: string | null
           unit_price?: number
+          vendor_item_id?: string | null
         }
         Relationships: [
           {
@@ -1328,6 +1632,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_vendor_item_id_fkey"
+            columns: ["vendor_item_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_menu_items"
             referencedColumns: ["id"]
           },
         ]
@@ -2445,6 +2756,57 @@ export type Database = {
           },
         ]
       }
+      stock_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          current_stock_quantity: number | null
+          id: string
+          is_resolved: boolean | null
+          resolved_at: string | null
+          threshold_quantity: number | null
+          vendor_id: string
+          vendor_item_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          current_stock_quantity?: number | null
+          id?: string
+          is_resolved?: boolean | null
+          resolved_at?: string | null
+          threshold_quantity?: number | null
+          vendor_id: string
+          vendor_item_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          current_stock_quantity?: number | null
+          id?: string
+          is_resolved?: boolean | null
+          resolved_at?: string | null
+          threshold_quantity?: number | null
+          vendor_id?: string
+          vendor_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_vendor_item_id_fkey"
+            columns: ["vendor_item_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_settings: {
         Row: {
           category: string
@@ -2823,6 +3185,374 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendor_menu_items: {
+        Row: {
+          availability_schedule: Json | null
+          average_rating: number | null
+          category_id: string | null
+          created_at: string
+          description: string | null
+          dietary_tags: string[] | null
+          id: string
+          image_url: string | null
+          ingredients: Json | null
+          is_available: boolean | null
+          is_featured: boolean | null
+          low_stock_threshold: number | null
+          name: string
+          nutritional_info: Json | null
+          preparation_time_minutes: number | null
+          price: number
+          stock_quantity: number | null
+          total_orders: number | null
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          availability_schedule?: Json | null
+          average_rating?: number | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          dietary_tags?: string[] | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
+          low_stock_threshold?: number | null
+          name: string
+          nutritional_info?: Json | null
+          preparation_time_minutes?: number | null
+          price: number
+          stock_quantity?: number | null
+          total_orders?: number | null
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          availability_schedule?: Json | null
+          average_rating?: number | null
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          dietary_tags?: string[] | null
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
+          low_stock_threshold?: number | null
+          name?: string
+          nutritional_info?: Json | null
+          preparation_time_minutes?: number | null
+          price?: number
+          stock_quantity?: number | null
+          total_orders?: number | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_menu_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_menu_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_menu_items_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          priority: string | null
+          title: string
+          type: string
+          vendor_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          priority?: string | null
+          title: string
+          type: string
+          vendor_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          priority?: string | null
+          title?: string
+          type?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_notifications_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_offers: {
+        Row: {
+          applicable_items: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          end_date: string
+          id: string
+          is_active: boolean | null
+          maximum_discount_amount: number | null
+          minimum_order_amount: number | null
+          offer_code: string | null
+          requires_admin_approval: boolean | null
+          start_date: string
+          title: string
+          updated_at: string
+          usage_limit: number | null
+          used_count: number | null
+          vendor_id: string
+        }
+        Insert: {
+          applicable_items?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          maximum_discount_amount?: number | null
+          minimum_order_amount?: number | null
+          offer_code?: string | null
+          requires_admin_approval?: boolean | null
+          start_date: string
+          title: string
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number | null
+          vendor_id: string
+        }
+        Update: {
+          applicable_items?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          maximum_discount_amount?: number | null
+          minimum_order_amount?: number | null
+          offer_code?: string | null
+          requires_admin_approval?: boolean | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number | null
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_offers_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_payouts: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          net_payout_amount: number
+          notes: string | null
+          orders_count: number
+          paid_at: string | null
+          payment_reference: string | null
+          payout_period_end: string
+          payout_period_start: string
+          processed_at: string | null
+          status: string | null
+          total_commission_amount: number
+          total_sales_amount: number
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          net_payout_amount: number
+          notes?: string | null
+          orders_count: number
+          paid_at?: string | null
+          payment_reference?: string | null
+          payout_period_end: string
+          payout_period_start: string
+          processed_at?: string | null
+          status?: string | null
+          total_commission_amount: number
+          total_sales_amount: number
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          net_payout_amount?: number
+          notes?: string | null
+          orders_count?: number
+          paid_at?: string | null
+          payment_reference?: string | null
+          payout_period_end?: string
+          payout_period_start?: string
+          processed_at?: string | null
+          status?: string | null
+          total_commission_amount?: number
+          total_sales_amount?: number
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_payouts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_staff: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          permissions: Json | null
+          role: string
+          user_id: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          permissions?: Json | null
+          role?: string
+          user_id: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          permissions?: Json | null
+          role?: string
+          user_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_staff_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          average_rating: number | null
+          commission_rate: number | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          cuisine_type: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          operating_hours: Json | null
+          stall_location: string | null
+          total_orders: number | null
+          updated_at: string
+        }
+        Insert: {
+          average_rating?: number | null
+          commission_rate?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          cuisine_type?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          operating_hours?: Json | null
+          stall_location?: string | null
+          total_orders?: number | null
+          updated_at?: string
+        }
+        Update: {
+          average_rating?: number | null
+          commission_rate?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          cuisine_type?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          operating_hours?: Json | null
+          stall_location?: string | null
+          total_orders?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       visitor_categories: {
         Row: {
