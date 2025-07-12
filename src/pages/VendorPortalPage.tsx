@@ -79,11 +79,26 @@ const VendorPortalPage = () => {
 
   if (!vendorInfo) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">Access Denied</h2>
-          <p className="text-gray-400">You don't have vendor access. Please contact the administrator.</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-destructive" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Vendor Access Required</h2>
+            <p className="text-muted-foreground mb-4">
+              Your account is not linked to any vendor business. Please contact your administrator to set up vendor access.
+            </p>
+            <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4">
+              <p className="font-medium mb-2">To access the vendor portal, you need:</p>
+              <ul className="list-disc list-inside space-y-1 text-left">
+                <li>Registration as vendor staff</li>
+                <li>Assignment to a vendor business</li>
+                <li>Appropriate access permissions</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
