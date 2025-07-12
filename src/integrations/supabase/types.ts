@@ -1864,6 +1864,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_service_bookings_service_provider_id"
+            columns: ["service_provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_service_bookings_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "service_bookings_service_item_id_fkey"
             columns: ["service_item_id"]
             isOneToOne: false
