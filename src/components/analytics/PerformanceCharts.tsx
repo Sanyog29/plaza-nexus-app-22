@@ -1,33 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { supabase } from '@/integrations/supabase/client';
 
-const mockLineData = [
-  { name: 'Jan', requests: 4000, resolved: 3400, sla_breaches: 24 },
-  { name: 'Feb', requests: 3000, resolved: 2800, sla_breaches: 13 },
-  { name: 'Mar', requests: 2000, resolved: 1900, sla_breaches: 8 },
-  { name: 'Apr', requests: 2780, resolved: 2600, sla_breaches: 18 },
-  { name: 'May', requests: 1890, resolved: 1750, sla_breaches: 14 },
-  { name: 'Jun', requests: 2390, resolved: 2200, sla_breaches: 19 },
-];
-
-const mockBarData = [
-  { category: 'HVAC', count: 45, avg_time: 3.2 },
-  { category: 'Electrical', count: 32, avg_time: 2.1 },
-  { category: 'Plumbing', count: 28, avg_time: 4.5 },
-  { category: 'General', count: 67, avg_time: 1.8 },
-  { category: 'Security', count: 23, avg_time: 0.5 },
-];
-
-const mockPieData = [
-  { name: 'Completed', value: 65, color: 'hsl(var(--primary))' },
-  { name: 'In Progress', value: 25, color: 'hsl(var(--secondary))' },
-  { name: 'Pending', value: 10, color: 'hsl(var(--muted))' },
-];
+interface ChartData {
+  lineData: Array<{ name: string; requests: number; resolved: number; sla_breaches: number }>;
+  barData: Array<{ category: string; count: number; avg_time: number }>;
+  pieData: Array<{ name: string; value: number; color: string }>;
+}
 
 export const PerformanceCharts: React.FC = () => {
   const [timeRange, setTimeRange] = useState('6m');
+  const [chartData, setChartData] = useState<ChartData>({
+    lineData: [],
+    barData: [],
+    pieData: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchChartData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch performance metrics for line chart
+      const { data: performanceData } = await supabase
+        .from('performance_metrics')
+        .select('*')
+        .order('metric_date', { ascending: true })
+        .limit(6);
+
+      const lineData = performanceData?.map(item => ({
+        name: new Date(item.metric_date).toLocaleDateString('en-US', { month: 'short' }),
+        requests: item.total_requests,
+        resolved: item.completed_requests,
+        sla_breaches: item.sla_breaches
+      })) || [];
+
+      // Fetch maintenance requests by category for bar chart
+      const { data: requests } = await supabase
+        .from('maintenance_requests')
+        .select(`
+          id,
+          status,
+          created_at,
+          completed_at,
+          maintenance_categories(name)
+        `);
+
+      const categoryStats = requests?.reduce((acc, req) => {
+        const category = req.maintenance_categories?.name || 'General';
+        if (!acc[category]) {
+          acc[category] = { count: 0, totalTime: 0, completedCount: 0 };
+        }
+        acc[category].count++;
+        
+        if (req.status === 'completed' && req.completed_at && req.created_at) {
+          const timeHours = (new Date(req.completed_at).getTime() - new Date(req.created_at).getTime()) / (1000 * 60 * 60);
+          acc[category].totalTime += timeHours;
+          acc[category].completedCount++;
+        }
+        return acc;
+      }, {} as Record<string, { count: number; totalTime: number; completedCount: number }>);
+
+      const barData = Object.entries(categoryStats || {}).map(([category, stats]) => ({
+        category,
+        count: stats.count,
+        avg_time: stats.completedCount > 0 ? stats.totalTime / stats.completedCount : 0
+      }));
+
+      // Calculate status distribution for pie chart
+      const statusCounts = requests?.reduce((acc, req) => {
+        const status = req.status;
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const total = requests?.length || 1;
+      const pieData = [
+        { 
+          name: 'Completed', 
+          value: Math.round(((statusCounts?.completed || 0) / total) * 100), 
+          color: 'hsl(var(--primary))' 
+        },
+        { 
+          name: 'In Progress', 
+          value: Math.round(((statusCounts?.in_progress || 0) / total) * 100), 
+          color: 'hsl(var(--secondary))' 
+        },
+        { 
+          name: 'Pending', 
+          value: Math.round(((statusCounts?.pending || 0) / total) * 100), 
+          color: 'hsl(var(--muted))' 
+        },
+      ];
+
+      setChartData({ lineData, barData, pieData });
+    } catch (error) {
+      console.error('Error fetching chart data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchChartData();
+  }, [timeRange]);
 
   return (
     <div className="space-y-6">
@@ -61,7 +139,7 @@ export const PerformanceCharts: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={mockLineData}>
+              <LineChart data={chartData.lineData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="name" className="text-xs fill-muted-foreground" />
                 <YAxis className="text-xs fill-muted-foreground" />
@@ -108,7 +186,7 @@ export const PerformanceCharts: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={mockBarData}>
+              <BarChart data={chartData.barData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis 
                   dataKey="category" 
@@ -142,7 +220,7 @@ export const PerformanceCharts: React.FC = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={mockPieData}
+                  data={chartData.pieData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -151,7 +229,7 @@ export const PerformanceCharts: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {mockPieData.map((entry, index) => (
+                  {chartData.pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
