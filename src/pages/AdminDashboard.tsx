@@ -7,6 +7,8 @@ import { StaffPerformanceAnalytics } from "@/components/admin/StaffPerformanceAn
 import { RealTimeDashboard } from "@/components/admin/RealTimeDashboard";
 import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { PerformanceOptimization } from "@/components/optimization/PerformanceOptimization";
+import { DeploymentReadiness } from "@/components/deployment/DeploymentReadiness";
 import { AutomatedWorkflows } from "@/components/admin/AutomatedWorkflows";
 import UserManagement from "@/components/admin/UserManagement";
 import SecuritySettings from "@/components/admin/SecuritySettings";
@@ -19,9 +21,10 @@ export default function AdminDashboard() {
     dashboard: <RealTimeDashboard />,
     assets: <AssetManagement />,
     utilities: <UtilityManagement />,
-    analytics: <AdvancedAnalytics />,
-    performance: <StaffPerformanceAnalytics />,
+    analytics: <AnalyticsDashboard />,
+    performance: <PerformanceOptimization />,
     workflows: <AutomatedWorkflows />,
+    deployment: <DeploymentReadiness />,
     users: <UserManagement />,
     security: <SecuritySettings />
   };
@@ -43,13 +46,14 @@ export default function AdminDashboard() {
         <DashboardHeader />
         
         <Tabs defaultValue="dashboard" className="mt-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="assets">Assets</TabsTrigger>
             <TabsTrigger value="utilities">Utilities</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="workflows">Automation</TabsTrigger>
+            <TabsTrigger value="deployment">Deploy</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
@@ -71,11 +75,15 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="performance" className="mt-6">
-            <StaffPerformanceAnalytics />
+            <PerformanceOptimization />
           </TabsContent>
 
           <TabsContent value="workflows" className="mt-6">
             <AutomatedWorkflows />
+          </TabsContent>
+
+          <TabsContent value="deployment" className="mt-6">
+            <DeploymentReadiness />
           </TabsContent>
 
           <TabsContent value="users" className="mt-6">
