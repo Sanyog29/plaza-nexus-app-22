@@ -9,6 +9,7 @@ import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 import { PerformanceOptimization } from "@/components/optimization/PerformanceOptimization";
 import { DeploymentReadiness } from "@/components/deployment/DeploymentReadiness";
+import { TestingDashboard } from "@/components/testing/TestingDashboard";
 import { AutomatedWorkflows } from "@/components/admin/AutomatedWorkflows";
 import UserManagement from "@/components/admin/UserManagement";
 import SecuritySettings from "@/components/admin/SecuritySettings";
@@ -24,6 +25,7 @@ export default function AdminDashboard() {
     analytics: <AnalyticsDashboard />,
     performance: <PerformanceOptimization />,
     workflows: <AutomatedWorkflows />,
+    testing: <TestingDashboard />,
     deployment: <DeploymentReadiness />,
     users: <UserManagement />,
     security: <SecuritySettings />
@@ -46,13 +48,14 @@ export default function AdminDashboard() {
         <DashboardHeader />
         
         <Tabs defaultValue="dashboard" className="mt-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="assets">Assets</TabsTrigger>
             <TabsTrigger value="utilities">Utilities</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="workflows">Automation</TabsTrigger>
+            <TabsTrigger value="testing">Testing</TabsTrigger>
             <TabsTrigger value="deployment">Deploy</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
@@ -80,6 +83,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="workflows" className="mt-6">
             <AutomatedWorkflows />
+          </TabsContent>
+
+          <TabsContent value="testing" className="mt-6">
+            <TestingDashboard />
           </TabsContent>
 
           <TabsContent value="deployment" className="mt-6">
