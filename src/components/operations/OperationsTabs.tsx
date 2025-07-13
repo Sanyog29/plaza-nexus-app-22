@@ -2,8 +2,8 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
-import { DataExportTools } from './DataExportTools';
-import { EnhancedAnalytics } from './EnhancedAnalytics';
+import { UnifiedDataExportTools } from './UnifiedDataExportTools';
+import { EnhancedRealTimeAnalytics } from './EnhancedRealTimeAnalytics';
 import { BarChart3, Database, Brain, AlertCircle } from 'lucide-react';
 
 interface OperationsTabsProps {
@@ -64,7 +64,7 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
 
       <TabsContent value="data" className="space-y-6">
         {(canImportCSV || canExportData) ? (
-          <DataExportTools />
+          <UnifiedDataExportTools enableRealtime={canExportData} />
         ) : (
           <Card className="bg-card/50 backdrop-blur">
             <CardContent className="text-center py-12">
@@ -103,7 +103,7 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
                 </CardContent>
               </Card>
             )}
-            <EnhancedAnalytics />
+            <EnhancedRealTimeAnalytics />
           </div>
         ) : (
           <Card className="bg-card/50 backdrop-blur">
