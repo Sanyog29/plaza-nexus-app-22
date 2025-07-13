@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,10 +7,11 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  to: string;
+  to: string | string[];
   subject: string;
-  html: string;
-  type: 'booking_confirmation' | 'visitor_approval' | 'maintenance_sla' | 'general' | 'user_invitation' | 'welcome' | 'password_reset';
+  content: string;
+  template?: string;
+  variables?: Record<string, string>;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,55 +21,89 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, subject, html, type }: EmailRequest = await req.json();
+    const { to, subject, content, template, variables }: EmailRequest = await req.json();
 
-    const fromEmail = getFromEmail(type);
+    // Get email configuration from environment variables
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
     
-    const emailResponse = await resend.emails.send({
-      from: fromEmail,
-      to: [to],
-      subject: subject,
-      html: html,
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY not configured");
+    }
+
+    // Process template variables if provided
+    let processedContent = content;
+    if (variables) {
+      Object.entries(variables).forEach(([key, value]) => {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        processedContent = processedContent.replace(regex, value);
+      });
+    }
+
+    // Send email using Resend
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Plaza Nexus <onboarding@resend.dev>",
+        to: Array.isArray(to) ? to : [to],
+        subject: subject,
+        html: processedContent.replace(/\n/g, '<br>'),
+        text: processedContent,
+      }),
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Resend API error: ${error}`);
+    }
 
-    return new Response(JSON.stringify(emailResponse), {
+    const emailResult = await response.json();
+    console.log("Email sent successfully:", emailResult);
+
+    // Log email activity (optional - could store in database)
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      to: Array.isArray(to) ? to.join(', ') : to,
+      subject: subject,
+      template: template || 'custom',
+      status: 'sent',
+      email_id: emailResult.id
+    };
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Email sent successfully",
+      email_id: emailResult.id,
+      log: logEntry
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         ...corsHeaders,
       },
     });
+
   } catch (error: any) {
     console.error("Error in send-email function:", error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message,
+        details: "Check function logs for more information"
+      }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { 
+          "Content-Type": "application/json", 
+          ...corsHeaders 
+        },
       }
     );
   }
 };
-
-function getFromEmail(type: string): string {
-  switch (type) {
-    case 'booking_confirmation':
-      return "Bookings <bookings@resend.dev>";
-    case 'visitor_approval':
-      return "Security <security@resend.dev>";
-    case 'maintenance_sla':
-      return "Maintenance <maintenance@resend.dev>";
-    case 'user_invitation':
-      return "Plaza Management <invitations@resend.dev>";
-    case 'welcome':
-      return "Plaza Management <welcome@resend.dev>";
-    case 'password_reset':
-      return "Plaza Support <support@resend.dev>";
-    default:
-      return "Plaza App <noreply@resend.dev>";
-  }
-}
 
 serve(handler);

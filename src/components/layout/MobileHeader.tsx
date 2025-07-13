@@ -7,6 +7,7 @@ import { Menu, Search, Bell, Wifi, WifiOff, Download, Home, Shield, Wrench, BarC
 import { useAuth } from '@/components/AuthProvider';
 import { usePWAContext } from '@/components/PWAProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { Link } from 'react-router-dom';
 
 export const MobileHeader: React.FC = () => {
@@ -156,17 +157,7 @@ export const MobileHeader: React.FC = () => {
           </div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="p-2 relative">
-            <Bell className="h-5 w-5" />
-            {metrics.activeAlerts > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs"
-              >
-                {metrics.activeAlerts > 9 ? '9+' : metrics.activeAlerts}
-              </Badge>
-            )}
-          </Button>
+          <NotificationCenter />
         </div>
       </div>
     </header>

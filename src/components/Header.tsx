@@ -2,7 +2,7 @@
 import React from 'react';
 import { Bell, Book } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import NotificationCenter from './notifications/NotificationCenter';
+import { NotificationCenter } from './notifications/NotificationCenter';
 
 const Header: React.FC = () => {
   return (
