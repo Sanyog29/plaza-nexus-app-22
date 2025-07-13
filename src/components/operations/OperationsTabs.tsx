@@ -4,7 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { UnifiedDataExportTools } from './UnifiedDataExportTools';
 import { EnhancedRealTimeAnalytics } from './EnhancedRealTimeAnalytics';
-import { BarChart3, Database, Brain, AlertCircle } from 'lucide-react';
+import { PredictiveMaintenanceScheduler } from './PredictiveMaintenanceScheduler';
+import { CostOptimizationRecommendations } from './CostOptimizationRecommendations';
+import { BarChart3, Database, Brain, Wrench, TrendingDown, AlertCircle } from 'lucide-react';
 
 interface OperationsTabsProps {
   activeTab: string;
@@ -25,24 +27,32 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
-      <TabsList className="grid w-full grid-cols-3 bg-card/50">
+      <TabsList className="grid w-full grid-cols-5 bg-card/50">
         <TabsTrigger value="analytics" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
-          Analytics Dashboard
+          Analytics
         </TabsTrigger>
         <TabsTrigger value="data" className="flex items-center gap-2">
           <Database className="h-4 w-4" />
-          Data Management
+          Data Export
           {(!canImportCSV || !canExportData) && (
             <AlertCircle className="h-3 w-3 text-yellow-500" />
           )}
         </TabsTrigger>
         <TabsTrigger value="advanced" className="flex items-center gap-2">
           <Brain className="h-4 w-4" />
-          Advanced Analytics
+          Real-time
           {!canUseAdvancedDashboards && (
             <AlertCircle className="h-3 w-3 text-red-500" />
           )}
+        </TabsTrigger>
+        <TabsTrigger value="predictive" className="flex items-center gap-2">
+          <Wrench className="h-4 w-4" />
+          Predictive
+        </TabsTrigger>
+        <TabsTrigger value="cost-optimization" className="flex items-center gap-2">
+          <TrendingDown className="h-4 w-4" />
+          Cost Optimization
         </TabsTrigger>
       </TabsList>
 
@@ -116,6 +126,14 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
             </CardContent>
           </Card>
         )}
+      </TabsContent>
+
+      <TabsContent value="predictive" className="space-y-6">
+        <PredictiveMaintenanceScheduler />
+      </TabsContent>
+
+      <TabsContent value="cost-optimization" className="space-y-6">
+        <CostOptimizationRecommendations />
       </TabsContent>
     </Tabs>
   );
