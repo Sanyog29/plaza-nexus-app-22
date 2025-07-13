@@ -1420,6 +1420,56 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_request_feedback: {
+        Row: {
+          communication_rating: number | null
+          created_at: string
+          feedback_text: string | null
+          id: string
+          quality_rating: number | null
+          request_id: string
+          response_time_rating: number | null
+          satisfaction_rating: number
+          updated_at: string
+          user_id: string
+          would_recommend: boolean | null
+        }
+        Insert: {
+          communication_rating?: number | null
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          quality_rating?: number | null
+          request_id: string
+          response_time_rating?: number | null
+          satisfaction_rating: number
+          updated_at?: string
+          user_id: string
+          would_recommend?: boolean | null
+        }
+        Update: {
+          communication_rating?: number | null
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          quality_rating?: number | null
+          request_id?: string
+          response_time_rating?: number | null
+          satisfaction_rating?: number
+          updated_at?: string
+          user_id?: string
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_request_feedback_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_requests: {
         Row: {
           assigned_to: string | null

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Paperclip, X, FileText, Upload, ImageIcon, Zap } from 'lucide-react';
+import { Camera, Paperclip, X, FileText, Upload, ImageIcon, Zap, Video } from 'lucide-react';
+import EnhancedPhotoCapture from './EnhancedPhotoCapture';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +13,19 @@ interface AttachmentFile {
   file: File;
   preview?: string;
   uploading: boolean;
+  analysis?: {
+    category?: string;
+    urgency?: string;
+    description?: string;
+  };
+}
+
+interface CapturedMedia {
+  id: string;
+  type: 'photo' | 'video';
+  blob: Blob;
+  url: string;
+  timestamp: Date;
   analysis?: {
     category?: string;
     urgency?: string;
@@ -32,6 +46,7 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
 }) => {
   const { user } = useAuth();
   const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -190,9 +205,31 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
     }
   };
 
-  const handleCameraCapture = () => cameraRef.current?.click();
+  const handleCameraCapture = () => setShowPhotoCapture(true);
   const handleGallerySelect = () => photoInputRef.current?.click();
   const handleFileAttach = () => fileInputRef.current?.click();
+
+  const handleMediaCaptured = (capturedMedia: CapturedMedia[]) => {
+    // Convert captured media to attachment files
+    const newAttachments: AttachmentFile[] = capturedMedia.map(media => ({
+      file: new File([media.blob], `${media.type}_${media.timestamp.getTime()}.${media.type === 'photo' ? 'jpg' : 'webm'}`, {
+        type: media.type === 'photo' ? 'image/jpeg' : 'video/webm'
+      }),
+      preview: media.url,
+      uploading: false,
+      analysis: media.analysis
+    }));
+
+    const updatedAttachments = [...attachments, ...newAttachments];
+    setAttachments(updatedAttachments);
+    onFilesChange?.(updatedAttachments.map(att => att.file));
+    setShowPhotoCapture(false);
+
+    toast({
+      title: "✅ Media Added",
+      description: `${capturedMedia.length} files added successfully`
+    });
+  };
 
   const getUrgencyColor = (urgency?: string) => {
     switch (urgency) {
@@ -207,18 +244,25 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
     <div className="space-y-4">
       <Label className="text-base font-medium">Attachments & Photos</Label>
       
-      {/* Quick Action Buttons */}
-      <div className="grid grid-cols-3 gap-2">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={handleCameraCapture}
+      {showPhotoCapture ? (
+        <EnhancedPhotoCapture
+          onMediaCaptured={handleMediaCaptured}
           disabled={isLoading}
-          className="flex flex-col items-center py-4 h-auto"
-        >
-          <Camera size={24} className="mb-1" />
-          <span className="text-xs">Camera</span>
-        </Button>
+        />
+      ) : (
+        <>
+          {/* Quick Action Buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleCameraCapture}
+              disabled={isLoading}
+              className="flex flex-col items-center py-4 h-auto"
+            >
+              <Camera size={24} className="mb-1" />
+              <span className="text-xs">Enhanced Camera</span>
+            </Button>
         <Button 
           type="button" 
           variant="outline" 
@@ -229,17 +273,19 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
           <ImageIcon size={24} className="mb-1" />
           <span className="text-xs">Gallery</span>
         </Button>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={handleFileAttach}
-          disabled={isLoading}
-          className="flex flex-col items-center py-4 h-auto"
-        >
-          <Paperclip size={24} className="mb-1" />
-          <span className="text-xs">Files</span>
-        </Button>
-      </div>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleFileAttach}
+              disabled={isLoading}
+              className="flex flex-col items-center py-4 h-auto"
+            >
+              <Paperclip size={24} className="mb-1" />
+              <span className="text-xs">Files</span>
+            </Button>
+          </div>
+        </>
+      )}
 
       {/* Hidden File Inputs */}
       <input
@@ -354,6 +400,7 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
       )}
 
       {/* Tips */}
+      {!showPhotoCapture && (
       <Card className="bg-muted/50">
         <CardContent className="p-3">
           <div className="flex items-start gap-2">
@@ -369,6 +416,7 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };

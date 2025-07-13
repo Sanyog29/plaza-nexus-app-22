@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import RequestDetailPanel from '@/components/maintenance/RequestDetailPanel';
 import AttachmentViewer from '@/components/maintenance/AttachmentViewer';
+import RequestFeedbackSystem from '@/components/maintenance/RequestFeedbackSystem';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -250,6 +251,18 @@ const RequestDetailsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Feedback System for completed requests */}
+      {request.status === 'completed' && requestId && (
+        <div className="mt-6">
+          <RequestFeedbackSystem
+            requestId={requestId}
+            requestTitle={request.title}
+            completedAt={request.completed_at}
+            onFeedbackSubmitted={fetchRequestDetails}
+          />
+        </div>
+      )}
       
       {/* For staff, show the detailed management panel */}
       {isStaff && requestId && (

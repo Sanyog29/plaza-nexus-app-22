@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer, Trash2 } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer, Trash2, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -45,6 +45,7 @@ const RequestsPage = () => {
     request: null,
     loading: false
   });
+  const [requestsWithFeedback, setRequestsWithFeedback] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -83,6 +84,18 @@ const RequestsPage = () => {
         pending: pendingCount,
         resolved: resolvedCount
       });
+
+      // Check which completed requests have feedback
+      const completedRequests = data?.filter(req => req.status === 'completed') || [];
+      if (completedRequests.length > 0) {
+        const { data: feedbackData } = await supabase
+          .from('maintenance_request_feedback')
+          .select('request_id')
+          .eq('user_id', user.id)
+          .in('request_id', completedRequests.map(req => req.id));
+        
+        setRequestsWithFeedback(new Set(feedbackData?.map(f => f.request_id) || []));
+      }
     } catch (error: any) {
       toast("Error loading requests", {
         description: error.message,
@@ -279,6 +292,14 @@ const RequestsPage = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
                       {getStatusDisplayName(request.status)}
                     </span>
+                    
+                    {/* Feedback prompt for completed requests */}
+                    {request.status === 'completed' && !requestsWithFeedback.has(request.id) && (
+                      <Button variant="outline" size="sm" className="border-green-400/30 text-green-400 hover:bg-green-400/10">
+                        <Star className="h-3 w-3 mr-1" />
+                        Rate
+                      </Button>
+                    )}
                     
                     <div className="flex items-center gap-1">
                       <Link to={`/requests/${request.id}`}>
