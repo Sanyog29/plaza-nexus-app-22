@@ -6,6 +6,8 @@ import { StaffPerformanceAnalytics } from "@/components/admin/StaffPerformanceAn
 import { RealTimeDashboard } from "@/components/admin/RealTimeDashboard";
 import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { AutomatedWorkflows } from "@/components/admin/AutomatedWorkflows";
+import UserManagement from "@/components/admin/UserManagement";
+import SecuritySettings from "@/components/admin/SecuritySettings";
 
 export default function AdminDashboard() {
   return (
@@ -14,13 +16,15 @@ export default function AdminDashboard() {
         <DashboardHeader />
         
         <Tabs defaultValue="dashboard" className="mt-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="assets">Assets</TabsTrigger>
             <TabsTrigger value="utilities">Utilities</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="workflows">Automation</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-6">
@@ -45,6 +49,14 @@ export default function AdminDashboard() {
 
           <TabsContent value="workflows" className="mt-6">
             <AutomatedWorkflows />
+          </TabsContent>
+
+          <TabsContent value="users" className="mt-6">
+            <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="security" className="mt-6">
+            <SecuritySettings />
           </TabsContent>
         </Tabs>
       </div>
