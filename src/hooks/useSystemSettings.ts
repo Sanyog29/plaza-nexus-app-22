@@ -40,6 +40,21 @@ export interface SystemConfig {
     backupFrequency: string;
     logRetention: number;
   };
+  features: {
+    csvImportEnabled: boolean;
+    dataExportEnabled: boolean;
+    googleSheetsEnabled: boolean;
+    forecastingEnabled: boolean;
+    anomalyDetectionEnabled: boolean;
+    advancedDashboardsEnabled: boolean;
+    realTimeUpdatesEnabled: boolean;
+    mobileAccessEnabled: boolean;
+    bulkOperationsEnabled: boolean;
+    advancedFiltersEnabled: boolean;
+    emailProcessingEnabled: boolean;
+    autoReportingEnabled: boolean;
+    dataValidationEnabled: boolean;
+  };
 }
 
 export const useSystemSettings = () => {
@@ -69,6 +84,21 @@ export const useSystemSettings = () => {
       debugMode: false,
       backupFrequency: 'daily',
       logRetention: 30
+    },
+    features: {
+      csvImportEnabled: true,
+      dataExportEnabled: true,
+      googleSheetsEnabled: false,
+      forecastingEnabled: false,
+      anomalyDetectionEnabled: false,
+      advancedDashboardsEnabled: true,
+      realTimeUpdatesEnabled: false,
+      mobileAccessEnabled: true,
+      bulkOperationsEnabled: true,
+      advancedFiltersEnabled: true,
+      emailProcessingEnabled: false,
+      autoReportingEnabled: false,
+      dataValidationEnabled: true,
     }
   });
   const [isLoading, setIsLoading] = useState(false);

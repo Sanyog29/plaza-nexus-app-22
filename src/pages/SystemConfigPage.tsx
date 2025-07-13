@@ -69,7 +69,7 @@ const SystemConfigPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 bg-card/50">
+        <TabsList className="grid w-full grid-cols-5 bg-card/50">
           <TabsTrigger value="maintenance" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Maintenance
@@ -85,6 +85,10 @@ const SystemConfigPage = () => {
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Server className="h-4 w-4" />
             System
+          </TabsTrigger>
+          <TabsTrigger value="features" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            Features
           </TabsTrigger>
         </TabsList>
 
@@ -344,6 +348,206 @@ const SystemConfigPage = () => {
               <Button onClick={() => handleSave('system')} disabled={isLoading} className="w-full">
                 <Save className="h-4 w-4 mr-2" />
                 Save System Settings
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="features">
+          <Card className="bg-card/50 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Database className="h-5 w-5" />
+                Feature Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Data Sources */}
+              <div className="space-y-4">
+                <div className="border-b pb-2">
+                  <h3 className="font-medium text-white">Data Sources</h3>
+                  <p className="text-sm text-muted-foreground">Control how data can be imported and exported</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>CSV Import</Label>
+                      <p className="text-sm text-muted-foreground">Allow CSV file uploads for bulk data import</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.csvImportEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'csvImportEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Data Export</Label>
+                      <p className="text-sm text-muted-foreground">Enable data export functionality</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.dataExportEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'dataExportEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Google Sheets Integration</Label>
+                      <p className="text-sm text-muted-foreground">Enable Google Sheets data source options</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.googleSheetsEnabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('features', 'googleSheetsEnabled', checked)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Analytics & Reporting */}
+              <div className="space-y-4">
+                <div className="border-b pb-2">
+                  <h3 className="font-medium text-white">Analytics & Reporting</h3>
+                  <p className="text-sm text-muted-foreground">Control advanced analytics features</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Consumption Forecasting</Label>
+                      <p className="text-sm text-muted-foreground">Enable predictive analytics for consumption</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.forecastingEnabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('features', 'forecastingEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Anomaly Detection</Label>
+                      <p className="text-sm text-muted-foreground">Detect unusual consumption patterns</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.anomalyDetectionEnabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('features', 'anomalyDetectionEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Advanced Dashboards</Label>
+                      <p className="text-sm text-muted-foreground">Enable interactive dashboard features</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.advancedDashboardsEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'advancedDashboardsEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Real-time Updates</Label>
+                      <p className="text-sm text-muted-foreground">Enable live data updates in dashboards</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.realTimeUpdatesEnabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('features', 'realTimeUpdatesEnabled', checked)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* User Access Controls */}
+              <div className="space-y-4">
+                <div className="border-b pb-2">
+                  <h3 className="font-medium text-white">User Access Controls</h3>
+                  <p className="text-sm text-muted-foreground">Manage feature access by user roles</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Mobile Access</Label>
+                      <p className="text-sm text-muted-foreground">Allow mobile device access to data entry</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.mobileAccessEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'mobileAccessEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Bulk Operations</Label>
+                      <p className="text-sm text-muted-foreground">Enable bulk data operations for staff</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.bulkOperationsEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'bulkOperationsEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Advanced Filters</Label>
+                      <p className="text-sm text-muted-foreground">Enable advanced filtering and search</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.advancedFiltersEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'advancedFiltersEnabled', checked)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Automation */}
+              <div className="space-y-4">
+                <div className="border-b pb-2">
+                  <h3 className="font-medium text-white">Automation</h3>
+                  <p className="text-sm text-muted-foreground">Control automated system features</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Email Processing</Label>
+                      <p className="text-sm text-muted-foreground">Process data from email attachments</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.emailProcessingEnabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('features', 'emailProcessingEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Auto Reporting</Label>
+                      <p className="text-sm text-muted-foreground">Generate automated periodic reports</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.autoReportingEnabled ?? false}
+                      onCheckedChange={(checked) => updateConfig('features', 'autoReportingEnabled', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Data Validation</Label>
+                      <p className="text-sm text-muted-foreground">Automatic data quality checks</p>
+                    </div>
+                    <Switch
+                      checked={config.features?.dataValidationEnabled ?? true}
+                      onCheckedChange={(checked) => updateConfig('features', 'dataValidationEnabled', checked)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={() => handleSave('features')} disabled={isLoading} className="w-full">
+                <Save className="h-4 w-4 mr-2" />
+                Save Feature Settings
               </Button>
             </CardContent>
           </Card>
