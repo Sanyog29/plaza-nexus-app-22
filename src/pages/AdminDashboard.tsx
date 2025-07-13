@@ -6,6 +6,7 @@ import { UtilityManagement } from "@/components/admin/UtilityManagement";
 import { StaffPerformanceAnalytics } from "@/components/admin/StaffPerformanceAnalytics";
 import { RealTimeDashboard } from "@/components/admin/RealTimeDashboard";
 import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
+import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 import { AutomatedWorkflows } from "@/components/admin/AutomatedWorkflows";
 import UserManagement from "@/components/admin/UserManagement";
 import SecuritySettings from "@/components/admin/SecuritySettings";
@@ -66,7 +67,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">
-            <AdvancedAnalytics />
+            <AnalyticsDashboard />
           </TabsContent>
 
           <TabsContent value="performance" className="mt-6">
