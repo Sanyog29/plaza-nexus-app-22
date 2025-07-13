@@ -1,91 +1,44 @@
-import React, { useState } from 'react';
-import OrderModal from '@/components/cafeteria/OrderModal';
-import LoyaltyCard from '@/components/cafeteria/LoyaltyCard';
-import MenuData from '@/components/cafeteria/MenuData';
-import SearchAndFilters from '@/components/cafeteria/SearchAndFilters';
-import LiveOrderTracking from '@/components/cafeteria/LiveOrderTracking';
-import OrderHistory from '@/components/cafeteria/OrderHistory';
-import VendorOffers from '@/components/cafeteria/VendorOffers';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DietaryPreferencesManager } from "@/components/cafeteria/DietaryPreferencesManager";
+import { useAuth } from "@/components/AuthProvider";
+import { UtensilsCrossed, Settings, Heart } from "lucide-react";
 
-const CafeteriaPage = () => {
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    vegetarian: false,
-    vegan: false,
-    available: true,
-    priceRange: '',
-  });
-  
-  const { data: loyaltyPoints = 0 } = useQuery({
-    queryKey: ['loyalty-points'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('loyalty_points')
-        .select('points')
-        .maybeSingle();
-      return data?.points || 0;
-    },
-  });
+export default function CafeteriaPage() {
+  const { userRole } = useAuth();
 
   return (
-    <div className="pb-6">
-      <div className="relative h-40 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-plaza-dark">
-          <img 
-            src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=1470&h=400" 
-            alt="Cafeteria" 
-            className="w-full h-full object-cover opacity-60"
-          />
+    <div className="p-6 space-y-6">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <UtensilsCrossed className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold">Cafeteria & Food Services</h1>
         </div>
-        <div className="absolute bottom-0 left-0 p-4">
-          <h2 className="text-2xl font-bold text-white">Autopilot Café</h2>
-          <p className="text-gray-300">Multi-Brand Food Court · SS Plaza, BTM Layout</p>
-        </div>
-      </div>
-      
-      <div className="px-4 mt-6">
-        <LoyaltyCard />
-        <LiveOrderTracking />
-        
+
         <Tabs defaultValue="menu" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="menu">Menu</TabsTrigger>
-            <TabsTrigger value="orders">Order History</TabsTrigger>
+            <TabsTrigger value="menu" className="flex items-center gap-2">
+              <UtensilsCrossed className="h-4 w-4" />
+              Menu & Orders
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Dietary Preferences
+            </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="menu" className="space-y-4">
-            <VendorOffers />
-            <SearchAndFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              selectedFilters={filters}
-              onFiltersChange={setFilters}
-            />
-            <MenuData 
-              onSelectItem={setSelectedItem} 
-              searchTerm={searchTerm}
-              filters={filters}
-            />
+
+          <TabsContent value="menu" className="mt-6">
+            <div className="p-8 text-center">
+              <UtensilsCrossed className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-medium mb-2">Menu & Orders</h3>
+              <p className="text-muted-foreground">Enhanced menu system with dietary filtering coming soon!</p>
+            </div>
           </TabsContent>
-          
-          <TabsContent value="orders">
-            <OrderHistory />
+
+          <TabsContent value="preferences" className="mt-6">
+            <DietaryPreferencesManager />
           </TabsContent>
         </Tabs>
       </div>
-
-      <OrderModal
-        isOpen={!!selectedItem}
-        onClose={() => setSelectedItem(null)}
-        item={selectedItem}
-        loyaltyPoints={loyaltyPoints}
-      />
     </div>
   );
-};
-
-export default CafeteriaPage;
+}

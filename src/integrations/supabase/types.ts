@@ -987,6 +987,53 @@ export type Database = {
           },
         ]
       }
+      dietary_preferences: {
+        Row: {
+          allergies: string[] | null
+          created_at: string
+          dietary_restrictions: string[] | null
+          id: string
+          meal_preferences: Json | null
+          notification_preferences: Json | null
+          preferred_cuisines: string[] | null
+          spice_tolerance: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allergies?: string[] | null
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          id?: string
+          meal_preferences?: Json | null
+          notification_preferences?: Json | null
+          preferred_cuisines?: string[] | null
+          spice_tolerance?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allergies?: string[] | null
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          id?: string
+          meal_preferences?: Json | null
+          notification_preferences?: Json | null
+          preferred_cuisines?: string[] | null
+          spice_tolerance?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dietary_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           category: string
@@ -1195,6 +1242,123 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hot_desk_bookings: {
+        Row: {
+          auto_checkin: boolean | null
+          booking_date: string
+          checked_in_at: string | null
+          checked_out_at: string | null
+          created_at: string
+          desk_id: string
+          end_time: string
+          id: string
+          notes: string | null
+          start_time: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_checkin?: boolean | null
+          booking_date: string
+          checked_in_at?: string | null
+          checked_out_at?: string | null
+          created_at?: string
+          desk_id: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          start_time: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_checkin?: boolean | null
+          booking_date?: string
+          checked_in_at?: string | null
+          checked_out_at?: string | null
+          created_at?: string
+          desk_id?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          start_time?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hot_desk_bookings_desk_id_fkey"
+            columns: ["desk_id"]
+            isOneToOne: false
+            referencedRelation: "hot_desks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hot_desk_bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hot_desks: {
+        Row: {
+          amenities: string[] | null
+          coordinates_x: number | null
+          coordinates_y: number | null
+          created_at: string
+          desk_number: string
+          equipment_available: string[] | null
+          floor: string
+          id: string
+          is_accessible: boolean | null
+          is_available: boolean | null
+          location_description: string | null
+          max_booking_duration_hours: number | null
+          photo_url: string | null
+          updated_at: string
+          zone: string
+        }
+        Insert: {
+          amenities?: string[] | null
+          coordinates_x?: number | null
+          coordinates_y?: number | null
+          created_at?: string
+          desk_number: string
+          equipment_available?: string[] | null
+          floor: string
+          id?: string
+          is_accessible?: boolean | null
+          is_available?: boolean | null
+          location_description?: string | null
+          max_booking_duration_hours?: number | null
+          photo_url?: string | null
+          updated_at?: string
+          zone: string
+        }
+        Update: {
+          amenities?: string[] | null
+          coordinates_x?: number | null
+          coordinates_y?: number | null
+          created_at?: string
+          desk_number?: string
+          equipment_available?: string[] | null
+          floor?: string
+          id?: string
+          is_accessible?: boolean | null
+          is_available?: boolean | null
+          location_description?: string | null
+          max_booking_duration_hours?: number | null
+          photo_url?: string | null
+          updated_at?: string
+          zone?: string
+        }
+        Relationships: []
       }
       info_categories: {
         Row: {
@@ -1685,6 +1849,72 @@ export type Database = {
           },
         ]
       }
+      meal_subscriptions: {
+        Row: {
+          auto_order: boolean | null
+          created_at: string
+          delivery_preferences: Json | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          max_daily_amount: number | null
+          meal_types: string[]
+          preferred_items: Json | null
+          start_date: string
+          subscription_type: string
+          updated_at: string
+          user_id: string
+          vendor_id: string
+        }
+        Insert: {
+          auto_order?: boolean | null
+          created_at?: string
+          delivery_preferences?: Json | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_daily_amount?: number | null
+          meal_types: string[]
+          preferred_items?: Json | null
+          start_date: string
+          subscription_type: string
+          updated_at?: string
+          user_id: string
+          vendor_id: string
+        }
+        Update: {
+          auto_order?: boolean | null
+          created_at?: string
+          delivery_preferences?: Json | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_daily_amount?: number | null
+          meal_types?: string[]
+          preferred_items?: Json | null
+          start_date?: string
+          subscription_type?: string
+          updated_at?: string
+          user_id?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_subscriptions_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -2161,18 +2391,23 @@ export type Database = {
       room_bookings: {
         Row: {
           attendee_count: number | null
+          av_equipment_requests: Json | null
           buffer_time_minutes: number | null
+          catering_orders: Json | null
           created_at: string
           description: string | null
+          dietary_requirements: string[] | null
           duration_minutes: number | null
           end_time: string
           equipment_needed: Json | null
+          estimated_cost: number | null
           id: string
           is_recurring: boolean | null
           meeting_agenda: string | null
           parent_booking_id: string | null
           recurrence_rule: Json | null
           room_id: string
+          setup_requirements: string | null
           start_time: string
           status: string
           template_id: string | null
@@ -2181,18 +2416,23 @@ export type Database = {
         }
         Insert: {
           attendee_count?: number | null
+          av_equipment_requests?: Json | null
           buffer_time_minutes?: number | null
+          catering_orders?: Json | null
           created_at?: string
           description?: string | null
+          dietary_requirements?: string[] | null
           duration_minutes?: number | null
           end_time: string
           equipment_needed?: Json | null
+          estimated_cost?: number | null
           id?: string
           is_recurring?: boolean | null
           meeting_agenda?: string | null
           parent_booking_id?: string | null
           recurrence_rule?: Json | null
           room_id: string
+          setup_requirements?: string | null
           start_time: string
           status?: string
           template_id?: string | null
@@ -2201,18 +2441,23 @@ export type Database = {
         }
         Update: {
           attendee_count?: number | null
+          av_equipment_requests?: Json | null
           buffer_time_minutes?: number | null
+          catering_orders?: Json | null
           created_at?: string
           description?: string | null
+          dietary_requirements?: string[] | null
           duration_minutes?: number | null
           end_time?: string
           equipment_needed?: Json | null
+          estimated_cost?: number | null
           id?: string
           is_recurring?: boolean | null
           meeting_agenda?: string | null
           parent_booking_id?: string | null
           recurrence_rule?: Json | null
           room_id?: string
+          setup_requirements?: string | null
           start_time?: string
           status?: string
           template_id?: string | null
@@ -2229,6 +2474,50 @@ export type Database = {
           },
           {
             foreignKeyName: "room_bookings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_equipment: {
+        Row: {
+          created_at: string
+          equipment_name: string
+          equipment_type: string
+          id: string
+          is_available: boolean | null
+          requires_setup: boolean | null
+          room_id: string
+          setup_time_minutes: number | null
+          usage_instructions: string | null
+        }
+        Insert: {
+          created_at?: string
+          equipment_name: string
+          equipment_type: string
+          id?: string
+          is_available?: boolean | null
+          requires_setup?: boolean | null
+          room_id: string
+          setup_time_minutes?: number | null
+          usage_instructions?: string | null
+        }
+        Update: {
+          created_at?: string
+          equipment_name?: string
+          equipment_type?: string
+          id?: string
+          is_available?: boolean | null
+          requires_setup?: boolean | null
+          room_id?: string
+          setup_time_minutes?: number | null
+          usage_instructions?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_equipment_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"

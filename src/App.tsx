@@ -55,6 +55,7 @@ import StaffSecurityPage from "./pages/StaffSecurityPage";
 import StaffServicesPage from "./pages/StaffServicesPage";
 import VendorPortalPage from "./pages/VendorPortalPage";
 import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
+import DeliveryPage from "./pages/DeliveryPage";
 import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
 
 const queryClient = new QueryClient();
@@ -91,6 +92,7 @@ const App = () => (
               <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="/info-hub" element={<InfoHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/delivery" element={<DeliveryPage />} />
               <Route path="/manual" element={<UserManualPage />} />
               
               {/* Admin Routes */}
