@@ -66,10 +66,10 @@ export const MobileBottomNav: React.FC = () => {
           badge: metrics?.activeRequests || 0
         },
         {
-          href: '/security',
-          icon: Shield,
-          label: 'Security',
-          active: location.pathname === '/security'
+          href: '/bookings',
+          icon: Calendar,
+          label: 'Bookings',
+          active: location.pathname === '/bookings'
         },
         {
           href: isStaff ? '/staff/alerts' : '/alerts',

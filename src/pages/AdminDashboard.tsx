@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 import DashboardHeader from "@/components/admin/DashboardHeader";
 import { AssetManagement } from "@/components/admin/AssetManagement";
 import { UtilityManagement } from "@/components/admin/UtilityManagement";
@@ -8,8 +9,33 @@ import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
 import { AutomatedWorkflows } from "@/components/admin/AutomatedWorkflows";
 import UserManagement from "@/components/admin/UserManagement";
 import SecuritySettings from "@/components/admin/SecuritySettings";
+import { MobileAdminTabs } from "@/components/admin/MobileAdminTabs";
 
 export default function AdminDashboard() {
+  const isMobile = useIsMobile();
+
+  const tabComponents = {
+    dashboard: <RealTimeDashboard />,
+    assets: <AssetManagement />,
+    utilities: <UtilityManagement />,
+    analytics: <AdvancedAnalytics />,
+    performance: <StaffPerformanceAnalytics />,
+    workflows: <AutomatedWorkflows />,
+    users: <UserManagement />,
+    security: <SecuritySettings />
+  };
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 pb-20">
+        <div className="px-4 py-6">
+          <DashboardHeader />
+          <MobileAdminTabs tabComponents={tabComponents} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
