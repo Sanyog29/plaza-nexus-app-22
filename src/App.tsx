@@ -37,7 +37,7 @@ import StaffReportsPage from "./pages/StaffReportsPage";
 import StaffSettingsPage from "./pages/StaffSettingsPage";
 import UserManualPage from "./pages/UserManualPage";
 import SecurityGuardPage from "./pages/SecurityGuardPage";
-import StaffOperationsPage from "./pages/StaffOperationsPage";
+// import StaffOperationsPage from "./pages/StaffOperationsPage";
 import UnifiedDashboardPage from "./pages/UnifiedDashboardPage";
 import OperationalExcellencePage from "./pages/OperationalExcellencePage";
 import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
@@ -117,7 +117,7 @@ const App = () => (
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
               <Route path="/staff/reports" element={<StaffReportsPage />} />
               <Route path="/staff/settings" element={<StaffSettingsPage />} />
-              <Route path="/staff/operations" element={<StaffOperationsPage />} />
+              <Route path="/staff/operations" element={<OperationsPage />} />
               <Route path="/staff/performance" element={<StaffPerformancePage />} />
               <Route path="/staff/training" element={<StaffTrainingPage />} />
               <Route path="/staff/maintenance" element={<StaffMaintenancePage />} />

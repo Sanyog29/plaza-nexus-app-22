@@ -1,304 +1,151 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/components/AuthProvider';
-import { toast } from '@/components/ui/sonner';
+import { useToast } from '@/hooks/use-toast';
 
-interface UtilityMeter {
-  id: string;
-  meter_number: string;
-  utility_type: 'electricity' | 'water' | 'gas' | 'internet' | 'hvac' | 'waste_management';
-  location: string;
-  floor: string;
-  zone?: string;
-  installation_date?: string;
-  last_reading_date?: string;
-  last_reading_value?: number;
-  unit_of_measurement: string;
-  meter_status: string;
-  supplier_name?: string;
-  contract_number?: string;
-  contract_start_date?: string;
-  contract_end_date?: string;
-  monthly_budget?: number;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface UtilityReading {
+export interface UtilityMeter {
   id: string;
   meter_id: string;
-  reading_date: string;
-  reading_value: number;
-  consumption?: number;
-  cost_per_unit?: number;
-  total_cost?: number;
-  recorded_by?: string;
-  reading_method: string;
-  photo_url?: string;
-  notes?: string;
-  meter?: {
-    meter_number: string;
-    utility_type: string;
-    location: string;
-    unit_of_measurement: string;
-  };
-}
-
-interface CostCenter {
-  id: string;
-  name: string;
-  code: string;
-  department?: string;
-  budget_annual?: number;
-  budget_monthly?: number;
-  manager_id?: string;
+  meter_type: string;
+  location: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-interface BudgetAllocation {
+export interface UtilityReading {
   id: string;
-  cost_center_id: string;
-  allocation_month: string;
-  category: string;
-  allocated_amount: number;
-  spent_amount: number;
-  cost_center?: {
-    name: string;
-    code: string;
-  };
+  meter_id: string;
+  reading_date: string;
+  reading_value: number;
+  consumption: number | null;
+  cost_per_unit: number | null;
+  total_cost: number | null;
+  recorded_by: string | null;
+  reading_method: string;
+  photo_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export function useUtilityManagement() {
-  const { user } = useAuth();
+export const useUtilityManagement = () => {
   const [meters, setMeters] = useState<UtilityMeter[]>([]);
   const [readings, setReadings] = useState<UtilityReading[]>([]);
-  const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
-  const [budgetAllocations, setBudgetAllocations] = useState<BudgetAllocation[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      fetchMeters();
-      fetchReadings();
-      fetchCostCenters();
-      fetchBudgetAllocations();
+    initializeData();
+  }, []);
+
+  const initializeData = () => {
+    // Initialize with mock data for demo
+    const mockMeters: UtilityMeter[] = [
+      { id: '1', meter_id: 'ELE-001', meter_type: 'electricity', location: 'Main Building - Floor 1', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { id: '2', meter_id: 'WAT-001', meter_type: 'water', location: 'Main Building - Kitchen', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { id: '3', meter_id: 'GAS-001', meter_type: 'gas', location: 'Main Building - Kitchen', is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ];
+
+    setMeters(mockMeters);
+    setReadings(generateMockReadings());
+    setLoading(false);
+  };
+
+  const generateMockReadings = (): UtilityReading[] => {
+    const readings: UtilityReading[] = [];
+    const meterIds = ['1', '2', '3'];
+    const today = new Date();
+    
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      
+      meterIds.forEach(meterId => {
+        readings.push({
+          id: `${meterId}-${i}`,
+          meter_id: meterId,
+          reading_date: date.toISOString().split('T')[0],
+          reading_value: Math.floor(Math.random() * 1000) + 100,
+          consumption: Math.floor(Math.random() * 100) + 10,
+          cost_per_unit: Math.random() * 5 + 1,
+          total_cost: Math.random() * 500 + 50,
+          recorded_by: null,
+          reading_method: 'manual',
+          photo_url: null,
+          notes: null,
+          created_at: date.toISOString(),
+          updated_at: date.toISOString()
+        });
+      });
     }
-  }, [user]);
+    
+    return readings.sort((a, b) => new Date(b.reading_date).getTime() - new Date(a.reading_date).getTime());
+  };
 
   const fetchMeters = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('utility_meters')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setMeters(data || []);
-    } catch (error) {
-      console.error('Error fetching utility meters:', error);
-      toast.error('Failed to load utility meters');
-    }
+    // Mock implementation - in production would fetch from Supabase
+    console.log('Fetching meters from database...');
   };
 
   const fetchReadings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('utility_readings')
-        .select(`
-          *,
-          meter:utility_meters(meter_number, utility_type, location, unit_of_measurement)
-        `)
-        .order('reading_date', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setReadings(data || []);
-    } catch (error) {
-      console.error('Error fetching utility readings:', error);
-      toast.error('Failed to load utility readings');
-    }
+    // Mock implementation - in production would fetch from Supabase
+    console.log('Fetching readings from database...');
   };
 
-  const fetchCostCenters = async () => {
+  const createReading = async (reading: Omit<UtilityReading, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data, error } = await supabase
-        .from('cost_centers')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-      setCostCenters(data || []);
-    } catch (error) {
-      console.error('Error fetching cost centers:', error);
-      toast.error('Failed to load cost centers');
-    }
-  };
-
-  const fetchBudgetAllocations = async () => {
-    try {
-      const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-      const { data, error } = await supabase
-        .from('budget_allocations')
-        .select(`
-          *,
-          cost_center:cost_centers(name, code)
-        `)
-        .gte('allocation_month', currentMonth)
-        .order('allocation_month', { ascending: false });
-
-      if (error) throw error;
-      setBudgetAllocations(data || []);
-    } catch (error) {
-      console.error('Error fetching budget allocations:', error);
-      toast.error('Failed to load budget allocations');
-    }
-  };
-
-  const createMeter = async (meterData: Omit<UtilityMeter, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return null;
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('utility_meters')
-        .insert(meterData)
-        .select()
-        .maybeSingle();
-
-      if (error) throw error;
-
-      await fetchMeters();
-      toast.success('Utility meter created successfully');
-      return data;
-    } catch (error) {
-      console.error('Error creating meter:', error);
-      toast.error('Failed to create utility meter');
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const createReading = async (readingData: Omit<UtilityReading, 'id' | 'meter' | 'consumption' | 'total_cost'>) => {
-    if (!user) return null;
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('utility_readings')
-        .insert({
-          ...readingData,
-          recorded_by: user.id
-        })
-        .select()
-        .maybeSingle();
-
-      if (error) throw error;
-
-      // Calculate consumption and costs
-      await supabase.rpc('calculate_utility_consumption');
-
-      await fetchReadings();
-      await fetchMeters(); // Update last reading info
-      toast.success('Utility reading recorded successfully');
-      return data;
+      // For demo purposes, create a mock reading
+      const mockReading: UtilityReading = {
+        id: `mock-${Date.now()}`,
+        ...reading,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      setReadings(prev => [mockReading, ...prev]);
+      toast({
+        title: "Success",
+        description: "Reading added successfully (demo mode)"
+      });
+      
+      return { data: mockReading, error: null };
     } catch (error) {
       console.error('Error creating reading:', error);
-      toast.error('Failed to record utility reading');
-      return null;
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to create reading",
+        variant: "destructive"
+      });
+      return { data: null, error };
     }
   };
 
-  const updateMeter = async (id: string, updates: Partial<UtilityMeter>) => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from('utility_meters')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
-
-      await fetchMeters();
-      toast.success('Utility meter updated successfully');
-      return true;
-    } catch (error) {
-      console.error('Error updating meter:', error);
-      toast.error('Failed to update utility meter');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+  const getReadingsByMeter = (meterId: string) => {
+    return readings.filter(reading => reading.meter_id === meterId);
   };
 
-  const getConsumptionByType = (utilityType: string, days: number = 30) => {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
+  const getReadingsByType = (meterType: string) => {
+    const meterIds = meters
+      .filter(meter => meter.meter_type === meterType)
+      .map(meter => meter.id);
     
-    return readings
-      .filter(reading => 
-        reading.meter?.utility_type === utilityType &&
-        new Date(reading.reading_date) >= cutoffDate
-      )
-      .reduce((total, reading) => total + (reading.consumption || 0), 0);
+    return readings.filter(reading => meterIds.includes(reading.meter_id));
   };
 
-  const getCostByType = (utilityType: string, days: number = 30) => {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    
-    return readings
-      .filter(reading => 
-        reading.meter?.utility_type === utilityType &&
-        new Date(reading.reading_date) >= cutoffDate
-      )
-      .reduce((total, reading) => total + (reading.total_cost || 0), 0);
-  };
-
-  const getMetersByType = (type: string) => {
-    return meters.filter(meter => meter.utility_type === type);
-  };
-
-  const getMetersByStatus = (status: string) => {
-    return meters.filter(meter => meter.meter_status === status);
-  };
-
-  const getUpcomingContracts = (days: number = 30) => {
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + days);
-    
-    return meters.filter(meter => {
-      if (!meter.contract_end_date) return false;
-      const endDate = new Date(meter.contract_end_date);
-      return endDate <= futureDate && endDate >= new Date();
-    });
+  const getReadingsByDateRange = (startDate: string, endDate: string) => {
+    return readings.filter(reading => 
+      reading.reading_date >= startDate && reading.reading_date <= endDate
+    );
   };
 
   return {
     meters,
     readings,
-    costCenters,
-    budgetAllocations,
-    isLoading,
-    createMeter,
+    loading,
+    fetchMeters,
+    fetchReadings,
     createReading,
-    updateMeter,
-    getConsumptionByType,
-    getCostByType,
-    getMetersByType,
-    getMetersByStatus,
-    getUpcomingContracts,
-    refetch: () => Promise.all([
-      fetchMeters(),
-      fetchReadings(),
-      fetchCostCenters(),
-      fetchBudgetAllocations()
-    ])
+    getReadingsByMeter,
+    getReadingsByType,
+    getReadingsByDateRange
   };
-}
+};

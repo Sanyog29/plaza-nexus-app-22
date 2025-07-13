@@ -44,7 +44,9 @@ export const EnhancedAnalytics: React.FC = () => {
 
     const filteredReadings = readings.filter(reading => {
       const readingDate = new Date(reading.reading_date);
-      const typeMatch = selectedUtilityType === 'all' || reading.meter?.utility_type === selectedUtilityType;
+      // Find meter for this reading
+      const meter = meters.find(m => m.id === reading.meter_id);
+      const typeMatch = selectedUtilityType === 'all' || meter?.meter_type === selectedUtilityType;
       return readingDate >= cutoffDate && typeMatch;
     });
 
@@ -135,7 +137,7 @@ export const EnhancedAnalytics: React.FC = () => {
     };
   }, [consumptionTrends]);
 
-  const utilityTypes = ['all', ...new Set(meters.map(m => m.utility_type))];
+  const utilityTypes = ['all', ...new Set(meters.map(m => m.meter_type))];
 
   return (
     <div className="space-y-6">

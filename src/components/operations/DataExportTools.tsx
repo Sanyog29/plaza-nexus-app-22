@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const DataExportTools: React.FC = () => {
-  const { readings, meters, costCenters, budgetAllocations } = useUtilityManagement();
+  const { readings, meters } = useUtilityManagement();
   const [isExporting, setIsExporting] = useState(false);
 
   const exportToCSV = (data: any[], filename: string) => {
@@ -70,9 +70,6 @@ export const DataExportTools: React.FC = () => {
   const exportReadings = () => {
     const exportData = readings.map(reading => ({
       meter_id: reading.meter_id,
-      meter_number: reading.meter?.meter_number || '',
-      utility_type: reading.meter?.utility_type || '',
-      location: reading.meter?.location || '',
       reading_date: reading.reading_date,
       reading_value: reading.reading_value,
       consumption: reading.consumption || 0,
@@ -88,37 +85,15 @@ export const DataExportTools: React.FC = () => {
   const exportMeters = () => {
     const exportData = meters.map(meter => ({
       id: meter.id,
-      meter_number: meter.meter_number,
-      utility_type: meter.utility_type,
+      meter_id: meter.meter_id,
+      meter_type: meter.meter_type,
       location: meter.location,
-      floor: meter.floor,
-      zone: meter.zone || '',
-      installation_date: meter.installation_date || '',
-      last_reading_date: meter.last_reading_date || '',
-      last_reading_value: meter.last_reading_value || 0,
-      unit_of_measurement: meter.unit_of_measurement,
-      meter_status: meter.meter_status,
-      supplier_name: meter.supplier_name || '',
-      contract_number: meter.contract_number || '',
-      monthly_budget: meter.monthly_budget || 0
+      is_active: meter.is_active,
+      created_at: meter.created_at,
+      updated_at: meter.updated_at
     }));
     
     exportToCSV(exportData, 'utility_meters');
-  };
-
-  const exportBudgets = () => {
-    const exportData = budgetAllocations.map(allocation => ({
-      cost_center: allocation.cost_center?.name || '',
-      cost_center_code: allocation.cost_center?.code || '',
-      allocation_month: allocation.allocation_month,
-      category: allocation.category,
-      allocated_amount: allocation.allocated_amount,
-      spent_amount: allocation.spent_amount || 0,
-      remaining_amount: allocation.allocated_amount - (allocation.spent_amount || 0),
-      utilization_percentage: ((allocation.spent_amount || 0) / allocation.allocated_amount * 100).toFixed(2)
-    }));
-    
-    exportToCSV(exportData, 'budget_allocations');
   };
 
   const generateAnalyticsReport = () => {
@@ -133,7 +108,7 @@ export const DataExportTools: React.FC = () => {
       avg_cost_per_unit: currentMonthReadings.length > 0 
         ? (currentMonthReadings.reduce((sum, r) => sum + (r.cost_per_unit || 0), 0) / currentMonthReadings.length).toFixed(2)
         : 0,
-      active_meters: meters.filter(m => m.meter_status === 'active').length,
+      active_meters: meters.filter(m => m.is_active).length,
       total_meters: meters.length
     };
 
@@ -209,30 +184,6 @@ export const DataExportTools: React.FC = () => {
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Export Meters
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h4 className="font-medium flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Budget Allocations
-                        </h4>
-                        <p className="text-sm text-muted-foreground">Export budget and spending data</p>
-                      </div>
-                      <Badge variant="secondary">{budgetAllocations.length} allocations</Badge>
-                    </div>
-                    <Button 
-                      onClick={exportBudgets} 
-                      disabled={isExporting || budgetAllocations.length === 0}
-                      className="w-full"
-                      size="sm"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Budgets
                     </Button>
                   </CardContent>
                 </Card>

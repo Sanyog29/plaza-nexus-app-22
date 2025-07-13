@@ -150,8 +150,12 @@ export const CSVImportComponent: React.FC = () => {
           meter_id: row.meter_id,
           reading_date: row.reading_date,
           reading_value: parseFloat(row.reading_value),
-          cost_per_unit: row.cost_per_unit ? parseFloat(row.cost_per_unit) : undefined,
+          consumption: null,
+          cost_per_unit: row.cost_per_unit ? parseFloat(row.cost_per_unit) : null,
+          total_cost: null,
+          recorded_by: null,
           reading_method: importSource === 'google_sheets' ? 'imported_sheets' : 'imported_csv',
+          photo_url: null,
           notes: row.notes || `Imported from CSV on ${new Date().toLocaleDateString()}`
         });
         successCount++;
