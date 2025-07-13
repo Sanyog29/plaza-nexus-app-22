@@ -3,6 +3,9 @@ import DashboardHeader from "@/components/admin/DashboardHeader";
 import { AssetManagement } from "@/components/admin/AssetManagement";
 import { UtilityManagement } from "@/components/admin/UtilityManagement";
 import { StaffPerformanceAnalytics } from "@/components/admin/StaffPerformanceAnalytics";
+import { RealTimeDashboard } from "@/components/admin/RealTimeDashboard";
+import { AdvancedAnalytics } from "@/components/admin/AdvancedAnalytics";
+import { AutomatedWorkflows } from "@/components/admin/AutomatedWorkflows";
 
 export default function AdminDashboard() {
   return (
@@ -10,12 +13,19 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-4 py-8">
         <DashboardHeader />
         
-        <Tabs defaultValue="assets" className="mt-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="dashboard" className="mt-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="assets">Assets</TabsTrigger>
             <TabsTrigger value="utilities">Utilities</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="workflows">Automation</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard" className="mt-6">
+            <RealTimeDashboard />
+          </TabsContent>
 
           <TabsContent value="assets" className="mt-6">
             <AssetManagement />
@@ -26,7 +36,15 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">
+            <AdvancedAnalytics />
+          </TabsContent>
+
+          <TabsContent value="performance" className="mt-6">
             <StaffPerformanceAnalytics />
+          </TabsContent>
+
+          <TabsContent value="workflows" className="mt-6">
+            <AutomatedWorkflows />
           </TabsContent>
         </Tabs>
       </div>

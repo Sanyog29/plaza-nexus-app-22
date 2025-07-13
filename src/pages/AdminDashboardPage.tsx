@@ -10,7 +10,7 @@ import AccessRestricted from '@/components/admin/AccessRestricted';
 import DashboardHeader from '@/components/admin/DashboardHeader';
 import LoadingSpinner from '@/components/admin/LoadingSpinner';
 import RealTimeMetrics from '@/components/admin/RealTimeMetrics';
-import AdvancedAnalytics from '@/components/admin/AdvancedAnalytics';
+import { AdvancedAnalytics } from '@/components/admin/AdvancedAnalytics';
 import StaffWorkloadBalancer from '@/components/admin/StaffWorkloadBalancer';
 import { EnhancedHelpSystem } from '@/components/help/EnhancedHelpSystem';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

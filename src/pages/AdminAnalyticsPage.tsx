@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VisitorAnalytics } from '@/components/analytics/VisitorAnalytics';
 import { SecurityAnalytics } from '@/components/analytics/SecurityAnalytics';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
-import AdvancedAnalytics from '@/components/admin/AdvancedAnalytics';
+import { AdvancedAnalytics } from '@/components/admin/AdvancedAnalytics';
 import SystemHealthDashboard from '@/components/admin/SystemHealthDashboard';
 import { useAuth } from '@/components/AuthProvider';
 import { Navigate } from 'react-router-dom';
