@@ -42,6 +42,7 @@ import UnifiedDashboardPage from "./pages/UnifiedDashboardPage";
 import OperationalExcellencePage from "./pages/OperationalExcellencePage";
 import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
 import SystemConfigPage from "./pages/SystemConfigPage";
+import OperationsPage from "./pages/OperationsPage";
 import BulkOperationsPage from "./pages/BulkOperationsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
 import StaffPerformancePage from "./pages/StaffPerformancePage";
@@ -122,6 +123,9 @@ const App = () => (
               <Route path="/staff/maintenance" element={<StaffMaintenancePage />} />
               <Route path="/staff/security" element={<StaffSecurityPage />} />
               <Route path="/staff/services" element={<StaffServicesPage />} />
+              
+              {/* Operations Center */}
+              <Route path="/operations" element={<OperationsPage />} />
               
               {/* Special Access Routes */}
               <Route path="/security-guard" element={<SecurityGuardPage />} />
