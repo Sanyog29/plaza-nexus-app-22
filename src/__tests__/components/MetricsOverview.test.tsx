@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { screen } from '@testing-library/dom';
 import { MetricsOverview } from '@/components/analytics/MetricsOverview';
 
 // Mock the dashboard metrics hook
