@@ -845,6 +845,148 @@ export type Database = {
           },
         ]
       }
+      deliveries: {
+        Row: {
+          created_at: string
+          delivery_date: string
+          delivery_service: string | null
+          delivery_time: string | null
+          id: string
+          logged_by: string | null
+          package_description: string | null
+          package_type: string | null
+          photo_urls: string[] | null
+          pickup_at: string | null
+          pickup_by: string | null
+          pickup_code: string | null
+          received_by: string | null
+          recipient_company: string | null
+          recipient_contact: string | null
+          recipient_name: string
+          sender_company: string | null
+          sender_name: string | null
+          special_instructions: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_date?: string
+          delivery_service?: string | null
+          delivery_time?: string | null
+          id?: string
+          logged_by?: string | null
+          package_description?: string | null
+          package_type?: string | null
+          photo_urls?: string[] | null
+          pickup_at?: string | null
+          pickup_by?: string | null
+          pickup_code?: string | null
+          received_by?: string | null
+          recipient_company?: string | null
+          recipient_contact?: string | null
+          recipient_name: string
+          sender_company?: string | null
+          sender_name?: string | null
+          special_instructions?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delivery_date?: string
+          delivery_service?: string | null
+          delivery_time?: string | null
+          id?: string
+          logged_by?: string | null
+          package_description?: string | null
+          package_type?: string | null
+          photo_urls?: string[] | null
+          pickup_at?: string | null
+          pickup_by?: string | null
+          pickup_code?: string | null
+          received_by?: string | null
+          recipient_company?: string | null
+          recipient_contact?: string | null
+          recipient_name?: string
+          sender_company?: string | null
+          sender_name?: string | null
+          special_instructions?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deliveries_logged_by_fkey"
+            columns: ["logged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_pickup_by_fkey"
+            columns: ["pickup_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_notifications: {
+        Row: {
+          created_at: string
+          delivery_id: string
+          id: string
+          is_read: boolean | null
+          notification_type: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_id: string
+          id?: string
+          is_read?: boolean | null
+          notification_type: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_id?: string
+          id?: string
+          is_read?: boolean | null
+          notification_type?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_notifications_delivery_id_fkey"
+            columns: ["delivery_id"]
+            isOneToOne: false
+            referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment: {
         Row: {
           category: string
@@ -3604,6 +3746,60 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_approval_requests: {
+        Row: {
+          approval_status: string | null
+          approved_at: string | null
+          created_at: string
+          host_user_id: string
+          id: string
+          notification_sent_at: string | null
+          rejection_reason: string | null
+          response_deadline: string | null
+          updated_at: string
+          visitor_id: string
+        }
+        Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          created_at?: string
+          host_user_id: string
+          id?: string
+          notification_sent_at?: string | null
+          rejection_reason?: string | null
+          response_deadline?: string | null
+          updated_at?: string
+          visitor_id: string
+        }
+        Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          created_at?: string
+          host_user_id?: string
+          id?: string
+          notification_sent_at?: string | null
+          rejection_reason?: string | null
+          response_deadline?: string | null
+          updated_at?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_approval_requests_host_user_id_fkey"
+            columns: ["host_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_approval_requests_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visitor_categories: {
         Row: {
           color: string | null
@@ -3927,6 +4123,10 @@ export type Database = {
       generate_analytics_summary: {
         Args: { summary_date: string; summary_type: string }
         Returns: undefined
+      }
+      generate_pickup_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_recurring_bookings: {
         Args: {
