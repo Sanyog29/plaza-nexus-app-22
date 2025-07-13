@@ -1187,6 +1187,89 @@ export type Database = {
           },
         ]
       }
+      executive_reports: {
+        Row: {
+          ai_insights: Json | null
+          file_url: string | null
+          generated_at: string
+          generated_by: string | null
+          id: string
+          is_automated: boolean | null
+          report_data: Json
+          report_period: string
+          report_type: string
+        }
+        Insert: {
+          ai_insights?: Json | null
+          file_url?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          is_automated?: boolean | null
+          report_data: Json
+          report_period: string
+          report_type: string
+        }
+        Update: {
+          ai_insights?: Json | null
+          file_url?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          is_automated?: boolean | null
+          report_data?: Json
+          report_period?: string
+          report_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "executive_reports_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_integrations: {
+        Row: {
+          config: Json
+          created_at: string
+          error_count: number | null
+          id: string
+          integration_name: string
+          integration_type: string
+          is_enabled: boolean
+          last_sync_at: string | null
+          sync_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          error_count?: number | null
+          id?: string
+          integration_name: string
+          integration_type: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          error_count?: number | null
+          id?: string
+          integration_name?: string
+          integration_type?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       financial_reports: {
         Row: {
           average_order_value: number | null
@@ -1458,6 +1541,42 @@ export type Database = {
           },
         ]
       }
+      iot_sensor_data: {
+        Row: {
+          device_id: string
+          id: string
+          is_anomaly: boolean | null
+          location: string
+          metadata: Json | null
+          reading_value: number
+          sensor_type: string
+          timestamp: string
+          unit: string
+        }
+        Insert: {
+          device_id: string
+          id?: string
+          is_anomaly?: boolean | null
+          location: string
+          metadata?: Json | null
+          reading_value: number
+          sensor_type: string
+          timestamp?: string
+          unit: string
+        }
+        Update: {
+          device_id?: string
+          id?: string
+          is_anomaly?: boolean | null
+          location?: string
+          metadata?: Json | null
+          reading_value?: number
+          sensor_type?: string
+          timestamp?: string
+          unit?: string
+        }
+        Relationships: []
+      }
       item_feedback: {
         Row: {
           created_at: string
@@ -1623,6 +1742,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kpi_metrics: {
+        Row: {
+          calculation_method: string | null
+          current_value: number
+          id: string
+          is_critical: boolean | null
+          last_updated: string
+          metric_category: string
+          metric_name: string
+          target_value: number | null
+          threshold_max: number | null
+          threshold_min: number | null
+          unit: string | null
+        }
+        Insert: {
+          calculation_method?: string | null
+          current_value: number
+          id?: string
+          is_critical?: boolean | null
+          last_updated?: string
+          metric_category: string
+          metric_name: string
+          target_value?: number | null
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit?: string | null
+        }
+        Update: {
+          calculation_method?: string | null
+          current_value?: number
+          id?: string
+          is_critical?: boolean | null
+          last_updated?: string
+          metric_category?: string
+          metric_name?: string
+          target_value?: number | null
+          threshold_max?: number | null
+          threshold_min?: number | null
+          unit?: string | null
+        }
+        Relationships: []
       }
       loyalty_points: {
         Row: {
@@ -1915,6 +2076,92 @@ export type Database = {
           },
         ]
       }
+      ml_models: {
+        Row: {
+          accuracy_score: number | null
+          created_at: string
+          id: string
+          is_active: boolean
+          last_trained_at: string | null
+          model_config: Json
+          model_name: string
+          model_type: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_trained_at?: string | null
+          model_config?: Json
+          model_name: string
+          model_type: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_trained_at?: string | null
+          model_config?: Json
+          model_name?: string
+          model_type?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      ml_predictions: {
+        Row: {
+          actual_outcome: Json | null
+          confidence_score: number | null
+          id: string
+          is_validated: boolean | null
+          model_id: string
+          prediction_date: string
+          prediction_type: string
+          prediction_value: Json
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          actual_outcome?: Json | null
+          confidence_score?: number | null
+          id?: string
+          is_validated?: boolean | null
+          model_id: string
+          prediction_date?: string
+          prediction_type: string
+          prediction_value: Json
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          actual_outcome?: Json | null
+          confidence_score?: number | null
+          id?: string
+          is_validated?: boolean | null
+          model_id?: string
+          prediction_date?: string
+          prediction_type?: string
+          prediction_value?: Json
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_predictions_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -1945,6 +2192,51 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      optimization_recommendations: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          description: string
+          id: string
+          implementation_effort: string | null
+          implemented_at: string | null
+          metadata: Json | null
+          potential_savings: number | null
+          priority: string
+          recommendation_type: string
+          status: string | null
+          title: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          description: string
+          id?: string
+          implementation_effort?: string | null
+          implemented_at?: string | null
+          metadata?: Json | null
+          potential_savings?: number | null
+          priority?: string
+          recommendation_type: string
+          status?: string | null
+          title: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          implementation_effort?: string | null
+          implemented_at?: string | null
+          metadata?: Json | null
+          potential_savings?: number | null
+          priority?: string
+          recommendation_type?: string
+          status?: string | null
+          title?: string
         }
         Relationships: []
       }
@@ -4333,6 +4625,42 @@ export type Database = {
           },
         ]
       }
+      workflow_executions: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          execution_log: Json | null
+          execution_status: string
+          id: string
+          metadata: Json | null
+          started_at: string
+          trigger_context: Json
+          workflow_rule_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          execution_log?: Json | null
+          execution_status?: string
+          id?: string
+          metadata?: Json | null
+          started_at?: string
+          trigger_context: Json
+          workflow_rule_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          execution_log?: Json | null
+          execution_status?: string
+          id?: string
+          metadata?: Json | null
+          started_at?: string
+          trigger_context?: Json
+          workflow_rule_id?: string
+        }
+        Relationships: []
+      }
       zone_qr_codes: {
         Row: {
           created_at: string
@@ -4495,6 +4823,10 @@ export type Database = {
           old_values?: Json
           new_values?: Json
         }
+        Returns: string
+      }
+      log_workflow_execution: {
+        Args: { rule_id: string; context: Json; log_entry: Json }
         Returns: string
       }
       reject_user: {

@@ -6,7 +6,11 @@ import { UnifiedDataExportTools } from './UnifiedDataExportTools';
 import { EnhancedRealTimeAnalytics } from './EnhancedRealTimeAnalytics';
 import { PredictiveMaintenanceScheduler } from './PredictiveMaintenanceScheduler';
 import { CostOptimizationRecommendations } from './CostOptimizationRecommendations';
-import { BarChart3, Database, Brain, Wrench, TrendingDown, AlertCircle } from 'lucide-react';
+import { AdvancedWorkflowBuilder } from './AdvancedWorkflowBuilder';
+import { IntelligentCommandCenter } from './IntelligentCommandCenter';
+import { MLIntegrationLayer } from './MLIntegrationLayer';
+import { ExecutiveDashboard } from './ExecutiveDashboard';
+import { BarChart3, Database, Brain, Wrench, TrendingDown, AlertCircle, Command, Cpu, FileText } from 'lucide-react';
 
 interface OperationsTabsProps {
   activeTab: string;
@@ -27,32 +31,42 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
-      <TabsList className="grid w-full grid-cols-5 bg-card/50">
-        <TabsTrigger value="analytics" className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
+      <TabsList className="grid w-full grid-cols-9 bg-card/50 text-xs">
+        <TabsTrigger value="analytics" className="flex items-center gap-1 px-2">
+          <BarChart3 className="h-3 w-3" />
           Analytics
         </TabsTrigger>
-        <TabsTrigger value="data" className="flex items-center gap-2">
-          <Database className="h-4 w-4" />
-          Data Export
-          {(!canImportCSV || !canExportData) && (
-            <AlertCircle className="h-3 w-3 text-yellow-500" />
-          )}
+        <TabsTrigger value="data" className="flex items-center gap-1 px-2">
+          <Database className="h-3 w-3" />
+          Data
         </TabsTrigger>
-        <TabsTrigger value="advanced" className="flex items-center gap-2">
-          <Brain className="h-4 w-4" />
+        <TabsTrigger value="advanced" className="flex items-center gap-1 px-2">
+          <Brain className="h-3 w-3" />
           Real-time
-          {!canUseAdvancedDashboards && (
-            <AlertCircle className="h-3 w-3 text-red-500" />
-          )}
         </TabsTrigger>
-        <TabsTrigger value="predictive" className="flex items-center gap-2">
-          <Wrench className="h-4 w-4" />
+        <TabsTrigger value="predictive" className="flex items-center gap-1 px-2">
+          <Wrench className="h-3 w-3" />
           Predictive
         </TabsTrigger>
-        <TabsTrigger value="cost-optimization" className="flex items-center gap-2">
-          <TrendingDown className="h-4 w-4" />
-          Cost Optimization
+        <TabsTrigger value="cost-optimization" className="flex items-center gap-1 px-2">
+          <TrendingDown className="h-3 w-3" />
+          Cost
+        </TabsTrigger>
+        <TabsTrigger value="workflows" className="flex items-center gap-1 px-2">
+          <Command className="h-3 w-3" />
+          Workflows
+        </TabsTrigger>
+        <TabsTrigger value="command" className="flex items-center gap-1 px-2">
+          <Command className="h-3 w-3" />
+          Command
+        </TabsTrigger>
+        <TabsTrigger value="ml" className="flex items-center gap-1 px-2">
+          <Cpu className="h-3 w-3" />
+          ML
+        </TabsTrigger>
+        <TabsTrigger value="executive" className="flex items-center gap-1 px-2">
+          <FileText className="h-3 w-3" />
+          Executive
         </TabsTrigger>
       </TabsList>
 
@@ -134,6 +148,22 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
 
       <TabsContent value="cost-optimization" className="space-y-6">
         <CostOptimizationRecommendations />
+      </TabsContent>
+
+      <TabsContent value="workflows" className="space-y-6">
+        <AdvancedWorkflowBuilder />
+      </TabsContent>
+
+      <TabsContent value="command" className="space-y-6">
+        <IntelligentCommandCenter />
+      </TabsContent>
+
+      <TabsContent value="ml" className="space-y-6">
+        <MLIntegrationLayer />
+      </TabsContent>
+
+      <TabsContent value="executive" className="space-y-6">
+        <ExecutiveDashboard />
       </TabsContent>
     </Tabs>
   );
