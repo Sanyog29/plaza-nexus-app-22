@@ -66,10 +66,11 @@ const adminMenuGroups = [
   {
     label: "Analytics & Insights",
     items: [
+      { title: "Operations Center", url: "/operations", icon: Monitor },
       { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
       { title: "Reports", url: "/admin/reports", icon: BarChart3 },
       { title: "System Health", url: "/admin/system-health", icon: Activity },
-      { title: "Unified Dashboard", url: "/unified-dashboard", icon: Monitor },
+      { title: "Unified Dashboard", url: "/unified-dashboard", icon: BarChart3 },
     ]
   },
   {
@@ -110,6 +111,7 @@ const opsSupervisorMenuGroups = [
   {
     label: "Analytics & Reports",
     items: [
+      { title: "Operations Center", url: "/operations", icon: Monitor },
       { title: "Performance Analytics", url: "/staff/reports", icon: BarChart3 },
       { title: "System Health", url: "/unified-dashboard", icon: Activity },
       { title: "Staff Alerts", url: "/staff/alerts", icon: AlertTriangle },
@@ -201,6 +203,7 @@ const fieldStaffMenuGroups = [
   {
     label: "Performance & Training",
     items: [
+      { title: "Operations Center", url: "/operations", icon: Monitor },
       { title: "Performance Metrics", url: "/staff/performance", icon: Activity },
       { title: "Training Center", url: "/staff/training", icon: GraduationCap },
       { title: "Profile", url: "/profile", icon: User },
