@@ -56,16 +56,23 @@ const SystemHealthCheck = () => {
       });
 
       // Check user approval system
-      const { data: pendingUsers, error: approvalError } = await supabase
-        .from('profiles')
-        .select('count')
-        .eq('approval_status', 'pending');
+      const { data: userMgmtData, error: userMgmtError } = await supabase
+        .rpc('get_user_management_data', { caller_id: user?.id });
+      
+      let orphanedCount = 0;
+      if (userMgmtData) {
+        orphanedCount = userMgmtData.filter((u: any) => !u.has_profile).length;
+      }
       
       healthChecks.push({
         name: 'User Approval System',
-        status: approvalError ? 'error' : 'healthy',
-        message: approvalError ? `Approval system error: ${approvalError.message}` : 'User approval system is working',
-        details: approvalError
+        status: userMgmtError ? 'error' : orphanedCount > 0 ? 'warning' : 'healthy',
+        message: userMgmtError 
+          ? `Approval system error: ${userMgmtError.message}` 
+          : orphanedCount > 0 
+            ? `Found ${orphanedCount} users without profiles` 
+            : 'User approval system is working',
+        details: { orphanedCount, error: userMgmtError }
       });
 
       // Check edge functions

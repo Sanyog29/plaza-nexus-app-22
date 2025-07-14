@@ -74,6 +74,7 @@ interface User {
   updated_at: string;
   confirmed_at: string | null;
   last_sign_in_at: string | null;
+  has_profile: boolean;
 }
 
 interface UserActivity {
@@ -130,6 +131,7 @@ const EnhancedUserManagement = () => {
         updated_at: user.updated_at,
         confirmed_at: user.confirmed_at || null,
         last_sign_in_at: user.last_sign_in_at || null,
+        has_profile: user.has_profile || false,
       }));
       setUsers(usersData);
     } catch (error) {
@@ -186,12 +188,66 @@ const EnhancedUserManagement = () => {
 
   const handleApproveUser = async (userId: string) => {
     try {
+      // First check if user has a profile, if not create one
+      const user = users.find(u => u.id === userId);
+      if (user && !user.has_profile) {
+        console.log('User has no profile, attempting to repair...');
+        
+        // Try to create profile manually first
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            first_name: user?.first_name || '',
+            last_name: user?.last_name || '',
+            role: 'tenant_manager',
+            approval_status: 'pending'
+          });
+
+        if (!profileError) {
+          console.log('User profile created successfully');
+          // Refresh users to get updated profile status
+          await fetchUsers();
+        }
+      }
+
       const { error } = await supabase.rpc('approve_user', {
         target_user_id: userId,
         approver_id: currentUser?.id
       });
 
-      if (error) throw error;
+      if (error) {
+        // If approval fails due to missing profile, try to create it
+        if (error.message?.includes('profile') || error.message?.includes('not found')) {
+          console.log('Approval failed due to missing profile, creating profile...');
+          
+          // Create profile manually
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              first_name: user?.first_name || '',
+              last_name: user?.last_name || '',
+              role: 'tenant_manager',
+              approval_status: 'pending'
+            });
+
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            throw new Error(`Failed to create user profile: ${profileError.message}`);
+          }
+
+          // Try approval again
+          const { error: retryError } = await supabase.rpc('approve_user', {
+            target_user_id: userId,
+            approver_id: currentUser?.id
+          });
+
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
+      }
 
       toast({
         title: "Success",
@@ -203,7 +259,7 @@ const EnhancedUserManagement = () => {
       console.error('Error approving user:', error);
       toast({
         title: "Error",
-        description: "Failed to approve user. Please try again.",
+        description: `Failed to approve user: ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: "destructive",
       });
     }
@@ -211,6 +267,28 @@ const EnhancedUserManagement = () => {
 
   const handleRejectUser = async (userId: string, reason: string) => {
     try {
+      // First check if user has a profile, if not create one
+      const user = users.find(u => u.id === userId);
+      if (user && !user.has_profile) {
+        console.log('User has no profile, creating one for rejection...');
+        
+        // Create profile manually
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            first_name: user?.first_name || '',
+            last_name: user?.last_name || '',
+            role: 'tenant_manager',
+            approval_status: 'pending'
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          // Continue with rejection anyway
+        }
+      }
+
       const { error } = await supabase.rpc('reject_user', {
         target_user_id: userId,
         approver_id: currentUser?.id,
@@ -229,7 +307,7 @@ const EnhancedUserManagement = () => {
       console.error('Error rejecting user:', error);
       toast({
         title: "Error",
-        description: "Failed to reject user. Please try again.",
+        description: `Failed to reject user: ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: "destructive",
       });
     }
@@ -490,17 +568,22 @@ const EnhancedUserManagement = () => {
                 <tbody>
                   {filteredUsers.map((user) => (
                     <tr key={user.id} className="border-b hover:bg-muted/50">
-                      <td className="p-4">
-                        <div>
-                          <p className="font-medium">
-                            {user.first_name && user.last_name 
-                              ? `${user.first_name} ${user.last_name}`
-                              : 'No name set'
-                            }
-                          </p>
-                          <p className="text-sm text-muted-foreground">ID: {user.id.slice(0, 8)}...</p>
-                        </div>
-                      </td>
+                       <td className="p-4">
+                         <div>
+                           <p className="font-medium">
+                             {user.first_name && user.last_name 
+                               ? `${user.first_name} ${user.last_name}`
+                               : 'No name set'
+                             }
+                             {!user.has_profile && (
+                               <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                 No Profile
+                               </span>
+                             )}
+                           </p>
+                           <p className="text-sm text-muted-foreground">ID: {user.id.slice(0, 8)}...</p>
+                         </div>
+                       </td>
                       <td className="p-4">{user.email}</td>
                       <td className="p-4">
                         <Select
@@ -536,76 +619,113 @@ const EnhancedUserManagement = () => {
                         {getUserStatusBadge(user)}
                       </td>
                       <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setShowUserDetails(true);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          
-                          {user.approval_status === 'pending' && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleApproveUser(user.id)}
-                                className="text-green-600 hover:text-green-700"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRejectUser(user.id, 'Admin rejected')}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <AlertTriangle className="h-4 w-4 mr-1" />
-                                Reject
-                              </Button>
-                            </>
-                          )}
-                          
-                          {user.id !== currentUser?.id && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setUserToDelete(user)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete User</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete {user.email}? This action cannot be undone.
-                                    All user data, including their requests and activities, will be permanently removed.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel onClick={() => setUserToDelete(null)}>
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={handleDeleteUser}
-                                    disabled={isDeleting}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    {isDeleting ? 'Deleting...' : 'Delete User'}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </div>
+                         <div className="flex items-center gap-2">
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               setSelectedUser(user);
+                               setShowUserDetails(true);
+                             }}
+                           >
+                             <Eye className="h-4 w-4" />
+                           </Button>
+                           
+                           {!user.has_profile && (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const { error } = await supabase
+                                      .from('profiles')
+                                      .insert({
+                                        id: user.id,
+                                        first_name: user.first_name || '',
+                                        last_name: user.last_name || '',
+                                        role: 'tenant_manager',
+                                        approval_status: 'pending'
+                                      });
+                                    if (error) throw error;
+                                    toast({
+                                      title: "Success",
+                                      description: "User profile created successfully.",
+                                    });
+                                    fetchUsers();
+                                  } catch (error) {
+                                    console.error('Error creating profile:', error);
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to create user profile.",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                               className="text-blue-600 hover:text-blue-700"
+                             >
+                               <UserPlus className="h-4 w-4 mr-1" />
+                               Create Profile
+                             </Button>
+                           )}
+                           
+                           {user.approval_status === 'pending' && (
+                             <>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => handleApproveUser(user.id)}
+                                 className="text-green-600 hover:text-green-700"
+                               >
+                                 <CheckCircle className="h-4 w-4 mr-1" />
+                                 Approve
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => handleRejectUser(user.id, 'Admin rejected')}
+                                 className="text-red-600 hover:text-red-700"
+                               >
+                                 <AlertTriangle className="h-4 w-4 mr-1" />
+                                 Reject
+                               </Button>
+                             </>
+                           )}
+                           
+                           {user.id !== currentUser?.id && (
+                             <AlertDialog>
+                               <AlertDialogTrigger asChild>
+                                 <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   onClick={() => setUserToDelete(user)}
+                                 >
+                                   <Trash2 className="h-4 w-4 text-destructive" />
+                                 </Button>
+                               </AlertDialogTrigger>
+                               <AlertDialogContent>
+                                 <AlertDialogHeader>
+                                   <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                   <AlertDialogDescription>
+                                     Are you sure you want to delete {user.email}? This action cannot be undone.
+                                     All user data, including their requests and activities, will be permanently removed.
+                                   </AlertDialogDescription>
+                                 </AlertDialogHeader>
+                                 <AlertDialogFooter>
+                                   <AlertDialogCancel onClick={() => setUserToDelete(null)}>
+                                     Cancel
+                                   </AlertDialogCancel>
+                                   <AlertDialogAction
+                                     onClick={handleDeleteUser}
+                                     disabled={isDeleting}
+                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                   >
+                                     {isDeleting ? 'Deleting...' : 'Delete User'}
+                                   </AlertDialogAction>
+                                 </AlertDialogFooter>
+                               </AlertDialogContent>
+                             </AlertDialog>
+                           )}
+                         </div>
                       </td>
                     </tr>
                   ))}
