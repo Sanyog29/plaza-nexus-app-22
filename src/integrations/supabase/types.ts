@@ -301,6 +301,51 @@ export type Database = {
           },
         ]
       }
+      automated_reports: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          last_generated: string | null
+          next_generation: string | null
+          recipients: Json | null
+          report_name: string
+          report_type: string
+          schedule_config: Json
+          template_config: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_generated?: string | null
+          next_generation?: string | null
+          recipients?: Json | null
+          report_name: string
+          report_type: string
+          schedule_config: Json
+          template_config?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_generated?: string | null
+          next_generation?: string | null
+          recipients?: Json | null
+          report_name?: string
+          report_type?: string
+          schedule_config?: Json
+          template_config?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       automation_rules: {
         Row: {
           actions: Json
@@ -1005,6 +1050,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      data_flow_metrics: {
+        Row: {
+          avg_processing_time_ms: number | null
+          created_at: string | null
+          flow_type: string
+          id: string
+          last_execution: string | null
+          metric_date: string | null
+          records_processed: number | null
+          source_module: string
+          success_rate: number | null
+          target_module: string
+        }
+        Insert: {
+          avg_processing_time_ms?: number | null
+          created_at?: string | null
+          flow_type: string
+          id?: string
+          last_execution?: string | null
+          metric_date?: string | null
+          records_processed?: number | null
+          source_module: string
+          success_rate?: number | null
+          target_module: string
+        }
+        Update: {
+          avg_processing_time_ms?: number | null
+          created_at?: string | null
+          flow_type?: string
+          id?: string
+          last_execution?: string | null
+          metric_date?: string | null
+          records_processed?: number | null
+          source_module?: string
+          success_rate?: number | null
+          target_module?: string
+        }
+        Relationships: []
       }
       deliveries: {
         Row: {
@@ -1903,6 +1987,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      kpi_aggregations: {
+        Row: {
+          calculation_config: Json | null
+          created_at: string | null
+          current_value: number
+          id: string
+          kpi_category: string
+          kpi_name: string
+          last_calculated: string | null
+          metadata: Json | null
+          target_value: number | null
+          trend_direction: string | null
+        }
+        Insert: {
+          calculation_config?: Json | null
+          created_at?: string | null
+          current_value: number
+          id?: string
+          kpi_category: string
+          kpi_name: string
+          last_calculated?: string | null
+          metadata?: Json | null
+          target_value?: number | null
+          trend_direction?: string | null
+        }
+        Update: {
+          calculation_config?: Json | null
+          created_at?: string | null
+          current_value?: number
+          id?: string
+          kpi_category?: string
+          kpi_name?: string
+          last_calculated?: string | null
+          metadata?: Json | null
+          target_value?: number | null
+          trend_direction?: string | null
+        }
+        Relationships: []
       }
       kpi_metrics: {
         Row: {
@@ -2841,6 +2964,47 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      report_generations: {
+        Row: {
+          error_message: string | null
+          file_url: string | null
+          generated_at: string | null
+          generation_status: string | null
+          id: string
+          metadata: Json | null
+          report_data: Json
+          report_id: string
+        }
+        Insert: {
+          error_message?: string | null
+          file_url?: string | null
+          generated_at?: string | null
+          generation_status?: string | null
+          id?: string
+          metadata?: Json | null
+          report_data: Json
+          report_id: string
+        }
+        Update: {
+          error_message?: string | null
+          file_url?: string | null
+          generated_at?: string | null
+          generation_status?: string | null
+          id?: string
+          metadata?: Json | null
+          report_data?: Json
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_generations_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "automated_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       request_attachments: {
         Row: {
@@ -5145,6 +5309,88 @@ export type Database = {
           },
         ]
       }
+      workflow_actions: {
+        Row: {
+          action_config: Json | null
+          action_type: string
+          created_at: string | null
+          execution_order: number | null
+          id: string
+          is_active: boolean | null
+          target_module: string
+          trigger_id: string
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type: string
+          created_at?: string | null
+          execution_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          target_module: string
+          trigger_id: string
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: string
+          created_at?: string | null
+          execution_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          target_module?: string
+          trigger_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_actions_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_execution_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          execution_data: Json
+          id: string
+          metadata: Json | null
+          started_at: string | null
+          status: string | null
+          trigger_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          execution_data: Json
+          id?: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          trigger_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          execution_data?: Json
+          id?: string
+          metadata?: Json | null
+          started_at?: string | null
+          status?: string | null
+          trigger_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_execution_logs_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflow_executions: {
         Row: {
           completed_at: string | null
@@ -5178,6 +5424,39 @@ export type Database = {
           started_at?: string
           trigger_context?: Json
           workflow_rule_id?: string
+        }
+        Relationships: []
+      }
+      workflow_triggers: {
+        Row: {
+          conditions: Json | null
+          created_at: string | null
+          event_type: string
+          id: string
+          is_active: boolean | null
+          source_module: string
+          trigger_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string | null
+          event_type: string
+          id?: string
+          is_active?: boolean | null
+          source_module: string
+          trigger_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          is_active?: boolean | null
+          source_module?: string
+          trigger_name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -5240,6 +5519,10 @@ export type Database = {
         Args: { target_user_id: string; approver_id: string }
         Returns: boolean
       }
+      calculate_cross_module_kpis: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       calculate_daily_metrics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5277,6 +5560,10 @@ export type Database = {
       end_security_shift: {
         Args: { handover_notes?: string }
         Returns: boolean
+      }
+      execute_workflow_trigger: {
+        Args: { trigger_name: string; event_data: Json }
+        Returns: string
       }
       generate_analytics_summary: {
         Args: { summary_date: string; summary_type: string }

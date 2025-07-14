@@ -6,9 +6,9 @@ import { StaffPerformanceAnalytics } from '@/components/staff/StaffPerformanceAn
 import { AITaskDistribution } from '@/components/staff/AITaskDistribution';
 import { StaffTrainingModule } from '@/components/staff/StaffTrainingModule';
 import { MaintenanceForecasting } from '@/components/predictive/MaintenanceForecasting';
-import { AIInsightsDashboard } from '@/components/intelligence/AIInsightsDashboard';
-import { RealTimeEventsFeed } from '@/components/intelligence/RealTimeEventsFeed';
-import { CommunicationHub } from '@/components/communication/CommunicationHub';
+import { WorkflowDashboard } from '@/components/integration/WorkflowDashboard';
+import { CrossModuleInsights } from '@/components/integration/CrossModuleInsights';
+import { AutomatedReporting } from '@/components/integration/AutomatedReporting';
 import { useAuth } from '@/components/AuthProvider';
 
 const OperationalExcellencePage: React.FC = () => {
@@ -43,19 +43,19 @@ const OperationalExcellencePage: React.FC = () => {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="ai-insights" className="space-y-6">
+        <Tabs defaultValue="workflows" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 bg-card/50">
-            <TabsTrigger value="ai-insights" className="flex items-center gap-2">
+            <TabsTrigger value="workflows" className="flex items-center gap-2">
               <Lightbulb className="h-4 w-4" />
-              <span className="hidden sm:inline">AI Insights</span>
+              <span className="hidden sm:inline">Workflows</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2">
+            <TabsTrigger value="insights" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Live Events</span>
+              <span className="hidden sm:inline">Insights</span>
             </TabsTrigger>
-            <TabsTrigger value="communication" className="flex items-center gap-2">
+            <TabsTrigger value="reporting" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Team Chat</span>
+              <span className="hidden sm:inline">Reporting</span>
             </TabsTrigger>
             <TabsTrigger value="performance" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -75,16 +75,16 @@ const OperationalExcellencePage: React.FC = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ai-insights">
-            <AIInsightsDashboard />
+          <TabsContent value="workflows">
+            <WorkflowDashboard />
           </TabsContent>
 
-          <TabsContent value="events">
-            <RealTimeEventsFeed />
+          <TabsContent value="insights">
+            <CrossModuleInsights />
           </TabsContent>
 
-          <TabsContent value="communication">
-            <CommunicationHub />
+          <TabsContent value="reporting">
+            <AutomatedReporting />
           </TabsContent>
 
           <TabsContent value="performance">
