@@ -291,7 +291,10 @@ const EnhancedUserManagement = () => {
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'verified' && user.confirmed_at) ||
-      (statusFilter === 'unverified' && !user.confirmed_at);
+      (statusFilter === 'unverified' && !user.confirmed_at) ||
+      (statusFilter === 'approved' && user.approval_status === 'approved') ||
+      (statusFilter === 'pending' && user.approval_status === 'pending') ||
+      (statusFilter === 'rejected' && user.approval_status === 'rejected');
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -457,6 +460,9 @@ const EnhancedUserManagement = () => {
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="verified">Verified</SelectItem>
                   <SelectItem value="unverified">Unverified</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="pending">Pending Approval</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
