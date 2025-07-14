@@ -75,25 +75,24 @@ const SystemHealthCheck = () => {
         details: { orphanedCount, error: userMgmtError }
       });
 
-      // Check edge functions
+      // Check RPC functions (our actual backend services)
       try {
-        const { error: functionError } = await supabase.functions.invoke('admin-approve-user', {
-          body: { user_id: 'test', action: 'test' }
-        });
+        const { data: testData, error: rpcError } = await supabase
+          .rpc('get_user_management_stats');
         
         healthChecks.push({
-          name: 'Edge Functions',
-          status: functionError?.message?.includes('Only administrators') ? 'healthy' : 'warning',
-          message: functionError?.message?.includes('Only administrators') 
-            ? 'Edge functions are working (admin check passed)' 
-            : 'Edge functions may have issues',
-          details: functionError
+          name: 'RPC Functions',
+          status: rpcError ? 'error' : 'healthy',
+          message: rpcError 
+            ? `RPC functions error: ${rpcError.message}` 
+            : 'RPC functions are working correctly',
+          details: rpcError || testData
         });
       } catch (error) {
         healthChecks.push({
-          name: 'Edge Functions',
-          status: 'warning',
-          message: 'Edge function test failed - this is expected for test call',
+          name: 'RPC Functions',
+          status: 'error',
+          message: `RPC test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
           details: error
         });
       }
