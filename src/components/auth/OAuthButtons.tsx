@@ -25,11 +25,16 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
       });
 
       if (error) {
+        // Handle specific provider errors
+        if (error.message?.includes('provider is not enabled')) {
+          throw new Error(`${provider === 'google' ? 'Google' : 'LinkedIn'} authentication is not configured. Please contact your administrator.`);
+        }
         throw error;
       }
     } catch (error: any) {
+      console.error(`OAuth ${provider} error:`, error);
       toast("Authentication failed", {
-        description: error.message || 'Please try again',
+        description: error.message || `Failed to sign in with ${provider === 'google' ? 'Google' : 'LinkedIn'}. Please try again or contact support.`,
       });
       onOAuthEnd();
     }

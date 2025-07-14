@@ -4815,6 +4815,10 @@ export type Database = {
         Args: { uid: string }
         Returns: boolean
       }
+      is_vendor_staff_for_vendor: {
+        Args: { user_id: string; target_vendor_id: string }
+        Returns: boolean
+      }
       log_audit_event: {
         Args: {
           action_type: string

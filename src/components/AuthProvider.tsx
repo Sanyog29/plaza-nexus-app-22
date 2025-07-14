@@ -125,6 +125,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
       
       if (error) {
+        console.error('Error fetching profile:', error);
+        // Set defaults but don't show error to user during normal auth flow
         updateRoleStates('tenant_manager');
         setUserDepartment(null);
         setApprovalStatus('pending');
@@ -135,10 +137,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateRoleStates(profile.role);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
-        
-        // Allow pending users to stay logged in for better UX
       } else {
-        // Profile doesn't exist - create it
+        // Profile doesn't exist - this is handled by the database trigger
+        // If trigger fails, manually create profile
         try {
           const { error: insertError } = await supabase
             .from('profiles')
@@ -150,20 +151,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               approval_status: 'pending'
             });
           
+          if (insertError) {
+            console.error('Profile creation failed:', insertError);
+            // Continue with defaults - user can still use the app
+          }
+          
           updateRoleStates('tenant_manager');
           setUserDepartment(null);
           setApprovalStatus('pending');
-          
-          // Allow user to complete profile setup instead of signing out
         } catch (createError) {
-          console.error('Failed to create profile:', createError);
+          console.error('Profile creation exception:', createError);
+          // Set defaults to allow user to continue
           updateRoleStates('tenant_manager');
           setUserDepartment(null);
           setApprovalStatus('pending');
         }
       }
     } catch (error) {
-      console.error('Error in checkUserRole:', error);
+      console.error('Critical error in checkUserRole:', error);
+      // Always set safe defaults to prevent auth loops
       updateRoleStates('tenant_manager');
       setUserDepartment(null);
       setApprovalStatus('pending');
