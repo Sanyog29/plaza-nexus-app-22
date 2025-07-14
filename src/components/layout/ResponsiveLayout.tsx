@@ -80,14 +80,14 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                     {/* Notification Bell */}
                     <Button variant="ghost" size="sm" className="relative">
                       <Bell className="h-5 w-5" />
-                      {metrics?.activeAlerts && metrics.activeAlerts > 0 && (
-                        <Badge 
-                          variant="destructive" 
-                          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                        >
-                          {metrics?.activeAlerts || 0}
-                        </Badge>
-                      )}
+                       {metrics?.activeAlerts && metrics.activeAlerts > 0 && (
+                         <Badge 
+                           variant="destructive" 
+                           className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                         >
+                           {metrics.activeAlerts}
+                         </Badge>
+                       )}
                     </Button>
 
                     {/* User Menu */}
