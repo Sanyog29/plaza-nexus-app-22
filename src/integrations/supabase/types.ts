@@ -4752,6 +4752,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_user_invitation: {
+        Args: {
+          invitation_email: string
+          invitation_first_name: string
+          invitation_last_name: string
+          invitation_role: string
+          invitation_department?: string
+          invitation_phone_number?: string
+          invitation_office_number?: string
+          invitation_floor?: string
+        }
+        Returns: Json
+      }
+      admin_delete_user: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       approve_user: {
         Args: { target_user_id: string; approver_id: string }
         Returns: boolean
@@ -4847,6 +4864,10 @@ export type Database = {
           confirmed_at: string
           last_sign_in_at: string
         }[]
+      }
+      get_user_management_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_user_permissions: {
         Args: { user_id: string }

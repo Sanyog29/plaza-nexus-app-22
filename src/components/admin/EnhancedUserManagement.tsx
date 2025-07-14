@@ -188,66 +188,12 @@ const EnhancedUserManagement = () => {
 
   const handleApproveUser = async (userId: string) => {
     try {
-      // First check if user has a profile, if not create one
-      const user = users.find(u => u.id === userId);
-      if (user && !user.has_profile) {
-        console.log('User has no profile, attempting to repair...');
-        
-        // Try to create profile manually first
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            first_name: user?.first_name || '',
-            last_name: user?.last_name || '',
-            role: 'tenant_manager',
-            approval_status: 'pending'
-          });
-
-        if (!profileError) {
-          console.log('User profile created successfully');
-          // Refresh users to get updated profile status
-          await fetchUsers();
-        }
-      }
-
       const { error } = await supabase.rpc('approve_user', {
         target_user_id: userId,
         approver_id: currentUser?.id
       });
 
-      if (error) {
-        // If approval fails due to missing profile, try to create it
-        if (error.message?.includes('profile') || error.message?.includes('not found')) {
-          console.log('Approval failed due to missing profile, creating profile...');
-          
-          // Create profile manually
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: userId,
-              first_name: user?.first_name || '',
-              last_name: user?.last_name || '',
-              role: 'tenant_manager',
-              approval_status: 'pending'
-            });
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-            throw new Error(`Failed to create user profile: ${profileError.message}`);
-          }
-
-          // Try approval again
-          const { error: retryError } = await supabase.rpc('approve_user', {
-            target_user_id: userId,
-            approver_id: currentUser?.id
-          });
-
-          if (retryError) throw retryError;
-        } else {
-          throw error;
-        }
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
@@ -267,28 +213,6 @@ const EnhancedUserManagement = () => {
 
   const handleRejectUser = async (userId: string, reason: string) => {
     try {
-      // First check if user has a profile, if not create one
-      const user = users.find(u => u.id === userId);
-      if (user && !user.has_profile) {
-        console.log('User has no profile, creating one for rejection...');
-        
-        // Create profile manually
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            first_name: user?.first_name || '',
-            last_name: user?.last_name || '',
-            role: 'tenant_manager',
-            approval_status: 'pending'
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // Continue with rejection anyway
-        }
-      }
-
       const { error } = await supabase.rpc('reject_user', {
         target_user_id: userId,
         approver_id: currentUser?.id,
@@ -328,22 +252,20 @@ const EnhancedUserManagement = () => {
     try {
       setIsDeleting(true);
       
-      console.log('Attempting to delete user:', userToDelete.id);
-      
-      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
-        body: { user_id: userToDelete.id }
+      const { data, error } = await supabase.rpc('admin_delete_user', {
+        target_user_id: userToDelete.id
       });
 
-      console.log('Delete response:', { data, error });
+      // Type the response properly
+      const response = data as { success?: boolean; error?: string; message?: string } | null;
 
-      if (error) {
-        console.error('Function invoke error:', error);
-        throw error;
+      if (error || response?.error) {
+        throw new Error(response?.error || error?.message || 'Failed to delete user');
       }
 
       toast({
         title: "Success",
-        description: `User ${userToDelete.email} has been deleted successfully.`,
+        description: `User ${userToDelete.email} has been marked for deletion.`,
       });
 
       setUserToDelete(null);
@@ -352,7 +274,7 @@ const EnhancedUserManagement = () => {
       console.error('Error deleting user:', error);
       toast({
         title: "Error",
-        description: "Failed to delete user. Please try again.",
+        description: `Failed to delete user: ${error instanceof Error ? error.message : 'Please try again.'}`,
         variant: "destructive",
       });
     } finally {

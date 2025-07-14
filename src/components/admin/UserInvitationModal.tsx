@@ -50,18 +50,43 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('admin-create-user', {
-        body: formData
-      });
+      if (formData.send_invitation) {
+        // Use RPC function for invitation
+        const { data, error } = await supabase.rpc('admin_create_user_invitation', {
+          invitation_email: formData.email,
+          invitation_first_name: formData.first_name,
+          invitation_last_name: formData.last_name,
+          invitation_role: formData.role,
+          invitation_department: formData.department || null,
+          invitation_phone_number: formData.phone_number || null,
+          invitation_office_number: formData.office_number || null,
+          invitation_floor: formData.floor || null
+        });
 
-      if (error) throw error;
+        // Type the response properly
+        const response = data as { success?: boolean; error?: string; message?: string } | null;
 
-      toast({
-        title: "Success",
-        description: formData.send_invitation 
-          ? `Invitation sent to ${formData.email}` 
-          : `User created successfully`,
-      });
+        if (error || response?.error) {
+          throw new Error(response?.error || error?.message || 'Failed to send invitation');
+        }
+
+        toast({
+          title: "Success",
+          description: `Invitation sent to ${formData.email}`,
+        });
+      } else {
+        // For direct user creation, we'll still use the Edge Function as it requires admin privileges
+        const { data, error } = await supabase.functions.invoke('admin-create-user', {
+          body: { ...formData, send_invitation: false }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "User created successfully",
+        });
+      }
 
       onSuccess();
       onOpenChange(false);
