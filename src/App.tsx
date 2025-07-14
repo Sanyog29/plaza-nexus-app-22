@@ -79,6 +79,7 @@ import BookingNewPage from "./pages/BookingNewPage";
 import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
 import { EnhancedNotificationProvider } from "./components/notifications/EnhancedNotificationProvider";
 import NotificationsPage from "./pages/NotificationsPage";
+import { BreadcrumbProvider } from "./contexts/BreadcrumbContext";
 
 const queryClient = new QueryClient();
 
@@ -87,11 +88,12 @@ const App = () => (
     <ErrorBoundary>
       <GlobalErrorProvider>
         <AuthProvider>
-          <EnhancedNotificationProvider>
-            <NotificationProvider>
-            <PWANotificationManager>
-              <PWAProvider>
-                <TooltipProvider>
+          <BreadcrumbProvider>
+            <EnhancedNotificationProvider>
+              <NotificationProvider>
+              <PWANotificationManager>
+                <PWAProvider>
+                  <TooltipProvider>
                   <Toaster />
                   <Sonner />
             <BrowserRouter>
@@ -188,6 +190,7 @@ const App = () => (
              </PWANotificationManager>
            </NotificationProvider>
          </EnhancedNotificationProvider>
+        </BreadcrumbProvider>
        </AuthProvider>
      </GlobalErrorProvider>
    </ErrorBoundary>

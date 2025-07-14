@@ -14,6 +14,8 @@ import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { NavigationErrorBoundary } from '@/components/common/NavigationErrorBoundary';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { supabase } from '@/integrations/supabase/client';
+import { SmartBreadcrumb } from '@/components/ui/smart-breadcrumb';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 interface ResponsiveLayoutProps {
   userRole: string;
@@ -24,6 +26,9 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
+  
+  // Initialize breadcrumbs for current route
+  useBreadcrumbs();
 
 
   console.log('ResponsiveLayout - Role:', authUserRole, 'Department:', userDepartment);
@@ -60,15 +65,14 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                   <div className="flex items-center gap-4">
                     <SidebarTrigger className="lg:hidden" />
                     
-                    {!isMobile && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span className="capitalize">{userRole} Panel</span>
-                        <span>•</span>
-                        <span className="font-medium text-foreground">
-                          {location.pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
-                        </span>
-                      </div>
-                    )}
+                    {/* Smart Breadcrumb Navigation */}
+                    <div className="flex-1 min-w-0">
+                      <SmartBreadcrumb 
+                        showIcons={!isMobile}
+                        maxItems={isMobile ? 2 : 4}
+                        className="max-w-full"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-4">
