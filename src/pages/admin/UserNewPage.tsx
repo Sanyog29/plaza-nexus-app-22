@@ -5,9 +5,77 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function UserNewPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "",
+    department: "",
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.role) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.rpc('admin_create_user_invitation', {
+        invitation_email: formData.email,
+        invitation_first_name: formData.firstName,
+        invitation_last_name: formData.lastName,
+        invitation_role: formData.role,
+        invitation_department: formData.department || null,
+      });
+
+      if (error) throw error;
+
+      if (data && typeof data === 'object' && 'error' in data) {
+        toast({
+          title: "Error",
+          description: data.error as string,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "User invitation created successfully",
+      });
+      
+      navigate('/admin/users');
+    } catch (error: any) {
+      console.error('Error creating user invitation:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create user invitation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -41,51 +109,88 @@ export default function UserNewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="Enter first name" />
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input 
+                      id="firstName" 
+                      placeholder="Enter first name"
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input 
+                      id="lastName" 
+                      placeholder="Enter last name"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="Enter email address"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role *</Label>
+                  <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select user role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
+                      <SelectItem value="field_staff">Field Staff</SelectItem>
+                      <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
+                      <SelectItem value="vendor">Vendor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department</Label>
+                  <Input 
+                    id="department" 
+                    placeholder="Enter department (optional)"
+                    value={formData.department}
+                    onChange={(e) => handleInputChange('department', e.target.value)}
+                  />
+                </div>
+                
+                <div className="flex gap-4 pt-4">
+                  <Button 
+                    type="submit" 
+                    className="flex-1"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Creating..." : "Create User"}
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={() => navigate('/admin/users')}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Enter last name" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="Enter email address" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select user role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
-                  <SelectItem value="field_staff">Field Staff</SelectItem>
-                  <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                  <SelectItem value="vendor">Vendor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
-              <Input id="department" placeholder="Enter department" />
-            </div>
-            
-            <div className="flex gap-4 pt-4">
-              <Button className="flex-1">
-                Create User
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/admin/users')}>
-                Cancel
-              </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
       </div>
