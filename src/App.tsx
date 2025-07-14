@@ -67,6 +67,15 @@ import StaffTasksPage from "./pages/staff/TasksPage";
 import StaffQuickActionsPage from "./pages/staff/QuickActionsPage";
 import StaffAnalyticsPage from "./pages/staff/AnalyticsPage";
 import StaffSearchPage from "./pages/staff/SearchPage";
+
+// Quick Action pages
+import UserNewPage from "./pages/admin/UserNewPage";
+import AssetNewPage from "./pages/admin/AssetNewPage";
+import TaskNewPage from "./pages/staff/TaskNewPage";
+import MaintenanceNewPage from "./pages/staff/MaintenanceNewPage";
+import SecurityCheckPage from "./pages/staff/SecurityCheckPage";
+import SchedulePage from "./pages/staff/SchedulePage";
+import BookingNewPage from "./pages/BookingNewPage";
 import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
 
 const queryClient = new QueryClient();
@@ -97,6 +106,7 @@ const App = () => (
               <Route path="/requests/new" element={<NewRequestPage />} />
               <Route path="/new-request" element={<NewRequestPage />} />
               <Route path="/bookings" element={<BookingsPage />} />
+              <Route path="/bookings/new" element={<BookingNewPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cafeteria" element={<CafeteriaPage />} />
               <Route path="/vendor-portal" element={<VendorPortalPage />} />
@@ -112,7 +122,9 @@ const App = () => (
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/quick-actions" element={<QuickActionsPage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
+              <Route path="/admin/users/new" element={<UserNewPage />} />
               <Route path="/admin/assets" element={<AssetsPage />} />
+              <Route path="/admin/assets/new" element={<AssetNewPage />} />
               <Route path="/admin/requests" element={<AdminRequestsPage />} />
               <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/admin/services" element={<AdminServicesPage />} />
@@ -134,10 +146,14 @@ const App = () => (
               {/* Staff Routes */}
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
               <Route path="/staff/tasks" element={<StaffTasksPage />} />
+              <Route path="/staff/tasks/new" element={<TaskNewPage />} />
               <Route path="/staff/quick-actions" element={<StaffQuickActionsPage />} />
               <Route path="/staff/requests" element={<StaffRequestsPage />} />
               <Route path="/staff/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/staff/maintenance" element={<StaffMaintenancePage />} />
+              <Route path="/staff/maintenance/new" element={<MaintenanceNewPage />} />
+              <Route path="/staff/security/check" element={<SecurityCheckPage />} />
+              <Route path="/staff/schedule" element={<SchedulePage />} />
               <Route path="/staff/analytics" element={<StaffAnalyticsPage />} />
               <Route path="/staff/search" element={<StaffSearchPage />} />
               
