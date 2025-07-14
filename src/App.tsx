@@ -77,6 +77,8 @@ import SecurityCheckPage from "./pages/staff/SecurityCheckPage";
 import SchedulePage from "./pages/staff/SchedulePage";
 import BookingNewPage from "./pages/BookingNewPage";
 import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
+import { EnhancedNotificationProvider } from "./components/notifications/EnhancedNotificationProvider";
+import NotificationsPage from "./pages/NotificationsPage";
 
 const queryClient = new QueryClient();
 
@@ -85,7 +87,8 @@ const App = () => (
     <ErrorBoundary>
       <GlobalErrorProvider>
         <AuthProvider>
-          <NotificationProvider>
+          <EnhancedNotificationProvider>
+            <NotificationProvider>
             <PWANotificationManager>
               <PWAProvider>
                 <TooltipProvider>
@@ -115,8 +118,9 @@ const App = () => (
               <Route path="/maintenance" element={<MaintenancePage />} />
               <Route path="/info-hub" element={<InfoHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/delivery" element={<DeliveryPage />} />
-              <Route path="/manual" element={<UserManualPage />} />
+               <Route path="/delivery" element={<DeliveryPage />} />
+               <Route path="/notifications" element={<NotificationsPage />} />
+               <Route path="/manual" element={<UserManualPage />} />
               
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
@@ -179,14 +183,15 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
             </BrowserRouter>
-              </TooltipProvider>
-              </PWAProvider>
-            </PWANotificationManager>
-          </NotificationProvider>
-        </AuthProvider>
-      </GlobalErrorProvider>
-    </ErrorBoundary>
-  </QueryClientProvider>
+               </TooltipProvider>
+               </PWAProvider>
+             </PWANotificationManager>
+           </NotificationProvider>
+         </EnhancedNotificationProvider>
+       </AuthProvider>
+     </GlobalErrorProvider>
+   </ErrorBoundary>
+ </QueryClientProvider>
 );
 
 export default App;

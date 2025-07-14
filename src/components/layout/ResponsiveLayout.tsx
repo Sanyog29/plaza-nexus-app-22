@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { GlobalSearch } from '@/components/common/GlobalSearch';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { NavigationErrorBoundary } from '@/components/common/NavigationErrorBoundary';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ResponsiveLayoutProps {
@@ -75,20 +76,10 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                       <NavigationErrorBoundary>
                         <GlobalSearch className="w-64" />
                       </NavigationErrorBoundary>
-                    )}
+                     )}
 
-                    {/* Notification Bell */}
-                    <Button variant="ghost" size="sm" className="relative">
-                      <Bell className="h-5 w-5" />
-                       {metrics?.activeAlerts && metrics.activeAlerts > 0 && (
-                         <Badge 
-                           variant="destructive" 
-                           className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                         >
-                           {metrics.activeAlerts}
-                         </Badge>
-                       )}
-                    </Button>
+                     {/* Enhanced Notification Center */}
+                     <NotificationCenter />
 
                     {/* User Menu */}
                     <NavLink to="/profile">
