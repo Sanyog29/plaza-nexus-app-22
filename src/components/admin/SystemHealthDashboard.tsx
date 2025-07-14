@@ -6,9 +6,13 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/hooks/use-toast';
 import { PredictiveAnalytics } from '@/components/analytics/PredictiveAnalytics';
 import { SystemReliability } from '@/components/system/SystemReliability';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorState } from '@/components/common/ErrorState';
+import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Shield, 
   Activity, 
@@ -87,9 +91,11 @@ interface OperationalIssue {
 
 export const SystemHealthDashboard = () => {
   const { user, isAdmin } = useAuth();
+  const isMobile = useIsMobile();
   const [metrics, setMetrics] = useState<SystemHealthMetrics | null>(null);
   const [issues, setIssues] = useState<OperationalIssue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const fetchSystemHealth = useCallback(async () => {
@@ -97,29 +103,38 @@ export const SystemHealthDashboard = () => {
 
     try {
       setLoading(true);
+      setError(null);
 
       // Fetch user metrics
-      const { data: userStats } = await supabase
+      const { data: userStats, error: userError } = await supabase
         .from('profiles')
         .select('role, approval_status');
 
+      if (userError) throw userError;
+
       // Fetch maintenance metrics
-      const { data: maintenanceStats } = await supabase
+      const { data: maintenanceStats, error: maintenanceError } = await supabase
         .from('maintenance_requests')
         .select('status, priority, sla_breach_at, created_at')
         .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
+      if (maintenanceError) throw maintenanceError;
+
       // Fetch alert metrics
-      const { data: alertStats } = await supabase
+      const { data: alertStats, error: alertError } = await supabase
         .from('alerts')
         .select('severity, is_active');
 
+      if (alertError) throw alertError;
+
       // Fetch audit logs
-      const { data: auditStats } = await supabase
+      const { data: auditStats, error: auditError } = await supabase
         .from('audit_logs')
         .select('created_at')
         .order('created_at', { ascending: false })
         .limit(1);
+
+      if (auditError) throw auditError;
 
       // Calculate metrics
       const now = new Date();
@@ -264,7 +279,12 @@ export const SystemHealthDashboard = () => {
 
     } catch (error) {
       console.error('Error fetching system health:', error);
-      toast.error('Failed to load system health metrics');
+      setError(error instanceof Error ? error.message : 'Failed to load system health metrics');
+      toast({
+        title: "Error",
+        description: "Failed to load system health metrics",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -308,7 +328,7 @@ export const SystemHealthDashboard = () => {
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <ResponsiveContainer>
         <Card>
           <CardContent className="flex items-center justify-center p-8">
             <div className="text-center">
@@ -320,18 +340,31 @@ export const SystemHealthDashboard = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ResponsiveContainer>
+        <ErrorState
+          title="Failed to Load System Health"
+          message={error}
+          onRetry={fetchSystemHealth}
+          showDetails={process.env.NODE_ENV === 'development'}
+        />
+      </ResponsiveContainer>
     );
   }
 
   if (loading || !metrics) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center p-8">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading system health metrics...</span>
-        </div>
-      </div>
+      <ResponsiveContainer>
+        <LoadingSpinner 
+          size="lg" 
+          text="Loading system health metrics..." 
+        />
+      </ResponsiveContainer>
     );
   }
 
@@ -339,9 +372,9 @@ export const SystemHealthDashboard = () => {
   const healthStatus = overallHealth >= 90 ? 'healthy' : overallHealth >= 70 ? 'warning' : 'critical';
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <ResponsiveContainer spacing="lg">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className={`flex ${isMobile ? 'flex-col gap-4' : 'items-center justify-between'}`}>
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <Activity className="h-8 w-8 text-primary" />
@@ -351,12 +384,17 @@ export const SystemHealthDashboard = () => {
             Comprehensive system monitoring and performance analysis
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 ${isMobile ? 'justify-between' : ''}`}>
           <Badge variant="outline" className="text-xs">
             Last updated: {lastUpdated.toLocaleTimeString()}
           </Badge>
-          <Button onClick={fetchSystemHealth} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button 
+            onClick={fetchSystemHealth} 
+            variant="outline" 
+            size="sm"
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
@@ -391,17 +429,17 @@ export const SystemHealthDashboard = () => {
       </Card>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className={`${isMobile ? 'grid-cols-3' : 'grid-cols-6'} grid w-full`}>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="reliability">Reliability</TabsTrigger>
-          <TabsTrigger value="features">Features</TabsTrigger>
+          {!isMobile && <TabsTrigger value="reliability">Reliability</TabsTrigger>}
+          {!isMobile && <TabsTrigger value="features">Features</TabsTrigger>}
           <TabsTrigger value="issues">Issues</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
             {/* Database Health */}
             <Card>
               <CardHeader className="pb-3">
@@ -823,7 +861,7 @@ export const SystemHealthDashboard = () => {
 
       {/* System Reliability Monitor */}
       <SystemReliability />
-    </div>
+    </ResponsiveContainer>
   );
 };
 
