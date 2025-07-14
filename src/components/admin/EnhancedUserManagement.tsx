@@ -56,7 +56,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
+import { useGlobalError } from '@/components/common/GlobalErrorProvider';
 import UserInvitationModal from './UserInvitationModal';
+import SystemHealthCheck from './SystemHealthCheck';
 
 interface User {
   id: string;
@@ -94,15 +96,25 @@ const EnhancedUserManagement = () => {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { user: currentUser, isAdmin } = useAuth();
+  const { handleAsyncError } = useGlobalError();
 
   const fetchUsers = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const { data, error } = await supabase.rpc('get_user_management_data', {
         caller_id: currentUser?.id
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch users. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Map the data to ensure all required fields are present
       const usersData = (data || []).map((user: any) => ({
         id: user.id,
@@ -451,6 +463,9 @@ const EnhancedUserManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* System Health Check */}
+      <SystemHealthCheck />
 
       {/* Users Table */}
       <Card>

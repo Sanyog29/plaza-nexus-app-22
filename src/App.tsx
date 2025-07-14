@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import { PWAProvider } from "./components/PWAProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { GlobalErrorProvider } from "./components/common/GlobalErrorProvider";
 import { NotificationProvider } from "./components/notifications/NotificationProvider";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
@@ -63,13 +64,14 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
-      <AuthProvider>
-        <NotificationProvider>
-          <PWANotificationManager>
-            <PWAProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
+      <GlobalErrorProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <PWANotificationManager>
+              <PWAProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
             <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
@@ -139,10 +141,11 @@ const App = () => (
           </Routes>
             </BrowserRouter>
               </TooltipProvider>
-            </PWAProvider>
-          </PWANotificationManager>
-        </NotificationProvider>
-      </AuthProvider>
+              </PWAProvider>
+            </PWANotificationManager>
+          </NotificationProvider>
+        </AuthProvider>
+      </GlobalErrorProvider>
     </ErrorBoundary>
   </QueryClientProvider>
 );

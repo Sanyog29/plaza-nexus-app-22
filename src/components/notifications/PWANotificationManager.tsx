@@ -21,14 +21,9 @@ export const PWANotificationManager: React.FC<PWANotificationManagerProps> = ({ 
           const registration = await navigator.serviceWorker.register('/sw.js');
           console.log('Service Worker registered:', registration);
           
-          // Subscribe to push notifications
-          if ('pushManager' in registration) {
-            const subscription = await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY' // Replace with actual VAPID key
-            });
-            console.log('Push subscription:', subscription);
-          }
+          // Skip push notification subscription for now to avoid the base64url error
+          // This would require proper VAPID key configuration
+          console.log('Service Worker registered successfully');
         } catch (error) {
           console.error('Service Worker registration failed:', error);
         }

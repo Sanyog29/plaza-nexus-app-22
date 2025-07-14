@@ -3747,6 +3747,59 @@ export type Database = {
           },
         ]
       }
+      user_invitations: {
+        Row: {
+          created_at: string
+          department: string | null
+          email: string
+          expires_at: string
+          first_name: string | null
+          id: string
+          invitation_token: string
+          invited_by: string | null
+          last_name: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          email: string
+          expires_at?: string
+          first_name?: string | null
+          id?: string
+          invitation_token?: string
+          invited_by?: string | null
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          email?: string
+          expires_at?: string
+          first_name?: string | null
+          id?: string
+          invitation_token?: string
+          invited_by?: string | null
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_performance_scores: {
         Row: {
           attendance_rate: number | null
