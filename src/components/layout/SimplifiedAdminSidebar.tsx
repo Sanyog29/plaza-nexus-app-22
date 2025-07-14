@@ -95,7 +95,8 @@ const adminMenuGroups = [
           { title: "Advanced Features", url: "/advanced-features" },
           { title: "Reports", url: "/admin/reports" },
           { title: "Unified Dashboard", url: "/unified-dashboard" },
-          { title: "Staff Analytics", url: "/staff/analytics" }
+          { title: "Staff Analytics", url: "/staff/analytics" },
+          { title: "Quality Control", url: "/admin/quality-control" }
         ] as { title: string; url: string }[]
       },
       { title: "System Health", url: "/admin/system-health", icon: Activity },
