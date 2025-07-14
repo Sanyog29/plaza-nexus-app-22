@@ -31,7 +31,13 @@ import {
   Archive,
   UserCheck,
   Lock,
-  Activity
+  Activity,
+  Heart,
+  Star,
+  X,
+  Plus,
+  Filter,
+  Command
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -49,6 +55,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useSidebarPreferences } from "@/hooks/useSidebarPreferences";
 
 // Phase 1: Consolidated menu structure for better UX
 const adminMenuGroups = [
@@ -182,6 +192,10 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
   const currentPath = location.pathname;
   const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({});
   const sidebarRef = React.useRef<HTMLDivElement>(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const { preferences, updatePreferences, toggleFavorite } = useSidebarPreferences();
+  const [recentlyUsed, setRecentlyUsed] = React.useState<string[]>([]);
+  const [showQuickActions, setShowQuickActions] = React.useState(true);
 
   const getMenuGroups = () => {
     switch (userRole) {
@@ -200,6 +214,59 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
   const menuGroups = getMenuGroups();
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
   const isCollapsed = state === 'collapsed';
+
+  // Track recently used and update favorites
+  React.useEffect(() => {
+    if (currentPath !== '/') {
+      setRecentlyUsed(prev => {
+        const updated = [currentPath, ...prev.filter(path => path !== currentPath)].slice(0, 5);
+        return updated;
+      });
+    }
+  }, [currentPath]);
+
+  // Filter menu items based on search
+  const filteredMenuGroups = React.useMemo(() => {
+    if (!searchQuery.trim()) return menuGroups;
+    
+    return menuGroups.map(group => ({
+      ...group,
+      items: group.items.filter((item: any) => 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.subItems && item.subItems.some((sub: any) => 
+          sub.title.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+      )
+    })).filter(group => group.items.length > 0);
+  }, [menuGroups, searchQuery]);
+
+  // Get favorite items
+  const favoriteItems = React.useMemo(() => {
+    const items: any[] = [];
+    menuGroups.forEach(group => {
+      group.items.forEach((item: any) => {
+        if (preferences.favorites.includes(item.url)) {
+          items.push(item);
+        }
+        if (item.subItems) {
+          item.subItems.forEach((subItem: any) => {
+            if (preferences.favorites.includes(subItem.url)) {
+              items.push(subItem);
+            }
+          });
+        }
+      });
+    });
+    return items;
+  }, [menuGroups, preferences.favorites]);
+
+  const quickActionItems = [
+    { title: 'New Request', url: '/requests/new', icon: Plus },
+    { title: 'Emergency Alert', url: '/alerts/emergency', icon: Bell },
+    { title: 'Quick Report', url: '/reports/quick', icon: FileText },
+    { title: 'System Status', url: '/admin/system-health', icon: Activity }
+  ];
 
   // Enhanced navigation styling with better hierarchy
   const getNavClass = (path: string, isSubItem = false) => {
@@ -221,12 +288,25 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
     }));
   };
 
-  // Keyboard navigation support
+  // Enhanced keyboard navigation support
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault();
+            document.getElementById('sidebar-search')?.focus();
+            break;
+          case 'f':
+            e.preventDefault();
+            setShowQuickActions(prev => !prev);
+            break;
+        }
+      }
+      
       if (e.target && (e.target as HTMLElement).closest('[data-sidebar]')) {
         const focusableElements = sidebarRef.current?.querySelectorAll(
-          'a[href], button:not([disabled])'
+          'a[href], button:not([disabled]), input:not([disabled])'
         );
         
         if (!focusableElements) return;
@@ -279,30 +359,132 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
             )}
           </div>
           
-          {/* Quick Actions Bar */}
+          {/* Search Bar */}
           {!isCollapsed && (
-            <div className="mt-3 flex gap-2">
-              <button className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                <Search className="h-4 w-4" />
-              </button>
-              <button className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                <Bell className="h-4 w-4" />
-              </button>
-              <button className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                <Zap className="h-4 w-4" />
-              </button>
+            <div className="mt-3 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="sidebar-search"
+                type="text"
+                placeholder="Search features... (Ctrl+K)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10 h-9 text-sm bg-background/50 border-border/50 focus:bg-background"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Quick Actions Bar */}
+          {!isCollapsed && showQuickActions && (
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Quick Actions
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setShowQuickActions(false)}
+                  title="Hide quick actions (Ctrl+F)"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                {quickActionItems.slice(0, 4).map((action) => (
+                  <NavLink
+                    key={action.url}
+                    to={action.url}
+                    className="flex items-center space-x-1 p-2 text-xs bg-accent/30 hover:bg-accent/50 rounded transition-colors"
+                  >
+                    <action.icon className="h-3 w-3" />
+                    <span className="truncate">{action.title}</span>
+                  </NavLink>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
+        {/* Favorites Section */}
+        {!isCollapsed && preferences.favorites.length > 0 && !searchQuery && (
+          <div className="px-3 py-2 border-b border-border/30">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 px-3">
+                <Star className="h-3 w-3 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Favorites
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  {preferences.favorites.length}
+                </Badge>
+              </div>
+              <div className="space-y-1">
+                {favoriteItems.slice(0, 3).map((item) => {
+                  const active = isActive(item.url);
+                  const Icon = item.icon;
+                  
+                  return (
+                    <NavLink
+                      key={item.url}
+                      to={item.url}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm transition-colors ${
+                        active ? 'bg-primary text-primary-foreground' : 'hover:bg-accent/50'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="truncate">{item.title}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Search Results Summary */}
+        {!isCollapsed && searchQuery && (
+          <div className="px-3 py-2 border-b border-border/30">
+            <div className="text-xs text-muted-foreground flex items-center justify-between">
+              <span>
+                {filteredMenuGroups.reduce((acc, group) => acc + group.items.length, 0)} results for "{searchQuery}"
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-1 text-xs"
+                onClick={() => setSearchQuery('')}
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Navigation Groups with Enhanced Styling */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-          {menuGroups.map((group, groupIndex) => (
+          {filteredMenuGroups.map((group, groupIndex) => (
             <SidebarGroup key={group.label} className="space-y-2">
               {!isCollapsed && (
                 <SidebarGroupLabel className="px-3 text-xs font-bold text-muted-foreground/80 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-primary to-primary/50 rounded-full"></div>
                   {group.label}
+                  {searchQuery && (
+                    <Badge variant="secondary" className="text-xs ml-auto">
+                      {group.items.length}
+                    </Badge>
+                  )}
                 </SidebarGroupLabel>
               )}
               
@@ -357,16 +539,37 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
                           </CollapsibleContent>
                         </Collapsible>
                       ) : (
-                        <SidebarMenuButton asChild className="w-full p-0 hover:bg-transparent">
-                          <NavLink 
-                            to={item.url} 
-                            className={getNavClass(item.url)}
-                            tabIndex={0}
-                          >
-                            <item.icon className="h-5 w-5 flex-shrink-0 text-current" />
-                            {!isCollapsed && <span className="font-medium">{item.title}</span>}
-                          </NavLink>
-                        </SidebarMenuButton>
+                        <div className="relative group/item">
+                          <SidebarMenuButton asChild className="w-full p-0 hover:bg-transparent">
+                            <NavLink 
+                              to={item.url} 
+                              className={getNavClass(item.url)}
+                              tabIndex={0}
+                            >
+                              <item.icon className="h-5 w-5 flex-shrink-0 text-current" />
+                              {!isCollapsed && <span className="font-medium flex-1">{item.title}</span>}
+                            </NavLink>
+                          </SidebarMenuButton>
+                          
+                          {/* Favorite toggle */}
+                          {!isCollapsed && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleFavorite(item.url);
+                              }}
+                              title={preferences.favorites.includes(item.url) ? 'Remove from favorites' : 'Add to favorites'}
+                            >
+                              <Heart className={`h-3 w-3 ${
+                                preferences.favorites.includes(item.url) ? 'fill-current text-red-500' : 'text-muted-foreground'
+                              }`} />
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </SidebarMenuItem>
                   ))}
@@ -374,12 +577,46 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
               </SidebarGroupContent>
               
               {/* Visual separator between groups */}
-              {groupIndex < menuGroups.length - 1 && !isCollapsed && (
+              {groupIndex < filteredMenuGroups.length - 1 && !isCollapsed && (
                 <div className="mt-4 mx-3 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent"></div>
               )}
             </SidebarGroup>
           ))}
         </div>
+
+        {/* Footer with Keyboard Shortcuts */}
+        {!isCollapsed && (
+          <div className="px-3 py-3 border-t border-border/30 bg-gradient-to-r from-background/50 to-accent/5">
+            <div className="text-xs text-muted-foreground space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Keyboard shortcuts:</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 w-5 p-0"
+                  onClick={() => updatePreferences({ quickActionsVisible: !showQuickActions })}
+                >
+                  <Command className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Ctrl+K</kbd>
+                  <span>Search</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs">Ctrl+F</kbd>
+                  <span>Quick Actions</span>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-border/20">
+                <span className="text-xs">
+                  {preferences.favorites.length} favorites • {recentlyUsed.length} recent
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
       </SidebarContent>
     </Sidebar>
