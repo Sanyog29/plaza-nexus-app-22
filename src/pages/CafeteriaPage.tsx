@@ -1,7 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DietaryPreferencesManager } from "@/components/cafeteria/DietaryPreferencesManager";
+import { EnhancedMenuSystem } from "@/components/cafeteria/EnhancedMenuSystem";
+import { KitchenIntegration } from "@/components/cafeteria/KitchenIntegration";
+import { VendorManagement } from "@/components/cafeteria/VendorManagement";
+import OrderHistory from "@/components/cafeteria/OrderHistory";
 import { useAuth } from "@/components/AuthProvider";
-import { UtensilsCrossed, Settings, Heart } from "lucide-react";
+import { UtensilsCrossed, Settings, Heart, ChefHat, Store, History } from "lucide-react";
 
 export default function CafeteriaPage() {
   const { userRole } = useAuth();
@@ -15,28 +19,56 @@ export default function CafeteriaPage() {
         </div>
 
         <Tabs defaultValue="menu" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-5' : userRole === 'vendor' ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="menu" className="flex items-center gap-2">
               <UtensilsCrossed className="h-4 w-4" />
               Menu & Orders
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Order History
             </TabsTrigger>
             <TabsTrigger value="preferences" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Dietary Preferences
             </TabsTrigger>
+            {(userRole === 'admin' || userRole === 'vendor') && (
+              <TabsTrigger value="kitchen" className="flex items-center gap-2">
+                <ChefHat className="h-4 w-4" />
+                Kitchen
+              </TabsTrigger>
+            )}
+            {userRole === 'admin' && (
+              <TabsTrigger value="vendors" className="flex items-center gap-2">
+                <Store className="h-4 w-4" />
+                Vendors
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="menu" className="mt-6">
-            <div className="p-8 text-center">
-              <UtensilsCrossed className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-medium mb-2">Menu & Orders</h3>
-              <p className="text-muted-foreground">Enhanced menu system with dietary filtering coming soon!</p>
-            </div>
+            <EnhancedMenuSystem />
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-6">
+            <OrderHistory />
           </TabsContent>
 
           <TabsContent value="preferences" className="mt-6">
             <DietaryPreferencesManager />
           </TabsContent>
+
+          {(userRole === 'admin' || userRole === 'vendor') && (
+            <TabsContent value="kitchen" className="mt-6">
+              <KitchenIntegration />
+            </TabsContent>
+          )}
+
+          {userRole === 'admin' && (
+            <TabsContent value="vendors" className="mt-6">
+              <VendorManagement />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
