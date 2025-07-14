@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Wrench, AlertTriangle, CheckCircle } from "lucide-react";
+import { AssetManagement } from "@/components/assets/AssetManagement";
 
 export default function AssetsPage() {
   return (
@@ -58,24 +59,7 @@ export default function AssetsPage() {
           </Card>
         </div>
 
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Asset Management</CardTitle>
-              <CardDescription>
-                Comprehensive asset tracking and maintenance scheduling
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Asset management system will be displayed here
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AssetManagement />
       </div>
     </div>
   );
