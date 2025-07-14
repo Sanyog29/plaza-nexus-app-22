@@ -51,13 +51,14 @@ interface TrainingProgress {
 
 interface StaffSkill {
   id: string;
-  staff_id: string;
+  user_id: string;
   skill_name: string;
   proficiency_level: number;
-  certified: boolean;
-  certification_date?: string;
-  certification_expiry?: string;
-  training_hours: number;
+  verified_at?: string;
+  verified_by?: string;
+  last_used_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const TrainingManagement: React.FC = () => {
@@ -81,9 +82,7 @@ const TrainingManagement: React.FC = () => {
 
   const [skillUpdate, setSkillUpdate] = useState({
     skill_name: '',
-    proficiency_level: 1,
-    certified: false,
-    training_hours: 0
+    proficiency_level: 1
   });
 
   const [staffList, setStaffList] = useState<any[]>([]);
@@ -154,11 +153,8 @@ const TrainingManagement: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('staff_skills')
-        .select(`
-          *,
-          profiles(first_name, last_name)
-        `)
-        .eq('staff_id', user?.id);
+        .select('*')
+        .eq('user_id', user?.id);
 
       if (error) throw error;
       setSkills(data || []);
@@ -293,12 +289,9 @@ const TrainingManagement: React.FC = () => {
       const { error } = await supabase
         .from('staff_skills')
         .insert({
-          staff_id: user?.id,
+          user_id: user?.id,
           skill_name: skillUpdate.skill_name,
-          proficiency_level: skillUpdate.proficiency_level,
-          certified: skillUpdate.certified,
-          training_hours: skillUpdate.training_hours,
-          certification_date: skillUpdate.certified ? new Date().toISOString().split('T')[0] : null
+          proficiency_level: skillUpdate.proficiency_level
         });
 
       if (error) throw error;
@@ -310,9 +303,7 @@ const TrainingManagement: React.FC = () => {
 
       setSkillUpdate({
         skill_name: '',
-        proficiency_level: 1,
-        certified: false,
-        training_hours: 0
+        proficiency_level: 1
       });
 
       fetchSkills();
@@ -540,27 +531,6 @@ const TrainingManagement: React.FC = () => {
                   </Select>
                 </div>
 
-                <div>
-                  <Label htmlFor="hours">Training Hours</Label>
-                  <Input
-                    id="hours"
-                    type="number"
-                    min="0"
-                    value={skillUpdate.training_hours}
-                    onChange={(e) => setSkillUpdate(prev => ({ ...prev, training_hours: parseInt(e.target.value) }))}
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="certified"
-                    checked={skillUpdate.certified}
-                    onChange={(e) => setSkillUpdate(prev => ({ ...prev, certified: e.target.checked }))}
-                    className="rounded"
-                  />
-                  <Label htmlFor="certified">Certified</Label>
-                </div>
 
                 <Button onClick={addSkill} className="w-full">
                   <Award className="h-4 w-4 mr-2" />
@@ -586,9 +556,9 @@ const TrainingManagement: React.FC = () => {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium">{skill.skill_name}</span>
-                            {skill.certified && (
+                            {skill.verified_at && (
                               <Badge variant="default" className="text-xs">
-                                Certified
+                                Verified
                               </Badge>
                             )}
                           </div>
@@ -597,7 +567,7 @@ const TrainingManagement: React.FC = () => {
                               {getProficiencyStars(skill.proficiency_level)}
                             </div>
                             <span className="text-sm text-muted-foreground">
-                              {skill.training_hours}h training
+                              Last used: {skill.last_used_at ? new Date(skill.last_used_at).toLocaleDateString() : 'Never'}
                             </span>
                           </div>
                         </div>

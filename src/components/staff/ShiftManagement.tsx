@@ -45,6 +45,7 @@ interface ShiftChangeRequest {
   requested_shift_end: string;
   reason: string;
   status: string;
+  created_at: string;
   staff_name?: string;
 }
 
@@ -141,7 +142,7 @@ const ShiftManagement: React.FC = () => {
         .from('shift_change_requests')
         .select(`
           *,
-          profiles:requested_by(first_name, last_name)
+          requested_by_profile:profiles!shift_change_requests_requested_by_fkey(first_name, last_name)
         `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
@@ -150,7 +151,7 @@ const ShiftManagement: React.FC = () => {
 
       const requestsWithNames = data?.map(request => ({
         ...request,
-        staff_name: `${request.profiles?.first_name} ${request.profiles?.last_name}`
+        staff_name: `${request.requested_by_profile?.first_name} ${request.requested_by_profile?.last_name}`
       })) || [];
 
       setChangeRequests(requestsWithNames);
