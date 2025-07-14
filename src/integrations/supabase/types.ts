@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_models: {
+        Row: {
+          accuracy_score: number | null
+          created_at: string
+          id: string
+          is_active: boolean
+          last_trained_at: string | null
+          model_config: Json
+          model_name: string
+          model_type: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_trained_at?: string | null
+          model_config?: Json
+          model_name: string
+          model_type: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_trained_at?: string | null
+          model_config?: Json
+          model_name?: string
+          model_type?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           created_at: string
@@ -261,6 +300,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          priority: number
+          rule_name: string
+          rule_type: string
+          trigger_conditions: Json
+          updated_at: string
+        }
+        Insert: {
+          actions: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          rule_name: string
+          rule_type: string
+          trigger_conditions: Json
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          rule_name?: string
+          rule_type?: string
+          trigger_conditions?: Json
+          updated_at?: string
+        }
+        Relationships: []
       }
       booking_templates: {
         Row: {
@@ -628,6 +706,89 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      communication_messages: {
+        Row: {
+          attachments: Json | null
+          created_at: string
+          id: string
+          is_read_by: Json | null
+          message_content: string
+          message_type: string
+          metadata: Json | null
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          created_at?: string
+          id?: string
+          is_read_by?: Json | null
+          message_content: string
+          message_type?: string
+          metadata?: Json | null
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          created_at?: string
+          id?: string
+          is_read_by?: Json | null
+          message_content?: string
+          message_type?: string
+          metadata?: Json | null
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "communication_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_threads: {
+        Row: {
+          created_at: string
+          created_by: string
+          entity_id: string | null
+          id: string
+          is_archived: boolean
+          last_message_at: string | null
+          participants: Json
+          subject: string
+          thread_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          entity_id?: string | null
+          id?: string
+          is_archived?: boolean
+          last_message_at?: string | null
+          participants?: Json
+          subject: string
+          thread_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          entity_id?: string | null
+          id?: string
+          is_archived?: boolean
+          last_message_at?: string | null
+          participants?: Json
+          subject?: string
+          thread_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       content_categories: {
         Row: {
@@ -2162,6 +2323,45 @@ export type Database = {
           },
         ]
       }
+      mobile_sync_queue: {
+        Row: {
+          action_type: string
+          created_at: string
+          data: Json
+          device_id: string | null
+          id: string
+          record_id: string | null
+          sync_status: string
+          synced_at: string | null
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          data: Json
+          device_id?: string | null
+          id?: string
+          record_id?: string | null
+          sync_status?: string
+          synced_at?: string | null
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          data?: Json
+          device_id?: string | null
+          id?: string
+          record_id?: string | null
+          sync_status?: string
+          synced_at?: string | null
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -2428,6 +2628,50 @@ export type Database = {
         }
         Relationships: []
       }
+      predictive_insights: {
+        Row: {
+          confidence_score: number
+          created_at: string
+          id: string
+          insight_type: string
+          model_id: string | null
+          prediction_data: Json
+          target_entity_id: string | null
+          target_entity_type: string
+          valid_until: string
+        }
+        Insert: {
+          confidence_score: number
+          created_at?: string
+          id?: string
+          insight_type: string
+          model_id?: string | null
+          prediction_data: Json
+          target_entity_id?: string | null
+          target_entity_type: string
+          valid_until: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          insight_type?: string
+          model_id?: string | null
+          prediction_data?: Json
+          target_entity_id?: string | null
+          target_entity_type?: string
+          valid_until?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictive_insights_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_audit_logs: {
         Row: {
           action_type: string
@@ -2564,6 +2808,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      real_time_events: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          event_data: Json
+          event_type: string
+          id: string
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       request_attachments: {
         Row: {
