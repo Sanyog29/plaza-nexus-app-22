@@ -3300,6 +3300,56 @@ export type Database = {
           },
         ]
       }
+      shift_schedules: {
+        Row: {
+          break_end: string | null
+          break_start: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          shift_end: string
+          shift_start: string
+          shift_type: string
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          break_end?: string | null
+          break_start?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_end: string
+          shift_start: string
+          shift_type?: string
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          break_end?: string | null
+          break_start?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_end?: string
+          shift_start?: string
+          shift_type?: string
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_schedules_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       simple_task_categories: {
         Row: {
           created_at: string
@@ -3529,6 +3579,107 @@ export type Database = {
           },
         ]
       }
+      staff_training_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          program_id: string
+          progress_percentage: number
+          score: number | null
+          staff_id: string
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          program_id: string
+          progress_percentage?: number
+          score?: number | null
+          staff_id: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          program_id?: string
+          progress_percentage?: number
+          score?: number | null
+          staff_id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_training_progress_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_training_progress_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_workload_metrics: {
+        Row: {
+          active_tasks: number
+          availability_status: string
+          calculated_at: string
+          completed_tasks: number
+          efficiency_score: number
+          id: string
+          metric_date: string
+          staff_id: string
+          total_work_hours: number
+        }
+        Insert: {
+          active_tasks?: number
+          availability_status?: string
+          calculated_at?: string
+          completed_tasks?: number
+          efficiency_score?: number
+          id?: string
+          metric_date: string
+          staff_id: string
+          total_work_hours?: number
+        }
+        Update: {
+          active_tasks?: number
+          availability_status?: string
+          calculated_at?: string
+          completed_tasks?: number
+          efficiency_score?: number
+          id?: string
+          metric_date?: string
+          staff_id?: string
+          total_work_hours?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_workload_metrics_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_alerts: {
         Row: {
           alert_type: string
@@ -3746,6 +3897,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      training_programs: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty_level: number
+          duration_hours: number
+          expiry_months: number | null
+          id: string
+          is_mandatory: boolean
+          program_name: string
+          required_skills: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty_level: number
+          duration_hours: number
+          expiry_months?: number | null
+          id?: string
+          is_mandatory?: boolean
+          program_name: string
+          required_skills?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty_level?: number
+          duration_hours?: number
+          expiry_months?: number | null
+          id?: string
+          is_mandatory?: boolean
+          program_name?: string
+          required_skills?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_invitations: {
         Row: {
@@ -4777,6 +4967,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      calculate_staff_workload_score: {
+        Args: { target_staff_id: string }
+        Returns: number
+      }
       calculate_user_performance_score: {
         Args: { target_user_id: string; score_date?: string }
         Returns: Json
@@ -4924,6 +5118,20 @@ export type Database = {
       start_security_shift: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      suggest_optimal_staff_assignment: {
+        Args: {
+          task_category: string
+          required_skills?: string[]
+          priority?: string
+        }
+        Returns: {
+          staff_id: string
+          staff_name: string
+          workload_score: number
+          skill_match_percentage: number
+          availability_status: string
+        }[]
       }
       update_user_role: {
         Args:
