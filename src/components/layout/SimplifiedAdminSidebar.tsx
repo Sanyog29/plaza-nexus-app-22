@@ -247,7 +247,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
     return `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
       active 
         ? 'bg-primary text-primary-foreground font-medium shadow-lg' 
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-md'
+        : 'text-foreground hover:bg-muted hover:text-foreground hover:shadow-md'
     }`;
   };
 
@@ -284,7 +284,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
 
         {menuGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className={`${isCollapsed ? 'sr-only' : ''} text-primary font-medium`}>
+            <SidebarGroupLabel className={`${isCollapsed ? 'sr-only' : ''} text-foreground font-medium`}>
               {group.label}
             </SidebarGroupLabel>
             

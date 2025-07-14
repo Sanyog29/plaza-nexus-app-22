@@ -343,7 +343,7 @@ export const SystemHealthDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <Activity className="h-8 w-8 text-primary" />
             System Health & Operational Excellence
           </h1>

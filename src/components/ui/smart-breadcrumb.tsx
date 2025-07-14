@@ -48,7 +48,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
           <>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center hover:text-primary transition-colors">
+                <Link to="/" className="flex items-center text-foreground hover:text-primary transition-colors">
                   <Home className="h-4 w-4" />
                 </Link>
               </BreadcrumbLink>
@@ -59,7 +59,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
             {breadcrumbs.length > 3 && (
               <>
                 <BreadcrumbItem>
-                  <span className="text-muted-foreground">...</span>
+                      <span className="text-foreground">...</span>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator>
                   <ChevronRight className="h-4 w-4" />
@@ -73,7 +73,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
         {hasEllipsis && breadcrumbs.length > maxItems && (
           <>
             <BreadcrumbItem>
-              <span className="text-muted-foreground">...</span>
+              <span className="text-foreground">...</span>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
               <ChevronRight className="h-4 w-4" />
@@ -108,7 +108,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
                     <Link 
                       to={breadcrumb.href}
                       className={cn(
-                        'flex items-center gap-2 transition-colors hover:text-primary',
+                        'flex items-center gap-2 text-foreground transition-colors hover:text-primary',
                         breadcrumb.isDisabled && 'opacity-50 pointer-events-none'
                       )}
                     >

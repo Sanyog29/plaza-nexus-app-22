@@ -7,52 +7,52 @@
 
 @layer base {
   :root {
-    /* Base colors */
-    --background: 220 20% 6%;
+    /* Base colors - Improved contrast */
+    --background: 220 23% 3%;
     --foreground: 210 40% 98%;
 
-    /* Card and surface colors */
-    --card: 224 20% 9%;
+    /* Card and surface colors - Better contrast */
+    --card: 224 20% 8%;
     --card-foreground: 210 40% 98%;
     --card-glass: 224 20% 9% / 0.6;
 
-    --popover: 224 20% 9%;
+    --popover: 224 20% 8%;
     --popover-foreground: 210 40% 98%;
 
     /* Primary brand colors */
-    --primary: 217 100% 50%;
+    --primary: 217 100% 55%;
     --primary-foreground: 210 40% 98%;
-    --primary-glow: 217 100% 60%;
+    --primary-glow: 217 100% 65%;
     
-    /* Secondary colors */
-    --secondary: 215 9% 50%;
+    /* Secondary colors - Better contrast */
+    --secondary: 215 9% 25%;
     --secondary-foreground: 210 40% 98%;
 
-    /* Muted colors */
-    --muted: 215 9% 15%;
-    --muted-foreground: 215 9% 65%;
+    /* Muted colors - Improved readability */
+    --muted: 215 9% 18%;
+    --muted-foreground: 215 15% 70%;
 
     /* Accent colors */
-    --accent: 217 100% 50%;
+    --accent: 217 100% 55%;
     --accent-foreground: 210 40% 98%;
 
     /* Status colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --success: 142 76% 36%;
+    --success: 142 76% 45%;
     --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 6%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 220 20% 3%;
     
     /* Enhanced UI colors */
-    --success-subtle: 142 76% 36% / 0.1;
-    --error-subtle: 0 84% 60% / 0.1;
-    --info-subtle: 217 100% 50% / 0.1;
+    --success-subtle: 142 76% 45% / 0.15;
+    --error-subtle: 0 84% 60% / 0.15;
+    --info-subtle: 217 100% 55% / 0.15;
 
-    /* UI elements */
-    --border: 215 9% 20%;
-    --input: 215 9% 20%;
-    --ring: 217 100% 50%;
+    /* UI elements - Better contrast */
+    --border: 215 9% 25%;
+    --input: 215 9% 25%;
+    --ring: 217 100% 55%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));

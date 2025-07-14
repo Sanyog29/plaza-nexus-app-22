@@ -9,13 +9,13 @@ const AnalyticsTabs = () => {
   return (
     <Tabs defaultValue="heatmap" className="w-full">
       <TabsList className="grid grid-cols-3 mb-6 bg-card/50">
-        <TabsTrigger value="heatmap" className="data-[state=active]:bg-plaza-blue">
+        <TabsTrigger value="heatmap" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
           Heatmaps
         </TabsTrigger>
-        <TabsTrigger value="staffing" className="data-[state=active]:bg-plaza-blue">
+        <TabsTrigger value="staffing" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
           Staff Workload
         </TabsTrigger>
-        <TabsTrigger value="budget" className="data-[state=active]:bg-plaza-blue">
+        <TabsTrigger value="budget" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
           Budget Impact
         </TabsTrigger>
       </TabsList>
