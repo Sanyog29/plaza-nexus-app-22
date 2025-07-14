@@ -57,6 +57,16 @@ import StaffServicesPage from "./pages/StaffServicesPage";
 import VendorPortalPage from "./pages/VendorPortalPage";
 import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
 import DeliveryPage from "./pages/DeliveryPage";
+
+// New simplified pages
+import QuickActionsPage from "./pages/admin/QuickActionsPage";
+import AssetsPage from "./pages/admin/AssetsPage";
+import AdminSearchPage from "./pages/admin/SearchPage";
+import AdminSettingsPage from "./pages/admin/SettingsPage";
+import StaffTasksPage from "./pages/staff/TasksPage";
+import StaffQuickActionsPage from "./pages/staff/QuickActionsPage";
+import StaffAnalyticsPage from "./pages/staff/AnalyticsPage";
+import StaffSearchPage from "./pages/staff/SearchPage";
 import { PWANotificationManager } from "./components/notifications/PWANotificationManager";
 
 const queryClient = new QueryClient();
@@ -85,6 +95,7 @@ const App = () => (
               <Route path="/requests" element={<RequestsPage />} />
               <Route path="/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/requests/new" element={<NewRequestPage />} />
+              <Route path="/new-request" element={<NewRequestPage />} />
               <Route path="/bookings" element={<BookingsPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cafeteria" element={<CafeteriaPage />} />
@@ -99,16 +110,22 @@ const App = () => (
               
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-              <Route path="/admin/content" element={<AdminContentPage />} />
+              <Route path="/admin/quick-actions" element={<QuickActionsPage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
+              <Route path="/admin/assets" element={<AssetsPage />} />
               <Route path="/admin/requests" element={<AdminRequestsPage />} />
               <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
+              <Route path="/admin/services" element={<AdminServicesPage />} />
+              <Route path="/admin/security" element={<AdminSecurityPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+              <Route path="/admin/search" element={<AdminSearchPage />} />
+              <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              
+              {/* Legacy admin routes for backward compatibility */}
+              <Route path="/admin/content" element={<AdminContentPage />} />
               <Route path="/admin/system-health" element={<SystemHealthPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
               <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
-              <Route path="/admin/security" element={<AdminSecurityPage />} />
-              <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/cafeteria" element={<AdminCafeteriaPage />} />
               <Route path="/admin/system-config" element={<SystemConfigPage />} />
               <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
@@ -116,15 +133,21 @@ const App = () => (
               
               {/* Staff Routes */}
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
+              <Route path="/staff/tasks" element={<StaffTasksPage />} />
+              <Route path="/staff/quick-actions" element={<StaffQuickActionsPage />} />
               <Route path="/staff/requests" element={<StaffRequestsPage />} />
               <Route path="/staff/requests/:requestId" element={<RequestDetailsPage />} />
+              <Route path="/staff/maintenance" element={<StaffMaintenancePage />} />
+              <Route path="/staff/analytics" element={<StaffAnalyticsPage />} />
+              <Route path="/staff/search" element={<StaffSearchPage />} />
+              
+              {/* Legacy staff routes for backward compatibility */}
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
               <Route path="/staff/reports" element={<StaffReportsPage />} />
               <Route path="/staff/settings" element={<StaffSettingsPage />} />
               <Route path="/staff/operations" element={<OperationsPage />} />
               <Route path="/staff/performance" element={<StaffPerformancePage />} />
               <Route path="/staff/training" element={<StaffTrainingPage />} />
-              <Route path="/staff/maintenance" element={<StaffMaintenancePage />} />
               <Route path="/staff/security" element={<StaffSecurityPage />} />
               <Route path="/staff/services" element={<StaffServicesPage />} />
               
