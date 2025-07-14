@@ -2431,7 +2431,7 @@ export type Database = {
       profile_audit_logs: {
         Row: {
           action_type: string
-          changed_by: string
+          changed_by: string | null
           changes: Json
           id: string
           ip_address: unknown | null
@@ -2441,7 +2441,7 @@ export type Database = {
         }
         Insert: {
           action_type: string
-          changed_by: string
+          changed_by?: string | null
           changes: Json
           id?: string
           ip_address?: unknown | null
@@ -2451,7 +2451,7 @@ export type Database = {
         }
         Update: {
           action_type?: string
-          changed_by?: string
+          changed_by?: string | null
           changes?: Json
           id?: string
           ip_address?: unknown | null
