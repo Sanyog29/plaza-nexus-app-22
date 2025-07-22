@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,41 @@ import { useNavigate } from "react-router-dom";
 
 export default function TaskNewPage() {
   const navigate = useNavigate();
+
+  const priorityOptions = [
+    { 
+      value: 'urgent', 
+      label: 'Urgent', 
+      description: 'Immediate attention required',
+      color: 'text-red-600'
+    },
+    { 
+      value: 'high', 
+      label: 'High', 
+      description: 'Important - address quickly',
+      color: 'text-orange-600'
+    },
+    { 
+      value: 'medium', 
+      label: 'Medium', 
+      description: 'Standard priority',
+      color: 'text-yellow-600'
+    },
+    { 
+      value: 'low', 
+      label: 'Low', 
+      description: 'Can be scheduled later',
+      color: 'text-green-600'
+    }
+  ];
+
+  const categoryOptions = [
+    { value: 'maintenance', label: 'Maintenance', description: 'Equipment and facility maintenance' },
+    { value: 'cleaning', label: 'Cleaning', description: 'Cleaning and sanitation tasks' },
+    { value: 'inspection', label: 'Inspection', description: 'Routine inspections and audits' },
+    { value: 'repair', label: 'Repair', description: 'Fix broken or damaged items' },
+    { value: 'installation', label: 'Installation', description: 'Install new equipment or features' }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -60,10 +96,14 @@ export default function TaskNewPage() {
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
+                    {priorityOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex flex-col gap-1">
+                          <div className={`font-medium ${option.color}`}>{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -74,11 +114,14 @@ export default function TaskNewPage() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                    <SelectItem value="cleaning">Cleaning</SelectItem>
-                    <SelectItem value="inspection">Inspection</SelectItem>
-                    <SelectItem value="repair">Repair</SelectItem>
-                    <SelectItem value="installation">Installation</SelectItem>
+                    {categoryOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex flex-col gap-1">
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

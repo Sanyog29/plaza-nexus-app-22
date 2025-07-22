@@ -22,7 +22,8 @@ const NewRequestPage = () => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('maintenance_categories')
-        .select('*');
+        .select('*')
+        .order('name');
       
       if (error) throw error;
       setCategories(data || []);
