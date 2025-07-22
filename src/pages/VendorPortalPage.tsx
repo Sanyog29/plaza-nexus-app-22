@@ -19,6 +19,7 @@ import {
 import VendorOrderQueue from '@/components/vendor/VendorOrderQueue';
 import VendorMenuManagement from '@/components/vendor/VendorMenuManagement';
 import VendorAnalytics from '@/components/vendor/VendorAnalytics';
+import VendorHeader from '@/components/vendor/VendorHeader';
 
 const VendorPortalPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -122,39 +123,10 @@ const VendorPortalPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {vendor.logo_url && (
-                <img 
-                  src={vendor.logo_url} 
-                  alt={vendor.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              )}
-              <div>
-                <h1 className="text-2xl font-bold text-white">{vendor.name}</h1>
-                <p className="text-gray-400">{vendor.cuisine_type} • {vendor.stall_location}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant={vendor.is_active ? 'default' : 'secondary'}>
-                {vendor.is_active ? 'Active' : 'Inactive'}
-              </Badge>
-              <Button variant="outline" size="sm">
-                <Bell className="h-4 w-4 mr-2" />
-                Notifications
-              </Button>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <VendorHeader 
+        vendor={vendor} 
+        pendingOrdersCount={todayMetrics?.pendingOrders || 0} 
+      />
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
