@@ -70,11 +70,21 @@ const AuthForm: React.FC<AuthFormProps> = ({
     setIsFormValid(email.length > 0 && password.length > 0 && Object.keys(errors).length === 0);
   }, [email, password, isSignUp]);
 
-  const checkUserExists = async (email: string) => {
+  const checkUserExistsLocal = async (email: string) => {
     try {
-      const { data, error } = await supabase.rpc('check_user_exists', { user_email: email });
-      return !error && data;
+      // Simple check using auth API
+      const { data, error } = await supabase.auth.admin.listUsers();
+      
+      if (error) {
+        console.error('Error checking user existence:', error);
+        return false;
+      }
+      
+      // Check if any user has this email
+      const userExists = data?.users?.some((user: any) => user.email === email);
+      return !!userExists;
     } catch (error) {
+      console.error('Error checking user existence:', error);
       return false;
     }
   };
@@ -94,7 +104,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
 
     if (error.message?.includes('Invalid login credentials')) {
       // Check if user exists to provide specific guidance
-      const userExists = await checkUserExists(email);
+      const userExists = await checkUserExistsLocal(email);
       
       if (!userExists) {
         setAuthError(`No account found with email ${email}. Please sign up first or check your email address.`);

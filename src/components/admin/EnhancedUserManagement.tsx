@@ -65,7 +65,12 @@ export const EnhancedUserManagement: React.FC = () => {
       });
 
       if (error) throw error;
-      setUsers(data || []);
+      // Map the data to include missing properties with defaults
+      const mappedData = (data || []).map((user: any) => ({
+        ...user,
+        approval_status: user.approval_status || 'pending'
+      }));
+      setUsers(mappedData);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       toast({

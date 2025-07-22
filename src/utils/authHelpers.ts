@@ -3,21 +3,17 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const checkUserExists = async (email: string): Promise<boolean> => {
   try {
-    // First try to get user by email from auth.users (admin only)
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail?.(email);
+    // Check if a profile exists with this email by checking auth users first
+    const { data, error } = await supabase.auth.admin.listUsers();
     
-    if (!authError && authUser?.user) {
-      return true;
+    if (error) {
+      console.error('Error listing users:', error);
+      return false;
     }
-
-    // Fallback: check if profile exists (this approach works for regular users)
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', authUser?.user?.id || '')
-      .maybeSingle();
-
-    return !profileError && !!profile;
+    
+    // Check if any user has this email
+    const userExists = data?.users?.some((user: any) => user.email === email);
+    return !!userExists;
   } catch (error) {
     console.error('Error checking user existence:', error);
     return false;
