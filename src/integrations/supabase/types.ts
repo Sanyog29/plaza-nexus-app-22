@@ -2680,6 +2680,41 @@ export type Database = {
           },
         ]
       }
+      order_timeline: {
+        Row: {
+          created_by: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          status: string
+          timestamp: string | null
+        }
+        Insert: {
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          status: string
+          timestamp?: string | null
+        }
+        Update: {
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          status?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_timeline_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parking_requests: {
         Row: {
           approved: boolean | null
@@ -4643,11 +4678,101 @@ export type Database = {
           },
         ]
       }
+      vendor_analytics: {
+        Row: {
+          average_order_value: number | null
+          created_at: string | null
+          customer_satisfaction_avg: number | null
+          id: string
+          metric_date: string
+          peak_hour_end: number | null
+          peak_hour_start: number | null
+          popular_items: Json | null
+          total_items_sold: number | null
+          total_orders: number | null
+          total_revenue: number | null
+          vendor_id: string | null
+        }
+        Insert: {
+          average_order_value?: number | null
+          created_at?: string | null
+          customer_satisfaction_avg?: number | null
+          id?: string
+          metric_date: string
+          peak_hour_end?: number | null
+          peak_hour_start?: number | null
+          popular_items?: Json | null
+          total_items_sold?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          vendor_id?: string | null
+        }
+        Update: {
+          average_order_value?: number | null
+          created_at?: string | null
+          customer_satisfaction_avg?: number | null
+          id?: string
+          metric_date?: string
+          peak_hour_end?: number | null
+          peak_hour_start?: number | null
+          popular_items?: Json | null
+          total_items_sold?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_analytics_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_menu_item_images: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          menu_item_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          menu_item_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          menu_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_menu_item_images_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_menu_items: {
         Row: {
+          allergens: string[] | null
           availability_schedule: Json | null
           average_rating: number | null
           category_id: string | null
+          cost_price: number | null
           created_at: string
           description: string | null
           dietary_tags: string[] | null
@@ -4661,15 +4786,19 @@ export type Database = {
           nutritional_info: Json | null
           preparation_time_minutes: number | null
           price: number
+          profit_margin: number | null
+          spice_level: number | null
           stock_quantity: number | null
           total_orders: number | null
           updated_at: string
           vendor_id: string
         }
         Insert: {
+          allergens?: string[] | null
           availability_schedule?: Json | null
           average_rating?: number | null
           category_id?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           dietary_tags?: string[] | null
@@ -4683,15 +4812,19 @@ export type Database = {
           nutritional_info?: Json | null
           preparation_time_minutes?: number | null
           price: number
+          profit_margin?: number | null
+          spice_level?: number | null
           stock_quantity?: number | null
           total_orders?: number | null
           updated_at?: string
           vendor_id: string
         }
         Update: {
+          allergens?: string[] | null
           availability_schedule?: Json | null
           average_rating?: number | null
           category_id?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           dietary_tags?: string[] | null
@@ -4705,6 +4838,8 @@ export type Database = {
           nutritional_info?: Json | null
           preparation_time_minutes?: number | null
           price?: number
+          profit_margin?: number | null
+          spice_level?: number | null
           stock_quantity?: number | null
           total_orders?: number | null
           updated_at?: string
@@ -4912,6 +5047,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "vendor_payouts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_performance_metrics: {
+        Row: {
+          average_preparation_time: number | null
+          created_at: string | null
+          customer_return_rate: number | null
+          id: string
+          metric_date: string
+          order_accuracy_rate: number | null
+          order_fulfillment_rate: number | null
+          vendor_id: string | null
+        }
+        Insert: {
+          average_preparation_time?: number | null
+          created_at?: string | null
+          customer_return_rate?: number | null
+          id?: string
+          metric_date: string
+          order_accuracy_rate?: number | null
+          order_fulfillment_rate?: number | null
+          vendor_id?: string | null
+        }
+        Update: {
+          average_preparation_time?: number | null
+          created_at?: string | null
+          customer_return_rate?: number | null
+          id?: string
+          metric_date?: string
+          order_accuracy_rate?: number | null
+          order_fulfillment_rate?: number | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_performance_metrics_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
@@ -5536,6 +5712,10 @@ export type Database = {
         Returns: Json
       }
       calculate_utility_consumption: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      calculate_vendor_daily_analytics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
