@@ -85,13 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsOpsSupervisor(role === 'ops_supervisor');
     setIsFieldStaff(role === 'field_staff');
     setIsTenantManager(role === 'tenant_manager');
-    setIsTenantUser(role === 'tenant_user');
+    setIsTenantUser(false); // Disable for now
     setIsVendor(role === 'vendor');
-    setIsSiteManager(role === 'site_manager');
-    setIsSustainabilityManager(role === 'sustain_mgr');
-    setIsFinanceAnalyst(role === 'fin_analyst');
-    setIsClientReadOnly(role === 'client_readonly');
-    setIsStaff(['admin', 'ops_supervisor', 'field_staff', 'site_manager'].includes(role));
+    setIsSiteManager(false); // Disable for now
+    setIsSustainabilityManager(false); // Disable for now
+    setIsFinanceAnalyst(false); // Disable for now
+    setIsClientReadOnly(false); // Disable for now
+    setIsStaff(['admin', 'ops_supervisor', 'field_staff', 'staff'].includes(role));
 
     // Enhanced permissions based on feature-to-role matrix
     const rolePermissions = {
@@ -224,20 +224,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role, department, department_specialization, approval_status')
+        .select('role, department, approval_status')
         .eq('id', userId)
         .maybeSingle();
       
       if (error) {
         console.error('Error fetching profile:', error);
-        updateRoleStates('tenant_user');
+        updateRoleStates('tenant_manager');
         setUserDepartment(null);
         setApprovalStatus('pending');
         return;
       }
       
       if (profile) {
-        updateRoleStates(profile.role, profile.department_specialization);
+        updateRoleStates(profile.role, null);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
       } else {
@@ -248,7 +248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: userId,
               first_name: '',
               last_name: '',
-              role: 'tenant_user',
+              role: 'tenant_manager',
               approval_status: 'pending'
             });
           
@@ -256,19 +256,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Profile creation failed:', insertError);
           }
           
-          updateRoleStates('tenant_user');
+          updateRoleStates('tenant_manager');
           setUserDepartment(null);
           setApprovalStatus('pending');
         } catch (createError) {
           console.error('Profile creation exception:', createError);
-          updateRoleStates('tenant_user');
+          updateRoleStates('tenant_manager');
           setUserDepartment(null);
           setApprovalStatus('pending');
         }
       }
     } catch (error) {
       console.error('Critical error in checkUserRole:', error);
-      updateRoleStates('tenant_user');
+      updateRoleStates('tenant_manager');
       setUserDepartment(null);
       setApprovalStatus('pending');
     }
