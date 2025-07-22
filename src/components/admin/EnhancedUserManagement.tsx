@@ -51,19 +51,37 @@ export const EnhancedUserManagement: React.FC = () => {
   const [newRole, setNewRole] = useState<string>('');
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   
+  // Categories for department specialization
+  const categories = [
+    { value: 'Cleaning', label: 'Cleaning' },
+    { value: 'Security', label: 'Security' },
+    { value: 'HVAC', label: 'HVAC' },
+    { value: 'Electrical', label: 'Electrical' },
+    { value: 'Plumbing', label: 'Plumbing' },
+    { value: 'General Maintenance', label: 'General Maintenance' },
+    { value: 'IT Support', label: 'IT Support' },
+    { value: 'Safety', label: 'Safety' }
+  ];
+
   const [newUser, setNewUser] = useState({
     email: '',
     firstName: '',
     lastName: '',
     role: 'tenant_manager',
-    department: ''
+    department: '',
+    department_specialization: ''
   });
 
-  const roles = [
+const roles = [
     { value: 'admin', label: 'Admin' },
     { value: 'ops_supervisor', label: 'Operations Supervisor' },
+    { value: 'site_manager', label: 'Site Manager' },
     { value: 'field_staff', label: 'Field Staff' },
     { value: 'tenant_manager', label: 'Tenant Manager' },
+    { value: 'tenant_user', label: 'Tenant User' },
+    { value: 'sustain_mgr', label: 'Sustainability Manager' },
+    { value: 'fin_analyst', label: 'Finance Analyst' },
+    { value: 'client_readonly', label: 'Client Read-Only' },
     { value: 'vendor', label: 'Vendor' }
   ];
 
@@ -98,6 +116,14 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   };
 
+  // Check if role requires department specialization
+  const requiresSpecialization = (role: string) => {
+    return role === 'field_staff';
+  };
+
+  // Show department specialization field when field_staff is selected
+  const showDepartmentSpecialization = requiresSpecialization(newUser.role);
+  
   const handleCreateUser = async () => {
     if (!newUser.email || !newUser.firstName || !newUser.lastName) {
       toast({
@@ -108,15 +134,34 @@ export const EnhancedUserManagement: React.FC = () => {
       return;
     }
 
+    // Check if department specialization is required but not provided
+    if (showDepartmentSpecialization && !newUser.department_specialization) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a department specialization for field staff",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreatingUser(true);
 
     try {
+      // For now, we'll store department_specialization in the department field
+      // until the database function is updated to support it
+      let departmentValue = newUser.department;
+      if (showDepartmentSpecialization && newUser.department_specialization) {
+        departmentValue = newUser.department 
+          ? `${newUser.department} (${newUser.department_specialization})`
+          : newUser.department_specialization;
+      }
+      
       const { data, error } = await supabase.rpc('admin_create_user_invitation', {
         invitation_email: newUser.email,
         invitation_first_name: newUser.firstName,
         invitation_last_name: newUser.lastName,
         invitation_role: newUser.role,
-        invitation_department: newUser.department || null,
+        invitation_department: departmentValue || null,
       });
 
       if (error) throw error;
@@ -140,7 +185,8 @@ export const EnhancedUserManagement: React.FC = () => {
         firstName: '',
         lastName: '',
         role: 'tenant_manager',
-        department: ''
+        department: '',
+        department_specialization: ''
       });
 
       fetchUsers();
@@ -274,8 +320,13 @@ export const EnhancedUserManagement: React.FC = () => {
     switch (role) {
       case 'admin': return 'bg-red-100 text-red-800 border-red-200';
       case 'ops_supervisor': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'site_manager': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       case 'field_staff': return 'bg-green-100 text-green-800 border-green-200';
       case 'tenant_manager': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'tenant_user': return 'bg-violet-100 text-violet-800 border-violet-200';
+      case 'sustain_mgr': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'fin_analyst': return 'bg-cyan-100 text-cyan-800 border-cyan-200';
+      case 'client_readonly': return 'bg-slate-100 text-slate-800 border-slate-200';
       case 'vendor': return 'bg-orange-100 text-orange-800 border-orange-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -354,7 +405,7 @@ export const EnhancedUserManagement: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="department">Department</Label>
               <Input
                 id="department"
@@ -363,6 +414,31 @@ export const EnhancedUserManagement: React.FC = () => {
                 placeholder="Enter department (optional)"
               />
             </div>
+            
+            {/* Department Specialization dropdown for field staff */}
+            {showDepartmentSpecialization && (
+              <div className="space-y-2">
+                <Label htmlFor="specialization" className="flex items-center">
+                  Specialization <span className="text-red-500 ml-1">*</span>
+                </Label>
+                <Select 
+                  value={newUser.department_specialization} 
+                  onValueChange={(value) => setNewUser({ ...newUser, department_specialization: value })}
+                >
+                  <SelectTrigger id="specialization">
+                    <SelectValue placeholder="Select specialization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Required for Field Staff role</p>
+              </div>
+            )}
           </div>
           <Button 
             onClick={handleCreateUser} 
@@ -393,9 +469,16 @@ export const EnhancedUserManagement: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                {roles.map(role => (
-                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
-                ))}
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
+                <SelectItem value="site_manager">Site Manager</SelectItem>
+                <SelectItem value="field_staff">Field Staff</SelectItem>
+                <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
+                <SelectItem value="tenant_user">Tenant User</SelectItem>
+                <SelectItem value="sustain_mgr">Sustainability Manager</SelectItem>
+                <SelectItem value="fin_analyst">Finance Analyst</SelectItem>
+                <SelectItem value="client_readonly">Client Read-Only</SelectItem>
+                <SelectItem value="vendor">Vendor</SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -429,18 +512,27 @@ export const EnhancedUserManagement: React.FC = () => {
                           {/* Role Badge/Editor */}
                           {editingRoleUserId === user.id ? (
                             <div className="flex items-center gap-2">
-                              <Select value={newRole} onValueChange={setNewRole}>
-                                <SelectTrigger className="w-40">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {roles.map(role => (
-                                    <SelectItem key={role.value} value={role.value}>
-                                      {role.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                               <div className="flex flex-col gap-2">
+                                <Select value={newRole} onValueChange={setNewRole}>
+                                  <SelectTrigger className="w-48">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {roles.map(role => (
+                                      <SelectItem key={role.value} value={role.value}>
+                                        {role.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                
+                                {/* Show specialization note when field_staff is selected */}
+                                {newRole === 'field_staff' && (
+                                  <p className="text-xs text-amber-600">
+                                    Note: Set department specialization after saving
+                                  </p>
+                                )}
+                               </div>
                               <Button
                                 size="sm"
                                 variant="default"
