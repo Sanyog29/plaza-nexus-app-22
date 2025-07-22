@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,10 @@ import {
   XCircle,
   RotateCcw,
   Trash2,
-  Search
+  Search,
+  Edit3,
+  Save,
+  X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +45,12 @@ export const EnhancedUserManagement: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  
+  // Role editing state
+  const [editingRoleUserId, setEditingRoleUserId] = useState<string | null>(null);
+  const [newRole, setNewRole] = useState<string>('');
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  
   const [newUser, setNewUser] = useState({
     email: '',
     firstName: '',
@@ -50,6 +58,14 @@ export const EnhancedUserManagement: React.FC = () => {
     role: 'tenant_manager',
     department: ''
   });
+
+  const roles = [
+    { value: 'admin', label: 'Admin' },
+    { value: 'ops_supervisor', label: 'Operations Supervisor' },
+    { value: 'field_staff', label: 'Field Staff' },
+    { value: 'tenant_manager', label: 'Tenant Manager' },
+    { value: 'vendor', label: 'Vendor' }
+  ];
 
   useEffect(() => {
     if (isAdmin) {
@@ -65,7 +81,6 @@ export const EnhancedUserManagement: React.FC = () => {
       });
 
       if (error) throw error;
-      // Map the data to include missing properties with defaults
       const mappedData = (data || []).map((user: any) => ({
         ...user,
         approval_status: user.approval_status || 'pending'
@@ -120,7 +135,6 @@ export const EnhancedUserManagement: React.FC = () => {
         description: "User invitation sent successfully",
       });
 
-      // Reset form
       setNewUser({
         email: '',
         firstName: '',
@@ -129,7 +143,6 @@ export const EnhancedUserManagement: React.FC = () => {
         department: ''
       });
 
-      // Refresh users list
       fetchUsers();
     } catch (error: any) {
       console.error('Error creating user:', error);
@@ -213,6 +226,61 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   };
 
+  const handleStartRoleEdit = (userId: string, currentRole: string) => {
+    setEditingRoleUserId(userId);
+    setNewRole(currentRole);
+  };
+
+  const handleCancelRoleEdit = () => {
+    setEditingRoleUserId(null);
+    setNewRole('');
+  };
+
+  const handleSaveRoleChange = async (userId: string) => {
+    if (!newRole || newRole === users.find(u => u.id === userId)?.role) {
+      handleCancelRoleEdit();
+      return;
+    }
+
+    setIsUpdatingRole(true);
+    try {
+      const { error } = await supabase.rpc('update_user_role_safe', {
+        target_user_id: userId,
+        new_role_text: newRole
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "User role updated successfully",
+      });
+
+      setEditingRoleUserId(null);
+      setNewRole('');
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user role",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingRole(false);
+    }
+  };
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800 border-red-200';
+      case 'ops_supervisor': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'field_staff': return 'bg-green-100 text-green-800 border-green-200';
+      case 'tenant_manager': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'vendor': return 'bg-orange-100 text-orange-800 border-orange-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
@@ -280,11 +348,9 @@ export const EnhancedUserManagement: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
-                  <SelectItem value="field_staff">Field Staff</SelectItem>
-                  <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                  <SelectItem value="vendor">Vendor</SelectItem>
+                  {roles.map(role => (
+                    <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -327,11 +393,9 @@ export const EnhancedUserManagement: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="ops_supervisor">Ops Supervisor</SelectItem>
-                <SelectItem value="field_staff">Field Staff</SelectItem>
-                <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                <SelectItem value="vendor">Vendor</SelectItem>
+                {roles.map(role => (
+                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -362,7 +426,53 @@ export const EnhancedUserManagement: React.FC = () => {
                         <p className="font-medium">{user.first_name} {user.last_name}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary">{user.role.replace('_', ' ')}</Badge>
+                          {/* Role Badge/Editor */}
+                          {editingRoleUserId === user.id ? (
+                            <div className="flex items-center gap-2">
+                              <Select value={newRole} onValueChange={setNewRole}>
+                                <SelectTrigger className="w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {roles.map(role => (
+                                    <SelectItem key={role.value} value={role.value}>
+                                      {role.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleSaveRoleChange(user.id)}
+                                disabled={isUpdatingRole}
+                              >
+                                <Save className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCancelRoleEdit}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Badge className={getRoleBadgeColor(user.role)}>
+                                {roles.find(r => r.value === user.role)?.label || user.role}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleStartRoleEdit(user.id, user.role)}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          
                           <Badge 
                             variant={
                               user.approval_status === 'approved' ? 'default' :
