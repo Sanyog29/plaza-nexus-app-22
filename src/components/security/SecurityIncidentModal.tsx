@@ -57,20 +57,60 @@ const SecurityIncidentModal: React.FC<SecurityIncidentModalProps> = ({
         throw new Error('User not authenticated');
       }
       
-      const { error } = await supabase.from('visitor_check_logs').insert({
-        action_type: incidentType,
-        performed_by: user.id,
-        timestamp: new Date().toISOString(),
-        location: location,
-        notes: description,
-        metadata: {
-          severity: severity,
-          resolved: false,
-          reportedAt: new Date().toISOString()
-        }
-      });
-      
-      if (error) throw error;
+      // Find the first existing visitor to use as a placeholder for security incidents
+      const { data: existingVisitor } = await supabase
+        .from('visitors')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (!existingVisitor) {
+        // Create a system visitor if none exists
+        const { data: systemVisitor, error: visitorError } = await supabase
+          .from('visitors')
+          .insert({
+            host_id: user.id,
+            name: 'Security System',
+            visit_date: new Date().toISOString().split('T')[0],
+            visit_purpose: 'Security Incident Reporting'
+          })
+          .select('id')
+          .single();
+        
+        if (visitorError) throw visitorError;
+        
+        const { error } = await supabase.from('visitor_check_logs').insert({
+          action_type: 'check_in',
+          visitor_id: systemVisitor.id,
+          performed_by: user.id,
+          location: location,
+          notes: `${incidentType.toUpperCase()} - ${severity.toUpperCase()}: ${description}`,
+          metadata: {
+            severity: severity,
+            incident_type: incidentType,
+            resolved: false,
+            reportedAt: new Date().toISOString()
+          }
+        });
+        
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('visitor_check_logs').insert({
+          action_type: 'check_in',
+          visitor_id: existingVisitor.id,
+          performed_by: user.id,
+          location: location,
+          notes: `${incidentType.toUpperCase()} - ${severity.toUpperCase()}: ${description}`,
+          metadata: {
+            severity: severity,
+            incident_type: incidentType,
+            resolved: false,
+            reportedAt: new Date().toISOString()
+          }
+        });
+        
+        if (error) throw error;
+      }
       
       onIncidentReported();
       resetForm();

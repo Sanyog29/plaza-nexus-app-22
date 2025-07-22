@@ -62,7 +62,7 @@ const AdminSecurityPage = () => {
       const { data: guardsData, error: guardsError } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['security_staff', 'security_supervisor'])
+        .in('role', ['field_staff', 'ops_supervisor'])
         .order('created_at', { ascending: false });
       
       if (guardsError) throw guardsError;
