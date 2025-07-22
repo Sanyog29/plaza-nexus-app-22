@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Search } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
+import SmartCategorySelector from './SmartCategorySelector';
 import { Database } from '@/integrations/supabase/types';
 
 type RequestPriority = Database['public']['Enums']['request_priority'];
@@ -194,29 +195,15 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
         />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="category">Category *</Label>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory} disabled={isLoading || submitting}>
-          <SelectTrigger className="bg-card border-gray-600">
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent className="bg-card border-gray-600 max-h-60">
-            {groupedCategories.map((category) => (
-              <SelectItem key={category.id} value={category.id} className="hover:bg-gray-800">
-                <div className="flex items-center gap-2">
-                  {category.icon && <span className="text-lg">{category.icon}</span>}
-                  <div>
-                    <div className="font-medium">{category.name}</div>
-                    {category.description && (
-                      <div className="text-xs text-gray-400">{category.description}</div>
-                    )}
-                  </div>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <SmartCategorySelector
+        categories={groupedCategories}
+        selectedCategory={selectedCategory}
+        onCategorySelect={setSelectedCategory}
+        description={description}
+        location={location}
+        isLoading={isLoading}
+        disabled={submitting}
+      />
 
       <div className="space-y-2">
         <Label htmlFor="priority">Priority *</Label>
