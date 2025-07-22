@@ -2149,25 +2149,40 @@ export type Database = {
       }
       maintenance_categories: {
         Row: {
+          category_group: string | null
           created_at: string
           description: string | null
+          estimated_resolution_minutes: number | null
           icon: string | null
           id: string
+          is_active: boolean | null
           name: string
+          sort_order: number | null
+          usage_count: number | null
         }
         Insert: {
+          category_group?: string | null
           created_at?: string
           description?: string | null
+          estimated_resolution_minutes?: number | null
           icon?: string | null
           id?: string
+          is_active?: boolean | null
           name: string
+          sort_order?: number | null
+          usage_count?: number | null
         }
         Update: {
+          category_group?: string | null
           created_at?: string
           description?: string | null
+          estimated_resolution_minutes?: number | null
           icon?: string | null
           id?: string
+          is_active?: boolean | null
           name?: string
+          sort_order?: number | null
+          usage_count?: number | null
         }
         Relationships: []
       }
