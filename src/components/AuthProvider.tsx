@@ -85,13 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsOpsSupervisor(role === 'ops_supervisor');
     setIsFieldStaff(role === 'field_staff');
     setIsTenantManager(role === 'tenant_manager');
-    setIsTenantUser(false); // Disable for now
+    setIsTenantUser(role === 'tenant_user');
     setIsVendor(role === 'vendor');
-    setIsSiteManager(false); // Disable for now
-    setIsSustainabilityManager(false); // Disable for now
-    setIsFinanceAnalyst(false); // Disable for now
-    setIsClientReadOnly(false); // Disable for now
-    setIsStaff(['admin', 'ops_supervisor', 'field_staff', 'staff'].includes(role));
+    setIsSiteManager(role === 'site_manager');
+    setIsSustainabilityManager(role === 'sustain_mgr');
+    setIsFinanceAnalyst(role === 'fin_analyst');
+    setIsClientReadOnly(role === 'client_readonly');
+    setIsStaff(['admin', 'ops_supervisor', 'field_staff', 'site_manager'].includes(role));
 
     // Enhanced permissions based on feature-to-role matrix
     const rolePermissions = {
