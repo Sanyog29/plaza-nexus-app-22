@@ -100,6 +100,7 @@ const adminMenuGroups = [
         ] as { title: string; url: string }[]
       },
       { title: "System Health", url: "/admin/system-health", icon: Activity },
+      { title: "System Monitoring", url: "/admin/monitoring", icon: Monitor },
       { title: "Search", url: "/admin/search", icon: Search },
       { title: "Audit Logs", url: "/admin/audit-logs", icon: Archive },
     ]

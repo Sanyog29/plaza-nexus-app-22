@@ -80,6 +80,8 @@ import { PWANotificationManager } from "./components/notifications/PWANotificati
 import { EnhancedNotificationProvider } from "./components/notifications/EnhancedNotificationProvider";
 import NotificationsPage from "./pages/NotificationsPage";
 import { BreadcrumbProvider } from "./contexts/BreadcrumbContext";
+import QualityControlPage from "./pages/admin/QualityControlPage";
+import SystemMonitoringPage from "./pages/admin/SystemMonitoringPage";
 
 const queryClient = new QueryClient();
 
@@ -136,8 +138,10 @@ const App = () => (
               <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/security" element={<AdminSecurityPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
-              <Route path="/admin/search" element={<AdminSearchPage />} />
-              <Route path="/admin/settings" element={<AdminSettingsPage />} />
+               <Route path="/admin/search" element={<AdminSearchPage />} />
+               <Route path="/admin/settings" element={<AdminSettingsPage />} />
+               <Route path="/admin/quality" element={<QualityControlPage />} />
+               <Route path="/admin/monitoring" element={<SystemMonitoringPage />} />
               
               {/* Legacy admin routes for backward compatibility */}
               <Route path="/admin/content" element={<AdminContentPage />} />
