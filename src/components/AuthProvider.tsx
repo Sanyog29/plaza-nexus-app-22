@@ -8,13 +8,19 @@ interface AuthContextType {
   user: User | null;
   userRole: string | null;
   userDepartment: string | null;
+  departmentSpecialization: string | null;
   approvalStatus: 'pending' | 'approved' | 'rejected' | null;
   isAdmin: boolean;
   isStaff: boolean;
   isOpsSupervisor: boolean;
   isFieldStaff: boolean;
   isTenantManager: boolean;
+  isTenantUser: boolean;
   isVendor: boolean;
+  isSiteManager: boolean;
+  isSustainabilityManager: boolean;
+  isFinanceAnalyst: boolean;
+  isClientReadOnly: boolean;
   isLoading: boolean;
   permissions: Record<string, boolean>;
   signOut: () => Promise<void>;
@@ -25,13 +31,19 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   userRole: null,
   userDepartment: null,
+  departmentSpecialization: null,
   approvalStatus: null,
   isAdmin: false,
   isStaff: false,
   isOpsSupervisor: false,
   isFieldStaff: false,
   isTenantManager: false,
+  isTenantUser: false,
   isVendor: false,
+  isSiteManager: false,
+  isSustainabilityManager: false,
+  isFinanceAnalyst: false,
+  isClientReadOnly: false,
   isLoading: true,
   permissions: {},
   signOut: async () => {},
@@ -50,26 +62,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userDepartment, setUserDepartment] = useState<string | null>(null);
+  const [departmentSpecialization, setDepartmentSpecialization] = useState<string | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [isOpsSupervisor, setIsOpsSupervisor] = useState(false);
   const [isFieldStaff, setIsFieldStaff] = useState(false);
   const [isTenantManager, setIsTenantManager] = useState(false);
+  const [isTenantUser, setIsTenantUser] = useState(false);
   const [isVendor, setIsVendor] = useState(false);
+  const [isSiteManager, setIsSiteManager] = useState(false);
+  const [isSustainabilityManager, setIsSustainabilityManager] = useState(false);
+  const [isFinanceAnalyst, setIsFinanceAnalyst] = useState(false);
+  const [isClientReadOnly, setIsClientReadOnly] = useState(false);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const updateRoleStates = React.useCallback((role: string) => {
+  const updateRoleStates = React.useCallback((role: string, specialization?: string) => {
     setUserRole(role);
+    setDepartmentSpecialization(specialization || null);
     setIsAdmin(role === 'admin');
     setIsOpsSupervisor(role === 'ops_supervisor');
     setIsFieldStaff(role === 'field_staff');
     setIsTenantManager(role === 'tenant_manager');
+    setIsTenantUser(role === 'tenant_user');
     setIsVendor(role === 'vendor');
-    setIsStaff(['admin', 'ops_supervisor', 'field_staff'].includes(role));
+    setIsSiteManager(role === 'site_manager');
+    setIsSustainabilityManager(role === 'sustain_mgr');
+    setIsFinanceAnalyst(role === 'fin_analyst');
+    setIsClientReadOnly(role === 'client_readonly');
+    setIsStaff(['admin', 'ops_supervisor', 'field_staff', 'site_manager'].includes(role));
 
-    // Set permissions based on role
+    // Enhanced permissions based on feature-to-role matrix
     const rolePermissions = {
       admin: {
         can_manage_users: true,
@@ -78,6 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_configure_sla: true,
         can_view_analytics: true,
         can_manage_vendors: true,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: true,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: true,
       },
       ops_supervisor: {
         can_manage_users: false,
@@ -86,6 +114,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_configure_sla: false,
         can_view_analytics: true,
         can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: true,
+      },
+      site_manager: {
+        can_manage_users: false,
+        can_view_all_requests: true,
+        can_assign_requests: true,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
       },
       field_staff: {
         can_manage_users: false,
@@ -94,6 +138,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_configure_sla: false,
         can_view_analytics: false,
         can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: true,
+        can_configure_auto_assign: false,
       },
       tenant_manager: {
         can_manage_users: false,
@@ -102,6 +150,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_configure_sla: false,
         can_view_analytics: false,
         can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: true,
+        can_configure_auto_assign: false,
+      },
+      tenant_user: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: true,
+        can_configure_auto_assign: false,
       },
       vendor: {
         can_manage_users: false,
@@ -110,6 +174,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_configure_sla: false,
         can_view_analytics: false,
         can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+      },
+      fin_analyst: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+      },
+      sustain_mgr: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: true,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+      },
+      client_readonly: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
       },
     };
 
@@ -120,26 +224,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role, department, approval_status')
+        .select('role, department, department_specialization, approval_status')
         .eq('id', userId)
         .maybeSingle();
       
       if (error) {
         console.error('Error fetching profile:', error);
-        // Set defaults but don't show error to user during normal auth flow
-        updateRoleStates('tenant_manager');
+        updateRoleStates('tenant_user');
         setUserDepartment(null);
         setApprovalStatus('pending');
         return;
       }
       
       if (profile) {
-        updateRoleStates(profile.role);
+        updateRoleStates(profile.role, profile.department_specialization);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
       } else {
-        // Profile doesn't exist - this is handled by the database trigger
-        // If trigger fails, manually create profile
         try {
           const { error: insertError } = await supabase
             .from('profiles')
@@ -147,30 +248,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: userId,
               first_name: '',
               last_name: '',
-              role: 'tenant_manager',
+              role: 'tenant_user',
               approval_status: 'pending'
             });
           
           if (insertError) {
             console.error('Profile creation failed:', insertError);
-            // Continue with defaults - user can still use the app
           }
           
-          updateRoleStates('tenant_manager');
+          updateRoleStates('tenant_user');
           setUserDepartment(null);
           setApprovalStatus('pending');
         } catch (createError) {
           console.error('Profile creation exception:', createError);
-          // Set defaults to allow user to continue
-          updateRoleStates('tenant_manager');
+          updateRoleStates('tenant_user');
           setUserDepartment(null);
           setApprovalStatus('pending');
         }
       }
     } catch (error) {
       console.error('Critical error in checkUserRole:', error);
-      // Always set safe defaults to prevent auth loops
-      updateRoleStates('tenant_manager');
+      updateRoleStates('tenant_user');
       setUserDepartment(null);
       setApprovalStatus('pending');
     }
@@ -179,25 +277,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetRoleStates = () => {
     setUserRole(null);
     setUserDepartment(null);
+    setDepartmentSpecialization(null);
     setApprovalStatus(null);
     setIsAdmin(false);
     setIsStaff(false);
     setIsOpsSupervisor(false);
     setIsFieldStaff(false);
     setIsTenantManager(false);
+    setIsTenantUser(false);
     setIsVendor(false);
+    setIsSiteManager(false);
+    setIsSustainabilityManager(false);
+    setIsFinanceAnalyst(false);
+    setIsClientReadOnly(false);
     setPermissions({});
   };
 
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
 
-        // Handle auth events
         if (event === 'SIGNED_IN') {
           toast("Welcome back!", {
             description: "You have successfully logged in.",
@@ -209,11 +311,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           resetRoleStates();
         }
         
-        // Update state synchronously
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Handle role checking separately
         if (session?.user && mounted) {
           setTimeout(() => checkUserRole(session.user.id), 0);
         } else if (mounted) {
@@ -222,7 +322,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Initialize auth state AFTER setting up listener
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -233,7 +332,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(session.user);
             await checkUserRole(session.user.id);
           } else {
-            // No valid session found
             resetRoleStates();
           }
           setIsLoading(false);
@@ -271,13 +369,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user, 
       userRole, 
       userDepartment,
+      departmentSpecialization,
       approvalStatus,
       isAdmin, 
       isStaff, 
       isOpsSupervisor,
       isFieldStaff,
       isTenantManager,
+      isTenantUser,
       isVendor,
+      isSiteManager,
+      isSustainabilityManager,
+      isFinanceAnalyst,
+      isClientReadOnly,
       permissions,
       isLoading, 
       signOut 

@@ -16,7 +16,10 @@ import {
   Settings,
   Plus,
   BarChart3,
-  Activity
+  Activity,
+  Leaf,
+  DollarSign,
+  QrCode
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -25,24 +28,31 @@ import { SmartNotifications } from './SmartNotifications';
 import { RecentActivity } from './RecentActivity';
 
 interface UnifiedDashboardProps {
-  userRole: 'admin' | 'staff' | 'tenant';
+  userRole: 'admin' | 'staff' | 'tenant' | 'site_manager' | 'sustain_mgr' | 'fin_analyst' | 'tenant_user' | 'client_readonly';
 }
 
 export function UnifiedDashboard({ userRole }: UnifiedDashboardProps) {
-  const { user } = useAuth();
+  const { user, permissions } = useAuth();
   const { metrics, isLoading } = useDashboardMetrics();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeWidgets, setActiveWidgets] = useState<string[]>([]);
 
-  // Role-based widget visibility
+  // Enhanced role-based widget visibility
   useEffect(() => {
     const defaultWidgets = {
       admin: ['overview', 'quick-actions', 'analytics', 'users', 'financial', 'system-health', 'notifications', 'activity'],
-      staff: ['overview', 'quick-actions', 'my-tasks', 'performance', 'system-health', 'notifications', 'activity'],
-      tenant: ['overview', 'quick-actions', 'my-requests', 'bookings', 'notifications', 'activity']
+      ops_supervisor: ['overview', 'quick-actions', 'analytics', 'system-health', 'notifications', 'activity'],
+      site_manager: ['overview', 'quick-actions', 'site-analytics', 'my-tasks', 'financial', 'notifications', 'activity'],
+      field_staff: ['overview', 'quick-actions', 'my-tasks', 'qr-scanner', 'notifications'],
+      tenant_manager: ['overview', 'quick-actions', 'my-requests', 'bookings', 'notifications', 'activity'],
+      tenant_user: ['overview', 'qr-scanner', 'my-requests', 'notifications'],
+      vendor: ['overview', 'vendor-tasks', 'vendor-scorecard', 'notifications'],
+      sustain_mgr: ['overview', 'green-kpis', 'energy-dashboard', 'sustainability-reports', 'notifications'],
+      fin_analyst: ['overview', 'financial', 'vendor-scorecards', 'cost-analytics', 'notifications'],
+      client_readonly: ['overview', 'sla-dashboard', 'green-kpis', 'reports']
     };
     
-    setActiveWidgets(defaultWidgets[userRole] || defaultWidgets.tenant);
+    setActiveWidgets(defaultWidgets[userRole] || defaultWidgets.tenant_user);
   }, [userRole]);
 
   const renderOverviewCard = () => (
@@ -218,6 +228,105 @@ export function UnifiedDashboard({ userRole }: UnifiedDashboardProps) {
     </Card>
   );
 
+  const renderGreenKPIsCard = () => (
+    <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Green KPIs</CardTitle>
+        <Leaf className="h-4 w-4 text-green-500" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-sm">Energy Efficiency</span>
+            <Badge variant="secondary">94.2%</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm">Water Usage</span>
+            <Badge variant="outline">-12% vs target</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm">Carbon Footprint</span>
+            <Badge variant="secondary">Low</Badge>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderVendorScorecardsCard = () => (
+    <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Vendor Scorecards</CardTitle>
+        <DollarSign className="h-4 w-4 text-yellow-500" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-sm">Performance Score</span>
+            <Badge variant="secondary">87%</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm">SLA Compliance</span>
+            <Badge variant="default">94%</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm">Cost Efficiency</span>
+            <Badge variant="outline">+5% savings</Badge>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderQRScannerCard = () => (
+    <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Quick Scan</CardTitle>
+        <QrCode className="h-4 w-4 text-purple-500" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-center space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Scan asset QR codes for instant tickets
+          </p>
+          <Button 
+            size="sm" 
+            className="w-full"
+            onClick={() => window.location.href = '/instant'}
+          >
+            <QrCode className="h-4 w-4 mr-2" />
+            Start Scanning
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderSLADashboardCard = () => (
+    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">SLA Dashboard</CardTitle>
+        <Clock className="h-4 w-4 text-blue-500" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span className="text-sm">Overall SLA</span>
+            <Badge variant="default">96.2%</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm">Avg Response</span>
+            <Badge variant="secondary">2.1h</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm">Escalations</span>
+            <Badge variant="outline">3 active</Badge>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   const widgetComponents = {
     'overview': renderOverviewCard(),
     'analytics': renderAnalyticsCard(),
@@ -226,6 +335,10 @@ export function UnifiedDashboard({ userRole }: UnifiedDashboardProps) {
     'my-tasks': renderMyTasksCard(),
     'my-requests': renderMyRequestsCard(),
     'system-health': renderSystemHealthCard(),
+    'green-kpis': renderGreenKPIsCard(),
+    'vendor-scorecards': renderVendorScorecardsCard(),
+    'qr-scanner': renderQRScannerCard(),
+    'sla-dashboard': renderSLADashboardCard(),
     'quick-actions': <QuickActions userRole={userRole} />,
     'notifications': <SmartNotifications userRole={userRole} />,
     'activity': <RecentActivity userRole={userRole} />
@@ -239,20 +352,44 @@ export function UnifiedDashboard({ userRole }: UnifiedDashboardProps) {
     );
   }
 
+  const getDashboardTitle = () => {
+    switch (userRole) {
+      case 'admin': return 'Admin Dashboard';
+      case 'ops_supervisor': return 'Operations Dashboard';
+      case 'site_manager': return 'Site Management Dashboard';
+      case 'field_staff': return 'Field Operations Dashboard';
+      case 'sustain_mgr': return 'Sustainability Dashboard';
+      case 'fin_analyst': return 'Finance Dashboard';
+      case 'tenant_user': return 'Quick Access Dashboard';
+      case 'client_readonly': return 'Performance Dashboard';
+      default: return 'Dashboard';
+    }
+  };
+
+  const getDashboardDescription = () => {
+    switch (userRole) {
+      case 'admin': return 'Complete system overview and management';
+      case 'ops_supervisor': return 'Multi-site operations and SLA governance';
+      case 'site_manager': return 'Site-specific KPIs and vendor management';
+      case 'field_staff': return 'Task management and mobile operations';
+      case 'sustain_mgr': return 'ESG metrics and energy management';
+      case 'fin_analyst': return 'Cost analytics and vendor performance';
+      case 'tenant_user': return 'Quick ticket creation and requests';
+      case 'client_readonly': return 'Transparent SLA and performance reports';
+      default: return 'Your personalized workspace';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with search */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            {userRole === 'admin' ? 'Admin Dashboard' : 
-             userRole === 'staff' ? 'Staff Dashboard' : 
-             'My Dashboard'}
+            {getDashboardTitle()}
           </h1>
           <p className="text-muted-foreground">
-            {userRole === 'admin' ? 'Complete system overview and management' :
-             userRole === 'staff' ? 'Task management and performance tracking' :
-             'Your service requests and facility access'}
+            {getDashboardDescription()}
           </p>
         </div>
         
@@ -266,6 +403,12 @@ export function UnifiedDashboard({ userRole }: UnifiedDashboardProps) {
               className="pl-10 bg-background/50 backdrop-blur"
             />
           </div>
+          {permissions.can_use_qr_instant_ticket && (
+            <Button size="sm" className="flex items-center gap-2" onClick={() => window.location.href = '/instant'}>
+              <QrCode className="h-4 w-4" />
+              Scan
+            </Button>
+          )}
           <Button size="sm" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New
@@ -277,7 +420,7 @@ export function UnifiedDashboard({ userRole }: UnifiedDashboardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {activeWidgets.map((widgetKey) => (
           <div key={widgetKey} className="animate-fade-in">
-            {widgetComponents[widgetKey]}
+            {widgetComponents[widgetKey] || <div>Widget not found: {widgetKey}</div>}
           </div>
         ))}
       </div>
