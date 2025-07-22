@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, DollarSign, ShoppingCart, Star, Clock, TrendingUp, Users } from 'lucide-react';
+import { Download, DollarSign, ShoppingCart, Star, Clock, TrendingUp, Users, Brain, Package, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import SalesChart from './analytics/SalesChart';
 import MetricsGrid from './analytics/MetricsGrid';
+import DemandForecast from './intelligence/DemandForecast';
+import SmartInventory from './intelligence/SmartInventory';
+import PerformanceBenchmarking from './intelligence/PerformanceBenchmarking';
 
 interface VendorAnalyticsProps {
   vendorId: string;
@@ -188,11 +191,13 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
       <MetricsGrid metrics={metrics} />
 
       <Tabs defaultValue="revenue" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="satisfaction">Satisfaction</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="forecast">AI Forecast</TabsTrigger>
+          <TabsTrigger value="intelligence">Business Intelligence</TabsTrigger>
         </TabsList>
 
         <TabsContent value="revenue" className="space-y-6">
@@ -299,6 +304,33 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="forecast" className="space-y-6">
+          <DemandForecast vendorId={vendorId} />
+        </TabsContent>
+
+        <TabsContent value="intelligence" className="space-y-6">
+          <Tabs defaultValue="inventory" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="inventory" className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                Smart Inventory
+              </TabsTrigger>
+              <TabsTrigger value="benchmarking" className="flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Performance Benchmarking
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="inventory">
+              <SmartInventory vendorId={vendorId} />
+            </TabsContent>
+
+            <TabsContent value="benchmarking">
+              <PerformanceBenchmarking vendorId={vendorId} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>
