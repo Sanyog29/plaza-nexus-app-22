@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Lock, Mail, User, Loader2 } from 'lucide-react';
+import { Lock, Mail, User, Loader2, AlertCircle } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -9,10 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PasswordResetModal } from './PasswordResetModal';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 import { OAuthButtons } from './OAuthButtons';
 import { FormField } from './FormField';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthFormProps {
   email: string;
@@ -43,6 +46,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const [oauthLoading, setOauthLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{email?: string; password?: string}>({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [authError, setAuthError] = useState<string>('');
+  const [accountLocked, setAccountLocked] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
 
   // Real-time validation
   useEffect(() => {
@@ -64,6 +70,70 @@ const AuthForm: React.FC<AuthFormProps> = ({
     setIsFormValid(email.length > 0 && password.length > 0 && Object.keys(errors).length === 0);
   }, [email, password, isSignUp]);
 
+  const checkUserExists = async (email: string) => {
+    try {
+      const { data, error } = await supabase.rpc('check_user_exists', { user_email: email });
+      return !error && data;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleAuthError = async (error: any, email: string) => {
+    console.log('Auth error:', error);
+    
+    // Track failed attempts for account lockout protection
+    const newFailedAttempts = failedAttempts + 1;
+    setFailedAttempts(newFailedAttempts);
+    
+    if (newFailedAttempts >= 5) {
+      setAccountLocked(true);
+      setAuthError('Account temporarily locked due to multiple failed attempts. Please try again in 10 minutes or reset your password.');
+      return;
+    }
+
+    if (error.message?.includes('Invalid login credentials')) {
+      // Check if user exists to provide specific guidance
+      const userExists = await checkUserExists(email);
+      
+      if (!userExists) {
+        setAuthError(`No account found with email ${email}. Please sign up first or check your email address.`);
+      } else {
+        setAuthError('Incorrect password. Please check your password or use "Forgot password" to reset it.');
+      }
+    } else if (error.message?.includes('Email not confirmed')) {
+      setAuthError('Please check your email and click the confirmation link before signing in.');
+    } else if (error.message?.includes('Too many requests')) {
+      setAuthError('Too many login attempts. Please wait a few minutes before trying again.');
+    } else if (error.message?.includes('Signup requires a valid password')) {
+      setAuthError('Password must be at least 6 characters long.');
+    } else if (error.message?.includes('User already registered')) {
+      setAuthError('An account with this email already exists. Please sign in instead.');
+    } else {
+      setAuthError(error.message || 'An unexpected error occurred. Please try again.');
+    }
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (accountLocked) {
+      setAuthError('Account is temporarily locked. Please wait or reset your password.');
+      return;
+    }
+
+    setAuthError('');
+    
+    try {
+      await onSubmit(e);
+      // Reset failed attempts on successful auth
+      setFailedAttempts(0);
+      setAccountLocked(false);
+    } catch (error: any) {
+      await handleAuthError(error, email);
+    }
+  };
+
   const currentLoading = isLoading || oauthLoading;
 
   return (
@@ -83,6 +153,13 @@ const AuthForm: React.FC<AuthFormProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {authError && (
+            <Alert variant={accountLocked ? "destructive" : "default"} className="animate-fade-in-up">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
+
           {showEmailSentMessage && (
             <div className="glass-subtle border border-success/30 p-4 rounded-lg text-foreground animate-fade-in-up">
               <div className="flex items-start gap-3">
@@ -107,13 +184,16 @@ const AuthForm: React.FC<AuthFormProps> = ({
             onOAuthEnd={() => setOauthLoading(false)}
           />
 
-          <form onSubmit={onSubmit} className="space-y-5">
+          <form onSubmit={handleFormSubmit} className="space-y-5">
             <FormField
               id="email"
               label="Work Email"
               type="email"
               value={email}
-              onChange={setEmail}
+              onChange={(value) => {
+                setEmail(value);
+                setAuthError(''); // Clear error when user types
+              }}
               placeholder="you@company.com"
               required
               autoComplete="email"
@@ -142,8 +222,11 @@ const AuthForm: React.FC<AuthFormProps> = ({
                 label=""
                 type="password"
                 value={password}
-                onChange={setPassword}
-                placeholder="Create a strong password"
+                onChange={(value) => {
+                  setPassword(value);
+                  setAuthError(''); // Clear error when user types
+                }}
+                placeholder={isSignUp ? "Create a strong password" : "Enter your password"}
                 required
                 autoComplete={isSignUp ? "new-password" : "current-password"}
                 icon={<Lock size={16} className="text-muted-foreground" />}
@@ -163,7 +246,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
             <Button
               type="submit"
               className="w-full btn-primary flex items-center justify-center gap-2 h-12 text-base font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={currentLoading || !isFormValid}
+              disabled={currentLoading || !isFormValid || accountLocked}
             >
               {currentLoading ? (
                 <>
@@ -200,6 +283,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
               setIsSignUp(!isSignUp);
               setShowEmailSentMessage(false);
               setFormErrors({});
+              setAuthError('');
+              setFailedAttempts(0);
+              setAccountLocked(false);
             }}
             className="text-center w-full p-3 rounded-lg border border-border/50 hover:border-border hover:bg-muted/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
             disabled={currentLoading}

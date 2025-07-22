@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeCard from '@/components/auth/WelcomeCard';
@@ -25,7 +24,6 @@ const AuthPage = () => {
   const [showEmailSentMessage, setShowEmailSentMessage] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast: uiToast } = useToast();
 
   const from = location.state?.from?.pathname || "/";
 
@@ -40,32 +38,67 @@ const AuthPage = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              email: email,
+            }
           }
         });
         
-        if (error) throw error;
+        if (error) {
+          // Handle specific signup errors
+          if (error.message?.includes('User already registered')) {
+            toast.error("Account Already Exists", {
+              description: "An account with this email already exists. Please sign in instead.",
+            });
+            setIsSignUp(false);
+            return;
+          }
+          throw error;
+        }
         
         // Show a more detailed message about email confirmation
         setShowEmailSentMessage(true);
-        toast("Account created", {
-          description: "Please check your email (including spam folder) to confirm your account.",
+        toast.success("Account Created Successfully", {
+          description: "Please check your email (including spam folder) to confirm your account before signing in.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         
-        if (error) throw error;
+        if (error) {
+          // Handle specific signin errors
+          if (error.message?.includes('Invalid login credentials')) {
+            // Check if user exists to provide better guidance
+            const { data: userData } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', (await supabase.auth.admin.getUserById(email))?.data?.user?.id || '')
+              .maybeSingle();
+            
+            if (!userData) {
+              toast.error("Account Not Found", {
+                description: `No account found with email ${email}. Please sign up first.`,
+              });
+              setIsSignUp(true);
+              return;
+            }
+          }
+          throw error;
+        }
+        
+        toast.success("Welcome back!", {
+          description: "You have successfully signed in.",
+        });
         navigate(from);
       }
     } catch (error: any) {
-      uiToast({
-        title: "Authentication error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Authentication error:', error);
+      
+      // Let AuthForm handle the specific error display
+      throw error;
     } finally {
       setIsLoading(false);
     }
