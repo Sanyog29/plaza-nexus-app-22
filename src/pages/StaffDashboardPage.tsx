@@ -18,10 +18,16 @@ import {
   Shield,
   Activity,
   GraduationCap,
-  Brain
+  Brain,
+  BarChart3,
+  FileSpreadsheet,
+  Database
 } from 'lucide-react';
 import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
 import { toast } from '@/hooks/use-toast';
+import { FeatureGuard } from '@/components/common/FeatureGuard';
+import { FeatureNotificationSystem } from '@/components/common/FeatureNotificationSystem';
+import { useRoleBasedFeatures } from '@/hooks/useRoleBasedFeatures';
 
 interface RequestStats {
   total: number;
@@ -112,6 +118,9 @@ const StaffDashboardPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
+      {/* Feature Notification System */}
+      <FeatureNotificationSystem />
+      
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2">Staff Dashboard</h1>
         <p className="text-gray-400">Monitor and manage facility operations</p>
@@ -223,11 +232,97 @@ const StaffDashboardPage = () => {
         </CardContent>
       </Card>
 
-      {/* Advanced Features Access for Supervisors */}
+      {/* Advanced Analytics & Tools */}
+      <FeatureGuard
+        feature="advancedDashboardsEnabled"
+        enableFeatureRequest={true}
+        showProgressiveDisclosure={true}
+        featureDisplayName="Advanced Analytics Dashboard"
+        featureDescription="Access comprehensive analytics, forecasting, and performance insights."
+        upgradeHint="Available for ops_supervisor and admin roles"
+      >
+        <Card className="bg-card/50 backdrop-blur mb-8">
+          <CardHeader>
+            <CardTitle className="text-white">Advanced Analytics</CardTitle>
+            <CardDescription>Comprehensive facility performance insights</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button 
+                onClick={() => navigate('/analytics/dashboard')}
+                className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30"
+              >
+                <BarChart3 className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm">Analytics</span>
+              </Button>
+              
+              <Button 
+                onClick={() => navigate('/analytics/forecasting')}
+                className="h-20 flex flex-col bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
+              >
+                <TrendingUp className="h-6 w-6 text-blue-400 mb-2" />
+                <span className="text-sm">Forecasting</span>
+              </Button>
+              
+              <Button 
+                onClick={() => navigate('/analytics/reports')}
+                className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30"
+              >
+                <FileSpreadsheet className="h-6 w-6 text-green-400 mb-2" />
+                <span className="text-sm">Reports</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </FeatureGuard>
+
+      {/* Data Management Tools */}
+      <FeatureGuard
+        feature="dataExportEnabled"
+        enableFeatureRequest={true}
+        showProgressiveDisclosure={true}
+        featureDisplayName="Data Export & Import Tools"
+        featureDescription="Export facility data and import bulk updates via CSV files."
+        upgradeHint="Contact your supervisor for access to data management tools"
+      >
+        <Card className="bg-card/50 backdrop-blur mb-8">
+          <CardHeader>
+            <CardTitle className="text-white">Data Management</CardTitle>
+            <CardDescription>Import, export, and manage facility data</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button 
+                onClick={() => navigate('/data/export')}
+                className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30"
+              >
+                <Database className="h-6 w-6 text-primary mb-2" />
+                <span className="text-sm">Export Data</span>
+              </Button>
+              
+              <FeatureGuard
+                feature="csvImportEnabled"
+                enableFeatureRequest={true}
+                showDisabledState={false}
+              >
+                <Button 
+                  onClick={() => navigate('/data/import')}
+                  className="h-20 flex flex-col bg-secondary/10 hover:bg-secondary/20 border border-secondary/30"
+                >
+                  <FileSpreadsheet className="h-6 w-6 text-secondary mb-2" />
+                  <span className="text-sm">Import CSV</span>
+                </Button>
+              </FeatureGuard>
+            </div>
+          </CardContent>
+        </Card>
+      </FeatureGuard>
+
+      {/* AI-Powered Tools */}
       <Card className="bg-card/50 backdrop-blur mb-8">
         <CardHeader>
-          <CardTitle className="text-white">Advanced Tools & Intelligence</CardTitle>
-          <CardDescription>Access AI-powered facility management tools</CardDescription>
+          <CardTitle className="text-white">AI-Powered Intelligence</CardTitle>
+          <CardDescription>Access smart facility management tools</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
