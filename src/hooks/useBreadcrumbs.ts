@@ -87,38 +87,51 @@ export const useBreadcrumbs = () => {
   };
 
   const generateBreadcrumbs = useMemo(() => {
-    console.log('🍞 Breadcrumb Debug - Generating for:', location.pathname);
-    
-    const currentRoute = findMatchingRoute(location.pathname);
-    console.log('🍞 Breadcrumb Debug - Found route:', currentRoute);
-    
-    if (!currentRoute) {
-      console.log('🍞 Breadcrumb Debug - No route found, using fallback');
-      // Fallback breadcrumbs for unknown routes
-      const pathSegments = location.pathname.split('/').filter(Boolean);
-      const fallbackBreadcrumbs = pathSegments.map((segment, index) => {
-        const href = '/' + pathSegments.slice(0, index + 1).join('/');
-        return {
-          label: segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' '),
-          href,
-          isActive: index === pathSegments.length - 1,
-        };
-      });
-      console.log('🍞 Breadcrumb Debug - Fallback breadcrumbs:', fallbackBreadcrumbs);
-      return fallbackBreadcrumbs;
-    }
+    try {
+      const currentRoute = findMatchingRoute(location.pathname);
+      
+      if (!currentRoute) {
+        // Enhanced fallback breadcrumbs for unknown routes
+        const pathSegments = location.pathname.split('/').filter(Boolean);
+        const fallbackBreadcrumbs = pathSegments.map((segment, index) => {
+          const href = '/' + pathSegments.slice(0, index + 1).join('/');
+          return {
+            label: segment.charAt(0).toUpperCase() + segment.slice(1).replace(/[-_]/g, ' '),
+            href,
+            isActive: index === pathSegments.length - 1,
+          };
+        });
+        
+        // Add home breadcrumb if not already present
+        if (fallbackBreadcrumbs.length > 0 && fallbackBreadcrumbs[0].href !== '/') {
+          fallbackBreadcrumbs.unshift({
+            label: 'Home',
+            href: '/',
+            isActive: false,
+          });
+        }
+        
+        return fallbackBreadcrumbs;
+      }
 
-    console.log('🍞 Breadcrumb Debug - Building chain for route:', currentRoute);
-    const breadcrumbs = buildBreadcrumbChain(currentRoute);
-    console.log('🍞 Breadcrumb Debug - Built breadcrumbs:', breadcrumbs);
-    
-    // Mark the last breadcrumb as active
-    if (breadcrumbs.length > 0) {
-      breadcrumbs[breadcrumbs.length - 1].isActive = true;
-    }
+      const breadcrumbs = buildBreadcrumbChain(currentRoute);
+      
+      // Mark the last breadcrumb as active
+      if (breadcrumbs.length > 0) {
+        breadcrumbs[breadcrumbs.length - 1].isActive = true;
+      }
 
-    console.log('🍞 Breadcrumb Debug - Final breadcrumbs:', breadcrumbs);
-    return breadcrumbs;
+      return breadcrumbs;
+    } catch (error) {
+      console.error('🍞 Breadcrumb Error - Generation failed:', error);
+      
+      // Emergency fallback breadcrumbs
+      return [{
+        label: 'Home',
+        href: '/',
+        isActive: location.pathname === '/',
+      }];
+    }
   }, [location.pathname, params, userRole, isAdmin, isStaff]);
 
   useEffect(() => {
