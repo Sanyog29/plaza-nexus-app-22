@@ -68,7 +68,7 @@ const AdminSecurityPage = () => {
         .select(`
           *,
           visitor_categories (name, icon, color),
-          profiles!inner (first_name, last_name)
+          profiles!visitors_host_id_fkey (first_name, last_name)
         `)
         .order('created_at', { ascending: false })
         .limit(10);
