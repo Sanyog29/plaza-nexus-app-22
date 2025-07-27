@@ -55,7 +55,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
         <BreadcrumbList className="text-sm">
           {/* Home icon for mobile */}
           {isMobile && showHomeIcon && breadcrumbs.length > 2 && (
-            <>
+            <React.Fragment key="mobile-home">
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link to="/" className="flex items-center text-foreground hover:text-primary transition-colors">
@@ -67,28 +67,28 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
                 <ChevronRight className="h-4 w-4" />
               </BreadcrumbSeparator>
               {breadcrumbs.length > 3 && (
-                <>
+                <React.Fragment key="mobile-ellipsis">
                   <BreadcrumbItem>
                     <span className="text-foreground">...</span>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator>
                     <ChevronRight className="h-4 w-4" />
                   </BreadcrumbSeparator>
-                </>
+                </React.Fragment>
               )}
-            </>
+            </React.Fragment>
           )}
 
           {/* Ellipsis for desktop when items are truncated */}
           {hasEllipsis && breadcrumbs.length > maxItems && (
-            <>
+            <React.Fragment key="desktop-ellipsis">
               <BreadcrumbItem>
                 <span className="text-foreground">...</span>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
                 <ChevronRight className="h-4 w-4" />
               </BreadcrumbSeparator>
-            </>
+            </React.Fragment>
           )}
 
           {displayBreadcrumbs.map((breadcrumb, index) => {
@@ -137,7 +137,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
                 </BreadcrumbItem>
                 
                 {!isLast && (
-                  <BreadcrumbSeparator>
+                  <BreadcrumbSeparator key={`separator-${index}`}>
                     <ChevronRight className="h-4 w-4" />
                   </BreadcrumbSeparator>
                 )}
