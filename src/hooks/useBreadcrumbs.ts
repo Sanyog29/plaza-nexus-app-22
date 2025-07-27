@@ -87,11 +87,16 @@ export const useBreadcrumbs = () => {
   };
 
   const generateBreadcrumbs = useMemo(() => {
+    console.log('🍞 Breadcrumb Debug - Generating for:', location.pathname);
+    
     const currentRoute = findMatchingRoute(location.pathname);
+    console.log('🍞 Breadcrumb Debug - Found route:', currentRoute);
+    
     if (!currentRoute) {
+      console.log('🍞 Breadcrumb Debug - No route found, using fallback');
       // Fallback breadcrumbs for unknown routes
       const pathSegments = location.pathname.split('/').filter(Boolean);
-      return pathSegments.map((segment, index) => {
+      const fallbackBreadcrumbs = pathSegments.map((segment, index) => {
         const href = '/' + pathSegments.slice(0, index + 1).join('/');
         return {
           label: segment.charAt(0).toUpperCase() + segment.slice(1).replace('-', ' '),
@@ -99,15 +104,20 @@ export const useBreadcrumbs = () => {
           isActive: index === pathSegments.length - 1,
         };
       });
+      console.log('🍞 Breadcrumb Debug - Fallback breadcrumbs:', fallbackBreadcrumbs);
+      return fallbackBreadcrumbs;
     }
 
+    console.log('🍞 Breadcrumb Debug - Building chain for route:', currentRoute);
     const breadcrumbs = buildBreadcrumbChain(currentRoute);
+    console.log('🍞 Breadcrumb Debug - Built breadcrumbs:', breadcrumbs);
     
     // Mark the last breadcrumb as active
     if (breadcrumbs.length > 0) {
       breadcrumbs[breadcrumbs.length - 1].isActive = true;
     }
 
+    console.log('🍞 Breadcrumb Debug - Final breadcrumbs:', breadcrumbs);
     return breadcrumbs;
   }, [location.pathname, params, userRole, isAdmin, isStaff]);
 

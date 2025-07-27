@@ -29,7 +29,13 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
   const { breadcrumbs } = useBreadcrumbContext();
   const isMobile = useIsMobile();
 
-  if (!breadcrumbs.length) return null;
+  console.log('🍞 SmartBreadcrumb Debug - Received breadcrumbs:', breadcrumbs);
+  console.log('🍞 SmartBreadcrumb Debug - Is mobile:', isMobile);
+
+  if (!breadcrumbs.length) {
+    console.log('🍞 SmartBreadcrumb Debug - No breadcrumbs, returning null');
+    return null;
+  }
 
   // On mobile, show only last 2 items
   const displayBreadcrumbs = isMobile && breadcrumbs.length > 2 
