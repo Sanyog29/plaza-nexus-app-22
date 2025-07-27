@@ -76,6 +76,7 @@ const adminMenuGroups = [
     items: [
       { title: "User Management", url: "/admin/users", icon: Users },
       { title: "Assets", url: "/admin/assets", icon: Building },
+      { title: "Visitor Management", url: "/admin/visitors", icon: UserCheck },
       { title: "Security", url: "/admin/security", icon: Shield },
       { title: "Services Marketplace", url: "/services", icon: Store },
       { title: "Cafeteria Management", url: "/admin/cafeteria", icon: Coffee },
