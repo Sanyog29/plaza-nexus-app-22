@@ -10,7 +10,11 @@ import { AdvancedWorkflowBuilder } from './AdvancedWorkflowBuilder';
 import { IntelligentCommandCenter } from './IntelligentCommandCenter';
 import { MLIntegrationLayer } from './MLIntegrationLayer';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
-import { BarChart3, Database, Brain, Wrench, TrendingDown, AlertCircle, Command, Cpu, FileText } from 'lucide-react';
+import { BarChart3, Database, Brain, Wrench, TrendingDown, AlertCircle, Command, Cpu, FileText, Users, Zap, DollarSign } from 'lucide-react';
+import { AIStaffScheduling } from './AIStaffScheduling';
+import { PredictiveMaintenance } from './PredictiveMaintenance';
+import { EnergyManagement } from './EnergyManagement';
+import { FinancialAnalytics } from './FinancialAnalytics';
 
 interface OperationsTabsProps {
   activeTab: string;
@@ -31,10 +35,26 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
-      <TabsList className="grid w-full grid-cols-9 bg-card/50 text-xs">
+      <TabsList className="grid w-full grid-cols-6 md:grid-cols-12 bg-card/50 text-xs">
         <TabsTrigger value="analytics" className="flex items-center gap-1 px-2">
           <BarChart3 className="h-3 w-3" />
           Analytics
+        </TabsTrigger>
+        <TabsTrigger value="staff-scheduling" className="flex items-center gap-1 px-2">
+          <Users className="h-3 w-3" />
+          AI Staff
+        </TabsTrigger>
+        <TabsTrigger value="maintenance" className="flex items-center gap-1 px-2">
+          <Wrench className="h-3 w-3" />
+          Predictive
+        </TabsTrigger>
+        <TabsTrigger value="energy" className="flex items-center gap-1 px-2">
+          <Zap className="h-3 w-3" />
+          Energy
+        </TabsTrigger>
+        <TabsTrigger value="financial" className="flex items-center gap-1 px-2">
+          <DollarSign className="h-3 w-3" />
+          Financial
         </TabsTrigger>
         <TabsTrigger value="data" className="flex items-center gap-1 px-2">
           <Database className="h-3 w-3" />
@@ -43,10 +63,6 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
         <TabsTrigger value="advanced" className="flex items-center gap-1 px-2">
           <Brain className="h-3 w-3" />
           Real-time
-        </TabsTrigger>
-        <TabsTrigger value="predictive" className="flex items-center gap-1 px-2">
-          <Wrench className="h-3 w-3" />
-          Predictive
         </TabsTrigger>
         <TabsTrigger value="cost-optimization" className="flex items-center gap-1 px-2">
           <TrendingDown className="h-3 w-3" />
@@ -84,6 +100,22 @@ export const OperationsTabs: React.FC<OperationsTabsProps> = ({
             </CardContent>
           </Card>
         )}
+      </TabsContent>
+
+      <TabsContent value="staff-scheduling" className="space-y-6">
+        <AIStaffScheduling />
+      </TabsContent>
+
+      <TabsContent value="maintenance" className="space-y-6">
+        <PredictiveMaintenance />
+      </TabsContent>
+
+      <TabsContent value="energy" className="space-y-6">
+        <EnergyManagement />
+      </TabsContent>
+
+      <TabsContent value="financial" className="space-y-6">
+        <FinancialAnalytics />
       </TabsContent>
 
       <TabsContent value="data" className="space-y-6">
