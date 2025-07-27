@@ -87,10 +87,18 @@ export const useBreadcrumbs = () => {
   };
 
   const generateBreadcrumbs = useMemo(() => {
+    const startTime = performance.now();
+    
     try {
+      console.log('🍞 Breadcrumb Debug - Starting generation for:', location.pathname);
+      console.log('🍞 Debug - Current params:', params);
+      console.log('🍞 Debug - User permissions:', { userRole, isAdmin, isStaff });
+      
       const currentRoute = findMatchingRoute(location.pathname);
+      console.log('🍞 Debug - Found route config:', currentRoute);
       
       if (!currentRoute) {
+        console.warn('🍞 Debug - No route config found, using fallback breadcrumbs');
         // Enhanced fallback breadcrumbs for unknown routes
         const pathSegments = location.pathname.split('/').filter(Boolean);
         const fallbackBreadcrumbs = pathSegments.map((segment, index) => {
@@ -111,19 +119,39 @@ export const useBreadcrumbs = () => {
           });
         }
         
+        console.log('🍞 Debug - Generated fallback breadcrumbs:', fallbackBreadcrumbs);
         return fallbackBreadcrumbs;
       }
 
       const breadcrumbs = buildBreadcrumbChain(currentRoute);
+      console.log('🍞 Debug - Built breadcrumb chain:', breadcrumbs);
       
       // Mark the last breadcrumb as active
       if (breadcrumbs.length > 0) {
         breadcrumbs[breadcrumbs.length - 1].isActive = true;
       }
 
+      const endTime = performance.now();
+      const generationTime = endTime - startTime;
+      console.log(`🍞 Performance - Breadcrumb generation took ${generationTime.toFixed(2)}ms`);
+      
+      if (generationTime > 10) {
+        console.warn('🍞 Performance Warning - Slow breadcrumb generation:', generationTime);
+      }
+
+      console.log('🍞 Debug - Final breadcrumbs:', breadcrumbs);
       return breadcrumbs;
     } catch (error) {
+      const endTime = performance.now();
       console.error('🍞 Breadcrumb Error - Generation failed:', error);
+      console.error('🍞 Error Context:', {
+        pathname: location.pathname,
+        params,
+        userRole,
+        isAdmin,
+        isStaff,
+        generationTime: endTime - startTime
+      });
       
       // Emergency fallback breadcrumbs
       return [{
