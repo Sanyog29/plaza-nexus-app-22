@@ -4435,10 +4435,13 @@ export type Database = {
           email: string
           expires_at: string
           first_name: string | null
+          floor: string | null
           id: string
           invitation_token: string
           invited_by: string | null
           last_name: string | null
+          office_number: string | null
+          phone_number: string | null
           role: Database["public"]["Enums"]["app_role"]
           status: string
           updated_at: string
@@ -4449,10 +4452,13 @@ export type Database = {
           email: string
           expires_at?: string
           first_name?: string | null
+          floor?: string | null
           id?: string
           invitation_token?: string
           invited_by?: string | null
           last_name?: string | null
+          office_number?: string | null
+          phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
           updated_at?: string
@@ -4463,10 +4469,13 @@ export type Database = {
           email?: string
           expires_at?: string
           first_name?: string | null
+          floor?: string | null
           id?: string
           invitation_token?: string
           invited_by?: string | null
           last_name?: string | null
+          office_number?: string | null
+          phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
           updated_at?: string
