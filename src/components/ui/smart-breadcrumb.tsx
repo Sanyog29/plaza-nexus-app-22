@@ -86,7 +86,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
           const IconComponent = breadcrumb.icon;
 
           return (
-            <React.Fragment key={breadcrumb.href}>
+            <React.Fragment key={`breadcrumb-${index}-${breadcrumb.href}`}>
               <BreadcrumbItem>
                 {isLast || breadcrumb.isActive ? (
                   <BreadcrumbPage className={cn(

@@ -3,7 +3,8 @@ import {
   Calendar, Coffee, Shield, Car, Package, Mail, Bell, Search,
   Activity, TrendingUp, Workflow, Brain, FileBarChart, Target,
   UserCheck, Zap, Database, Gauge, AlertTriangle, ClipboardList,
-  Eye, CheckSquare, AlertOctagon, Clock, MapPin
+  Eye, CheckSquare, AlertOctagon, Clock, MapPin, Info, BookOpen,
+  Truck, LayoutDashboard, Plus, UserPlus, Smartphone
 } from 'lucide-react';
 import { RouteConfig } from '@/types/breadcrumb';
 
@@ -12,6 +13,24 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/admin', label: 'Admin Dashboard', icon: Settings },
   { path: '/staff', label: 'Staff Dashboard', icon: Activity },
+
+  // Core user services (missing routes)
+  { path: '/alerts', label: 'Facility Alerts', icon: AlertTriangle, parent: '/' },
+  { path: '/maintenance', label: 'Maintenance Requests', icon: Wrench, parent: '/' },
+  { path: '/info-hub', label: 'Information Hub', icon: Info, parent: '/' },
+  { path: '/delivery', label: 'Delivery Management', icon: Truck, parent: '/' },
+  { path: '/notifications', label: 'Notifications', icon: Bell, parent: '/' },
+  { path: '/manual', label: 'User Manual', icon: BookOpen, parent: '/' },
+  
+  // Portal routes
+  { path: '/vendor-portal', label: 'Vendor Portal', icon: Building, parent: '/' },
+  { path: '/tenant-portal', label: 'Tenant Portal', icon: Home, parent: '/' },
+  
+  // Operations routes
+  { path: '/operations', label: 'Operations Center', icon: Settings, permissions: ['admin', 'staff'], parent: '/' },
+  { path: '/security-guard', label: 'Security Guard Interface', icon: Shield, permissions: ['staff', 'admin'], parent: '/' },
+  { path: '/unified-dashboard', label: 'Unified Dashboard', icon: LayoutDashboard, permissions: ['admin'], parent: '/' },
+  { path: '/advanced-features', label: 'Advanced Features', icon: Zap, permissions: ['admin'], parent: '/' },
 
   // User routes
   { path: '/requests', label: 'Requests', icon: FileText, parent: '/' },
@@ -47,13 +66,16 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: BarChart3, parent: '/admin', permissions: ['admin', 'staff'] },
   { path: '/admin/analytics', label: 'Analytics', icon: TrendingUp, parent: '/admin/dashboard', permissions: ['admin', 'staff'] },
   { path: '/admin/reports', label: 'Reports', icon: FileBarChart, parent: '/admin/analytics', permissions: ['admin', 'staff'] },
+  { path: '/admin/quick-actions', label: 'Quick Actions', icon: Zap, permissions: ['admin'], parent: '/admin' },
 
   { path: '/admin/users', label: 'User Management', icon: Users, parent: '/admin', permissions: ['admin'] },
+  { path: '/admin/users/new', label: 'New User', icon: UserPlus, permissions: ['admin'], parent: '/admin/users' },
   { path: '/admin/users/:userId', label: 'User Details', icon: Users, parent: '/admin/users', dynamic: true, permissions: ['admin'],
     labelGenerator: (params) => `User Profile` },
   { path: '/admin/users/:userId/permissions', label: 'Permissions', icon: Users, parent: '/admin/users/:userId', dynamic: true, permissions: ['admin'] },
 
   { path: '/admin/assets', label: 'Asset Management', icon: Building, parent: '/admin', permissions: ['admin', 'staff'] },
+  { path: '/admin/assets/new', label: 'New Asset', icon: Plus, permissions: ['admin'], parent: '/admin/assets' },
   { path: '/admin/assets/:assetId', label: 'Asset Details', icon: Building, parent: '/admin/assets', dynamic: true, permissions: ['admin', 'staff'],
     labelGenerator: (params) => `Asset Details` },
   { path: '/admin/assets/:assetId/maintenance', label: 'Maintenance History', icon: Wrench, parent: '/admin/assets/:assetId', dynamic: true, permissions: ['admin', 'staff'] },
@@ -100,12 +122,16 @@ export const routeConfigs: RouteConfig[] = [
 
   // Staff routes
   { path: '/staff/dashboard', label: 'Dashboard', icon: Activity, parent: '/staff', permissions: ['staff'] },
+  { path: '/staff/schedule', label: 'Work Schedule', icon: Calendar, permissions: ['staff', 'admin'], parent: '/staff' },
+  { path: '/staff/security/check', label: 'Security Check', icon: Shield, permissions: ['staff', 'admin'], parent: '/staff' },
+  { path: '/staff/mobile', label: 'Mobile Interface', icon: Smartphone, permissions: ['staff', 'admin'], parent: '/staff' },
   { path: '/staff/tasks', label: 'Tasks', icon: ClipboardList, parent: '/staff', permissions: ['staff'] },
   { path: '/staff/tasks/:taskId', label: 'Task Details', icon: ClipboardList, parent: '/staff/tasks', dynamic: true, permissions: ['staff'],
     labelGenerator: (params) => `Task #${params.taskId?.slice(0, 8)}` },
   { path: '/staff/tasks/:taskId/completion', label: 'Completion', icon: Zap, parent: '/staff/tasks/:taskId', dynamic: true, permissions: ['staff'] },
 
   { path: '/staff/maintenance', label: 'Maintenance', icon: Wrench, parent: '/staff', permissions: ['staff'] },
+  { path: '/staff/maintenance/new', label: 'New Maintenance Request', icon: Plus, permissions: ['staff', 'admin'], parent: '/staff/maintenance' },
   { path: '/staff/maintenance/requests', label: 'Requests', icon: ClipboardList, parent: '/staff/maintenance', permissions: ['staff'] },
   { path: '/staff/maintenance/requests/:requestId', label: 'Assignment', icon: UserCheck, parent: '/staff/maintenance/requests', dynamic: true, permissions: ['staff'] },
   { path: '/staff/maintenance/work-orders', label: 'Work Orders', icon: FileText, parent: '/staff/maintenance/requests/:requestId', dynamic: true, permissions: ['staff'] },
