@@ -47,6 +47,8 @@ const AppLayout: React.FC = () => {
         '/bookings': '/admin/bookings',
         '/operational-excellence': '/admin/operational-excellence',
         '/advanced-features': '/admin/advanced-features',
+        '/unified-dashboard': '/admin/unified-dashboard',
+        '/security-guard': '/admin/security-guard',
         '/requests': '/admin/requests',
         '/alerts': '/admin/alerts',
         '/visitors': '/admin/visitors',

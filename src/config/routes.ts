@@ -28,9 +28,10 @@ export const routeConfigs: RouteConfig[] = [
   
   // Operations routes
   { path: '/operations', label: 'Operations Center', icon: Settings, permissions: ['admin', 'staff'], parent: '/' },
-  { path: '/security-guard', label: 'Security Guard Interface', icon: Shield, permissions: ['staff', 'admin'], parent: '/' },
-  { path: '/unified-dashboard', label: 'Unified Dashboard', icon: LayoutDashboard, permissions: ['admin'], parent: '/' },
-  { path: '/advanced-features', label: 'Advanced Features', icon: Zap, permissions: ['admin'], parent: '/' },
+
+  // Admin specialized routes
+  { path: '/admin/security-guard', label: 'Security Guard Interface', icon: Shield, permissions: ['staff', 'admin'], parent: '/admin' },
+  { path: '/admin/unified-dashboard', label: 'Unified Dashboard', icon: LayoutDashboard, permissions: ['admin'], parent: '/admin' },
 
   // User routes
   { path: '/requests', label: 'Requests', icon: FileText, parent: '/' },
