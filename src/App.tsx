@@ -68,6 +68,7 @@ import StaffQuickActionsPage from "./pages/staff/QuickActionsPage";
 import StaffAnalyticsPage from "./pages/staff/AnalyticsPage";
 import StaffSearchPage from "./pages/staff/SearchPage";
 import StaffMobilePage from "./pages/StaffMobilePage";
+import TenantPortalPage from "./pages/TenantPortalPage";
 
 // Quick Action pages
 import UserNewPage from "./pages/admin/UserNewPage";
@@ -167,7 +168,8 @@ const App = () => (
               <Route path="/staff/schedule" element={<SchedulePage />} />
               <Route path="/staff/analytics" element={<StaffAnalyticsPage />} />
               <Route path="/staff/search" element={<StaffSearchPage />} />
-              <Route path="/staff/mobile" element={<StaffMobilePage />} />
+               <Route path="/staff/mobile" element={<StaffMobilePage />} />
+               <Route path="/tenant-portal" element={<TenantPortalPage />} />
               
               {/* Legacy staff routes for backward compatibility */}
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
