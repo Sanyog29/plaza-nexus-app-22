@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DepartmentSelector } from "@/components/admin/DepartmentSelector";
 
 export default function UserNewPage() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function UserNewPage() {
     email: "",
     role: "",
     department: "",
+    specialization: "",
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -46,6 +48,7 @@ export default function UserNewPage() {
         invitation_last_name: formData.lastName,
         invitation_role: formData.role,
         invitation_department: formData.department || null,
+        invitation_specialization: formData.specialization || null,
       });
 
       if (error) throw error;
@@ -162,13 +165,16 @@ export default function UserNewPage() {
                   </Select>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Input 
-                    id="department" 
-                    placeholder="Enter department (optional)"
-                    value={formData.department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
+                {/* Enhanced Department Selector */}
+                <div className="col-span-2">
+                  <DepartmentSelector
+                    selectedDepartment={formData.department}
+                    selectedSpecialization={formData.specialization}
+                    onDepartmentChange={(dept) => handleInputChange('department', dept)}
+                    onSpecializationChange={(spec) => handleInputChange('specialization', spec)}
+                    showSpecialization={formData.role === 'field_staff'}
+                    required={formData.role === 'field_staff'}
+                    className="w-full"
                   />
                 </div>
                 

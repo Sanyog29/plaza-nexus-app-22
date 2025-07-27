@@ -23,6 +23,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
+import { DepartmentSelector } from './DepartmentSelector';
 
 interface UserData {
   id: string;
@@ -69,7 +70,7 @@ export const EnhancedUserManagement: React.FC = () => {
     lastName: '',
     role: 'tenant_manager',
     department: '',
-    department_specialization: ''
+    specialization: ''
   });
 
 const roles = [
@@ -135,7 +136,7 @@ const roles = [
     }
 
     // Check if department specialization is required but not provided
-    if (showDepartmentSpecialization && !newUser.department_specialization) {
+    if (showDepartmentSpecialization && !newUser.specialization) {
       toast({
         title: "Missing Information",
         description: "Please select a department specialization for field staff",
@@ -147,21 +148,13 @@ const roles = [
     setIsCreatingUser(true);
 
     try {
-      // For now, we'll store department_specialization in the department field
-      // until the database function is updated to support it
-      let departmentValue = newUser.department;
-      if (showDepartmentSpecialization && newUser.department_specialization) {
-        departmentValue = newUser.department 
-          ? `${newUser.department} (${newUser.department_specialization})`
-          : newUser.department_specialization;
-      }
-      
       const { data, error } = await supabase.rpc('admin_create_user_invitation', {
         invitation_email: newUser.email,
         invitation_first_name: newUser.firstName,
         invitation_last_name: newUser.lastName,
         invitation_role: newUser.role,
-        invitation_department: departmentValue || null,
+        invitation_department: newUser.department || null,
+        invitation_specialization: newUser.specialization || null,
       });
 
       if (error) throw error;
@@ -186,7 +179,7 @@ const roles = [
         lastName: '',
         role: 'tenant_manager',
         department: '',
-        department_specialization: ''
+        specialization: ''
       });
 
       fetchUsers();
@@ -405,40 +398,18 @@ const roles = [
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
-              <Input
-                id="department"
-                value={newUser.department}
-                onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                placeholder="Enter department (optional)"
+            {/* Enhanced Department Selector */}
+            <div className="md:col-span-2">
+              <DepartmentSelector
+                selectedDepartment={newUser.department}
+                selectedSpecialization={newUser.specialization}
+                onDepartmentChange={(dept) => setNewUser({ ...newUser, department: dept })}
+                onSpecializationChange={(spec) => setNewUser({ ...newUser, specialization: spec })}
+                showSpecialization={showDepartmentSpecialization}
+                required={showDepartmentSpecialization}
+                className="w-full"
               />
             </div>
-            
-            {/* Department Specialization dropdown for field staff */}
-            {showDepartmentSpecialization && (
-              <div className="space-y-2">
-                <Label htmlFor="specialization" className="flex items-center">
-                  Specialization <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Select 
-                  value={newUser.department_specialization} 
-                  onValueChange={(value) => setNewUser({ ...newUser, department_specialization: value })}
-                >
-                  <SelectTrigger id="specialization">
-                    <SelectValue placeholder="Select specialization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">Required for Field Staff role</p>
-              </div>
-            )}
           </div>
           <Button 
             onClick={handleCreateUser} 

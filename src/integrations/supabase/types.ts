@@ -1232,6 +1232,47 @@ export type Database = {
           },
         ]
       }
+      departments: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_department_id: string | null
+          specializations: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_department_id?: string | null
+          specializations?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_department_id?: string | null
+          specializations?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_parent_department_id_fkey"
+            columns: ["parent_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dietary_preferences: {
         Row: {
           allergies: string[] | null
@@ -2917,6 +2958,7 @@ export type Database = {
           rejection_reason: string | null
           role: Database["public"]["Enums"]["app_role"]
           skills: string[] | null
+          specialization: string | null
           updated_at: string
           zone: string | null
         }
@@ -2943,6 +2985,7 @@ export type Database = {
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           skills?: string[] | null
+          specialization?: string | null
           updated_at?: string
           zone?: string | null
         }
@@ -2969,6 +3012,7 @@ export type Database = {
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           skills?: string[] | null
+          specialization?: string | null
           updated_at?: string
           zone?: string | null
         }
@@ -4443,6 +4487,7 @@ export type Database = {
           office_number: string | null
           phone_number: string | null
           role: Database["public"]["Enums"]["app_role"]
+          specialization: string | null
           status: string
           updated_at: string
         }
@@ -4460,6 +4505,7 @@ export type Database = {
           office_number?: string | null
           phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          specialization?: string | null
           status?: string
           updated_at?: string
         }
@@ -4477,6 +4523,7 @@ export type Database = {
           office_number?: string | null
           phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          specialization?: string | null
           status?: string
           updated_at?: string
         }
@@ -5699,16 +5746,28 @@ export type Database = {
     }
     Functions: {
       admin_create_user_invitation: {
-        Args: {
-          invitation_email: string
-          invitation_first_name: string
-          invitation_last_name: string
-          invitation_role: string
-          invitation_department?: string
-          invitation_phone_number?: string
-          invitation_office_number?: string
-          invitation_floor?: string
-        }
+        Args:
+          | {
+              invitation_email: string
+              invitation_first_name: string
+              invitation_last_name: string
+              invitation_role: string
+              invitation_department?: string
+              invitation_phone_number?: string
+              invitation_office_number?: string
+              invitation_floor?: string
+            }
+          | {
+              invitation_email: string
+              invitation_first_name: string
+              invitation_last_name: string
+              invitation_role: string
+              invitation_department?: string
+              invitation_specialization?: string
+              invitation_phone_number?: string
+              invitation_office_number?: string
+              invitation_floor?: string
+            }
         Returns: Json
       }
       admin_delete_user: {
