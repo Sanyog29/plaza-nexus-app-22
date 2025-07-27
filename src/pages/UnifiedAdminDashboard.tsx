@@ -40,7 +40,7 @@ const AdvancedAnalytics = lazy(() => import('@/components/admin/AdvancedAnalytic
 const ExecutiveDashboard = lazy(() => import('@/components/analytics/ExecutiveDashboard').then(m => ({ default: m.ExecutiveDashboard })));
 const SystemHealthDashboard = lazy(() => import('@/components/admin/SystemHealthDashboard'));
 const SettingsManagement = lazy(() => import('@/components/settings/SettingsManagement').then(m => ({ default: m.SettingsManagement })));
-const SystemConfigPage = lazy(() => import('@/pages/SystemConfigPage'));
+const UnifiedSettingsPage = lazy(() => import('@/pages/UnifiedSettingsPage'));
 const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
 const BulkOperationsPage = lazy(() => import('@/pages/BulkOperationsPage'));
 const AuditLogsPage = lazy(() => import('@/pages/AuditLogsPage'));
@@ -466,24 +466,9 @@ const UnifiedAdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
-            <Tabs defaultValue="system" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 bg-card/50">
-                <TabsTrigger value="system">System Configuration</TabsTrigger>
-                <TabsTrigger value="general">General Settings</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="system">
-                <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
-                  <SystemConfigPage />
-                </Suspense>
-              </TabsContent>
-              
-              <TabsContent value="general">
-                <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
-                  <SettingsManagement />
-                </Suspense>
-              </TabsContent>
-            </Tabs>
+            <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
+              <UnifiedSettingsPage />
+            </Suspense>
           </TabsContent>
         </Tabs>
 

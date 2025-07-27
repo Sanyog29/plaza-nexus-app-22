@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Shield, Users, Camera, Key, Clock, AlertTriangle, 
   CheckCircle, UserCheck, Building, RefreshCw, Search,
-  Map, Filter, MoreHorizontal, Plus
+  Map, Filter, MoreHorizontal, Plus, Settings, Lock
 } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
@@ -28,6 +29,7 @@ import AdvancedPermissionsManager from '@/components/admin/AdvancedPermissionsMa
 import { FeatureRequestManager } from '@/components/admin/FeatureRequestManager';
 
 const AdminSecurityPage = () => {
+  const { user, isAdmin, userRole } = useAuth();
   // States for data
   const [visitors, setVisitors] = useState<any[]>([]);
   const [guards, setGuards] = useState<any[]>([]);
@@ -43,6 +45,18 @@ const AdminSecurityPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [analyticsFilter, setAnalyticsFilter] = useState('30');
   const [error, setError] = useState<Error | null>(null);
+  const [viewMode, setViewMode] = useState<'admin' | 'guard' | 'staff'>('admin');
+
+  // Auto-detect view mode based on user role
+  React.useEffect(() => {
+    if (userRole === 'security_guard') {
+      setViewMode('guard');
+    } else if (userRole === 'field_staff') {
+      setViewMode('staff');
+    } else {
+      setViewMode('admin');
+    }
+  }, [userRole]);
 
   // Fetch data
   const fetchSecurityData = async () => {

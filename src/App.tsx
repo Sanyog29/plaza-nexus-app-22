@@ -35,14 +35,12 @@ import StaffDashboardPage from "./pages/StaffDashboardPage";
 import StaffRequestsPage from "./pages/StaffRequestsPage";
 import StaffAlertsPage from "./pages/StaffAlertsPage";
 import StaffReportsPage from "./pages/StaffReportsPage";
-import StaffSettingsPage from "./pages/StaffSettingsPage";
 import UserManualPage from "./pages/UserManualPage";
 import SecurityGuardPage from "./pages/SecurityGuardPage";
 // import StaffOperationsPage from "./pages/StaffOperationsPage";
 import UnifiedDashboardPage from "./pages/UnifiedDashboardPage";
 import OperationalExcellencePage from "./pages/OperationalExcellencePage";
 import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
-import SystemConfigPage from "./pages/SystemConfigPage";
 import OperationsPage from "./pages/OperationsPage";
 import BulkOperationsPage from "./pages/BulkOperationsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
@@ -53,7 +51,7 @@ import AdminSecurityPage from "./pages/AdminSecurityPage";
 import AdminServicesPage from "./pages/AdminServicesPage";
 import AdminBookingsPage from "./pages/AdminBookingsPage";
 import StaffMaintenancePage from "./pages/StaffMaintenancePage";
-import StaffSecurityPage from "./pages/StaffSecurityPage";
+
 import StaffServicesPage from "./pages/StaffServicesPage";
 import VendorPortalPage from "./pages/VendorPortalPage";
 import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
@@ -63,7 +61,7 @@ import DeliveryPage from "./pages/DeliveryPage";
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
 import AssetsPage from "./pages/admin/AssetsPage";
 import AdminSearchPage from "./pages/admin/SearchPage";
-import AdminSettingsPage from "./pages/admin/SettingsPage";
+import UnifiedSettingsPage from "./pages/UnifiedSettingsPage";
 import StaffTasksPage from "./pages/staff/TasksPage";
 import StaffQuickActionsPage from "./pages/staff/QuickActionsPage";
 import StaffAnalyticsPage from "./pages/staff/AnalyticsPage";
@@ -144,15 +142,15 @@ const App = () => (
               <Route path="/admin/security" element={<AdminSecurityPage />} />
               <Route path="/admin/analytics" element={<UnifiedAnalyticsPage />} />
                <Route path="/admin/search" element={<AdminSearchPage />} />
-               <Route path="/admin/settings" element={<AdminSettingsPage />} />
+                <Route path="/admin/settings" element={<UnifiedSettingsPage />} />
+                <Route path="/admin/system-config" element={<UnifiedSettingsPage />} />
                <Route path="/admin/quality" element={<QualityControlPage />} />
                 <Route path="/admin/monitoring" element={<SystemMonitoringPage />} />
                 <Route path="/admin/visitors" element={<VisitorManagementPage />} />
                 <Route path="/admin/alerts" element={<AlertsPage />} />
               
-              {/* Consolidated routes - now handled by unified dashboard */}
+              {/* Consolidated routes - now handled by unified pages */}
               <Route path="/admin/system-health" element={<AdminDashboardPage />} />
-              <Route path="/admin/system-config" element={<AdminDashboardPage />} />
               <Route path="/admin/bulk-operations" element={<AdminDashboardPage />} />
               <Route path="/admin/audit-logs" element={<AdminDashboardPage />} />
               <Route path="/admin/unified-dashboard" element={<AdminDashboardPage />} />
@@ -185,11 +183,11 @@ const App = () => (
               {/* Legacy staff routes for backward compatibility */}
               <Route path="/staff/alerts" element={<StaffAlertsPage />} />
               <Route path="/staff/reports" element={<StaffReportsPage />} />
-              <Route path="/staff/settings" element={<StaffSettingsPage />} />
+              <Route path="/staff/settings" element={<UnifiedSettingsPage />} />
               <Route path="/staff/operations" element={<OperationsPage />} />
               <Route path="/staff/performance" element={<StaffPerformancePage />} />
               <Route path="/staff/training" element={<StaffTrainingPage />} />
-              <Route path="/staff/security" element={<StaffSecurityPage />} />
+              <Route path="/staff/security" element={<AdminSecurityPage />} />
               <Route path="/staff/services" element={<StaffServicesPage />} />
               
               {/* Operations Center */}

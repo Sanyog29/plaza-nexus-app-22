@@ -109,7 +109,7 @@ const adminMenuGroups = [
   {
     label: "System & Personal",
     items: [
-      { title: "Settings", url: "/admin/system-config", icon: Settings },
+      { title: "Settings", url: "/admin/settings", icon: Settings },
       { title: "Content Management", url: "/admin/content", icon: FileText },
       { title: "Profile", url: "/profile", icon: User },
       { title: "Help", url: "/manual", icon: HelpCircle },
@@ -131,7 +131,7 @@ const staffMenuGroups = [
     label: "Operations",
     items: [
       { title: "Maintenance", url: "/staff/maintenance", icon: Building },
-      { title: "Security Tasks", url: "/staff/security", icon: Shield },
+      { title: "Security Tasks", url: "/admin/security", icon: Shield },
       { title: "Services", url: "/staff/services", icon: Store },
       { title: "Schedule", url: "/staff/schedule", icon: Calendar },
       { title: "Operations Center", url: "/staff/operations", icon: Monitor },
@@ -149,7 +149,7 @@ const staffMenuGroups = [
     label: "Tools & Personal",
     items: [
       { title: "Search", url: "/staff/search", icon: Search },
-      { title: "Settings", url: "/staff/settings", icon: Cog },
+      { title: "Settings", url: "/admin/settings", icon: Cog },
       { title: "Profile", url: "/profile", icon: User },
       { title: "Help", url: "/manual", icon: HelpCircle },
     ]
