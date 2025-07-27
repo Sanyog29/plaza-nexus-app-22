@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { useOptimizedAdminMetrics } from '@/hooks/useOptimizedAdminMetrics';
 import OptimizedLoadingSpinner from '@/components/admin/OptimizedLoadingSpinner';
 import OptimizedAccessRestricted from '@/components/admin/OptimizedAccessRestricted';
-import OptimizedAdminDashboard from './OptimizedAdminDashboard';
+import UnifiedAdminDashboard from './UnifiedAdminDashboard';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
 import { useAuth } from '@/components/AuthProvider';
 
@@ -22,7 +22,7 @@ const AdminDashboardPage = () => {
       skeleton={<OptimizedLoadingSpinner showSkeletons />}
     >
       <Suspense fallback={<OptimizedLoadingSpinner />}>
-        <OptimizedAdminDashboard />
+        <UnifiedAdminDashboard />
       </Suspense>
     </LoadingWrapper>
   );

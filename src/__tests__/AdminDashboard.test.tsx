@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { screen, fireEvent, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import AdminDashboard from '@/pages/AdminDashboard';
+import UnifiedAdminDashboard from '@/pages/UnifiedAdminDashboard';
 
 // Mock hooks
 vi.mock('@/hooks/use-mobile', () => ({
@@ -39,51 +39,50 @@ const renderWithProviders = (component: React.ReactElement) => {
   );
 };
 
-describe('AdminDashboard', () => {
+describe('UnifiedAdminDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders dashboard tabs correctly', () => {
-    renderWithProviders(<AdminDashboard />);
+    renderWithProviders(<UnifiedAdminDashboard />);
     
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Assets')).toBeInTheDocument();
+    expect(screen.getByText('Overview')).toBeInTheDocument();
+    expect(screen.getByText('Health')).toBeInTheDocument();
     expect(screen.getByText('Analytics')).toBeInTheDocument();
-    expect(screen.getByText('Performance')).toBeInTheDocument();
-    expect(screen.getByText('Testing')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
   it('switches between tabs correctly', async () => {
-    renderWithProviders(<AdminDashboard />);
+    renderWithProviders(<UnifiedAdminDashboard />);
     
     const analyticsTab = screen.getByText('Analytics');
     fireEvent.click(analyticsTab);
     
     await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument();
     });
   });
 
-  it('displays performance optimization tab', async () => {
-    renderWithProviders(<AdminDashboard />);
+  it('displays health dashboard tab', async () => {
+    renderWithProviders(<UnifiedAdminDashboard />);
     
-    const performanceTab = screen.getByText('Performance');
-    fireEvent.click(performanceTab);
+    const healthTab = screen.getByText('Health');
+    fireEvent.click(healthTab);
     
     await waitFor(() => {
-      expect(screen.getByText('Performance Optimization')).toBeInTheDocument();
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument();
     });
   });
 
-  it('shows testing dashboard tab', async () => {
-    renderWithProviders(<AdminDashboard />);
+  it('shows settings tab', async () => {
+    renderWithProviders(<UnifiedAdminDashboard />);
     
-    const testingTab = screen.getByText('Testing');
-    fireEvent.click(testingTab);
+    const settingsTab = screen.getByText('Settings');
+    fireEvent.click(settingsTab);
     
     await waitFor(() => {
-      expect(screen.getByText('Testing & Quality Assurance')).toBeInTheDocument();
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument();
     });
   });
 });

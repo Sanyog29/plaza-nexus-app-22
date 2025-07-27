@@ -28,7 +28,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminContentPage from "./pages/AdminContentPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import AdminRequestsPage from "./pages/AdminRequestsPage";
-import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import UnifiedAnalyticsPage from "./pages/UnifiedAnalyticsPage";
 import SystemHealthPage from "./pages/SystemHealthPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
 import StaffDashboardPage from "./pages/StaffDashboardPage";
@@ -142,7 +142,7 @@ const App = () => (
                <Route path="/admin/bookings" element={<AdminBookingsPage />} />
                <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/security" element={<AdminSecurityPage />} />
-              <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+              <Route path="/admin/analytics" element={<UnifiedAnalyticsPage />} />
                <Route path="/admin/search" element={<AdminSearchPage />} />
                <Route path="/admin/settings" element={<AdminSettingsPage />} />
                <Route path="/admin/quality" element={<QualityControlPage />} />
@@ -150,19 +150,21 @@ const App = () => (
                 <Route path="/admin/visitors" element={<VisitorManagementPage />} />
                 <Route path="/admin/alerts" element={<AlertsPage />} />
               
-              {/* Legacy admin routes for backward compatibility */}
+              {/* Consolidated routes - now handled by unified dashboard */}
+              <Route path="/admin/system-health" element={<AdminDashboardPage />} />
+              <Route path="/admin/system-config" element={<AdminDashboardPage />} />
+              <Route path="/admin/bulk-operations" element={<AdminDashboardPage />} />
+              <Route path="/admin/audit-logs" element={<AdminDashboardPage />} />
+              <Route path="/admin/unified-dashboard" element={<AdminDashboardPage />} />
+              
+              {/* Keep separate pages for complex features */}
               <Route path="/admin/content" element={<AdminContentPage />} />
-              <Route path="/admin/system-health" element={<SystemHealthPage />} />
               <Route path="/admin/reports" element={<AdminReportsPage />} />
               <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
               <Route path="/admin/cafeteria" element={<AdminCafeteriaPage />} />
-              <Route path="/admin/system-config" element={<SystemConfigPage />} />
-              <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
-               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-               <Route path="/admin/operational-excellence" element={<OperationalExcellencePage />} />
-               <Route path="/admin/advanced-features" element={<AdvancedFeaturesPage />} />
-               <Route path="/admin/unified-dashboard" element={<UnifiedDashboardPage />} />
-               <Route path="/admin/security-guard" element={<SecurityGuardPage />} />
+              <Route path="/admin/operational-excellence" element={<OperationalExcellencePage />} />
+              <Route path="/admin/advanced-features" element={<AdvancedFeaturesPage />} />
+              <Route path="/admin/security-guard" element={<SecurityGuardPage />} />
                
                {/* Staff Routes */}
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
