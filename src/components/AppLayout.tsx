@@ -49,6 +49,12 @@ const AppLayout: React.FC = () => {
         return;
       }
 
+      // Redirect /bookings to /admin/bookings for admin/staff users
+      if (location.pathname === '/bookings') {
+        navigate('/admin/bookings', { replace: true });
+        return;
+      }
+
       // Redirect admin/staff users to their appropriate routes for tenant request URLs
       const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
                                     !location.pathname.includes('/admin/') && 

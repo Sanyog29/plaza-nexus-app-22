@@ -81,7 +81,7 @@ const adminMenuGroups = [
       { title: "Services Marketplace", url: "/services", icon: Store },
       { title: "Cafeteria Management", url: "/admin/cafeteria", icon: Coffee },
       { title: "Maintenance", url: "/admin/maintenance", icon: Wrench },
-      { title: "Bookings", url: "/bookings", icon: Calendar },
+      { title: "Booking Management", url: "/admin/bookings", icon: Calendar },
     ]
   },
   {

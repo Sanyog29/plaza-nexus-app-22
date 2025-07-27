@@ -51,6 +51,7 @@ import StaffTrainingPage from "./pages/StaffTrainingPage";
 import AdminMaintenancePage from "./pages/AdminMaintenancePage";
 import AdminSecurityPage from "./pages/AdminSecurityPage";
 import AdminServicesPage from "./pages/AdminServicesPage";
+import AdminBookingsPage from "./pages/AdminBookingsPage";
 import StaffMaintenancePage from "./pages/StaffMaintenancePage";
 import StaffSecurityPage from "./pages/StaffSecurityPage";
 import StaffServicesPage from "./pages/StaffServicesPage";
@@ -136,9 +137,10 @@ const App = () => (
               <Route path="/admin/users/new" element={<UserNewPage />} />
               <Route path="/admin/assets" element={<AssetsPage />} />
               <Route path="/admin/assets/new" element={<AssetNewPage />} />
-              <Route path="/admin/requests" element={<AdminRequestsPage />} />
-              <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
-              <Route path="/admin/services" element={<AdminServicesPage />} />
+               <Route path="/admin/requests" element={<AdminRequestsPage />} />
+               <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
+               <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+               <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/security" element={<AdminSecurityPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
                <Route path="/admin/search" element={<AdminSearchPage />} />

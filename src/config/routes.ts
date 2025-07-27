@@ -86,6 +86,10 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/admin/requests/:requestId/assign', label: 'Assignment', icon: UserCheck, parent: '/admin/requests/:requestId', dynamic: true, permissions: ['admin', 'staff'] },
   { path: '/admin/requests/:requestId/resolution', label: 'Resolution', icon: Zap, parent: '/admin/requests/:requestId', dynamic: true, permissions: ['admin', 'staff'] },
 
+  { path: '/admin/bookings', label: 'Booking Management', icon: Calendar, parent: '/admin', permissions: ['admin', 'staff'] },
+  { path: '/admin/bookings/:bookingId', label: 'Booking Details', icon: Calendar, parent: '/admin/bookings', dynamic: true, permissions: ['admin', 'staff'],
+    labelGenerator: (params) => `Booking #${params.bookingId?.slice(0, 8)}` },
+
   { path: '/admin/settings', label: 'System Settings', icon: Settings, parent: '/admin', permissions: ['admin'] },
   { path: '/admin/settings/config', label: 'System Config', icon: Settings, parent: '/admin/settings', permissions: ['admin'] },
   { path: '/admin/settings/database', label: 'Database', icon: Database, parent: '/admin/settings/config', permissions: ['admin'] },
