@@ -25,6 +25,7 @@ import AccessPointStatus from '@/components/security/AccessPointStatus';
 import { SecurityAnalytics } from '@/components/analytics/SecurityAnalytics';
 import { RoleFeatureMatrix } from '@/components/admin/RoleFeatureMatrix';
 import AdvancedPermissionsManager from '@/components/admin/AdvancedPermissionsManager';
+import { FeatureRequestManager } from '@/components/admin/FeatureRequestManager';
 
 const AdminSecurityPage = () => {
   // States for data
@@ -281,7 +282,7 @@ const AdminSecurityPage = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="visitors">Visitors</TabsTrigger>
           <TabsTrigger value="access">Access</TabsTrigger>
@@ -290,6 +291,7 @@ const AdminSecurityPage = () => {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="features">Features</TabsTrigger>
+          <TabsTrigger value="requests">Requests</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -704,6 +706,10 @@ const AdminSecurityPage = () => {
 
         <TabsContent value="features" className="space-y-6">
           <RoleFeatureMatrix />
+        </TabsContent>
+
+        <TabsContent value="requests" className="space-y-6">
+          <FeatureRequestManager />
         </TabsContent>
       </Tabs>
 
