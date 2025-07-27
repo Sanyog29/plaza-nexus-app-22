@@ -39,7 +39,7 @@ import {
 const AdvancedAnalytics = lazy(() => import('@/components/admin/AdvancedAnalytics').then(m => ({ default: m.AdvancedAnalytics })));
 const ExecutiveDashboard = lazy(() => import('@/components/analytics/ExecutiveDashboard').then(m => ({ default: m.ExecutiveDashboard })));
 const SystemHealthDashboard = lazy(() => import('@/components/admin/SystemHealthDashboard'));
-const SettingsManagement = lazy(() => import('@/components/settings/SettingsManagement').then(m => ({ default: m.SettingsManagement })));
+
 const UnifiedSettingsPage = lazy(() => import('@/pages/UnifiedSettingsPage'));
 const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage'));
 const BulkOperationsPage = lazy(() => import('@/pages/BulkOperationsPage'));
