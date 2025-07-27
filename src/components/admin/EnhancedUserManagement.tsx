@@ -497,12 +497,20 @@ const roles = [
                                   </SelectContent>
                                 </Select>
                                 
-                                {/* Show specialization note when field_staff is selected */}
-                                {newRole === 'field_staff' && (
-                                  <p className="text-xs text-amber-600">
-                                    Note: Set department specialization after saving
-                                  </p>
-                                )}
+                                 {/* Show department selector when field_staff is selected */}
+                                 {newRole === 'field_staff' && (
+                                   <div className="mt-2">
+                                     <DepartmentSelector
+                                       selectedDepartment=""
+                                       selectedSpecialization=""
+                                       onDepartmentChange={(dept) => {}}
+                                       onSpecializationChange={(spec) => {}}
+                                       showSpecialization={true}
+                                       required={true}
+                                       className="w-full"
+                                     />
+                                   </div>
+                                 )}
                                </div>
                               <Button
                                 size="sm"
