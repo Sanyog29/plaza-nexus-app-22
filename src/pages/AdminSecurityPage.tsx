@@ -62,18 +62,35 @@ const AdminSecurityPage = () => {
   const fetchSecurityData = async () => {
     setRefreshing(true);
     try {
-      // Fetch visitors
+      // Fetch visitors with manual join
       const { data: visitorsData, error: visitorsError } = await supabase
         .from('visitors')
         .select(`
           *,
-          visitor_categories (name, icon, color),
-          profiles!visitors_host_id_fkey (first_name, last_name)
+          visitor_categories (name, icon, color)
         `)
         .order('created_at', { ascending: false })
         .limit(10);
       
       if (visitorsError) throw visitorsError;
+      
+      // Fetch host profiles separately if visitors exist
+      let visitorsWithHosts = visitorsData || [];
+      if (visitorsData && visitorsData.length > 0) {
+        const hostIds = visitorsData.map(v => v.host_id).filter(Boolean);
+        if (hostIds.length > 0) {
+          const { data: hostsData } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', hostIds);
+          
+          // Merge host data with visitors
+          visitorsWithHosts = visitorsData.map(visitor => ({
+            ...visitor,
+            profiles: hostsData?.find(host => host.id === visitor.host_id) || null
+          }));
+        }
+      }
       
       // Fetch security staff (using profiles table with role filter)
       const { data: guardsData, error: guardsError } = await supabase
@@ -131,7 +148,7 @@ const AdminSecurityPage = () => {
       ];
 
       // Update state with fetched data
-      setVisitors(visitorsData || []);
+      setVisitors(visitorsWithHosts || []);
       setGuards(guardsData || []);
       setIncidents(incidentsData || []);
       setAccessPoints(accessPointsData);
