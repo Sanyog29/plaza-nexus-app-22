@@ -51,6 +51,7 @@ export const EnhancedUserManagement: React.FC = () => {
   const [editingRoleUserId, setEditingRoleUserId] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<string>('');
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  const [departmentSelection, setDepartmentSelection] = useState({ department: '', specialization: '' });
   
   // Categories for department specialization
   const categories = [
@@ -497,14 +498,14 @@ const roles = [
                                   </SelectContent>
                                 </Select>
                                 
-                                 {/* Show department selector when field_staff is selected */}
+                                 {/* Department selector for field_staff */}
                                  {newRole === 'field_staff' && (
-                                   <div className="mt-2">
+                                   <div className="mt-2 space-y-2">
                                      <DepartmentSelector
-                                       selectedDepartment=""
-                                       selectedSpecialization=""
-                                       onDepartmentChange={(dept) => {}}
-                                       onSpecializationChange={(spec) => {}}
+                                       selectedDepartment={departmentSelection.department}
+                                       selectedSpecialization={departmentSelection.specialization}
+                                       onDepartmentChange={(dept) => setDepartmentSelection(prev => ({ ...prev, department: dept }))}
+                                       onSpecializationChange={(spec) => setDepartmentSelection(prev => ({ ...prev, specialization: spec }))}
                                        showSpecialization={true}
                                        required={true}
                                        className="w-full"

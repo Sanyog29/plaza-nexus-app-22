@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
+import { DepartmentSpecificDashboard } from '@/components/staff/DepartmentSpecificDashboard';
 import {
   MapPin,
   Clock,
@@ -260,8 +261,9 @@ export const MobileFieldDashboard = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="tasks" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="department">Department</TabsTrigger>
           <TabsTrigger value="patrol">Patrol</TabsTrigger>
           <TabsTrigger value="tools">Tools</TabsTrigger>
         </TabsList>
@@ -313,6 +315,10 @@ export const MobileFieldDashboard = () => {
               </CardContent>
             </Card>
           ))}
+        </TabsContent>
+
+        <TabsContent value="department" className="space-y-4">
+          <DepartmentSpecificDashboard />
         </TabsContent>
 
         <TabsContent value="patrol" className="space-y-4">
