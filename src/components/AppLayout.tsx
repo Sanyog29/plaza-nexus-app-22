@@ -46,6 +46,7 @@ const AppLayout: React.FC = () => {
       const redirects = {
         '/bookings': '/admin/bookings',
         '/operational-excellence': '/admin/operational-excellence',
+        '/advanced-features': '/admin/advanced-features',
         '/requests': '/admin/requests',
         '/alerts': '/admin/alerts',
         '/visitors': '/admin/visitors',

@@ -158,9 +158,11 @@ const App = () => (
               <Route path="/admin/cafeteria" element={<AdminCafeteriaPage />} />
               <Route path="/admin/system-config" element={<SystemConfigPage />} />
               <Route path="/admin/bulk-operations" element={<BulkOperationsPage />} />
-              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-              
-              {/* Staff Routes */}
+               <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+               <Route path="/admin/operational-excellence" element={<OperationalExcellencePage />} />
+               <Route path="/admin/advanced-features" element={<AdvancedFeaturesPage />} />
+               
+               {/* Staff Routes */}
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />
               <Route path="/staff/tasks" element={<StaffTasksPage />} />
               <Route path="/staff/tasks/new" element={<TaskNewPage />} />
