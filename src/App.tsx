@@ -143,9 +143,10 @@ const App = () => (
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
                <Route path="/admin/search" element={<AdminSearchPage />} />
                <Route path="/admin/settings" element={<AdminSettingsPage />} />
-              <Route path="/admin/quality" element={<QualityControlPage />} />
-               <Route path="/admin/monitoring" element={<SystemMonitoringPage />} />
-               <Route path="/admin/visitors" element={<VisitorManagementPage />} />
+               <Route path="/admin/quality" element={<QualityControlPage />} />
+                <Route path="/admin/monitoring" element={<SystemMonitoringPage />} />
+                <Route path="/admin/visitors" element={<VisitorManagementPage />} />
+                <Route path="/admin/alerts" element={<AlertsPage />} />
               
               {/* Legacy admin routes for backward compatibility */}
               <Route path="/admin/content" element={<AdminContentPage />} />

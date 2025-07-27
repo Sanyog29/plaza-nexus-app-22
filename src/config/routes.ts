@@ -2,7 +2,8 @@ import {
   Home, Users, Wrench, Building, FileText, Settings, BarChart3, 
   Calendar, Coffee, Shield, Car, Package, Mail, Bell, Search,
   Activity, TrendingUp, Workflow, Brain, FileBarChart, Target,
-  UserCheck, Zap, Database, Gauge, AlertTriangle, ClipboardList
+  UserCheck, Zap, Database, Gauge, AlertTriangle, ClipboardList,
+  Eye, CheckSquare, AlertOctagon, Clock, MapPin
 } from 'lucide-react';
 import { RouteConfig } from '@/types/breadcrumb';
 
@@ -31,7 +32,8 @@ export const routeConfigs: RouteConfig[] = [
     labelGenerator: (params) => `Order #${params.orderId?.slice(0, 8)}` },
 
   { path: '/services', label: 'Services', icon: Package, parent: '/' },
-  { path: '/services/:category', label: 'Service Category', icon: Package, parent: '/services', dynamic: true },
+  { path: '/services/:category', label: 'Service Category', icon: Package, parent: '/services', dynamic: true,
+    labelGenerator: (params) => params.category?.charAt(0).toUpperCase() + params.category?.slice(1).replace('-', ' ') || 'Category' },
 
   { path: '/security', label: 'Security', icon: Shield, parent: '/' },
   { path: '/security/visitors', label: 'Visitor Registration', icon: Shield, parent: '/security' },
@@ -67,6 +69,29 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/admin/settings/database', label: 'Database', icon: Database, parent: '/admin/settings/config', permissions: ['admin'] },
   { path: '/admin/settings/optimization', label: 'Optimization', icon: Gauge, parent: '/admin/settings/database', permissions: ['admin'] },
 
+  // Visitor Management System
+  { path: '/admin/visitors', label: 'Visitor Management', icon: UserCheck, parent: '/admin', permissions: ['admin', 'staff'] },
+  { path: '/admin/visitors/registration', label: 'Registration', icon: ClipboardList, parent: '/admin/visitors', permissions: ['admin', 'staff'] },
+  { path: '/admin/visitors/dashboard', label: 'Dashboard', icon: Eye, parent: '/admin/visitors', permissions: ['admin', 'staff'] },
+  { path: '/admin/visitors/security', label: 'Security Console', icon: Shield, parent: '/admin/visitors', permissions: ['admin', 'staff'] },
+  { path: '/admin/visitors/emergency', label: 'Emergency Management', icon: AlertOctagon, parent: '/admin/visitors', permissions: ['admin', 'staff'] },
+  { path: '/admin/visitors/analytics', label: 'Analytics', icon: BarChart3, parent: '/admin/visitors', permissions: ['admin', 'staff'] },
+
+  // Alerts and Monitoring
+  { path: '/admin/alerts', label: 'Facility Alerts', icon: AlertTriangle, parent: '/admin', permissions: ['admin', 'staff'] },
+  { path: '/admin/alerts/:alertId', label: 'Alert Details', icon: AlertTriangle, parent: '/admin/alerts', dynamic: true, permissions: ['admin', 'staff'],
+    labelGenerator: (params) => `Alert #${params.alertId?.slice(0, 8)}` },
+
+  // IoT and Sensor Management (placeholder for future implementation)
+  { path: '/admin/iot', label: 'IoT Management', icon: Zap, parent: '/admin', permissions: ['admin', 'staff'] },
+  { path: '/admin/iot/sensors', label: 'Sensors', icon: Activity, parent: '/admin/iot', permissions: ['admin', 'staff'] },
+  { path: '/admin/iot/monitoring', label: 'Monitoring', icon: Eye, parent: '/admin/iot', permissions: ['admin', 'staff'] },
+
+  // Services Management
+  { path: '/admin/services', label: 'Services Management', icon: Package, parent: '/admin', permissions: ['admin', 'staff'] },
+  { path: '/admin/services/providers', label: 'Providers', icon: Users, parent: '/admin/services', permissions: ['admin', 'staff'] },
+  { path: '/admin/services/bookings', label: 'Bookings', icon: Calendar, parent: '/admin/services', permissions: ['admin', 'staff'] },
+
   { path: '/admin/operational-excellence', label: 'Operational Excellence', icon: Target, parent: '/admin', permissions: ['admin', 'ops_supervisor'] },
   { path: '/operational-excellence', label: 'Operational Excellence', icon: Target, parent: '/admin', permissions: ['admin', 'ops_supervisor'] },
   { path: '/operational-excellence/workflows', label: 'Workflows', icon: Workflow, parent: '/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
@@ -94,4 +119,14 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/staff/security/checks', label: 'Security Checks', icon: Shield, parent: '/staff/security', permissions: ['staff'] },
   { path: '/staff/security/incidents', label: 'Incidents', icon: AlertTriangle, parent: '/staff/security/checks', permissions: ['staff'] },
   { path: '/staff/security/reports', label: 'Security Reports', icon: FileBarChart, parent: '/staff/security/incidents', permissions: ['staff'] },
+
+  // Staff Alerts
+  { path: '/staff/alerts', label: 'Alerts', icon: AlertTriangle, parent: '/staff', permissions: ['staff'] },
+  { path: '/staff/alerts/:alertId', label: 'Alert Details', icon: AlertTriangle, parent: '/staff/alerts', dynamic: true, permissions: ['staff'],
+    labelGenerator: (params) => `Alert #${params.alertId?.slice(0, 8)}` },
+
+  // Staff Services
+  { path: '/staff/services', label: 'Service Delivery', icon: Package, parent: '/staff', permissions: ['staff'] },
+  { path: '/staff/services/assignments', label: 'Assignments', icon: ClipboardList, parent: '/staff/services', permissions: ['staff'] },
+  { path: '/staff/services/schedule', label: 'Schedule', icon: Clock, parent: '/staff/services', permissions: ['staff'] },
 ];
