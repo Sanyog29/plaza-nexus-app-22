@@ -114,7 +114,7 @@ export const useVisitorNotifications = () => {
         .from('visitors')
         .select(`
           *,
-          profiles!visitors_host_id_fkey (*)
+          profiles!inner (*)
         `)
         .eq('id', checkLog.visitor_id)
         .maybeSingle();
@@ -154,7 +154,7 @@ export const useVisitorNotifications = () => {
         .from('visitors')
         .select(`
           *,
-          profiles!visitors_host_id_fkey (*)
+          profiles!inner (*)
         `)
         .eq('visit_date', today)
         .eq('status', 'scheduled')

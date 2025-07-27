@@ -33,7 +33,7 @@ export const useAutomatedAlerts = () => {
         .from('visitors')
         .select(`
           *,
-          profiles!visitors_host_id_fkey (*)
+          profiles!inner (*)
         `)
         .eq('visit_date', today)
         .eq('status', 'scheduled')

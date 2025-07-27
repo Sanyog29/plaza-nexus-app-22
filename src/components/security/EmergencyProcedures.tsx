@@ -120,7 +120,7 @@ export const EmergencyProcedures: React.FC = () => {
       // Get all checked-in visitors for evacuation list
       const { data: checkedInVisitors } = await supabase
         .from('visitors')
-        .select('id, name, company, host_id, profiles!visitors_host_id_fkey(first_name, last_name)')
+        .select('id, name, company, host_id, profiles!inner(first_name, last_name)')
         .eq('status', 'checked_in');
 
       if (checkedInVisitors && checkedInVisitors.length > 0) {

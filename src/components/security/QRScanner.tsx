@@ -88,7 +88,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onVisitorScanned }) => {
       // Get visitor details
       const { data: visitor, error: visitorError } = await supabase
         .from('visitors')
-        .select('*, profiles!visitors_host_id_fkey (first_name, last_name)')
+        .select('*, profiles!inner (first_name, last_name)')
         .eq('id', qrData.visitor_id)
         .maybeSingle();
 

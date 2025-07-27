@@ -61,7 +61,7 @@ const SecurityGuardPage = () => {
         .select(`
           *,
           visitor_categories (name, icon, color),
-          profiles!visitors_host_id_fkey (first_name, last_name)
+          profiles!inner (first_name, last_name)
         `)
         .eq('visit_date', today)
         .order('entry_time', { ascending: true });
@@ -71,7 +71,7 @@ const SecurityGuardPage = () => {
         .select(`
           *,
           visitor_categories (name, icon, color),
-          profiles!visitors_host_id_fkey (first_name, last_name)
+          profiles!inner (first_name, last_name)
         `)
         .eq('status', 'checked_in')
         .order('check_in_time', { ascending: false });

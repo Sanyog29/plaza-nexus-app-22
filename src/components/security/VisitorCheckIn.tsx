@@ -37,7 +37,7 @@ export const VisitorCheckIn: React.FC<VisitorCheckInProps> = ({ onCheckIn }) => 
         .select(`
           *,
           visitor_categories (name, icon, color),
-          profiles!visitors_host_id_fkey (first_name, last_name, office_number)
+          profiles!inner (first_name, last_name, office_number)
         `)
         .eq('visit_date', today)
         .order('entry_time', { ascending: true });

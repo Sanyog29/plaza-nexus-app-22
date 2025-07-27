@@ -143,7 +143,7 @@ export const ReportGenerator: React.FC = () => {
         *,
         visitor_categories (name, color),
         visitor_check_logs (*),
-        profiles!visitors_host_id_fkey (first_name, last_name)
+        profiles!inner (first_name, last_name)
       `)
       .gte('visit_date', startDate.toISOString().split('T')[0])
       .lte('visit_date', endDate.toISOString().split('T')[0]);

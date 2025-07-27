@@ -103,7 +103,7 @@ export const useCrossModuleIntegration = () => {
         .select(`
           *,
           visitor_categories (name, color),
-          profiles!visitors_host_id_fkey (first_name, last_name, role)
+          profiles!inner (first_name, last_name, role)
         `)
         .eq('id', visitorId)
         .maybeSingle();
