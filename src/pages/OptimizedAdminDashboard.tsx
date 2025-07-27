@@ -26,6 +26,7 @@ import {
 const AdvancedAnalytics = lazy(() => import('@/components/admin/AdvancedAnalytics').then(m => ({ default: m.AdvancedAnalytics })));
 const StaffWorkloadBalancer = lazy(() => import('@/components/admin/StaffWorkloadBalancer'));
 const EnhancedHelpSystem = lazy(() => import('@/components/help/EnhancedHelpSystem').then(m => ({ default: m.EnhancedHelpSystem })));
+const PerformanceMonitoringDashboard = lazy(() => import('@/components/admin/PerformanceMonitoringDashboard').then(m => ({ default: m.PerformanceMonitoringDashboard })));
 
 const OptimizedAdminDashboard = () => {
   const navigate = useNavigate();
@@ -156,12 +157,15 @@ const OptimizedAdminDashboard = () => {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 bg-card/50">
+        <TabsList className="grid w-full grid-cols-4 bg-card/50">
           <TabsTrigger value="overview" className="data-[state=active]:bg-primary">
             Overview
           </TabsTrigger>
           <TabsTrigger value="performance" className="data-[state=active]:bg-primary">
             Performance
+          </TabsTrigger>
+          <TabsTrigger value="monitoring" className="data-[state=active]:bg-primary">
+            Monitoring
           </TabsTrigger>
           <TabsTrigger value="management" className="data-[state=active]:bg-primary">
             Management
@@ -314,6 +318,23 @@ const OptimizedAdminDashboard = () => {
               </Card>
             }>
               <AdvancedAnalytics />
+            </Suspense>
+          </LoadingWrapper>
+        </TabsContent>
+
+        <TabsContent value="monitoring" className="space-y-6">
+          <LoadingWrapper loading={false}>
+            <Suspense fallback={
+              <Card className="bg-card/50 backdrop-blur">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    <span>Loading performance monitoring...</span>
+                  </div>
+                </CardContent>
+              </Card>
+            }>
+              <PerformanceMonitoringDashboard />
             </Suspense>
           </LoadingWrapper>
         </TabsContent>
