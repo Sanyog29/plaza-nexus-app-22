@@ -12,6 +12,7 @@ import { HelpSystem } from './help/HelpSystem';
 import ErrorBoundary from './common/ErrorBoundary';
 import { usePWA } from '@/hooks/usePWA';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 const AppLayout: React.FC = () => {
   const { user, isAdmin, isStaff, isLoading, userRole } = useAuth(); // Use role states from AuthProvider
@@ -19,6 +20,9 @@ const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const { requestNotificationPermission } = usePWA();
   const isMobile = useIsMobile();
+  
+  // Initialize breadcrumbs for all layouts
+  useBreadcrumbs();
 
   // Request notification permissions for staff/admin when they load
   useEffect(() => {

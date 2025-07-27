@@ -4,11 +4,8 @@ import { Bell, Book } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationCenter } from './notifications/NotificationCenter';
 import { SmartBreadcrumb } from './ui/smart-breadcrumb';
-import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 const Header: React.FC = () => {
-  // Initialize breadcrumbs context
-  useBreadcrumbs();
 
   return (
     <header className="sticky top-0 z-10 px-4 py-3 bg-plaza-dark border-b border-border glass-effect">
