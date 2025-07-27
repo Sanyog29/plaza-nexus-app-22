@@ -15,7 +15,6 @@ import { NavigationErrorBoundary } from '@/components/common/NavigationErrorBoun
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { supabase } from '@/integrations/supabase/client';
 import { SmartBreadcrumb } from '@/components/ui/smart-breadcrumb';
-import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 interface ResponsiveLayoutProps {
   userRole: string;
@@ -26,9 +25,6 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
-  
-  // Initialize breadcrumbs for current route
-  useBreadcrumbs();
 
 
   console.log('ResponsiveLayout - Role:', authUserRole, 'Department:', userDepartment);

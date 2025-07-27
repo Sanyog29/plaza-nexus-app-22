@@ -41,23 +41,32 @@ const AppLayout: React.FC = () => {
       return;
     }
 
-    // Redirect admin/staff users to their appropriate routes for tenant request URLs
-    const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
-                                  !location.pathname.includes('/admin/') && 
-                                  !location.pathname.includes('/staff/');
-    
-    if (isOnTenantRequestRoute && (isAdmin || isStaff)) {
-      const requestId = location.pathname.split('/requests/')[1];
-      const newPath = isAdmin ? `/admin/requests/${requestId}` : `/staff/requests/${requestId}`;
-      navigate(newPath, { replace: true });
-      return;
-    }
-    
-    // Redirect to appropriate dashboard from home page
-    if (location.pathname === '/' && (isAdmin || isStaff)) {
-      const dashboardPath = isAdmin ? '/admin/dashboard' : '/staff/dashboard';
-      navigate(dashboardPath, { replace: true });
-      return;
+    // Smart route redirects for admin/staff users 
+    if (isAdmin || isStaff) {
+      // Redirect /alerts to /admin/alerts for proper breadcrumbs
+      if (location.pathname === '/alerts') {
+        navigate('/admin/alerts', { replace: true });
+        return;
+      }
+
+      // Redirect admin/staff users to their appropriate routes for tenant request URLs
+      const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
+                                    !location.pathname.includes('/admin/') && 
+                                    !location.pathname.includes('/staff/');
+      
+      if (isOnTenantRequestRoute) {
+        const requestId = location.pathname.split('/requests/')[1];
+        const newPath = isAdmin ? `/admin/requests/${requestId}` : `/staff/requests/${requestId}`;
+        navigate(newPath, { replace: true });
+        return;
+      }
+      
+      // Redirect to appropriate dashboard from home page
+      if (location.pathname === '/') {
+        const dashboardPath = isAdmin ? '/admin/dashboard' : '/staff/dashboard';
+        navigate(dashboardPath, { replace: true });
+        return;
+      }
     }
   }, [location.pathname, isAdmin, isStaff, isLoading, user, navigate, userRole]);
 
