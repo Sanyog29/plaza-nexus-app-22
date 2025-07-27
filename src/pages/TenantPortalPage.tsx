@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Home, 
   Calendar, 
@@ -21,9 +22,12 @@ import TenantRoomBooking from '@/components/tenant/TenantRoomBooking';
 import TenantServiceRequests from '@/components/tenant/TenantServiceRequests';
 import TenantBilling from '@/components/tenant/TenantBilling';
 import TenantNotifications from '@/components/tenant/TenantNotifications';
+import { MobileTenantDashboard } from '@/components/tenant/mobile/MobileTenantDashboard';
+import { MobileTenantTabs } from '@/components/tenant/mobile/MobileTenantTabs';
 
 const TenantPortalPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const isMobile = useIsMobile();
 
   // Mock tenant info for demo
   const tenantInfo = {
@@ -64,6 +68,23 @@ const TenantPortalPage = () => {
   }
 
   const tenant = tenantInfo.tenant;
+
+  // Mobile view
+  if (isMobile) {
+    const tabComponents = {
+      dashboard: <MobileTenantDashboard />,
+      booking: <TenantRoomBooking tenantId={tenant.id} />,
+      services: <TenantServiceRequests tenantId={tenant.id} />,
+      billing: <TenantBilling tenantId={tenant.id} />,
+      notifications: <TenantNotifications tenantId={tenant.id} />
+    };
+
+    return (
+      <div className="min-h-screen bg-background">
+        <MobileTenantTabs tabComponents={tabComponents} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
