@@ -23,6 +23,8 @@ import SecurityIncidentModal from '@/components/security/SecurityIncidentModal';
 import SecurityGuardShifts from '@/components/security/SecurityGuardShifts';
 import AccessPointStatus from '@/components/security/AccessPointStatus';
 import { SecurityAnalytics } from '@/components/analytics/SecurityAnalytics';
+import { RoleFeatureMatrix } from '@/components/admin/RoleFeatureMatrix';
+import AdvancedPermissionsManager from '@/components/admin/AdvancedPermissionsManager';
 
 const AdminSecurityPage = () => {
   // States for data
@@ -279,13 +281,15 @@ const AdminSecurityPage = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="visitors">Visitor Management</TabsTrigger>
-          <TabsTrigger value="access">Access Control</TabsTrigger>
-          <TabsTrigger value="guards">Security Guards</TabsTrigger>
+          <TabsTrigger value="visitors">Visitors</TabsTrigger>
+          <TabsTrigger value="access">Access</TabsTrigger>
+          <TabsTrigger value="guards">Guards</TabsTrigger>
           <TabsTrigger value="incidents">Incidents</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+          <TabsTrigger value="features">Features</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -692,6 +696,14 @@ const AdminSecurityPage = () => {
               <SecurityAnalytics period={analyticsFilter} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="permissions" className="space-y-6">
+          <AdvancedPermissionsManager />
+        </TabsContent>
+
+        <TabsContent value="features" className="space-y-6">
+          <RoleFeatureMatrix />
         </TabsContent>
       </Tabs>
 

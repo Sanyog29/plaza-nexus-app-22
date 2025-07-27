@@ -1,7 +1,9 @@
 import { useSystemSettings } from './useSystemSettings';
+import { useAuth } from '@/components/AuthProvider';
 
 export const useFeatureFlags = () => {
   const { config } = useSystemSettings();
+  const { userRole } = useAuth();
 
   const features = config.features || {
     csvImportEnabled: true,
@@ -20,7 +22,7 @@ export const useFeatureFlags = () => {
   };
 
   return {
-    // Data Source Features
+    // Data Source Features (global only - use useRoleBasedFeatures for role-aware access)
     canImportCSV: features.csvImportEnabled,
     canExportData: features.dataExportEnabled,
     canUseGoogleSheets: features.googleSheetsEnabled,
@@ -42,6 +44,15 @@ export const useFeatureFlags = () => {
     canValidateData: features.dataValidationEnabled,
     
     // Feature object for direct access
-    features
+    features,
+    
+    // Role information
+    userRole,
+    
+    // Helper to check if feature should consider role restrictions
+    isGlobalFeatureEnabled: (featureName: keyof typeof features) => features[featureName],
+    
+    // Deprecation notice: Use useRoleBasedFeatures for role-aware feature access
+    __deprecated_notice: 'For role-based feature access, use useRoleBasedFeatures hook instead'
   };
 };
