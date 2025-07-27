@@ -34,16 +34,21 @@ const SecurityIncidentModal: React.FC<SecurityIncidentModalProps> = ({
   onClose,
   onIncidentReported
 }) => {
-  const [incidentType, setIncidentType] = useState<string>('security_incident');
-  const [location, setLocation] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
-  const [severity, setSeverity] = useState<string>('medium');
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    incident_type: 'security_breach',
+    severity: 'medium',
+    location: '',
+    floor: '',
+    zone: '',
+  });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!location || !description) {
+    if (!formData.title || !formData.description || !formData.location) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -57,61 +62,17 @@ const SecurityIncidentModal: React.FC<SecurityIncidentModalProps> = ({
         throw new Error('User not authenticated');
       }
       
-      // Find the first existing visitor to use as a placeholder for security incidents
-      const { data: existingVisitor } = await supabase
-        .from('visitors')
-        .select('id')
-        .limit(1)
-        .single();
-
-      if (!existingVisitor) {
-        // Create a system visitor if none exists
-        const { data: systemVisitor, error: visitorError } = await supabase
-          .from('visitors')
-          .insert({
-            host_id: user.id,
-            name: 'Security System',
-            visit_date: new Date().toISOString().split('T')[0],
-            visit_purpose: 'Security Incident Reporting'
-          })
-          .select('id')
-          .single();
-        
-        if (visitorError) throw visitorError;
-        
-        const { error } = await supabase.from('visitor_check_logs').insert({
-          action_type: 'check_in',
-          visitor_id: systemVisitor.id,
-          performed_by: user.id,
-          location: location,
-          notes: `${incidentType.toUpperCase()} - ${severity.toUpperCase()}: ${description}`,
-          metadata: {
-            severity: severity,
-            incident_type: incidentType,
-            resolved: false,
-            reportedAt: new Date().toISOString()
-          }
+      const { error } = await supabase
+        .from('security_incidents')
+        .insert({
+          ...formData,
+          reported_by: user.id,
+          occurred_at: new Date().toISOString(),
         });
-        
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('visitor_check_logs').insert({
-          action_type: 'check_in',
-          visitor_id: existingVisitor.id,
-          performed_by: user.id,
-          location: location,
-          notes: `${incidentType.toUpperCase()} - ${severity.toUpperCase()}: ${description}`,
-          metadata: {
-            severity: severity,
-            incident_type: incidentType,
-            resolved: false,
-            reportedAt: new Date().toISOString()
-          }
-        });
-        
-        if (error) throw error;
-      }
       
+      if (error) throw error;
+      
+      toast.success('Security incident reported successfully');
       onIncidentReported();
       resetForm();
     } catch (error: any) {
@@ -123,10 +84,15 @@ const SecurityIncidentModal: React.FC<SecurityIncidentModalProps> = ({
   };
   
   const resetForm = () => {
-    setIncidentType('security_incident');
-    setLocation('');
-    setDescription('');
-    setSeverity('medium');
+    setFormData({
+      title: '',
+      description: '',
+      incident_type: 'security_breach',
+      severity: 'medium',
+      location: '',
+      floor: '',
+      zone: '',
+    });
   };
 
   return (
@@ -144,39 +110,43 @@ const SecurityIncidentModal: React.FC<SecurityIncidentModalProps> = ({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="title">Incident Title</Label>
+            <Input 
+              id="title" 
+              placeholder="Brief description of the incident"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="incident-type">Incident Type</Label>
             <Select 
-              value={incidentType} 
-              onValueChange={setIncidentType}
+              value={formData.incident_type} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, incident_type: value }))}
             >
               <SelectTrigger id="incident-type">
                 <SelectValue placeholder="Select incident type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="security_incident">Security Incident</SelectItem>
-                <SelectItem value="emergency_alert">Emergency Alert</SelectItem>
-                <SelectItem value="access_denied">Access Denied</SelectItem>
-                <SelectItem value="policy_violation">Policy Violation</SelectItem>
+                <SelectItem value="security_breach">Security Breach</SelectItem>
+                <SelectItem value="unauthorized_access">Unauthorized Access</SelectItem>
+                <SelectItem value="system_malfunction">System Malfunction</SelectItem>
+                <SelectItem value="visitor_issue">Visitor Issue</SelectItem>
+                <SelectItem value="emergency">Emergency</SelectItem>
+                <SelectItem value="theft">Theft</SelectItem>
+                <SelectItem value="vandalism">Vandalism</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input 
-              id="location" 
-              placeholder="Where did the incident occur?"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
             <Label htmlFor="severity">Severity</Label>
             <Select 
-              value={severity} 
-              onValueChange={setSeverity}
+              value={formData.severity} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, severity: value }))}
             >
               <SelectTrigger id="severity">
                 <SelectValue placeholder="Select severity level" />
@@ -189,14 +159,46 @@ const SecurityIncidentModal: React.FC<SecurityIncidentModalProps> = ({
               </SelectContent>
             </Select>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input 
+                id="location" 
+                placeholder="e.g., Main Lobby"
+                value={formData.location}
+                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="floor">Floor</Label>
+              <Input 
+                id="floor" 
+                placeholder="e.g., Ground Floor"
+                value={formData.floor}
+                onChange={(e) => setFormData(prev => ({ ...prev, floor: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="zone">Zone</Label>
+            <Input 
+              id="zone" 
+              placeholder="e.g., Zone A"
+              value={formData.zone}
+              onChange={(e) => setFormData(prev => ({ ...prev, zone: e.target.value }))}
+            />
+          </div>
           
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea 
               id="description" 
-              placeholder="Provide details about the incident"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Detailed description of what happened..."
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={4}
               required
             />

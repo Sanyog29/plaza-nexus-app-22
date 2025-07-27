@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          access_method: string
+          access_point_id: string | null
+          access_type: string
+          card_id: string | null
+          created_at: string
+          failure_reason: string | null
+          floor: string | null
+          id: string
+          location: string
+          metadata: Json | null
+          success: boolean
+          timestamp: string
+          user_id: string | null
+          visitor_id: string | null
+          zone: string | null
+        }
+        Insert: {
+          access_method: string
+          access_point_id?: string | null
+          access_type: string
+          card_id?: string | null
+          created_at?: string
+          failure_reason?: string | null
+          floor?: string | null
+          id?: string
+          location: string
+          metadata?: Json | null
+          success: boolean
+          timestamp?: string
+          user_id?: string | null
+          visitor_id?: string | null
+          zone?: string | null
+        }
+        Update: {
+          access_method?: string
+          access_point_id?: string | null
+          access_type?: string
+          card_id?: string | null
+          created_at?: string
+          failure_reason?: string | null
+          floor?: string | null
+          id?: string
+          location?: string
+          metadata?: Json | null
+          success?: boolean
+          timestamp?: string
+          user_id?: string | null
+          visitor_id?: string | null
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_logs_access_point_id_fkey"
+            columns: ["access_point_id"]
+            isOneToOne: false
+            referencedRelation: "access_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_logs_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      access_points: {
+        Row: {
+          configuration: Json | null
+          created_at: string
+          device_id: string | null
+          device_type: string
+          firmware_version: string | null
+          floor: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean
+          last_ping: string | null
+          location: string
+          name: string
+          status: string
+          updated_at: string
+          zone: string | null
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string
+          device_id?: string | null
+          device_type?: string
+          firmware_version?: string | null
+          floor: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_ping?: string | null
+          location: string
+          name: string
+          status?: string
+          updated_at?: string
+          zone?: string | null
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string
+          device_id?: string | null
+          device_type?: string
+          firmware_version?: string | null
+          floor?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean
+          last_ping?: string | null
+          location?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          zone?: string | null
+        }
+        Relationships: []
+      }
       ai_models: {
         Row: {
           accuracy_score: number | null
@@ -1553,6 +1676,66 @@ export type Database = {
           last_sync_at?: string | null
           sync_status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      feature_requests: {
+        Row: {
+          assigned_to: string | null
+          attachments: Json | null
+          business_justification: string | null
+          category: string
+          comments: Json | null
+          created_at: string
+          description: string
+          estimated_effort: string | null
+          expected_completion: string | null
+          id: string
+          priority: string
+          requested_by: string
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          votes: number | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          attachments?: Json | null
+          business_justification?: string | null
+          category: string
+          comments?: Json | null
+          created_at?: string
+          description: string
+          estimated_effort?: string | null
+          expected_completion?: string | null
+          id?: string
+          priority?: string
+          requested_by: string
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          votes?: number | null
+        }
+        Update: {
+          assigned_to?: string | null
+          attachments?: Json | null
+          business_justification?: string | null
+          category?: string
+          comments?: Json | null
+          created_at?: string
+          description?: string
+          estimated_effort?: string | null
+          expected_completion?: string | null
+          id?: string
+          priority?: string
+          requested_by?: string
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          votes?: number | null
         }
         Relationships: []
       }
@@ -3385,6 +3568,174 @@ export type Database = {
         }
         Relationships: []
       }
+      security_incidents: {
+        Row: {
+          actions_taken: string | null
+          assigned_to: string | null
+          created_at: string
+          description: string
+          evidence: Json | null
+          floor: string | null
+          follow_up_date: string | null
+          follow_up_required: boolean | null
+          id: string
+          incident_type: string
+          location: string
+          metadata: Json | null
+          occurred_at: string
+          reported_at: string
+          reported_by: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+          witnesses: Json | null
+          zone: string | null
+        }
+        Insert: {
+          actions_taken?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          description: string
+          evidence?: Json | null
+          floor?: string | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          incident_type: string
+          location: string
+          metadata?: Json | null
+          occurred_at?: string
+          reported_at?: string
+          reported_by: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+          witnesses?: Json | null
+          zone?: string | null
+        }
+        Update: {
+          actions_taken?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          description?: string
+          evidence?: Json | null
+          floor?: string | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          incident_type?: string
+          location?: string
+          metadata?: Json | null
+          occurred_at?: string
+          reported_at?: string
+          reported_by?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          witnesses?: Json | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      security_metrics: {
+        Row: {
+          calculated_at: string
+          created_at: string
+          floor: string | null
+          id: string
+          location: string | null
+          metadata: Json | null
+          metric_date: string
+          metric_type: string
+          metric_unit: string
+          metric_value: number
+          zone: string | null
+        }
+        Insert: {
+          calculated_at?: string
+          created_at?: string
+          floor?: string | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          metric_date: string
+          metric_type: string
+          metric_unit?: string
+          metric_value: number
+          zone?: string | null
+        }
+        Update: {
+          calculated_at?: string
+          created_at?: string
+          floor?: string | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          metric_date?: string
+          metric_type?: string
+          metric_unit?: string
+          metric_value?: number
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      security_permissions: {
+        Row: {
+          access_level: string
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          granted_by: string
+          id: string
+          is_active: boolean
+          permission_type: string
+          resource_id: string | null
+          resource_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by: string
+          id?: string
+          is_active?: boolean
+          permission_type: string
+          resource_id?: string | null
+          resource_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          is_active?: boolean
+          permission_type?: string
+          resource_id?: string | null
+          resource_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_shifts: {
         Row: {
           created_at: string
@@ -3425,6 +3776,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_systems: {
+        Row: {
+          configuration: Json | null
+          created_at: string
+          floor: string
+          id: string
+          installation_date: string | null
+          is_active: boolean
+          last_check: string | null
+          location: string
+          model: string | null
+          name: string
+          status: string
+          system_type: string
+          updated_at: string
+          vendor: string | null
+          warranty_expiry: string | null
+          zone: string | null
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string
+          floor: string
+          id?: string
+          installation_date?: string | null
+          is_active?: boolean
+          last_check?: string | null
+          location: string
+          model?: string | null
+          name: string
+          status?: string
+          system_type: string
+          updated_at?: string
+          vendor?: string | null
+          warranty_expiry?: string | null
+          zone?: string | null
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string
+          floor?: string
+          id?: string
+          installation_date?: string | null
+          is_active?: boolean
+          last_check?: string | null
+          location?: string
+          model?: string | null
+          name?: string
+          status?: string
+          system_type?: string
+          updated_at?: string
+          vendor?: string | null
+          warranty_expiry?: string | null
+          zone?: string | null
+        }
+        Relationships: []
       }
       service_bookings: {
         Row: {

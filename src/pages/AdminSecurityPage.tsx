@@ -111,41 +111,34 @@ const AdminSecurityPage = () => {
 
       // Fetch security incidents
       const { data: incidentsData, error: incidentsError } = await supabase
-        .from('visitor_check_logs')
+        .from('security_incidents')
         .select(`
           *,
-          visitors (name, company, category_id, host_id),
-          profiles (first_name, last_name)
+          profiles!security_incidents_reported_by_fkey (first_name, last_name),
+          assigned_profiles:profiles!security_incidents_assigned_to_fkey (first_name, last_name)
         `)
-        .in('action_type', ['security_incident', 'emergency_alert', 'access_denied'])
-        .order('timestamp', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(10);
       
       if (incidentsError) throw incidentsError;
       
-      // Simulate access points (could be replaced with a real table later)
-      const accessPointsData = [
-        { id: 1, name: 'Main Entrance', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-        { id: 2, name: 'Parking Garage', status: 'Online', last_activity: new Date().toISOString(), type: 'Barrier Gate' },
-        { id: 3, name: 'Executive Floor', status: 'Online', last_activity: new Date().toISOString(), type: 'Biometric' },
-        { id: 4, name: 'Server Room', status: 'Online', last_activity: new Date().toISOString(), type: 'Dual Auth' },
-        { id: 5, name: 'Loading Dock', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-        { id: 6, name: 'Emergency Exit', status: 'Offline', last_activity: new Date(Date.now() - 86400000).toISOString(), type: 'Alarm Only' },
-        { id: 7, name: 'Roof Access', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-        { id: 8, name: 'Cafeteria', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-        { id: 9, name: 'Data Center', status: 'Online', last_activity: new Date().toISOString(), type: 'Biometric' },
-        { id: 10, name: 'West Wing', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-        { id: 11, name: 'East Wing', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-        { id: 12, name: 'North Wing', status: 'Online', last_activity: new Date().toISOString(), type: 'Card Reader' },
-      ];
+      // Fetch access points
+      const { data: accessPointsData, error: accessPointsError } = await supabase
+        .from('access_points')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (accessPointsError) throw accessPointsError;
       
-      // Simulate security systems status
-      const securitySystemsData = [
-        { id: 1, system: 'CCTV Network', status: 'Online', details: '24/24 cameras active' },
-        { id: 2, system: 'Access Control', status: 'Online', details: 'All readers functional' },
-        { id: 3, system: 'Fire Safety', status: 'Online', details: 'All sensors active' },
-        { id: 4, system: 'Intrusion Detection', status: 'Armed', details: 'Perimeter secured' },
-      ];
+      // Fetch security systems
+      const { data: securitySystemsData, error: securitySystemsError } = await supabase
+        .from('security_systems')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (securitySystemsError) throw securitySystemsError;
 
       // Update state with fetched data
       setVisitors(visitorsWithHosts || []);
@@ -188,7 +181,7 @@ const AdminSecurityPage = () => {
     // Set up subscription for security incidents
     const incidentsChannel = supabase
       .channel('admin-security-incidents')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'visitor_check_logs' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'security_incidents' }, () => {
         fetchSecurityData();
       })
       .subscribe();
@@ -211,10 +204,10 @@ const AdminSecurityPage = () => {
   );
 
   // Filter incidents by resolved status
-  const resolvedIncidents = incidents.filter(incident => incident.metadata?.resolved);
+  const resolvedIncidents = incidents.filter(incident => incident.status === 'resolved' || incident.status === 'closed');
   
   // Count access points by status
-  const onlineAccessPoints = accessPoints.filter(ap => ap.status === 'Online').length;
+  const onlineAccessPoints = accessPoints.filter(ap => ap.status === 'online').length;
 
   return (
     <div className="container max-w-7xl mx-auto p-6 space-y-6">
@@ -381,10 +374,10 @@ const AdminSecurityPage = () => {
                 {securitySystems.map((system, index) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{system.system}</p>
-                      <p className="text-sm text-muted-foreground">{system.details}</p>
+                      <p className="font-medium">{system.name}</p>
+                      <p className="text-sm text-muted-foreground">{system.system_type.replace('_', ' ')} • {system.location}</p>
                     </div>
-                    <Badge variant={system.status === 'Online' || system.status === 'Armed' ? 'secondary' : 'destructive'}>
+                    <Badge variant={system.status === 'active' ? 'secondary' : 'destructive'}>
                       {system.status}
                     </Badge>
                   </div>
@@ -424,21 +417,21 @@ const AdminSecurityPage = () => {
                     <div key={incident.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant={
-                          incident.action_type === 'emergency_alert' ? 'destructive' : 
-                          incident.action_type === 'security_incident' ? 'default' : 
+                          incident.severity === 'critical' || incident.severity === 'high' ? 'destructive' : 
+                          incident.severity === 'medium' ? 'default' : 
                           'outline'
                         }>
-                          {incident.action_type.replace('_', ' ')}
+                          {incident.incident_type.replace('_', ' ')} - {incident.severity}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(incident.timestamp).toLocaleString()}
+                          {new Date(incident.created_at).toLocaleString()}
                         </span>
                       </div>
                       <p className="font-medium">
-                        {incident.visitors?.name || 'Unknown'} - {incident.location || 'Unspecified location'}
+                        {incident.title} - {incident.location}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {incident.notes || 'No details provided'}
+                        {incident.description}
                       </p>
                     </div>
                   ))}
