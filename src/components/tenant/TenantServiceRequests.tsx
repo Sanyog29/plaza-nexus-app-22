@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +16,8 @@ import {
   XCircle,
   Star,
   MessageSquare,
-  Calendar
+  Calendar,
+  Construction
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -35,58 +34,45 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
 
-  const queryClient = useQueryClient();
-
-  // Get service requests
-  const { data: serviceRequests, isLoading } = useQuery({
-    queryKey: ['service-requests', tenantId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .select(`
-          *,
-          assigned_staff:staff_assignments(
-            staff:staff_members(name, role)
-          )
-        `)
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Create service request mutation
-  const createRequestMutation = useMutation({
-    mutationFn: async (requestData: any) => {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .insert([{
-          tenant_id: tenantId,
-          request_type: requestData.type,
-          title: requestData.title,
-          description: requestData.description,
-          priority: requestData.priority,
-          location: requestData.location,
-          status: 'pending'
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+  // Mock service requests data
+  const mockServiceRequests = [
+    {
+      id: '1',
+      request_type: 'hvac',
+      title: 'Air conditioning not working',
+      description: 'The AC unit in our office is not cooling properly',
+      priority: 'high',
+      location: 'Floor 3, Room 301',
+      status: 'in_progress',
+      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      assigned_staff: [{ staff: { name: 'John Doe', role: 'Maintenance' } }]
     },
-    onSuccess: () => {
-      toast.success('Service request created successfully!');
-      queryClient.invalidateQueries({ queryKey: ['service-requests'] });
-      setIsCreateDialogOpen(false);
-      resetForm();
-    },
-    onError: () => {
-      toast.error('Failed to create service request. Please try again.');
+    {
+      id: '2',
+      request_type: 'cleaning',
+      title: 'Regular office cleaning',
+      description: 'Weekly deep cleaning of office space',
+      priority: 'medium',
+      location: 'Floor 3, Room 301-305',
+      status: 'completed',
+      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      updated_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      assigned_staff: [{ staff: { name: 'Jane Smith', role: 'Cleaning' } }]
     }
-  });
+  ];
+
+  // Create service request (mock implementation)
+  const handleCreateRequest = () => {
+    if (!requestType || !title || !description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    toast.success('Service request submitted! This feature will be fully integrated soon.');
+    setIsCreateDialogOpen(false);
+    resetForm();
+  };
 
   const resetForm = () => {
     setRequestType('');
@@ -96,20 +82,6 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
     setLocation('');
   };
 
-  const handleCreateRequest = () => {
-    if (!requestType || !title || !description) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    createRequestMutation.mutate({
-      type: requestType,
-      title,
-      description,
-      priority,
-      location
-    });
-  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -240,8 +212,8 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={handleCreateRequest} disabled={createRequestMutation.isPending} className="flex-1">
-                  {createRequestMutation.isPending ? 'Creating...' : 'Create Request'}
+                <Button onClick={handleCreateRequest} className="flex-1">
+                  Submit Request
                 </Button>
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancel
@@ -260,7 +232,7 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
               <Clock className="h-4 w-4 text-yellow-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {serviceRequests?.filter(r => r.status === 'pending').length || 0}
+                  {mockServiceRequests?.filter(r => r.status === 'pending').length || 0}
                 </p>
                 <p className="text-sm text-muted-foreground">Pending</p>
               </div>
@@ -274,7 +246,7 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
               <AlertCircle className="h-4 w-4 text-blue-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {serviceRequests?.filter(r => r.status === 'in_progress').length || 0}
+                  {mockServiceRequests?.filter(r => r.status === 'in_progress').length || 0}
                 </p>
                 <p className="text-sm text-muted-foreground">In Progress</p>
               </div>
@@ -288,7 +260,7 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
               <CheckCircle className="h-4 w-4 text-green-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {serviceRequests?.filter(r => r.status === 'completed').length || 0}
+                  {mockServiceRequests?.filter(r => r.status === 'completed').length || 0}
                 </p>
                 <p className="text-sm text-muted-foreground">Completed</p>
               </div>
@@ -318,11 +290,9 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8">Loading requests...</div>
-          ) : serviceRequests?.length ? (
+          {mockServiceRequests?.length ? (
             <div className="space-y-4">
-              {serviceRequests.map((request) => (
+              {mockServiceRequests.map((request) => (
                 <div key={request.id} className="p-4 border rounded-lg">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -381,14 +351,15 @@ const TenantServiceRequests: React.FC<TenantServiceRequestsProps> = ({ tenantId 
             </div>
           ) : (
             <div className="text-center py-8">
-              <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-medium mb-2">No Service Requests</h3>
+              <Construction className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+              <h3 className="font-medium mb-2">Service Request System</h3>
               <p className="text-muted-foreground mb-4">
-                You haven't submitted any service requests yet.
+                Service request functionality is under development. 
+                This will integrate with the building's maintenance management system.
               </p>
               <Button onClick={() => setIsCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Your First Request
+                Submit Test Request
               </Button>
             </div>
           )}

@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,10 +11,9 @@ import {
   Users,
   Wifi,
   Monitor,
-  Coffee,
   Camera,
   CheckCircle,
-  AlertCircle
+  Construction
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -33,94 +30,56 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
   const [purpose, setPurpose] = useState('');
   const [attendees, setAttendees] = useState('');
 
-  const queryClient = useQueryClient();
-
-  // Get available rooms
-  const { data: rooms, isLoading: loadingRooms } = useQuery({
-    queryKey: ['available-rooms', bookingDate, startTime, endTime],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('meeting_rooms')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (error) throw error;
-
-      // Filter out rooms that are already booked
-      if (bookingDate && startTime && endTime) {
-        const startDateTime = `${bookingDate}T${startTime}:00`;
-        const endDateTime = `${bookingDate}T${endTime}:00`;
-
-        const { data: bookings } = await supabase
-          .from('meeting_room_bookings')
-          .select('room_id')
-          .eq('status', 'confirmed')
-          .or(`and(start_time.lte.${startDateTime},end_time.gt.${startDateTime}),and(start_time.lt.${endDateTime},end_time.gte.${endDateTime}),and(start_time.gte.${startDateTime},end_time.lte.${endDateTime})`);
-
-        const bookedRoomIds = bookings?.map(b => b.room_id) || [];
-        return data?.filter(room => !bookedRoomIds.includes(room.id)) || [];
-      }
-
-      return data || [];
+  // Mock data for demonstration
+  const mockRooms = [
+    {
+      id: '1',
+      name: 'Conference Room A',
+      floor: 2,
+      capacity: 10,
+      description: 'Large conference room with video conferencing',
+      has_projector: true,
+      has_whiteboard: true,
+      has_video_conf: true,
+      has_wifi: true
     },
-    enabled: !!bookingDate
-  });
-
-  // Get my bookings
-  const { data: myBookings } = useQuery({
-    queryKey: ['my-bookings', tenantId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('meeting_room_bookings')
-        .select(`
-          *,
-          room:meeting_rooms(name, floor, capacity)
-        `)
-        .eq('tenant_id', tenantId)
-        .gte('start_time', new Date().toISOString())
-        .order('start_time');
-
-      if (error) throw error;
-      return data;
+    {
+      id: '2',  
+      name: 'Meeting Room B',
+      floor: 3,
+      capacity: 6,
+      description: 'Small meeting room for team discussions',
+      has_projector: false,
+      has_whiteboard: true,
+      has_video_conf: false,
+      has_wifi: true
     }
-  });
+  ];
 
-  // Book room mutation
-  const bookRoomMutation = useMutation({
-    mutationFn: async (bookingData: any) => {
-      const { data, error } = await supabase
-        .from('meeting_room_bookings')
-        .insert([{
-          room_id: bookingData.roomId,
-          tenant_id: tenantId,
-          start_time: `${bookingDate}T${startTime}:00`,
-          end_time: `${bookingDate}T${endTime}:00`,
-          purpose: purpose || 'Meeting',
-          attendees_count: parseInt(attendees) || 1,
-          status: 'confirmed',
-          booking_type: 'tenant'
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      toast.success('Room booked successfully!');
-      queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['available-rooms'] });
-      setSelectedRoom(null);
-      setStartTime('');
-      setEndTime('');
-      setPurpose('');
-      setAttendees('');
-    },
-    onError: () => {
-      toast.error('Failed to book room. Please try again.');
+  const mockBookings = [
+    {
+      id: '1',
+      room: { name: 'Conference Room A', floor: 2, capacity: 10 },
+      start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(),
+      purpose: 'Team Meeting',
+      status: 'confirmed'
     }
-  });
+  ];
+
+  const handleBookRoom = () => {
+    if (!selectedRoom || !startTime || !endTime) {
+      toast.error('Please select room and time slots');
+      return;
+    }
+    
+    toast.success('Room booking feature coming soon!');
+    setSelectedRoom(null);
+    setStartTime('');
+    setEndTime('');
+    setPurpose('');
+    setAttendees('');
+  };
 
   const getRoomAmenities = (room: any) => {
     const amenities = [];
@@ -138,15 +97,6 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
       case 'cancelled': return 'bg-red-500/10 text-red-700';
       default: return 'bg-gray-500/10 text-gray-700';
     }
-  };
-
-  const handleBookRoom = () => {
-    if (!selectedRoom || !startTime || !endTime) {
-      toast.error('Please select room and time slots');
-      return;
-    }
-
-    bookRoomMutation.mutate({ roomId: selectedRoom.id });
   };
 
   return (
@@ -237,8 +187,8 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
                       Floor {selectedRoom.floor} • Capacity: {selectedRoom.capacity}
                     </p>
                   </div>
-                  <Button onClick={handleBookRoom} disabled={bookRoomMutation.isPending}>
-                    {bookRoomMutation.isPending ? 'Booking...' : 'Confirm Booking'}
+                  <Button onClick={handleBookRoom}>
+                    Book Room
                   </Button>
                 </div>
               </div>
@@ -258,11 +208,9 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {loadingRooms ? (
-              <div className="text-center py-8">Loading rooms...</div>
-            ) : rooms?.length ? (
+            {bookingDate && startTime && endTime ? (
               <div className="space-y-3">
-                {rooms.map((room) => (
+                {mockRooms.map((room) => (
                   <div
                     key={room.id}
                     className={`p-4 border rounded-lg cursor-pointer transition-colors ${
@@ -295,10 +243,7 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                {bookingDate && startTime && endTime 
-                  ? 'No rooms available for selected time'
-                  : 'Select date and time to check availability'
-                }
+                Select date and time to check availability
               </div>
             )}
           </CardContent>
@@ -311,9 +256,9 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
           <CardTitle>My Upcoming Bookings</CardTitle>
         </CardHeader>
         <CardContent>
-          {myBookings?.length ? (
+          {mockBookings.length ? (
             <div className="space-y-3">
-              {myBookings.map((booking) => (
+              {mockBookings.map((booking) => (
                 <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -333,9 +278,7 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={getStatusColor(booking.status)}>
-                      {booking.status === 'confirmed' && <CheckCircle className="h-3 w-3 mr-1" />}
-                      {booking.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
-                      {booking.status === 'cancelled' && <AlertCircle className="h-3 w-3 mr-1" />}
+                      <CheckCircle className="h-3 w-3 mr-1" />
                       {booking.status}
                     </Badge>
                   </div>
@@ -343,9 +286,13 @@ const TenantRoomBooking: React.FC<TenantRoomBookingProps> = ({ tenantId }) => {
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No upcoming bookings
-            </p>
+            <div className="text-center py-8">
+              <Construction className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+              <h3 className="font-medium mb-2">Room Booking System</h3>
+              <p className="text-muted-foreground">
+                Room booking functionality is under development.
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>

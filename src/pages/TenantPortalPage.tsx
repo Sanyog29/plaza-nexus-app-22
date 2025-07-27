@@ -25,70 +25,25 @@ import TenantNotifications from '@/components/tenant/TenantNotifications';
 const TenantPortalPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Get tenant info
-  const { data: tenantInfo } = useQuery({
-    queryKey: ['tenant-info'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+  // Mock tenant info for demo
+  const tenantInfo = {
+    id: 'tenant-1',
+    tenant: {
+      id: 'tenant-1',
+      company_name: 'Demo Company Ltd.',
+      floor_number: '3',
+      square_footage: 2500
+    }
+  };
 
-      const { data, error } = await supabase
-        .from('tenant_users')
-        .select(`
-          *,
-          tenant:tenants(*)
-        `)
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Get dashboard metrics
-  const { data: dashboardMetrics } = useQuery({
-    queryKey: ['tenant-dashboard-metrics', tenantInfo?.tenant_id],
-    queryFn: async () => {
-      if (!tenantInfo?.tenant_id) return null;
-
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Get active bookings
-      const { data: bookings } = await supabase
-        .from('meeting_room_bookings')
-        .select('*')
-        .eq('tenant_id', tenantInfo.tenant_id)
-        .gte('start_time', `${today}T00:00:00`)
-        .eq('status', 'confirmed');
-
-      // Get pending service requests
-      const { data: serviceRequests } = await supabase
-        .from('service_requests')
-        .select('*')
-        .eq('tenant_id', tenantInfo.tenant_id)
-        .in('status', ['pending', 'in_progress']);
-
-      // Get notifications
-      const { data: notifications } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('tenant_id', tenantInfo.tenant_id)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      return {
-        activeBookings: bookings?.length || 0,
-        pendingRequests: serviceRequests?.length || 0,
-        unreadNotifications: notifications?.length || 0,
-        todayBookings: bookings || [],
-        recentNotifications: notifications || []
-      };
-    },
-    enabled: !!tenantInfo?.tenant_id,
-  });
+  // Mock dashboard metrics
+  const dashboardMetrics = {
+    activeBookings: 2,
+    pendingRequests: 1,
+    unreadNotifications: 3,
+    todayBookings: [],
+    recentNotifications: []
+  };
 
   if (!tenantInfo) {
     return (
