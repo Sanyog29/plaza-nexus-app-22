@@ -119,10 +119,9 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/admin/services/bookings', label: 'Bookings', icon: Calendar, parent: '/admin/services', permissions: ['admin', 'staff'] },
 
   { path: '/admin/operational-excellence', label: 'Operational Excellence', icon: Target, parent: '/admin', permissions: ['admin', 'ops_supervisor'] },
-  { path: '/operational-excellence', label: 'Operational Excellence', icon: Target, parent: '/admin', permissions: ['admin', 'ops_supervisor'] },
-  { path: '/operational-excellence/workflows', label: 'Workflows', icon: Workflow, parent: '/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
-  { path: '/operational-excellence/insights', label: 'Cross-Module Insights', icon: Brain, parent: '/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
-  { path: '/operational-excellence/reporting', label: 'Advanced Reporting', icon: FileBarChart, parent: '/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
+  { path: '/admin/operational-excellence/workflows', label: 'Workflows', icon: Workflow, parent: '/admin/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
+  { path: '/admin/operational-excellence/insights', label: 'Cross-Module Insights', icon: Brain, parent: '/admin/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
+  { path: '/admin/operational-excellence/reporting', label: 'Advanced Reporting', icon: FileBarChart, parent: '/admin/operational-excellence', permissions: ['admin', 'ops_supervisor'] },
 
   // Staff routes
   { path: '/staff/dashboard', label: 'Dashboard', icon: Activity, parent: '/staff', permissions: ['staff'] },

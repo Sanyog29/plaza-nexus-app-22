@@ -41,17 +41,25 @@ const AppLayout: React.FC = () => {
       return;
     }
 
-    // Smart route redirects for admin/staff users 
+    // Comprehensive admin/staff route redirects
     if (isAdmin || isStaff) {
-      // Redirect /alerts to /admin/alerts for proper breadcrumbs
-      if (location.pathname === '/alerts') {
-        navigate('/admin/alerts', { replace: true });
-        return;
-      }
-
-      // Redirect /bookings to /admin/bookings for admin/staff users
-      if (location.pathname === '/bookings') {
-        navigate('/admin/bookings', { replace: true });
+      const redirects = {
+        '/bookings': '/admin/bookings',
+        '/operational-excellence': '/admin/operational-excellence',
+        '/requests': '/admin/requests',
+        '/alerts': '/admin/alerts',
+        '/visitors': '/admin/visitors',
+        '/assets': '/admin/assets',
+        '/users': '/admin/users',
+        '/services': '/admin/services',
+        '/analytics': '/admin/analytics',
+        '/reports': '/admin/reports',
+        '/settings': '/admin/settings'
+      };
+      
+      const targetPath = redirects[location.pathname as keyof typeof redirects];
+      if (targetPath) {
+        navigate(targetPath, { replace: true });
         return;
       }
 

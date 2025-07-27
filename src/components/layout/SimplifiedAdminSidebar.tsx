@@ -92,7 +92,7 @@ const adminMenuGroups = [
         url: "/admin/analytics", 
         icon: BarChart3,
         subItems: [
-          { title: "Operational Excellence", url: "/operational-excellence" },
+          { title: "Operational Excellence", url: "/admin/operational-excellence" },
           { title: "Advanced Features", url: "/advanced-features" },
           { title: "Reports", url: "/admin/reports" },
           { title: "Unified Dashboard", url: "/unified-dashboard" },
