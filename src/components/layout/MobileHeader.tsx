@@ -166,8 +166,8 @@ export const MobileHeader: React.FC = () => {
         </div>
       </div>
       
-      {/* Mobile Breadcrumbs */}
-      <div className="px-4 py-2 border-t border-border/20 bg-card/50">
+      {/* Breadcrumbs */}
+      <div className="px-4 py-2 border-t border-border/20">
         <SmartBreadcrumb showIcons={false} showHomeIcon={true} maxItems={2} />
       </div>
     </header>
