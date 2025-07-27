@@ -9,12 +9,17 @@ import { usePWAContext } from '@/components/PWAProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { Link } from 'react-router-dom';
+import { SmartBreadcrumb } from '@/components/ui/smart-breadcrumb';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 export const MobileHeader: React.FC = () => {
   const { user, isAdmin, isStaff } = useAuth();
   const { isOnline, isInstallable, isInstalled, installApp } = usePWAContext();
   const { metrics } = useDashboardMetrics();
   const [searchOpen, setSearchOpen] = useState(false);
+  
+  // Initialize breadcrumbs context
+  useBreadcrumbs();
 
   const adminMenuItems = [
     { title: "Dashboard", url: "/admin/dashboard", icon: Home },
@@ -159,6 +164,11 @@ export const MobileHeader: React.FC = () => {
           {/* Notifications */}
           <NotificationCenter />
         </div>
+      </div>
+      
+      {/* Mobile Breadcrumbs */}
+      <div className="px-4 py-2 border-t border-border/20 bg-card/50">
+        <SmartBreadcrumb showIcons={false} showHomeIcon={true} maxItems={2} />
       </div>
     </header>
   );
