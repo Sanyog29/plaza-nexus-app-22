@@ -632,6 +632,69 @@ export type Database = {
           },
         ]
       }
+      building_areas: {
+        Row: {
+          coordinates: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+          zone_type: string | null
+        }
+        Insert: {
+          coordinates?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+          zone_type?: string | null
+        }
+        Update: {
+          coordinates?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+          zone_type?: string | null
+        }
+        Relationships: []
+      }
+      building_floors: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          floor_number: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          floor_number?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          floor_number?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       cafeteria_menu_categories: {
         Row: {
           created_at: string
@@ -2371,6 +2434,42 @@ export type Database = {
           },
         ]
       }
+      main_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       maintenance_categories: {
         Row: {
           category_group: string | null
@@ -2463,49 +2562,79 @@ export type Database = {
       maintenance_requests: {
         Row: {
           assigned_to: string | null
+          auto_detected_location: boolean | null
+          building_area_id: string | null
+          building_floor_id: string | null
           category_id: string | null
           completed_at: string | null
           created_at: string
           description: string
+          escalated_at: string | null
+          escalation_level: number | null
           estimated_completion: string | null
+          gps_coordinates: Json | null
           id: string
           location: string
+          main_category_id: string | null
           priority: Database["public"]["Enums"]["request_priority"]
           reported_by: string | null
+          resolution_sla_at: string | null
+          response_sla_at: string | null
           sla_breach_at: string | null
           status: Database["public"]["Enums"]["request_status"]
+          sub_category_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
+          auto_detected_location?: boolean | null
+          building_area_id?: string | null
+          building_floor_id?: string | null
           category_id?: string | null
           completed_at?: string | null
           created_at?: string
           description: string
+          escalated_at?: string | null
+          escalation_level?: number | null
           estimated_completion?: string | null
+          gps_coordinates?: Json | null
           id?: string
           location: string
+          main_category_id?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           reported_by?: string | null
+          resolution_sla_at?: string | null
+          response_sla_at?: string | null
           sla_breach_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
+          sub_category_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
+          auto_detected_location?: boolean | null
+          building_area_id?: string | null
+          building_floor_id?: string | null
           category_id?: string | null
           completed_at?: string | null
           created_at?: string
           description?: string
+          escalated_at?: string | null
+          escalation_level?: number | null
           estimated_completion?: string | null
+          gps_coordinates?: Json | null
           id?: string
           location?: string
+          main_category_id?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           reported_by?: string | null
+          resolution_sla_at?: string | null
+          response_sla_at?: string | null
           sla_breach_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
+          sub_category_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -2518,6 +2647,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "maintenance_requests_building_area_id_fkey"
+            columns: ["building_area_id"]
+            isOneToOne: false
+            referencedRelation: "building_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_building_floor_id_fkey"
+            columns: ["building_floor_id"]
+            isOneToOne: false
+            referencedRelation: "building_floors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "maintenance_requests_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
@@ -2525,10 +2668,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "maintenance_requests_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "maintenance_requests_reported_by_fkey"
             columns: ["reported_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -4383,6 +4540,66 @@ export type Database = {
           },
         ]
       }
+      sla_configurations: {
+        Row: {
+          auto_escalate: boolean | null
+          created_at: string | null
+          escalation_minutes: number | null
+          escalation_rules: Json | null
+          exclude_hours: Json | null
+          id: string
+          is_active: boolean | null
+          main_category_id: string | null
+          priority: string
+          resolution_sla_minutes: number
+          response_sla_minutes: number
+          sub_category_id: string | null
+        }
+        Insert: {
+          auto_escalate?: boolean | null
+          created_at?: string | null
+          escalation_minutes?: number | null
+          escalation_rules?: Json | null
+          exclude_hours?: Json | null
+          id?: string
+          is_active?: boolean | null
+          main_category_id?: string | null
+          priority: string
+          resolution_sla_minutes: number
+          response_sla_minutes: number
+          sub_category_id?: string | null
+        }
+        Update: {
+          auto_escalate?: boolean | null
+          created_at?: string | null
+          escalation_minutes?: number | null
+          escalation_rules?: Json | null
+          exclude_hours?: Json | null
+          id?: string
+          is_active?: boolean | null
+          main_category_id?: string | null
+          priority?: string
+          resolution_sla_minutes?: number
+          response_sla_minutes?: number
+          sub_category_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_configurations_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sla_configurations_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sla_escalation_rules: {
         Row: {
           category_filter: string | null
@@ -4692,6 +4909,65 @@ export type Database = {
             columns: ["vendor_item_id"]
             isOneToOne: false
             referencedRelation: "vendor_menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sub_categories: {
+        Row: {
+          auto_escalate: boolean | null
+          created_at: string | null
+          default_priority: string | null
+          description: string | null
+          escalation_minutes: number | null
+          estimated_resolution_minutes: number | null
+          id: string
+          is_active: boolean | null
+          main_category_id: string
+          name: string
+          resolution_sla_minutes: number | null
+          response_sla_minutes: number | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_escalate?: boolean | null
+          created_at?: string | null
+          default_priority?: string | null
+          description?: string | null
+          escalation_minutes?: number | null
+          estimated_resolution_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          main_category_id: string
+          name: string
+          resolution_sla_minutes?: number | null
+          response_sla_minutes?: number | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_escalate?: boolean | null
+          created_at?: string | null
+          default_priority?: string | null
+          description?: string | null
+          escalation_minutes?: number | null
+          estimated_resolution_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          main_category_id?: string
+          name?: string
+          resolution_sla_minutes?: number | null
+          response_sla_minutes?: number | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_categories_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
         ]
