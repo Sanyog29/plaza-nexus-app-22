@@ -47,7 +47,9 @@ const AdvancedPermissionsManager = () => {
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [showRoleEditor, setShowRoleEditor] = useState(false);
   const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
-  const { isAdmin } = useAuth();
+  const [securityPermissions, setSecurityPermissions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { isAdmin, user } = useAuth();
 
   const defaultRolePermissions: RolePermission[] = [
     {
@@ -174,10 +176,40 @@ const AdvancedPermissionsManager = () => {
     return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
+  // Fetch real security permissions from database
+  const fetchSecurityPermissions = async () => {
+    if (!user || !isAdmin) return;
+
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('security_permissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setSecurityPermissions(data || []);
+    } catch (error: any) {
+      console.error('Error fetching security permissions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load security permissions: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     setRolePermissions(defaultRolePermissions);
     setAccessLevels(predefinedAccessLevels);
-  }, []);
+    
+    if (user && isAdmin) {
+      fetchSecurityPermissions();
+    }
+  }, [user, isAdmin]);
 
   if (!isAdmin) {
     return (

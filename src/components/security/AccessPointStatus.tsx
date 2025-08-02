@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -34,31 +34,86 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AccessPoint {
-  id: number;
+  id: string;
   name: string;
   status: string;
-  last_activity: string;
+  last_activity: string | null;
   type: string;
+  is_locked: boolean;
+  location: string;
+  floor: string;
+  zone?: string;
 }
 
 interface AccessPointStatusProps {
-  accessPoints: AccessPoint[];
+  // Make this optional since we'll fetch data internally
+  accessPoints?: AccessPoint[];
 }
 
-const AccessPointStatus: React.FC<AccessPointStatusProps> = ({ accessPoints }) => {
+const AccessPointStatus: React.FC<AccessPointStatusProps> = ({ accessPoints: propAccessPoints }) => {
   const [view, setView] = useState<'list' | 'map'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [accessPoints, setAccessPoints] = useState<AccessPoint[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch access points from database
+  useEffect(() => {
+    const fetchAccessPoints = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('access_points')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+
+        if (error) {
+          console.error('Error fetching access points:', error);
+          toast.error('Failed to load access points');
+          return;
+        }
+
+        // Map database fields to our interface
+        const mappedData = (data || []).map(item => ({
+          id: item.id,
+          name: item.name,
+          status: item.status,
+          last_activity: item.last_ping || null, // Use last_ping as last_activity
+          type: item.device_type, // Use device_type as type
+          is_locked: false, // Default to false since column doesn't exist yet
+          location: item.location,
+          floor: item.floor,
+          zone: item.zone
+        }));
+        setAccessPoints(mappedData);
+      } catch (error) {
+        console.error('Error:', error);
+        toast.error('Failed to load access points');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Use prop data if provided, otherwise fetch from database
+    if (propAccessPoints) {
+      setAccessPoints(propAccessPoints);
+      setIsLoading(false);
+    } else {
+      fetchAccessPoints();
+    }
+  }, [propAccessPoints]);
 
   const filteredAccessPoints = accessPoints.filter(point => {
     const matchesSearch = point.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          point.type.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesFilter = !activeFilter || 
-                         (activeFilter === 'online' && point.status === 'Online') ||
-                         (activeFilter === 'offline' && point.status === 'Offline');
+                         (activeFilter === 'online' && point.status === 'online') ||
+                         (activeFilter === 'offline' && point.status === 'offline');
     
     return matchesSearch && matchesFilter;
   });
@@ -73,12 +128,36 @@ const AccessPointStatus: React.FC<AccessPointStatusProps> = ({ accessPoints }) =
   });
 
   // Handle lock/unlock action
-  const handleAccessPointAction = (point: AccessPoint, action: 'lock' | 'unlock') => {
-    toast.success(`${action === 'lock' ? 'Locked' : 'Unlocked'} ${point.name}`);
+  const handleAccessPointAction = async (point: AccessPoint, action: 'lock' | 'unlock') => {
+    try {
+      const lockState = action === 'lock';
+      const { error } = await supabase.rpc('toggle_access_point_lock', {
+        point_id: point.id,
+        lock_state: lockState
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setAccessPoints(prev => prev.map(p => 
+        p.id === point.id ? { ...p, is_locked: lockState } : p
+      ));
+
+      toast.success(`${action === 'lock' ? 'Locked' : 'Unlocked'} ${point.name}`);
+    } catch (error: any) {
+      console.error('Error controlling access point:', error);
+      toast.error(`Failed to ${action} ${point.name}: ${error.message}`);
+    }
   };
 
   // Format last activity time
-  const formatLastActivity = (timestamp: string) => {
+  const formatLastActivity = (timestamp: string | null) => {
+    if (!timestamp) {
+      return 'No activity';
+    }
+    
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -171,7 +250,7 @@ const AccessPointStatus: React.FC<AccessPointStatusProps> = ({ accessPoints }) =
           <CardContent className="p-6 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Online</p>
-              <p className="text-2xl font-bold">{accessPoints.filter(p => p.status === 'Online').length}</p>
+              <p className="text-2xl font-bold">{accessPoints.filter(p => p.status === 'online').length}</p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-500 opacity-80" />
           </CardContent>
@@ -180,7 +259,7 @@ const AccessPointStatus: React.FC<AccessPointStatusProps> = ({ accessPoints }) =
           <CardContent className="p-6 flex items-center justify-between">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Offline</p>
-              <p className="text-2xl font-bold">{accessPoints.filter(p => p.status === 'Offline').length}</p>
+              <p className="text-2xl font-bold">{accessPoints.filter(p => p.status === 'offline').length}</p>
             </div>
             <AlertTriangle className="h-8 w-8 text-destructive opacity-80" />
           </CardContent>
@@ -204,11 +283,11 @@ const AccessPointStatus: React.FC<AccessPointStatusProps> = ({ accessPoints }) =
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {points.map((point) => (
                     <Card key={point.id} className="overflow-hidden">
-                      <div className={`p-4 ${point.status === 'Online' ? 'bg-primary/5' : 'bg-destructive/5'} flex justify-between items-center`}>
+                      <div className={`p-4 ${point.status === 'online' ? 'bg-primary/5' : 'bg-destructive/5'} flex justify-between items-center`}>
                         <p className="font-medium">{point.name}</p>
-                        <Badge variant={point.status === 'Online' ? 'secondary' : 'destructive'}>
-                          {point.status}
-                        </Badge>
+                         <Badge variant={point.status === 'online' ? 'secondary' : 'destructive'}>
+                           {point.status}
+                         </Badge>
                       </div>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">

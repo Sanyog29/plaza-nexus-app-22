@@ -6390,6 +6390,10 @@ export type Database = {
           availability_status: string
         }[]
       }
+      toggle_access_point_lock: {
+        Args: { point_id: string; lock_state: boolean }
+        Returns: boolean
+      }
       update_user_role: {
         Args:
           | { user_id: string; new_role: string }
