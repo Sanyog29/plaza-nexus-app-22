@@ -94,7 +94,8 @@ export const QRCodeGenerator: React.FC<QRGeneratorProps> = ({
           query = supabase.from('assets').select('id, asset_name, location, asset_type');
           break;
         case 'attendance':
-          query = supabase.from('work_zones').select('qr_code, zone_name, floor');
+          // Use existing assets table for zones/locations
+          query = supabase.from('assets').select('id, asset_name as zone_name, location, floor').eq('asset_type', 'zone');
           break;
         case 'visitor':
           query = supabase.from('visitors').select('id, name, company, visit_date');
@@ -103,7 +104,8 @@ export const QRCodeGenerator: React.FC<QRGeneratorProps> = ({
           query = supabase.from('maintenance_requests').select('id, title, location, status');
           break;
         case 'delivery':
-          query = supabase.from('delivery_tracking').select('id, tracking_number, status');
+          // Use existing assets table for delivery points
+          query = supabase.from('assets').select('id, asset_name as tracking_number, status').eq('asset_type', 'delivery_point');
           break;
         default:
           return;
@@ -350,7 +352,7 @@ export const QRCodeGenerator: React.FC<QRGeneratorProps> = ({
                 value={formData.zoneQrCode} 
                 onValueChange={(value) => {
                   setFormData(prev => ({ ...prev, zoneQrCode: value }));
-                  const zone = entities.find(e => e.qr_code === value);
+                  const zone = entities.find(e => e.id === value);
                   if (zone) {
                     setFormData(prev => ({
                       ...prev,
@@ -365,7 +367,7 @@ export const QRCodeGenerator: React.FC<QRGeneratorProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   {entities.map(zone => (
-                    <SelectItem key={zone.qr_code} value={zone.qr_code}>
+                    <SelectItem key={zone.id} value={zone.id}>
                       {zone.zone_name} - Floor {zone.floor}
                     </SelectItem>
                   ))}
