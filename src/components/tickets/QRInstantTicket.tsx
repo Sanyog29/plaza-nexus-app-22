@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { EnhancedQRScanner } from '@/components/qr/EnhancedQRScanner';
 import { toast } from '@/hooks/use-toast';
+import { useEnhancedTicketSystem } from '@/hooks/useEnhancedTicketSystem';
 
 interface QRInstantTicketProps {
   onTicketCreated?: (ticketId: string) => void;
@@ -29,6 +31,7 @@ export const QRInstantTicket: React.FC<QRInstantTicketProps> = ({
   onClose 
 }) => {
   const { user, permissions } = useAuth();
+  const { createTicket } = useEnhancedTicketSystem();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedData, setScannedData] = useState<string>('');
   const [ticketData, setTicketData] = useState({
@@ -61,34 +64,39 @@ export const QRInstantTicket: React.FC<QRInstantTicketProps> = ({
     }
   };
 
-  const handleQRScan = () => {
-    setIsScanning(true);
+  const handleQRScanResult = (result: any) => {
+    setScannedData(JSON.stringify(result));
     
-    // For demo purposes, simulate QR scan result
-    // In production, you'd integrate with a QR scanner library
-    setTimeout(() => {
-      const mockQRData = {
-        type: 'asset',
-        id: 'HVAC-001',
-        location: 'Floor 3, Conference Room A',
-        category: 'hvac'
-      };
-      
-      setScannedData(JSON.stringify(mockQRData));
+    if (result.type === 'asset') {
       setTicketData(prev => ({
         ...prev,
-        asset_id: mockQRData.id,
-        location: mockQRData.location,
-        category_id: mockQRData.category,
-        title: `Issue with ${mockQRData.id}`
+        asset_id: result.id,
+        location: result.location || result.data?.location,
+        title: `Issue with ${result.data?.asset_name || result.id}`
       }));
       
-      setIsScanning(false);
       toast({
-        title: "QR Code Scanned",
-        description: `Asset ${mockQRData.id} detected`,
+        title: "Asset QR Scanned",
+        description: `Asset ${result.data?.asset_name || result.id} detected`,
       });
-    }, 2000);
+    } else if (result.type === 'maintenance') {
+      // Pre-fill from existing maintenance request
+      const request = result.data;
+      setTicketData(prev => ({
+        ...prev,
+        title: `Follow-up: ${request.title}`,
+        location: request.location,
+        category_id: request.category_id,
+        description: `Follow-up to ticket #${request.id}`
+      }));
+      
+      toast({
+        title: "Maintenance QR Scanned",
+        description: "Creating follow-up ticket",
+      });
+    }
+    
+    setIsScanning(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,26 +115,13 @@ export const QRInstantTicket: React.FC<QRInstantTicketProps> = ({
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await supabase
-        .from('maintenance_requests')
-        .insert({
-          title: ticketData.title,
-          description: ticketData.description,
-          category_id: ticketData.category_id,
-          priority: ticketData.priority,
-          location: ticketData.location,
-          asset_id: ticketData.asset_id || null,
-          reported_by: user.id,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Ticket Created",
-        description: `Ticket #${data.id.slice(0, 8)} has been created successfully`,
+      const data = await createTicket({
+        title: ticketData.title,
+        description: ticketData.description,
+        category_id: ticketData.category_id,
+        priority: ticketData.priority,
+        location: ticketData.location,
+        asset_id: ticketData.asset_id || null
       });
 
       if (onTicketCreated) {
@@ -190,12 +185,12 @@ export const QRInstantTicket: React.FC<QRInstantTicketProps> = ({
           <Button
             type="button"
             variant="outline"
-            onClick={handleQRScan}
+            onClick={() => setIsScanning(true)}
             disabled={isScanning}
             className="w-full"
           >
             <Camera className="h-4 w-4 mr-2" />
-            {isScanning ? 'Scanning...' : 'Scan QR Code'}
+            Scan QR Code
           </Button>
           {scannedData && (
             <Badge variant="secondary" className="w-full justify-center">
@@ -204,6 +199,18 @@ export const QRInstantTicket: React.FC<QRInstantTicketProps> = ({
             </Badge>
           )}
         </div>
+
+        {/* Enhanced QR Scanner */}
+        {isScanning && (
+          <div className="border rounded-lg p-4 bg-background/50">
+            <EnhancedQRScanner
+              onScanResult={handleQRScanResult}
+              onClose={() => setIsScanning(false)}
+              supportedTypes={['asset', 'maintenance']}
+              autoProcess={true}
+            />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
