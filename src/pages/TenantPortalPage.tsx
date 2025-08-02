@@ -16,7 +16,8 @@ import {
   Building,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Coffee
 } from 'lucide-react';
 import TenantRoomBooking from '@/components/tenant/TenantRoomBooking';
 import TenantServiceRequests from '@/components/tenant/TenantServiceRequests';
@@ -74,7 +75,17 @@ const TenantPortalPage = () => {
     const tabComponents = {
       dashboard: <MobileTenantDashboard />,
       booking: <TenantRoomBooking tenantId={tenant.id} />,
-      services: <TenantServiceRequests tenantId={tenant.id} />,
+      requests: <TenantServiceRequests tenantId={tenant.id} />,
+      services: <div className="p-4 text-center space-y-4">
+        <div className="p-6 bg-primary/5 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Building Services</h3>
+          <p className="text-muted-foreground mb-4">Cafeteria, amenities, and other building services coming soon!</p>
+          <Button variant="outline" className="gap-2">
+            <Coffee className="h-4 w-4" />
+            Explore Services
+          </Button>
+        </div>
+      </div>,
       billing: <TenantBilling tenantId={tenant.id} />,
       notifications: <TenantNotifications tenantId={tenant.id} />
     };
