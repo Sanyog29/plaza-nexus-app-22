@@ -114,8 +114,9 @@ const AdminSecurityPage = () => {
         .from('security_incidents')
         .select(`
           *,
-          profiles!security_incidents_reported_by_fkey (first_name, last_name),
-          assigned_profiles:profiles!security_incidents_assigned_to_fkey (first_name, last_name)
+          reported_profile:profiles!reported_by(first_name, last_name),
+          assigned_profile:profiles!assigned_to(first_name, last_name),
+          resolved_profile:profiles!resolved_by(first_name, last_name)
         `)
         .order('created_at', { ascending: false })
         .limit(10);
