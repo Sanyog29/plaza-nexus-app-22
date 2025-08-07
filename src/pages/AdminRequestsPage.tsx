@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, Filter, Clock, AlertTriangle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface MaintenanceRequest {
   id: string;
@@ -213,7 +214,15 @@ const AdminRequestsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <>
+      <SEOHead
+        title="Request Management"
+        description="Monitor and manage all maintenance requests."
+        url={`${window.location.origin}/admin/requests`}
+        type="website"
+        noindex
+      />
+      <div className="container mx-auto px-4 py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-white">Request Management</h1>
@@ -353,6 +362,7 @@ const AdminRequestsPage = () => {
         loading={isDeleting}
       />
     </div>
+  </>
   );
 };
 

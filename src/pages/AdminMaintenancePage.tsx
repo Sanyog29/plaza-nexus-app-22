@@ -4,10 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, Users, Wrench, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminMaintenancePage = () => {
   return (
-    <div className="container max-w-7xl mx-auto p-6 space-y-6">
+    <>
+      <SEOHead
+        title="Maintenance Management"
+        description="Overview and management of maintenance operations."
+        url={`${window.location.origin}/admin/maintenance`}
+        type="website"
+        noindex
+      />
+      <div className="container max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Maintenance Management</h1>
@@ -181,6 +190,7 @@ const AdminMaintenancePage = () => {
         </TabsContent>
       </Tabs>
     </div>
+  </>
   );
 };
 
