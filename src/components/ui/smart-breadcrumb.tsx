@@ -55,7 +55,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
         <BreadcrumbList className="text-sm">
           {/* Home icon for mobile */}
           {isMobile && showHomeIcon && breadcrumbs.length > 2 && (
-            <React.Fragment key="mobile-home">
+            <span className="contents" key="mobile-home">
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link to="/" className="flex items-center text-foreground hover:text-primary transition-colors">
@@ -67,16 +67,16 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
                 <ChevronRight className="h-4 w-4" />
               </BreadcrumbSeparator>
               {breadcrumbs.length > 3 && (
-                <React.Fragment key="mobile-ellipsis">
+                <span className="contents" key="mobile-ellipsis">
                   <BreadcrumbItem>
                     <span className="text-foreground">...</span>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator>
                     <ChevronRight className="h-4 w-4" />
                   </BreadcrumbSeparator>
-                </React.Fragment>
+                </span>
               )}
-            </React.Fragment>
+            </span>
           )}
 
           {/* Ellipsis for desktop when items are truncated */}

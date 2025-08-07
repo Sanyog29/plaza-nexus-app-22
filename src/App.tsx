@@ -10,7 +10,7 @@ import AppLayout from "./components/AppLayout";
 import { PWAProvider } from "./components/PWAProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalErrorProvider } from "./components/common/GlobalErrorProvider";
-import { NotificationProvider } from "./components/notifications/NotificationProvider";
+
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import RequestsPage from "./pages/RequestsPage";
@@ -96,7 +96,7 @@ const App = () => (
           <AuthProvider>
           <BreadcrumbProvider>
             <EnhancedNotificationProvider>
-              <NotificationProvider>
+              
               <PWANotificationManager>
                 <PWAProvider>
                   <TooltipProvider>
@@ -207,7 +207,7 @@ const App = () => (
                </TooltipProvider>
                </PWAProvider>
              </PWANotificationManager>
-           </NotificationProvider>
+           
          </EnhancedNotificationProvider>
         </BreadcrumbProvider>
         </AuthProvider>

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Bell, ShoppingBag, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -100,11 +101,19 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       title: notification.title,
       description: notification.message,
       duration: notification.priority === 'urgent' ? 8000 : 5000,
-      action: notification.action_url ? (
-        <a href={notification.action_url} className="underline">
-          View
-        </a>
-      ) : undefined,
+      action: notification.action_url
+        ? (
+            notification.action_url.startsWith('/') ? (
+              <Link to={notification.action_url} className="underline">
+                View
+              </Link>
+            ) : (
+              <a href={notification.action_url} className="underline" target="_blank" rel="noopener noreferrer">
+                View
+              </a>
+            )
+          )
+        : undefined,
     });
 
     // Request permission for browser notifications

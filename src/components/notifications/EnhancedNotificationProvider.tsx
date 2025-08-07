@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Bell, AlertTriangle, CheckCircle, Info, Wrench, Shield, Activity } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface EnhancedNotificationContextType {
   notifications: EnhancedNotification[];
@@ -195,11 +196,19 @@ export const EnhancedNotificationProvider: React.FC<{ children: React.ReactNode 
       title: notification.title,
       description: notification.message,
       variant: notification.priority === 'urgent' ? 'destructive' : 'default',
-      action: notification.action_url ? (
-        <a href={notification.action_url} className="text-primary underline">
-          View
-        </a>
-      ) : undefined,
+      action: notification.action_url
+        ? (
+            notification.action_url.startsWith('/') ? (
+              <Link to={notification.action_url} className="text-primary underline">
+                View
+              </Link>
+            ) : (
+              <a href={notification.action_url} className="text-primary underline" target="_blank" rel="noopener noreferrer">
+                View
+              </a>
+            )
+          )
+        : undefined,
     });
   };
 
