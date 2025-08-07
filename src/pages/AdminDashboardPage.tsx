@@ -5,7 +5,7 @@ import OptimizedAccessRestricted from '@/components/admin/OptimizedAccessRestric
 import UnifiedAdminDashboard from './UnifiedAdminDashboard';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
 import { useAuth } from '@/components/AuthProvider';
-import { Helmet } from 'react-helmet-async';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminDashboardPage = () => {
   const { isAdmin } = useAuth();
@@ -18,11 +18,13 @@ const AdminDashboardPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Admin Dashboard | SS Plaza</title>
-        <meta name="description" content="Admin Dashboard for SS Plaza: real-time operations, analytics, and management." />
-        <link rel="canonical" href={`${window.location.origin}/admin/dashboard`} />
-      </Helmet>
+      <SEOHead
+        title="Admin Dashboard"
+        description="Real-time operations, analytics, and management for SS Plaza."
+        url={`${window.location.origin}/admin/dashboard`}
+        type="website"
+        noindex
+      />
       <LoadingWrapper 
         loading={isLoading} 
         error={error ? new Error(error) : null}

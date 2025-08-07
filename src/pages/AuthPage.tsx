@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import WelcomeCard from '@/components/auth/WelcomeCard';
 import AuthForm from '@/components/auth/AuthForm';
 import InvitationAcceptance from '@/components/auth/InvitationAcceptance';
-import { Helmet } from 'react-helmet-async';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { getAuthErrorMessage } from '@/utils/authHelpers';
 
 const AuthPage = () => {
@@ -100,11 +100,12 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background mobile-safe">
-      <Helmet>
-        <title>Sign in or Create Account | SS Plaza</title>
-        <meta name="description" content="Secure login and signup for SS Plaza Building Management System." />
-        <link rel="canonical" href={`${window.location.origin}/auth`} />
-      </Helmet>
+      <SEOHead
+        title="Sign in or Create Account"
+        description="Secure login and signup for SS Plaza Building Management System."
+        url={`${window.location.origin}/auth`}
+        type="website"
+      />
       {/* Header with branding to match main app */}
       <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container max-w-7xl mx-auto px-6 h-16 flex items-center">
