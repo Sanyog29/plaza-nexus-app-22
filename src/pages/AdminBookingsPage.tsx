@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminBookingsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -101,7 +102,15 @@ const AdminBookingsPage: React.FC = () => {
   }, [bookings]);
 
   return (
-    <div className="space-y-6 p-6">
+    <>
+      <SEOHead
+        title="Booking Management"
+        description="Manage all room bookings and reservations."
+        url={`${window.location.origin}/admin/bookings`}
+        type="website"
+        noindex
+      />
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -302,6 +311,7 @@ const AdminBookingsPage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+  </>
   );
 };
 

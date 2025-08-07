@@ -27,7 +27,7 @@ import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
 import { toast } from '@/hooks/use-toast';
 import { FeatureGuard } from '@/components/common/FeatureGuard';
 import { FeatureNotificationSystem } from '@/components/common/FeatureNotificationSystem';
-import { useRoleBasedFeatures } from '@/hooks/useRoleBasedFeatures';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface RequestStats {
   total: number;
@@ -117,7 +117,15 @@ const StaffDashboardPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-20">
+    <>
+      <SEOHead
+        title="Staff Dashboard"
+        description="Monitor and manage facility operations."
+        url={`${window.location.origin}/staff/dashboard`}
+        type="website"
+        noindex
+      />
+      <div className="container mx-auto px-4 py-8 pb-20">
       {/* Feature Notification System */}
       <FeatureNotificationSystem />
       
@@ -376,6 +384,7 @@ const StaffDashboardPage = () => {
         </CardContent>
       </Card>
     </div>
+  </>
   );
 };
 

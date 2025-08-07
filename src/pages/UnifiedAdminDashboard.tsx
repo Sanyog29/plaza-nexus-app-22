@@ -34,6 +34,7 @@ import {
   UserCheck,
   Globe
 } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 // Lazy load components for better performance
 const AdvancedAnalytics = lazy(() => import('@/components/admin/AdvancedAnalytics').then(m => ({ default: m.AdvancedAnalytics })));
@@ -183,8 +184,16 @@ const UnifiedAdminDashboard = () => {
   };
 
   return (
-    <LoadingWrapper loading={isLoading} error={error ? new Error(error) : null}>
-      <div className="px-4 py-6 space-y-6">
+    <>
+      <SEOHead
+        title="Unified Admin Dashboard"
+        description="Complete system management and monitoring hub."
+        url={`${window.location.origin}/admin/dashboard`}
+        type="website"
+        noindex
+      />
+      <LoadingWrapper loading={isLoading} error={error ? new Error(error) : null}>
+        <div className="px-4 py-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

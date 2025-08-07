@@ -6,9 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import ServiceOverviewTab from '@/components/admin/services/ServiceOverviewTab';
 import ServiceBookingsTab from '@/components/admin/services/ServiceBookingsTab';
 import { Building, Calendar, Users, DollarSign, TrendingUp, Settings } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminServicesPage = () => {
   return (
+    <>
+      <SEOHead
+        title="Services Management"
+        description="Manage building services, providers, and tenant bookings."
+        url={`${window.location.origin}/admin/services`}
+        type="website"
+        noindex
+      />
     <div className="container max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -123,6 +132,7 @@ const AdminServicesPage = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </>
   );
 };
 

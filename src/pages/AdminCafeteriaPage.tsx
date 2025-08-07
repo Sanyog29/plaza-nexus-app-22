@@ -118,8 +118,8 @@ const AdminCafeteriaPage = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white">Cafeteria Admin</h1>
-              <p className="text-gray-400">Multi-vendor food court management</p>
+              <h1 className="text-3xl font-bold text-foreground">Cafeteria Admin</h1>
+              <p className="text-muted-foreground">Multi-vendor food court management</p>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="default" className="bg-green-500">
@@ -223,7 +223,7 @@ const AdminCafeteriaPage = () => {
                           />
                         )}
                         <div>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-foreground">
                             {order.vendor?.name || 'Unknown Vendor'}
                           </p>
                           <p className="text-sm text-muted-foreground">

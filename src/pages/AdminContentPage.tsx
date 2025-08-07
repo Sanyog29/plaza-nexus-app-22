@@ -652,6 +652,13 @@ const AdminContentPage = () => {
 
   return (
     <AdminPermissionCheck>
+      <SEOHead
+        title="Content Management"
+        description="Manage all application content and settings."
+        url={`${window.location.origin}/admin/content`}
+        type="website"
+        noindex
+      />
       <div className="container mx-auto px-4 py-6 space-y-6">
         <UserStatusDisplay />
         

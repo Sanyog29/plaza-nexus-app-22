@@ -27,6 +27,7 @@ import { SecurityAnalytics } from '@/components/analytics/SecurityAnalytics';
 import { RoleFeatureMatrix } from '@/components/admin/RoleFeatureMatrix';
 import AdvancedPermissionsManager from '@/components/admin/AdvancedPermissionsManager';
 import { FeatureRequestManager } from '@/components/admin/FeatureRequestManager';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminSecurityPage = () => {
   const { user, isAdmin, userRole } = useAuth();
@@ -211,7 +212,15 @@ const AdminSecurityPage = () => {
   const onlineAccessPoints = accessPoints.filter(ap => ap.status === 'online').length;
 
   return (
-    <div className="container max-w-7xl mx-auto p-6 space-y-6">
+    <>
+      <SEOHead
+        title="Security Management"
+        description="Comprehensive security oversight and visitor management."
+        url={`${window.location.origin}/admin/security`}
+        type="website"
+        noindex
+      />
+      <div className="container max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Security Management</h1>
@@ -749,6 +758,7 @@ const AdminSecurityPage = () => {
         }}
       />
     </div>
+  </>
   );
 };
 
