@@ -1,4 +1,5 @@
 import * as React from "react"
+import { toast as sonnerToast } from "@/components/ui/sonner"
 
 import type {
   ToastActionElement,
@@ -139,30 +140,51 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
-  const id = genId()
+function toast({ title, description, action, ...rest }: Toast) {
+  // Bridge shadcn's toast API to Sonner
+  const anyProps: any = rest as any;
+  const variant: string | undefined = (anyProps && anyProps.variant) || undefined;
 
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  // Choose a reasonable message/title
+  let message = "";
+  if (typeof title === "string" && title.trim().length) message = title;
+  else if (typeof description === "string" && description.trim().length) message = description;
+  else message = "Notification";
 
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
-  })
+  const options: any = {};
+  if (typeof description === "string") options.description = description;
+  if (anyProps && typeof anyProps.duration === "number") options.duration = anyProps.duration;
+  // Note: shadcn's `action` element doesn't directly map to Sonner; ignore gracefully.
+
+  let id: string | number;
+  if (variant === "destructive" || variant === "error") {
+    id = sonnerToast.error(message, options);
+  } else if (variant === "success") {
+    id = sonnerToast.success(message, options);
+  } else if (variant === "info") {
+    id = sonnerToast.info ? sonnerToast.info(message, options) : sonnerToast(message, options);
+  } else if (variant === "warning") {
+    id = (sonnerToast as any).warning ? (sonnerToast as any).warning(message, options) : sonnerToast(message, options);
+  } else {
+    id = sonnerToast(message, options);
+  }
+
+  const dismiss = () => sonnerToast.dismiss(id as any);
+  const update = (_props: ToasterToast) => {
+    const newTitle = typeof _props.title === "string" ? _props.title : message;
+    const newDesc = typeof _props.description === "string" ? _props.description : options.description;
+    const v: any = ( _props as any ).variant ?? variant;
+    if (v === "destructive" || v === "error") {
+      id = sonnerToast.error(newTitle, { description: newDesc });
+    } else if (v === "success") {
+      id = sonnerToast.success(newTitle, { description: newDesc });
+    } else {
+      id = sonnerToast(newTitle, { description: newDesc });
+    }
+  };
 
   return {
-    id: id,
+    id: String(id ?? genId()),
     dismiss,
     update,
   }
@@ -184,7 +206,10 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss: (toastId?: string) => {
+      if (toastId) sonnerToast.dismiss(toastId as any)
+      else sonnerToast.dismiss()
+    },
   }
 }
 
