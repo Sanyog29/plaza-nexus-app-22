@@ -18,6 +18,7 @@ import {
 import AdminVendorManagement from '@/components/admin/AdminVendorManagement';
 import AdminFinancialReports from '@/components/admin/AdminFinancialReports';
 import AdminOrderOverview from '@/components/admin/AdminOrderOverview';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminCafeteriaPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -105,6 +106,13 @@ const AdminCafeteriaPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Cafeteria Admin"
+        description="Admin tools for multi-vendor food court management."
+        url={`${window.location.origin}/admin/cafeteria`}
+        type="website"
+        noindex
+      />
       {/* Header */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
@@ -207,7 +215,10 @@ const AdminCafeteriaPage = () => {
                         {order.vendor?.logo_url && (
                           <img 
                             src={order.vendor.logo_url} 
-                            alt={order.vendor.name}
+                            alt={`${order.vendor.name} logo`}
+                            width={32}
+                            height={32}
+                            loading="lazy"
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         )}
