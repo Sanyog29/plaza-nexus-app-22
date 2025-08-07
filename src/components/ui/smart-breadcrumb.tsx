@@ -81,14 +81,14 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
 
           {/* Ellipsis for desktop when items are truncated */}
           {hasEllipsis && breadcrumbs.length > maxItems && (
-            <React.Fragment key="desktop-ellipsis">
+            <span className="contents" key="desktop-ellipsis">
               <BreadcrumbItem>
                 <span className="text-foreground">...</span>
               </BreadcrumbItem>
               <BreadcrumbSeparator>
                 <ChevronRight className="h-4 w-4" />
               </BreadcrumbSeparator>
-            </React.Fragment>
+            </span>
           )}
 
           {displayBreadcrumbs.map((breadcrumb, index) => {
@@ -96,7 +96,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
             const IconComponent = breadcrumb.icon;
 
             return (
-              <React.Fragment key={`breadcrumb-${index}-${breadcrumb.href}`}>
+              <span className="contents" key={`breadcrumb-${index}-${breadcrumb.href}`}>
                 <BreadcrumbItem>
                   {isLast || breadcrumb.isActive ? (
                     <BreadcrumbPage className={cn(
@@ -141,7 +141,7 @@ export const SmartBreadcrumb: React.FC<SmartBreadcrumbProps> = ({
                     <ChevronRight className="h-4 w-4" />
                   </BreadcrumbSeparator>
                 )}
-              </React.Fragment>
+              </span>
             );
           })}
         </BreadcrumbList>
