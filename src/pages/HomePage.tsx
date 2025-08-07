@@ -21,6 +21,7 @@ import {
   TrendingUp,
   Activity
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useDashboardData } from '@/hooks/useDashboardData';
@@ -237,10 +238,10 @@ const HomePage = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold text-white">Building Information</h3>
-          <a href="/info-hub" className="text-plaza-blue text-sm hover:underline flex items-center gap-1">
+          <Link to="/info-hub" className="text-plaza-blue text-sm hover:underline flex items-center gap-1">
             <FileText size={14} />
             View Directory
-          </a>
+          </Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import WelcomeCard from '@/components/auth/WelcomeCard';
 import AuthForm from '@/components/auth/AuthForm';
 import InvitationAcceptance from '@/components/auth/InvitationAcceptance';
+import { Helmet } from 'react-helmet-async';
+import { getAuthErrorMessage } from '@/utils/authHelpers';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -71,21 +73,13 @@ const AuthPage = () => {
         if (error) {
           // Handle specific signin errors
           if (error.message?.includes('Invalid login credentials')) {
-            // Check if user exists to provide better guidance
-            const { data: userData } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('id', (await supabase.auth.admin.getUserById(email))?.data?.user?.id || '')
-              .maybeSingle();
-            
-            if (!userData) {
-              toast.error("Account Not Found", {
-                description: `No account found with email ${email}. Please sign up first.`,
-              });
-              setIsSignUp(true);
-              return;
-            }
+            toast.error("Invalid credentials", {
+              description: "Email or password is incorrect. You can try again or create a new account.",
+            });
+            setIsSignUp(true);
+            return;
           }
+          toast.error("Sign in failed", { description: getAuthErrorMessage(error) });
           throw error;
         }
         
@@ -106,6 +100,11 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background mobile-safe">
+      <Helmet>
+        <title>Sign in or Create Account | SS Plaza</title>
+        <meta name="description" content="Secure login and signup for SS Plaza Building Management System." />
+        <link rel="canonical" href={`${window.location.origin}/auth`} />
+      </Helmet>
       {/* Header with branding to match main app */}
       <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="container max-w-7xl mx-auto px-6 h-16 flex items-center">
