@@ -15,7 +15,9 @@ import { PasswordResetModal } from './PasswordResetModal';
 import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 import { OAuthButtons } from './OAuthButtons';
 import { FormField } from './FormField';
+import { NetworkErrorHandler } from './NetworkErrorHandler';
 import { supabase } from '@/integrations/supabase/client';
+import { isNetworkError as checkIsNetworkError, createNetworkAwareRequest } from '@/utils/networkUtils';
 
 interface AuthFormProps {
   email: string;
@@ -49,6 +51,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const [authError, setAuthError] = useState<string>('');
   const [accountLocked, setAccountLocked] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
+  const [isNetworkError, setIsNetworkError] = useState(false);
 
   // Real-time validation
   useEffect(() => {
@@ -92,6 +95,15 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const handleAuthError = async (error: any, email: string) => {
     console.log('Auth error:', error);
     
+    // Check if this is a network error
+    if (checkIsNetworkError(error)) {
+      setIsNetworkError(true);
+      setAuthError(error.message || 'Connection failed. Please check your network and try again.');
+      return;
+    }
+
+    setIsNetworkError(false);
+    
     // Track failed attempts for account lockout protection
     const newFailedAttempts = failedAttempts + 1;
     setFailedAttempts(newFailedAttempts);
@@ -122,6 +134,12 @@ const AuthForm: React.FC<AuthFormProps> = ({
     } else {
       setAuthError(error.message || 'An unexpected error occurred. Please try again.');
     }
+  };
+
+  const handleRetry = () => {
+    setAuthError('');
+    setIsNetworkError(false);
+    setFailedAttempts(0);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -164,10 +182,20 @@ const AuthForm: React.FC<AuthFormProps> = ({
         </CardHeader>
         <CardContent className="space-y-6">
           {authError && (
-            <Alert variant={accountLocked ? "destructive" : "default"} className="animate-fade-in-up">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{authError}</AlertDescription>
-            </Alert>
+            <>
+              {isNetworkError ? (
+                <NetworkErrorHandler 
+                  error={authError} 
+                  onRetry={handleRetry}
+                  showOpenInNewTab={window !== window.top}
+                />
+              ) : (
+                <Alert variant={accountLocked ? "destructive" : "default"} className="animate-fade-in-up">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              )}
+            </>
           )}
 
           {showEmailSentMessage && (

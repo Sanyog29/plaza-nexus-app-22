@@ -8,6 +8,7 @@ import AuthForm from '@/components/auth/AuthForm';
 import InvitationAcceptance from '@/components/auth/InvitationAcceptance';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { getAuthErrorMessage } from '@/utils/authHelpers';
+import { createNetworkAwareRequest } from '@/utils/networkUtils';
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -29,7 +30,7 @@ const AuthPage = () => {
 
   const from = location.state?.from?.pathname || "/";
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = createNetworkAwareRequest(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setShowEmailSentMessage(false);
@@ -96,7 +97,7 @@ const AuthPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background mobile-safe">

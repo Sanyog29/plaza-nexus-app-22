@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { isNetworkError as checkIsNetworkError, getNetworkErrorMessage } from '@/utils/networkUtils';
 import { toast } from '@/components/ui/sonner';
 
 interface OAuthButtonsProps {
@@ -33,9 +34,17 @@ export const OAuthButtons: React.FC<OAuthButtonsProps> = ({
       }
     } catch (error: any) {
       console.error(`OAuth ${provider} error:`, error);
-      toast("Authentication failed", {
-        description: error.message || `Failed to sign in with ${provider === 'google' ? 'Google' : 'LinkedIn'}. Please try again or contact support.`,
-      });
+      
+      // Handle network errors specifically
+      if (checkIsNetworkError(error)) {
+        toast("Connection Error", {
+          description: getNetworkErrorMessage(error),
+        });
+      } else {
+        toast("Authentication failed", {
+          description: error.message || `Failed to sign in with ${provider === 'google' ? 'Google' : 'LinkedIn'}. Please try again or contact support.`,
+        });
+      }
       onOAuthEnd();
     }
   };

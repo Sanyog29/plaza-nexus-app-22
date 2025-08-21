@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { isNetworkError, getNetworkErrorMessage } from './networkUtils';
 
 export const checkUserExists = async (email: string): Promise<boolean> => {
   try {
@@ -51,6 +52,11 @@ export const validatePassword = (password: string): { isValid: boolean; errors: 
 };
 
 export const getAuthErrorMessage = (error: any): string => {
+  // Check for network errors first
+  if (isNetworkError(error)) {
+    return getNetworkErrorMessage(error);
+  }
+
   const message = error?.message || '';
   
   if (message.includes('Invalid login credentials')) {
