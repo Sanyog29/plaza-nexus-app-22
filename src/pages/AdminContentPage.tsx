@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { IconPicker } from '@/components/ui/icon-picker';
 import { AdminPermissionCheck } from '@/components/admin/AdminPermissionCheck';
 import { UserStatusDisplay } from '@/components/admin/UserStatusDisplay';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { 
   FileText, 
   Plus, 
