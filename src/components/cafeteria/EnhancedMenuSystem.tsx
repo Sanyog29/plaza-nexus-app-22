@@ -38,35 +38,56 @@ export const EnhancedMenuSystem: React.FC<EnhancedMenuSystemProps> = ({ onOrderC
   const { data: loyaltyPoints = 0 } = useQuery({
     queryKey: ['loyalty-points'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return 0;
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) return 0;
 
-      const { data, error } = await supabase
-        .from('loyalty_points')
-        .select('points')
-        .eq('user_id', user.user.id)
-        .maybeSingle();
+        const { data, error } = await supabase
+          .from('loyalty_points')
+          .select('points')
+          .eq('user_id', user.user.id)
+          .maybeSingle();
 
-      if (error) return 0;
-      return data?.points || 0;
+        if (error) {
+          console.warn('Error fetching loyalty points:', error);
+          return 0;
+        }
+        return data?.points || 0;
+      } catch (error) {
+        console.warn('Failed to fetch loyalty points:', error);
+        return 0;
+      }
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch user's dietary preferences
   const { data: dietaryPreferences } = useQuery({
     queryKey: ['dietary-preferences'],
     queryFn: async () => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return null;
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) return null;
 
-      const { data, error } = await supabase
-        .from('dietary_preferences')
-        .select('*')
-        .eq('user_id', user.user.id)
-        .maybeSingle();
+        const { data, error } = await supabase
+          .from('dietary_preferences')
+          .select('*')
+          .eq('user_id', user.user.id)
+          .maybeSingle();
 
-      return data;
+        if (error) {
+          console.warn('Error fetching dietary preferences:', error);
+          return null;
+        }
+        return data;
+      } catch (error) {
+        console.warn('Failed to fetch dietary preferences:', error);
+        return null;
+      }
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Smart filter suggestions based on dietary preferences

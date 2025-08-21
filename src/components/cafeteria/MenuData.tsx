@@ -24,44 +24,64 @@ const MenuData: React.FC<MenuDataProps> = ({ onSelectItem, searchTerm, filters }
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ['vendors-with-menu'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vendors')
-        .select(`
-          *,
-          vendor_menu_items (
+      try {
+        const { data, error } = await supabase
+          .from('vendors')
+          .select(`
             *,
-            category:cafeteria_menu_categories(name, id)
-          ),
-          cafeteria_menu_categories (
-            *
-          )
-        `)
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
-      return data || [];
+            vendor_menu_items (
+              *,
+              category:cafeteria_menu_categories(name, id)
+            ),
+            cafeteria_menu_categories (
+              *
+            )
+          `)
+          .eq('is_active', true)
+          .order('name');
+        
+        if (error) {
+          console.warn('Error fetching vendors:', error);
+          return [];
+        }
+        return data || [];
+      } catch (error) {
+        console.warn('Failed to fetch vendors:', error);
+        return [];
+      }
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: todaySpecial } = useQuery({
     queryKey: ['today-special'],
     queryFn: async () => {
-      // Get a featured item from vendor menu items
-      const { data, error } = await supabase
-        .from('vendor_menu_items')
-        .select(`
-          *,
-          vendor:vendors(name, logo_url)
-        `)
-        .eq('is_available', true)
-        .eq('is_featured', true)
-        .limit(1)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
+      try {
+        // Get a featured item from vendor menu items
+        const { data, error } = await supabase
+          .from('vendor_menu_items')
+          .select(`
+            *,
+            vendor:vendors(name, logo_url)
+          `)
+          .eq('is_available', true)
+          .eq('is_featured', true)
+          .limit(1)
+          .maybeSingle();
+        
+        if (error) {
+          console.warn('Error fetching today special:', error);
+          return null;
+        }
+        return data;
+      } catch (error) {
+        console.warn('Failed to fetch today special:', error);
+        return null;
+      }
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Check if vendor is open
