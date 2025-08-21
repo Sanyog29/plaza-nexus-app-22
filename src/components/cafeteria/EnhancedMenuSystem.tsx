@@ -222,12 +222,12 @@ export const EnhancedMenuSystem: React.FC<EnhancedMenuSystemProps> = ({ onOrderC
 
             {/* Advanced Filters */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Select value={activeFilters.priceRange} onValueChange={(value) => setActiveFilters(prev => ({ ...prev, priceRange: value }))}>
+              <Select value={activeFilters.priceRange || "all"} onValueChange={(value) => setActiveFilters(prev => ({ ...prev, priceRange: value === "all" ? "" : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Price Range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Prices</SelectItem>
+                  <SelectItem value="all">All Prices</SelectItem>
                   <SelectItem value="0-50">₹0 - ₹50</SelectItem>
                   <SelectItem value="50-100">₹50 - ₹100</SelectItem>
                   <SelectItem value="100-200">₹100 - ₹200</SelectItem>
@@ -235,12 +235,12 @@ export const EnhancedMenuSystem: React.FC<EnhancedMenuSystemProps> = ({ onOrderC
                 </SelectContent>
               </Select>
 
-              <Select value={activeFilters.cuisineType} onValueChange={(value) => setActiveFilters(prev => ({ ...prev, cuisineType: value }))}>
+              <Select value={activeFilters.cuisineType || "all"} onValueChange={(value) => setActiveFilters(prev => ({ ...prev, cuisineType: value === "all" ? "" : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Cuisine Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Cuisines</SelectItem>
+                  <SelectItem value="all">All Cuisines</SelectItem>
                   <SelectItem value="indian">Indian</SelectItem>
                   <SelectItem value="chinese">Chinese</SelectItem>
                   <SelectItem value="italian">Italian</SelectItem>
@@ -249,12 +249,12 @@ export const EnhancedMenuSystem: React.FC<EnhancedMenuSystemProps> = ({ onOrderC
                 </SelectContent>
               </Select>
 
-              <Select value={activeFilters.spiceLevel} onValueChange={(value) => setActiveFilters(prev => ({ ...prev, spiceLevel: value }))}>
+              <Select value={activeFilters.spiceLevel || "all"} onValueChange={(value) => setActiveFilters(prev => ({ ...prev, spiceLevel: value === "all" ? "" : value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Spice Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Spice</SelectItem>
+                  <SelectItem value="all">Any Spice</SelectItem>
                   <SelectItem value="mild">Mild</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="hot">Hot</SelectItem>
