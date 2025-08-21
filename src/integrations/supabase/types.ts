@@ -6574,6 +6574,15 @@ export type Database = {
           request_title: string
         }[]
       }
+      get_room_availability_data: {
+        Args: { target_date: string }
+        Returns: {
+          end_time: string
+          room_id: string
+          start_time: string
+          status: string
+        }[]
+      }
       get_system_setting: {
         Args: { setting_category: string; setting_key: string }
         Returns: Json

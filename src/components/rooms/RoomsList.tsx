@@ -50,11 +50,7 @@ const RoomsList: React.FC<RoomsListProps> = ({
     queryFn: async () => {
       const dateStr = selectedDate.toISOString().split('T')[0];
       const { data, error } = await supabase
-        .from('room_bookings')
-        .select('room_id, start_time, end_time')
-        .gte('start_time', `${dateStr}T00:00:00`)
-        .lte('start_time', `${dateStr}T23:59:59`)
-        .eq('status', 'confirmed');
+        .rpc('get_room_availability_data', { target_date: dateStr });
       
       if (error) throw error;
       return data || [];
