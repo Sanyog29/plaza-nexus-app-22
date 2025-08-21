@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -6454,25 +6454,25 @@ export type Database = {
       admin_create_user_invitation: {
         Args:
           | {
+              invitation_department?: string
               invitation_email: string
               invitation_first_name: string
-              invitation_last_name: string
-              invitation_role: string
-              invitation_department?: string
-              invitation_phone_number?: string
-              invitation_office_number?: string
               invitation_floor?: string
+              invitation_last_name: string
+              invitation_office_number?: string
+              invitation_phone_number?: string
+              invitation_role: string
             }
           | {
+              invitation_department?: string
               invitation_email: string
               invitation_first_name: string
-              invitation_last_name: string
-              invitation_role: string
-              invitation_department?: string
-              invitation_specialization?: string
-              invitation_phone_number?: string
-              invitation_office_number?: string
               invitation_floor?: string
+              invitation_last_name: string
+              invitation_office_number?: string
+              invitation_phone_number?: string
+              invitation_role: string
+              invitation_specialization?: string
             }
         Returns: Json
       }
@@ -6481,7 +6481,7 @@ export type Database = {
         Returns: Json
       }
       approve_user: {
-        Args: { target_user_id: string; approver_id: string }
+        Args: { approver_id: string; target_user_id: string }
         Returns: boolean
       }
       calculate_cross_module_kpis: {
@@ -6497,7 +6497,7 @@ export type Database = {
         Returns: number
       }
       calculate_user_performance_score: {
-        Args: { target_user_id: string; score_date?: string }
+        Args: { score_date?: string; target_user_id: string }
         Returns: Json
       }
       calculate_utility_consumption: {
@@ -6518,11 +6518,11 @@ export type Database = {
       }
       create_notification: {
         Args: {
-          target_user_id: string
-          notification_title: string
-          notification_message: string
-          notification_type?: string
           action_url?: string
+          notification_message: string
+          notification_title: string
+          notification_type?: string
+          target_user_id: string
         }
         Returns: string
       }
@@ -6531,7 +6531,7 @@ export type Database = {
         Returns: boolean
       }
       execute_workflow_trigger: {
-        Args: { trigger_name: string; event_data: Json }
+        Args: { event_data: Json; trigger_name: string }
         Returns: string
       }
       generate_analytics_summary: {
@@ -6545,8 +6545,8 @@ export type Database = {
       generate_recurring_bookings: {
         Args: {
           base_booking_id: string
-          recurrence_rule: Json
           end_date: string
+          recurrence_rule: Json
         }
         Returns: number
       }
@@ -6561,17 +6561,17 @@ export type Database = {
       get_recent_sla_breaches: {
         Args: { days_back?: number }
         Returns: {
-          id: string
-          request_id: string
-          escalation_type: string
-          penalty_amount: number
-          escalation_reason: string
           created_at: string
+          escalation_reason: string
+          escalation_type: string
+          id: string
           metadata: Json
-          request_title: string
+          penalty_amount: number
+          request_id: string
           request_priority: string
-          request_status: string
           request_sla_breach_at: string
+          request_status: string
+          request_title: string
         }[]
       }
       get_system_setting: {
@@ -6581,15 +6581,15 @@ export type Database = {
       get_user_management_data: {
         Args: Record<PropertyKey, never> | { caller_id: string }
         Returns: {
-          id: string
-          first_name: string
-          last_name: string
-          role: string
-          created_at: string
-          updated_at: string
-          email: string
           confirmed_at: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
           last_sign_in_at: string
+          role: string
+          updated_at: string
         }[]
       }
       get_user_management_stats: {
@@ -6617,34 +6617,34 @@ export type Database = {
         Returns: boolean
       }
       is_vendor_staff_for_vendor: {
-        Args: { user_id: string; target_vendor_id: string }
+        Args: { target_vendor_id: string; user_id: string }
         Returns: boolean
       }
       log_audit_event: {
         Args: {
           action_type: string
-          resource_type: string
-          resource_id?: string
-          old_values?: Json
           new_values?: Json
+          old_values?: Json
+          resource_id?: string
+          resource_type: string
         }
         Returns: string
       }
       log_workflow_execution: {
-        Args: { rule_id: string; context: Json; log_entry: Json }
+        Args: { context: Json; log_entry: Json; rule_id: string }
         Returns: string
       }
       reject_user: {
-        Args: { target_user_id: string; approver_id: string; reason: string }
+        Args: { approver_id: string; reason: string; target_user_id: string }
         Returns: boolean
       }
       set_system_setting: {
         Args: {
           setting_category: string
-          setting_key: string
-          setting_value: Json
-          setting_type?: string
           setting_description?: string
+          setting_key: string
+          setting_type?: string
+          setting_value: Json
         }
         Returns: boolean
       }
@@ -6654,30 +6654,30 @@ export type Database = {
       }
       suggest_optimal_staff_assignment: {
         Args: {
-          task_category: string
-          required_skills?: string[]
           priority?: string
+          required_skills?: string[]
+          task_category: string
         }
         Returns: {
+          availability_status: string
+          skill_match_percentage: number
           staff_id: string
           staff_name: string
           workload_score: number
-          skill_match_percentage: number
-          availability_status: string
         }[]
       }
       toggle_access_point_lock: {
-        Args: { point_id: string; lock_state: boolean }
+        Args: { lock_state: boolean; point_id: string }
         Returns: boolean
       }
       update_user_role: {
         Args:
-          | { user_id: string; new_role: string }
-          | { user_id: string; new_role: string; caller_id: string }
+          | { caller_id: string; new_role: string; user_id: string }
+          | { new_role: string; user_id: string }
         Returns: boolean
       }
       update_user_role_safe: {
-        Args: { target_user_id: string; new_role_text: string }
+        Args: { new_role_text: string; target_user_id: string }
         Returns: boolean
       }
     }
