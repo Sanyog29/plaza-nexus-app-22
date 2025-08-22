@@ -7188,6 +7188,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      call_booking_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       check_sla_breaches: {
         Args: Record<PropertyKey, never>
         Returns: undefined

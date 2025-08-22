@@ -18,7 +18,7 @@ interface EnhancedNotification {
   id: string;
   title: string;
   message: string;
-  type: 'system' | 'alert' | 'maintenance' | 'security' | 'info' | 'warning' | 'error';
+  type: 'system' | 'alert' | 'maintenance' | 'security' | 'info' | 'warning' | 'error' | 'booking_reminder';
   priority: 'low' | 'normal' | 'high' | 'urgent';
   is_read: boolean;
   action_url?: string;
@@ -66,7 +66,7 @@ export const EnhancedNotificationProvider: React.FC<{ children: React.ReactNode 
         id: item.id,
         title: item.title,
         message: item.message,
-        type: (item.type || 'info') as 'system' | 'alert' | 'maintenance' | 'security' | 'info' | 'warning' | 'error',
+        type: (item.type || 'info') as 'system' | 'alert' | 'maintenance' | 'security' | 'info' | 'warning' | 'error' | 'booking_reminder',
         priority: (item.priority || 'normal') as 'low' | 'normal' | 'high' | 'urgent',
         is_read: Boolean(item.read || item.is_read),
         action_url: item.action_url,
@@ -122,8 +122,10 @@ export const EnhancedNotificationProvider: React.FC<{ children: React.ReactNode 
           };
           setNotifications(prev => [mappedNotification, ...prev]);
           
-          // Show toast notification for new high-priority items
-          if (mappedNotification.priority === 'urgent' || mappedNotification.priority === 'high') {
+          // Show toast notification for new high-priority items or booking reminders
+          if (mappedNotification.priority === 'urgent' || 
+              mappedNotification.priority === 'high' || 
+              mappedNotification.type === 'booking_reminder') {
             showToastNotification(mappedNotification);
           }
         }
@@ -186,12 +188,52 @@ export const EnhancedNotificationProvider: React.FC<{ children: React.ReactNode 
         case 'maintenance': return Wrench;
         case 'security': return Shield;
         case 'system': return Activity;
+        case 'booking_reminder': return Bell;
         default: return Bell;
       }
     };
 
     const Icon = getIcon();
 
+    // Special handling for booking reminders
+    if (notification.type === 'booking_reminder') {
+      const roomName = notification.metadata?.room_name || 'your room';
+      const endTime = notification.metadata?.end_time;
+      
+      let timeDisplay = '';
+      if (endTime) {
+        const endDate = new Date(endTime);
+        timeDisplay = endDate.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+      }
+
+      toast({
+        title: `🏢 ${notification.title}`,
+        description: (
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">{notification.message}</p>
+            {timeDisplay && (
+              <p className="text-sm text-muted-foreground">
+                Session ends at {timeDisplay}
+              </p>
+            )}
+          </div>
+        ),
+        variant: 'default',
+        duration: 8000, // Show longer for booking reminders
+        action: notification.action_url ? (
+          <Link to={notification.action_url} className="text-primary underline text-sm">
+            View Booking
+          </Link>
+        ) : undefined,
+      });
+      return;
+    }
+
+    // Default notification handling
     toast({
       title: notification.title,
       description: notification.message,
