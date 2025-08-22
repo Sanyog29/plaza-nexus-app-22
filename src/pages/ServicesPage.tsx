@@ -226,6 +226,134 @@ const ServicesPage: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* CrowdFunding Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Community CrowdFunding</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  id: '1',
+                  title: 'Smart Building IoT Sensors',
+                  description: 'Upgrade our building with smart sensors for better energy management and tenant comfort.',
+                  goal: 50000,
+                  raised: 32500,
+                  backers: 127,
+                  category: 'Technology',
+                  daysLeft: 18,
+                  image: '/placeholder.svg',
+                },
+                {
+                  id: '2',
+                  title: 'Rooftop Garden Initiative',
+                  description: 'Create a beautiful rooftop garden space for all tenants to enjoy and relax.',
+                  goal: 25000,
+                  raised: 18750,
+                  backers: 89,
+                  category: 'Community',
+                  daysLeft: 25,
+                  image: '/placeholder.svg',
+                },
+                {
+                  id: '3',
+                  title: 'Electric Vehicle Charging Stations',
+                  description: 'Install EV charging stations in the parking garage for eco-friendly transportation.',
+                  goal: 40000,
+                  raised: 28000,
+                  backers: 156,
+                  category: 'Sustainability',
+                  daysLeft: 12,
+                  image: '/placeholder.svg',
+                },
+                {
+                  id: '4',
+                  title: 'Fitness Center Equipment Upgrade',
+                  description: 'Modernize our fitness center with new equipment and wellness programs.',
+                  goal: 30000,
+                  raised: 22500,
+                  backers: 98,
+                  category: 'Health & Wellness',
+                  daysLeft: 30,
+                  image: '/placeholder.svg',
+                },
+                {
+                  id: '5',
+                  title: 'Community Event Space Renovation',
+                  description: 'Transform the community space into a modern venue for tenant events and meetings.',
+                  goal: 35000,
+                  raised: 15400,
+                  backers: 73,
+                  category: 'Community',
+                  daysLeft: 22,
+                  image: '/placeholder.svg',
+                },
+                {
+                  id: '6',
+                  title: 'Building Security Enhancement',
+                  description: 'Upgrade security systems with advanced access control and monitoring technology.',
+                  goal: 60000,
+                  raised: 41200,
+                  backers: 189,
+                  category: 'Security',
+                  daysLeft: 8,
+                  image: '/placeholder.svg',
+                },
+              ].map((project) => {
+                const percentage = Math.round((project.raised / project.goal) * 100);
+                return (
+                  <Card key={project.id} className="group hover:shadow-lg transition-all duration-300">
+                    <CardHeader>
+                      <div className="flex items-start justify-between mb-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {project.category}
+                        </Badge>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {project.daysLeft} days left
+                        </div>
+                      </div>
+                      <CardTitle className="text-lg leading-tight">{project.title}</CardTitle>
+                      <CardDescription className="text-sm line-clamp-2">
+                        {project.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Progress Bar */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium text-primary">
+                            {formatPrice(project.raised)} raised
+                          </span>
+                          <span className="text-muted-foreground">
+                            {percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>Goal: {formatPrice(project.goal)}</span>
+                          <span>{project.backers} backers</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button size="sm" className="flex-1 group-hover:scale-105 transition-transform">
+                          Back Project
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          Learn More
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="bookings" className="space-y-6">
