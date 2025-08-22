@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Loader2, MapPin, Clock, AlertTriangle } from 'lucide-react';
 import { Geolocation } from '@capacitor/geolocation';
+import DragDropAttachments from './DragDropAttachments';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -471,6 +472,27 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                 </div>
               </div>
             )}
+
+            {/* Enhanced Attachments Section */}
+            <div className="space-y-2">
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
+                <p className="text-sm text-blue-700 dark:text-blue-400 font-medium mb-1">
+                  📸 For faster resolution, please attach photos or screenshots
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-500">
+                  Clear images help our team understand and prioritize your request
+                </p>
+              </div>
+              
+              <DragDropAttachments 
+                isLoading={isSubmitting}
+                onFilesChange={(files) => {
+                  // Handle file changes if needed
+                }}
+                showTips={true}
+                maxFiles={5}
+              />
+            </div>
 
             <Button 
               type="submit" 
