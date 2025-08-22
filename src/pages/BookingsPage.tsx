@@ -1,13 +1,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HotDeskBookingSystem } from "@/components/booking/HotDeskBookingSystem";
 import { useAuth } from "@/components/AuthProvider";
-import { Calendar, Monitor, Users, Bookmark, Repeat, Search, Filter, ChevronDown, Heart, ArrowLeft } from "lucide-react";
+import { Calendar, Monitor, Users, Bookmark, Repeat, Search, Filter, ChevronDown, Heart, ArrowLeft, AlertCircle } from "lucide-react";
 import RoomsList from "@/components/rooms/RoomsList";
 import BookingTemplatesManager from "@/components/rooms/BookingTemplatesManager";
 import RecurringBookingsView from "@/components/rooms/RecurringBookingsView";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 interface Room {
   id: string;
@@ -24,6 +26,7 @@ interface TimeSlot {
   time: string;
   available: boolean;
   type?: string;
+  requiresApproval?: boolean;
 }
 
 export default function BookingsPage() {
@@ -31,14 +34,32 @@ export default function BookingsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [timeSlots] = useState<TimeSlot[]>([
-    { time: '09:00 AM', available: true, type: 'STANDARD' },
-    { time: '10:30 AM', available: true, type: 'PREMIUM' },
-    { time: '12:00 PM', available: false, type: 'STANDARD' },
-    { time: '01:30 PM', available: true, type: 'PREMIUM' },
-    { time: '03:00 PM', available: true, type: 'STANDARD' },
-    { time: '04:30 PM', available: true, type: 'PREMIUM' },
-  ]);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [activeTab, setActiveTab] = useState('rooms');
+  
+  // Updated time slots with specific intervals and approval logic
+  const getTimeSlots = (): TimeSlot[] => {
+    const slots = [
+      { time: '09:00 AM', available: true, type: 'STANDARD' },
+      { time: '10:15 AM', available: true, type: 'PREMIUM', requiresApproval: isRecurring },
+      { time: '11:30 AM', available: true, type: 'STANDARD', requiresApproval: isRecurring },
+      { time: '12:00 PM', available: false, type: 'PREMIUM', requiresApproval: isRecurring },
+      { time: '01:00 PM', available: true, type: 'STANDARD', requiresApproval: isRecurring },
+      { time: '03:00 PM', available: true, type: 'PREMIUM', requiresApproval: isRecurring },
+      { time: '05:00 PM', available: true, type: 'STANDARD' },
+      { time: '06:00 PM', available: true, type: 'PREMIUM' },
+    ];
+    
+    // For recurring meetings, only early morning (before 10:15) and evening (after 5PM) slots are auto-approved
+    if (isRecurring) {
+      return slots.map(slot => ({
+        ...slot,
+        requiresApproval: !(['09:00 AM', '05:00 PM', '06:00 PM'].includes(slot.time))
+      }));
+    }
+    
+    return slots;
+  };
 
   // Get week dates for horizontal scroll
   const getWeekDates = () => {
@@ -161,14 +182,33 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      {/* Booking Type & Filters */}
+      {/* Booking Type & Recurring Toggle */}
       <div className="px-4 py-3 bg-background border-b border-border">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Standard • Meeting</span>
             <button className="text-sm text-primary font-medium">Change &gt;</button>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Recurring</span>
+            <Switch 
+              checked={isRecurring} 
+              onCheckedChange={setIsRecurring}
+            />
+          </div>
         </div>
+        
+        {isRecurring && (
+          <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-orange-800">Recurring Meeting Notice</p>
+                <p className="text-orange-700">Daytime slots (10:15 AM - 4:30 PM) require floor supervisor approval. Early morning and evening slots are auto-approved.</p>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="flex gap-2 overflow-x-auto pb-1">
           <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-full text-sm whitespace-nowrap">
@@ -187,88 +227,109 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      {/* Rooms List */}
-      <div className="flex-1 overflow-y-auto">
-        {rooms.map((room) => (
-          <div key={room.id} className="px-4 py-4 border-b border-border bg-background">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-base font-medium text-foreground">{room.name}</h3>
-                  <Heart className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Capacity: {room.capacity} • {room.location}
-                </p>
-                <p className="text-sm text-green-600 mt-1">Cancellation available</p>
-                {room.facilities && room.facilities.length > 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {room.facilities.join(' • ')}
-                  </p>
-                )}
-              </div>
-              <span className="text-xs text-muted-foreground">Available</span>
-            </div>
-
-            {/* Time Slots */}
-            <div className="grid grid-cols-3 gap-2">
-              {timeSlots.slice(0, 6).map((slot, index) => (
-                <button
-                  key={index}
-                  disabled={!slot.available}
-                  onClick={() => slot.available && handleBookRoom(room.id, slot.time)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                    slot.available
-                      ? slot.type === 'PREMIUM'
-                        ? 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
-                        : 'border-orange-500 bg-orange-50 text-orange-700 hover:bg-orange-100'
-                      : 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  <div className="text-xs font-bold">{slot.time}</div>
-                  <div className="text-xs">{slot.type}</div>
-                </button>
-              ))}
-            </div>
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
+        {/* Show tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+          <div className="px-4 border-b border-border">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+              <TabsTrigger value="rooms" className="flex items-center gap-1 text-sm">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Meeting</span> Rooms
+              </TabsTrigger>
+              <TabsTrigger value="hotdesks" className="flex items-center gap-1 text-sm">
+                <Monitor className="h-4 w-4" />
+                <span className="hidden sm:inline">Hot</span> Desks
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="flex items-center gap-1 text-sm">
+                <Bookmark className="h-4 w-4" />
+                Templates
+              </TabsTrigger>
+              <TabsTrigger value="recurring" className="flex items-center gap-1 text-sm">
+                <Repeat className="h-4 w-4" />
+                Recurring
+              </TabsTrigger>
+            </TabsList>
           </div>
-        ))}
-      </div>
 
-      {/* Legacy Tabs for other views */}
-      <div className="hidden">
-        <Tabs defaultValue="rooms" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-            <TabsTrigger value="rooms" className="flex items-center gap-1 text-sm">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Meeting</span> Rooms
-            </TabsTrigger>
-            <TabsTrigger value="templates" className="flex items-center gap-1 text-sm">
-              <Bookmark className="h-4 w-4" />
-              Templates
-            </TabsTrigger>
-            <TabsTrigger value="recurring" className="flex items-center gap-1 text-sm">
-              <Repeat className="h-4 w-4" />
-              Recurring
-            </TabsTrigger>
-            <TabsTrigger value="hotdesks" className="flex items-center gap-1 text-sm">
-              <Monitor className="h-4 w-4" />
-              <span className="hidden sm:inline">Hot</span> Desks
-            </TabsTrigger>
-          </TabsList>
+          <TabsContent value="rooms" className="flex-1 overflow-y-auto mt-0">
+            {/* Rooms List */}
+            <div className="flex-1">
+              {rooms.map((room) => {
+                const timeSlots = getTimeSlots();
+                return (
+                  <div key={room.id} className="px-4 py-4 border-b border-border bg-background">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-base font-medium text-foreground">{room.name}</h3>
+                          <Heart className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Capacity: {room.capacity} • {room.location}
+                        </p>
+                        <p className="text-sm text-green-600 mt-1">Cancellation available</p>
+                        {room.facilities && room.facilities.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {room.facilities.join(' • ')}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">Available</span>
+                    </div>
 
-          <TabsContent value="templates" className="mt-6">
+                    {/* Time Slots */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {timeSlots.map((slot, index) => (
+                        <div key={index} className="relative">
+                          <button
+                            disabled={!slot.available}
+                            onClick={() => slot.available && handleBookRoom(room.id, slot.time)}
+                            className={`w-full px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                              slot.available
+                                ? slot.type === 'PREMIUM'
+                                  ? 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
+                                  : 'border-orange-500 bg-orange-50 text-orange-700 hover:bg-orange-100'
+                                : 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+                            }`}
+                          >
+                            <div className="text-xs font-bold">{slot.time}</div>
+                            <div className="text-xs">{slot.type}</div>
+                            {slot.requiresApproval && (
+                              <div className="text-xs text-orange-600">Approval Req.</div>
+                            )}
+                          </button>
+                          {slot.requiresApproval && (
+                            <Badge 
+                              variant="secondary" 
+                              className="absolute -top-1 -right-1 text-xs px-1 py-0 bg-orange-100 text-orange-700"
+                            >
+                              !
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="hotdesks" className="flex-1 overflow-y-auto mt-0">
+            <HotDeskBookingSystem />
+          </TabsContent>
+
+          <TabsContent value="templates" className="flex-1 overflow-y-auto mt-0">
             <BookingTemplatesManager />
           </TabsContent>
 
-          <TabsContent value="recurring" className="mt-6">
+          <TabsContent value="recurring" className="flex-1 overflow-y-auto mt-0">
             <RecurringBookingsView />
-          </TabsContent>
-
-          <TabsContent value="hotdesks" className="mt-6">
-            <HotDeskBookingSystem />
           </TabsContent>
         </Tabs>
       </div>
+
     </div>
   );
 }
