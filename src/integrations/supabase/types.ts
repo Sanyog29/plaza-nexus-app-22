@@ -261,6 +261,13 @@ export type Database = {
             foreignKeyName: "amc_alerts_resolved_by_fkey"
             columns: ["resolved_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "amc_alerts_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -415,6 +422,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "audit_logs_user_id_fkey"
             columns: ["user_id"]
@@ -582,6 +596,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "broadcasts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "broadcasts_created_by_fkey"
             columns: ["created_by"]
@@ -1115,7 +1136,21 @@ export type Database = {
             foreignKeyName: "content_items_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_items_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -1165,6 +1200,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cost_centers_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cost_centers_manager_id_fkey"
             columns: ["manager_id"]
@@ -1225,7 +1267,21 @@ export type Database = {
             foreignKeyName: "daily_checklists_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_checklists_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_checklists_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -1354,6 +1410,13 @@ export type Database = {
             foreignKeyName: "deliveries_logged_by_fkey"
             columns: ["logged_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_logged_by_fkey"
+            columns: ["logged_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1361,7 +1424,21 @@ export type Database = {
             foreignKeyName: "deliveries_pickup_by_fkey"
             columns: ["pickup_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_pickup_by_fkey"
+            columns: ["pickup_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -1407,6 +1484,13 @@ export type Database = {
             columns: ["delivery_id"]
             isOneToOne: false
             referencedRelation: "deliveries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -1497,6 +1581,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "dietary_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dietary_preferences_user_id_fkey"
             columns: ["user_id"]
@@ -1596,7 +1687,21 @@ export type Database = {
             foreignKeyName: "escalation_logs_escalated_from_fkey"
             columns: ["escalated_from"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_logs_escalated_from_fkey"
+            columns: ["escalated_from"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escalation_logs_escalated_to_fkey"
+            columns: ["escalated_to"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -1694,6 +1799,13 @@ export type Database = {
           report_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "executive_reports_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "executive_reports_generated_by_fkey"
             columns: ["generated_by"]
@@ -1910,6 +2022,13 @@ export type Database = {
             columns: ["desk_id"]
             isOneToOne: false
             referencedRelation: "hot_desks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hot_desk_bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -2264,6 +2383,13 @@ export type Database = {
             columns: ["escalation_request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_base_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -2643,6 +2769,13 @@ export type Database = {
             foreignKeyName: "maintenance_requests_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2672,6 +2805,13 @@ export type Database = {
             columns: ["main_category_id"]
             isOneToOne: false
             referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -2740,6 +2880,13 @@ export type Database = {
           vendor_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "meal_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "meal_subscriptions_user_id_fkey"
             columns: ["user_id"]
@@ -3182,6 +3329,189 @@ export type Database = {
         }
         Relationships: []
       }
+      point_redemptions: {
+        Row: {
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          points_spent: number
+          redeemed_at: string
+          redemption_code: string | null
+          reward_id: string
+          status: string
+          technician_id: string
+        }
+        Insert: {
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          points_spent: number
+          redeemed_at?: string
+          redemption_code?: string | null
+          reward_id: string
+          status?: string
+          technician_id: string
+        }
+        Update: {
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          points_spent?: number
+          redeemed_at?: string
+          redemption_code?: string | null
+          reward_id?: string
+          status?: string
+          technician_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_redemptions_fulfilled_by_fkey"
+            columns: ["fulfilled_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_redemptions_fulfilled_by_fkey"
+            columns: ["fulfilled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "point_rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_redemptions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_redemptions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      point_rewards: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          points_required: number
+          reward_type: string
+          reward_value: string | null
+          stock_quantity: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          points_required: number
+          reward_type: string
+          reward_value?: string | null
+          stock_quantity?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          points_required?: number
+          reward_type?: string
+          reward_value?: string | null
+          stock_quantity?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      point_transactions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json | null
+          points: number
+          reason: string
+          request_id: string | null
+          technician_id: string
+          transaction_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json | null
+          points: number
+          reason: string
+          request_id?: string | null
+          technician_id: string
+          transaction_type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json | null
+          points?: number
+          reason?: string
+          request_id?: string | null
+          technician_id?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_transactions_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       predictive_insights: {
         Row: {
           confidence_score: number
@@ -3262,7 +3592,21 @@ export type Database = {
             foreignKeyName: "profile_audit_logs_changed_by_fkey"
             columns: ["changed_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_audit_logs_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_audit_logs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -3361,6 +3705,13 @@ export type Database = {
             foreignKeyName: "profiles_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -3442,33 +3793,42 @@ export type Database = {
       }
       request_attachments: {
         Row: {
+          attachment_type: string | null
           created_at: string
           file_name: string
           file_size: number | null
           file_type: string
           file_url: string
           id: string
+          metadata: Json | null
           request_id: string | null
+          stage: string | null
           uploaded_by: string
         }
         Insert: {
+          attachment_type?: string | null
           created_at?: string
           file_name: string
           file_size?: number | null
           file_type: string
           file_url: string
           id?: string
+          metadata?: Json | null
           request_id?: string | null
+          stage?: string | null
           uploaded_by: string
         }
         Update: {
+          attachment_type?: string | null
           created_at?: string
           file_name?: string
           file_size?: number | null
           file_type?: string
           file_url?: string
           id?: string
+          metadata?: Json | null
           request_id?: string | null
+          stage?: string | null
           uploaded_by?: string
         }
         Relationships: [
@@ -3543,6 +3903,13 @@ export type Database = {
             foreignKeyName: "request_status_history_changed_by_fkey"
             columns: ["changed_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -3551,6 +3918,73 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_workflow_states: {
+        Row: {
+          after_photos_required: boolean
+          after_photos_uploaded: boolean
+          before_photos_required: boolean
+          before_photos_uploaded: boolean
+          completed_at: string | null
+          created_at: string
+          current_stage: string
+          id: string
+          request_id: string
+          started_at: string | null
+          technician_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          after_photos_required?: boolean
+          after_photos_uploaded?: boolean
+          before_photos_required?: boolean
+          before_photos_uploaded?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_stage?: string
+          id?: string
+          request_id: string
+          started_at?: string | null
+          technician_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          after_photos_required?: boolean
+          after_photos_uploaded?: boolean
+          before_photos_required?: boolean
+          before_photos_uploaded?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_stage?: string
+          id?: string
+          request_id?: string
+          started_at?: string | null
+          technician_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_workflow_states_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_workflow_states_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_workflow_states_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3809,6 +4243,13 @@ export type Database = {
             foreignKeyName: "security_incidents_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_incidents_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -3816,7 +4257,21 @@ export type Database = {
             foreignKeyName: "security_incidents_reported_by_fkey"
             columns: ["reported_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_incidents_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_incidents_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -3951,6 +4406,13 @@ export type Database = {
             foreignKeyName: "security_shifts_guard_id_fkey"
             columns: ["guard_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_shifts_guard_id_fkey"
+            columns: ["guard_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4074,6 +4536,13 @@ export type Database = {
             columns: ["service_provider_id"]
             isOneToOne: false
             referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_service_bookings_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -4269,7 +4738,21 @@ export type Database = {
             foreignKeyName: "service_providers_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_providers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_providers_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -4354,6 +4837,13 @@ export type Database = {
             foreignKeyName: "service_records_performed_by_user_id_fkey"
             columns: ["performed_by_user_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_records_performed_by_user_id_fkey"
+            columns: ["performed_by_user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4410,7 +4900,21 @@ export type Database = {
             foreignKeyName: "shift_change_requests_requested_by_fkey"
             columns: ["requested_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_change_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_change_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -4463,6 +4967,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "shift_schedules_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "shift_schedules_staff_id_fkey"
             columns: ["staff_id"]
@@ -4672,6 +5183,13 @@ export type Database = {
             foreignKeyName: "staff_attendance_staff_id_fkey"
             columns: ["staff_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_attendance_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4749,7 +5267,21 @@ export type Database = {
             foreignKeyName: "staff_skills_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_skills_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_skills_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -4813,6 +5345,13 @@ export type Database = {
             foreignKeyName: "staff_training_progress_staff_id_fkey"
             columns: ["staff_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_training_progress_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4853,6 +5392,13 @@ export type Database = {
           total_work_hours?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "staff_workload_metrics_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "staff_workload_metrics_staff_id_fkey"
             columns: ["staff_id"]
@@ -5059,6 +5605,13 @@ export type Database = {
             foreignKeyName: "task_assignments_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -5066,7 +5619,21 @@ export type Database = {
             foreignKeyName: "task_assignments_assigned_by_fkey"
             columns: ["assigned_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_assignments_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -5081,6 +5648,57 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technician_points: {
+        Row: {
+          created_at: string
+          current_tier: string
+          id: string
+          points_balance: number
+          points_earned: number
+          points_spent: number
+          technician_id: string
+          total_lifetime_points: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_tier?: string
+          id?: string
+          points_balance?: number
+          points_earned?: number
+          points_spent?: number
+          technician_id: string
+          total_lifetime_points?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_tier?: string
+          id?: string
+          points_balance?: number
+          points_earned?: number
+          points_spent?: number
+          technician_id?: string
+          total_lifetime_points?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technician_points_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technician_points_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -5128,6 +5746,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -5238,6 +5863,13 @@ export type Database = {
             foreignKeyName: "user_invitations_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -5293,6 +5925,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_performance_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_performance_scores_user_id_fkey"
             columns: ["user_id"]
@@ -5444,6 +6083,13 @@ export type Database = {
             columns: ["meter_id"]
             isOneToOne: false
             referencedRelation: "utility_meters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "utility_readings_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
             referencedColumns: ["id"]
           },
           {
@@ -6006,6 +6652,13 @@ export type Database = {
             foreignKeyName: "visitor_approval_requests_host_user_id_fkey"
             columns: ["host_user_id"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_approval_requests_host_user_id_fkey"
+            columns: ["host_user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6087,6 +6740,13 @@ export type Database = {
             foreignKeyName: "visitor_check_logs_performed_by_fkey"
             columns: ["performed_by"]
             isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_check_logs_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -6128,6 +6788,13 @@ export type Database = {
           visitor_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "visitor_photos_captured_by_fkey"
+            columns: ["captured_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "visitor_photos_captured_by_fkey"
             columns: ["captured_by"]
@@ -6448,7 +7115,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      monthly_leaderboard: {
+        Row: {
+          avatar_url: string | null
+          avg_completion_hours: number | null
+          current_tier: string | null
+          department: string | null
+          id: string | null
+          monthly_points: number | null
+          technician_name: string | null
+          tickets_completed: number | null
+          total_points: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_create_user_invitation: {
