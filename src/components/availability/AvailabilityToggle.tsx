@@ -146,7 +146,7 @@ const AvailabilityToggle = () => {
             value={autoOfflineMinutes}
             onValueChange={(value) => {
               setAutoOfflineMinutes(value);
-              if (value) {
+              if (value && value !== 'manual') {
                 updateAvailability('available', parseInt(value));
               }
             }}
@@ -155,7 +155,7 @@ const AvailabilityToggle = () => {
               <SelectValue placeholder="Auto" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Manual</SelectItem>
+              <SelectItem value="manual">Manual</SelectItem>
               <SelectItem value="30">30m</SelectItem>
               <SelectItem value="60">1h</SelectItem>
               <SelectItem value="120">2h</SelectItem>
