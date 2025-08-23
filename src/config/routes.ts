@@ -4,7 +4,7 @@ import {
   Activity, TrendingUp, Workflow, Brain, FileBarChart, Target,
   UserCheck, Zap, Database, Gauge, AlertTriangle, ClipboardList,
   Eye, CheckSquare, AlertOctagon, Clock, MapPin, Info, BookOpen,
-  Truck, LayoutDashboard, Plus, UserPlus, Smartphone
+  Truck, LayoutDashboard, Plus, UserPlus, Smartphone, Network
 } from 'lucide-react';
 import { RouteConfig } from '@/types/breadcrumb';
 
@@ -160,4 +160,7 @@ export const routeConfigs: RouteConfig[] = [
   { path: '/staff/services', label: 'Service Delivery', icon: Package, parent: '/staff', permissions: ['staff'] },
   { path: '/staff/services/assignments', label: 'Assignments', icon: ClipboardList, parent: '/staff/services', permissions: ['staff'] },
   { path: '/staff/services/schedule', label: 'Schedule', icon: Clock, parent: '/staff/services', permissions: ['staff'] },
+
+  // System Architecture (Management Access)
+  { path: '/architecture', label: 'System Architecture', icon: Network, permissions: ['admin', 'site_manager', 'ops_supervisor', 'fin_analyst', 'sustain_mgr'] },
 ];

@@ -40,6 +40,7 @@ import UserManualPage from "./pages/UserManualPage";
 import SecurityGuardPage from "./pages/SecurityGuardPage";
 // import StaffOperationsPage from "./pages/StaffOperationsPage";
 import UnifiedDashboardPage from "./pages/UnifiedDashboardPage";
+import ArchitecturePage from "./pages/ArchitecturePage";
 import OperationalExcellencePage from "./pages/OperationalExcellencePage";
 import AdvancedFeaturesPage from "./pages/AdvancedFeaturesPage";
 import OperationsPage from "./pages/OperationsPage";
@@ -158,13 +159,14 @@ const App = () => (
               <Route path="/admin/unified-dashboard" element={<AdminDashboardPage />} />
               
               {/* Keep separate pages for complex features */}
-              <Route path="/admin/content" element={<AdminContentPage />} />
-              <Route path="/admin/reports" element={<AdminReportsPage />} />
-              <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
-              <Route path="/admin/cafeteria" element={<AdminCafeteriaPage />} />
-              <Route path="/admin/operational-excellence" element={<OperationalExcellencePage />} />
-              <Route path="/admin/advanced-features" element={<AdvancedFeaturesPage />} />
-              <Route path="/admin/security-guard" element={<SecurityGuardPage />} />
+               <Route path="/admin/content" element={<AdminContentPage />} />
+               <Route path="/admin/reports" element={<AdminReportsPage />} />
+               <Route path="/admin/maintenance" element={<AdminMaintenancePage />} />
+               <Route path="/admin/cafeteria" element={<AdminCafeteriaPage />} />
+               <Route path="/admin/operational-excellence" element={<OperationalExcellencePage />} />
+               <Route path="/admin/advanced-features" element={<AdvancedFeaturesPage />} />
+               <Route path="/admin/security-guard" element={<SecurityGuardPage />} />
+               <Route path="/architecture" element={<ArchitecturePage />} />
                
                {/* Staff Routes */}
               <Route path="/staff/dashboard" element={<StaffDashboardPage />} />

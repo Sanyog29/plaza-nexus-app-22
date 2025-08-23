@@ -37,7 +37,8 @@ import {
   X,
   Plus,
   Filter,
-  Command
+  Command,
+  Network
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -111,6 +112,7 @@ const adminMenuGroups = [
     items: [
       { title: "Settings", url: "/admin/settings", icon: Settings },
       { title: "Content Management", url: "/admin/content", icon: FileText },
+      { title: "System Architecture", url: "/architecture", icon: Network },
       { title: "Profile", url: "/profile", icon: User },
       { title: "Help", url: "/manual", icon: HelpCircle },
     ]
