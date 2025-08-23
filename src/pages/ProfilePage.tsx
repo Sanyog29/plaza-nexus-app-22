@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ProfileErrorBoundary } from '@/components/ProfileErrorBoundary';
 import { ActivityFeed } from '@/components/profile/ActivityFeed';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const ProfilePage = () => {
   const { user, signOut, isStaff, isAdmin, userRole, isLoading: authLoading } = useAuth();
@@ -138,9 +139,12 @@ const ProfilePage = () => {
                         )}
                       </div>
                     </div>
-                    <Button variant="outline" onClick={signOut} className="mt-4 md:mt-0">
-                      Sign Out
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <ThemeToggle />
+                      <Button variant="outline" onClick={signOut}>
+                        Sign Out
+                      </Button>
+                    </div>
                   </div>
                 </Card>
 

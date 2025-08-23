@@ -16,6 +16,8 @@ import HomePage from "./pages/HomePage";
 import RequestsPage from "./pages/RequestsPage";
 import NewRequestPage from "./pages/NewRequestPage";
 import BookingsPage from "./pages/BookingsPage";
+import "./App.css";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import AlertsPage from "./pages/AlertsPage";
 import CafeteriaPage from "./pages/CafeteriaPage";
 import ServicesPage from "./pages/ServicesPage";
@@ -94,13 +96,13 @@ const App = () => (
     <ErrorBoundary>
       <GlobalErrorProvider>
         <HelmetProvider>
-          <AuthProvider>
-          <BreadcrumbProvider>
-            <EnhancedNotificationProvider>
-              
-              <PWANotificationManager>
-                <PWAProvider>
-                  <TooltipProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <BreadcrumbProvider>
+                <EnhancedNotificationProvider>
+                  <PWANotificationManager>
+                    <PWAProvider>
+                      <TooltipProvider>
                   
                   <Sonner />
             <BrowserRouter>
@@ -206,17 +208,17 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
             </BrowserRouter>
-               </TooltipProvider>
-               </PWAProvider>
-             </PWANotificationManager>
-           
-         </EnhancedNotificationProvider>
-        </BreadcrumbProvider>
-        </AuthProvider>
+                      </TooltipProvider>
+                    </PWAProvider>
+                  </PWANotificationManager>
+                </EnhancedNotificationProvider>
+              </BreadcrumbProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </HelmetProvider>
       </GlobalErrorProvider>
-   </ErrorBoundary>
- </QueryClientProvider>
+    </ErrorBoundary>
+  </QueryClientProvider>
 );
 
 export default App;
