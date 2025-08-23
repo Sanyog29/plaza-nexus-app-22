@@ -905,6 +905,45 @@ export type Database = {
         }
         Relationships: []
       }
+      category_group_mappings: {
+        Row: {
+          category_id: string
+          created_at: string
+          group_id: string
+          id: string
+          priority_override: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          group_id: string
+          id?: string
+          priority_override?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          priority_override?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_group_mappings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_group_mappings_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "staff_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_records: {
         Row: {
           commission_amount: number
@@ -2687,7 +2726,10 @@ export type Database = {
       }
       maintenance_requests: {
         Row: {
+          assigned_group: string | null
           assigned_to: string | null
+          assignment_acknowledged_at: string | null
+          auto_assignment_attempts: number
           auto_detected_location: boolean | null
           building_area_id: string | null
           building_floor_id: string | null
@@ -2700,8 +2742,10 @@ export type Database = {
           estimated_completion: string | null
           gps_coordinates: Json | null
           id: string
+          is_crisis: boolean
           location: string
           main_category_id: string | null
+          next_escalation_at: string | null
           priority: Database["public"]["Enums"]["request_priority"]
           reported_by: string | null
           resolution_sla_at: string | null
@@ -2713,7 +2757,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_group?: string | null
           assigned_to?: string | null
+          assignment_acknowledged_at?: string | null
+          auto_assignment_attempts?: number
           auto_detected_location?: boolean | null
           building_area_id?: string | null
           building_floor_id?: string | null
@@ -2726,8 +2773,10 @@ export type Database = {
           estimated_completion?: string | null
           gps_coordinates?: Json | null
           id?: string
+          is_crisis?: boolean
           location: string
           main_category_id?: string | null
+          next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           reported_by?: string | null
           resolution_sla_at?: string | null
@@ -2739,7 +2788,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_group?: string | null
           assigned_to?: string | null
+          assignment_acknowledged_at?: string | null
+          auto_assignment_attempts?: number
           auto_detected_location?: boolean | null
           building_area_id?: string | null
           building_floor_id?: string | null
@@ -2752,8 +2804,10 @@ export type Database = {
           estimated_completion?: string | null
           gps_coordinates?: Json | null
           id?: string
+          is_crisis?: boolean
           location?: string
           main_category_id?: string | null
+          next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           reported_by?: string | null
           resolution_sla_at?: string | null
@@ -2765,6 +2819,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "maintenance_requests_assigned_group_fkey"
+            columns: ["assigned_group"]
+            isOneToOne: false
+            referencedRelation: "staff_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "maintenance_requests_assigned_to_fkey"
             columns: ["assigned_to"]
@@ -5195,6 +5256,130 @@ export type Database = {
           },
         ]
       }
+      staff_availability: {
+        Row: {
+          auto_offline_at: string | null
+          availability_status: string
+          created_at: string
+          id: string
+          is_available: boolean
+          last_status_change: string
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_offline_at?: string | null
+          availability_status?: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          last_status_change?: string
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_offline_at?: string | null
+          availability_status?: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          last_status_change?: string
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_availability_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_availability_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_group_assignments: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          is_backup: boolean
+          staff_id: string
+          staff_level: number
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          is_backup?: boolean
+          staff_id: string
+          staff_level?: number
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          is_backup?: boolean
+          staff_id?: string
+          staff_level?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_group_assignments_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "staff_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_group_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_group_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          group_name: string
+          group_type: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          group_name: string
+          group_type: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          group_name?: string
+          group_type?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       staff_role_requests: {
         Row: {
           created_at: string
@@ -5760,6 +5945,78 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_assignment_history: {
+        Row: {
+          acknowledged_at: string | null
+          assigned_at: string
+          assigned_by: string | null
+          assigned_to: string | null
+          assignment_reason: string | null
+          assignment_type: string
+          id: string
+          request_id: string
+          unassigned_at: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_to?: string | null
+          assignment_reason?: string | null
+          assignment_type: string
+          id?: string
+          request_id: string
+          unassigned_at?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          assigned_at?: string
+          assigned_by?: string | null
+          assigned_to?: string | null
+          assignment_reason?: string | null
+          assignment_type?: string
+          id?: string
+          request_id?: string
+          unassigned_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_assignment_history_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignment_history_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignment_history_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignment_history_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignment_history_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -7131,6 +7388,10 @@ export type Database = {
       }
     }
     Functions: {
+      acknowledge_ticket: {
+        Args: { ticket_id: string }
+        Returns: boolean
+      }
       admin_create_user_invitation: {
         Args:
           | {
@@ -7361,6 +7622,10 @@ export type Database = {
       }
       toggle_access_point_lock: {
         Args: { lock_state: boolean; point_id: string }
+        Returns: boolean
+      }
+      update_staff_availability: {
+        Args: { auto_offline_minutes?: number; new_status: string }
         Returns: boolean
       }
       update_user_role: {

@@ -23,7 +23,8 @@ const formSchema = z.object({
   subCategoryId: z.string().min(1, 'Please select a sub-category'),
   buildingAreaId: z.string().min(1, 'Please select an area'),
   buildingFloorId: z.string().min(1, 'Please select a floor'),
-  priority: z.enum(['urgent', 'high', 'medium', 'low'])
+  priority: z.enum(['critical', 'high', 'medium', 'low']),
+  is_crisis: z.boolean().optional()
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -89,7 +90,8 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       subCategoryId: '',
       buildingAreaId: '',
       buildingFloorId: '',
-      priority: 'medium'
+      priority: 'medium',
+      is_crisis: false
     }
   });
 
@@ -226,7 +228,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
 
   const getPriorityConfig = (priority: string) => {
     const configs = {
-      urgent: { label: 'P1 - Critical', color: 'destructive', description: 'Life-safety risk or service outage affecting >25% users' },
+      critical: { label: 'P1 - Critical', color: 'destructive', description: 'Life-safety risk or service outage affecting >25% users' },
       high: { label: 'P2 - High', color: 'destructive', description: 'Severe disruption to a team/floor or compliance risk' },
       medium: { label: 'P3 - Medium', color: 'secondary', description: 'Single-user productivity impact or aesthetic issue' },
       low: { label: 'P4 - Low', color: 'outline', description: 'No immediate impact; planned task' }
@@ -275,11 +277,12 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         sub_category_id: data.subCategoryId,
         building_area_id: data.buildingAreaId,
         building_floor_id: data.buildingFloorId,
-        priority: data.priority,
+        priority: data.priority === 'critical' ? 'urgent' : data.priority as 'urgent' | 'high' | 'medium' | 'low',
         status: 'pending' as const,
         reported_by: user.id,
         gps_coordinates: currentLocation ? JSON.stringify(currentLocation) : null,
-        auto_detected_location: !!currentLocation
+        auto_detected_location: !!currentLocation,
+        is_crisis: (form.getValues() as any).is_crisis || false
       };
 
       const { error } = await supabase

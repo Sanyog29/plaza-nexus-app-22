@@ -7,9 +7,10 @@ import { SmartBreadcrumb } from './ui/smart-breadcrumb';
 import { ThemeToggle } from './theme/ThemeToggle';
 import { Button } from './ui/button';
 import { useAuth } from './AuthProvider';
+import AvailabilityToggle from './availability/AvailabilityToggle';
 
 const Header: React.FC = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -28,6 +29,10 @@ const Header: React.FC = () => {
           </Link>
         </div>
         <div className="flex items-center space-x-4">
+          {/* Show availability toggle for staff only */}
+          {user && (
+            <AvailabilityToggle />
+          )}
           <Link 
             to="/manual" 
             className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
