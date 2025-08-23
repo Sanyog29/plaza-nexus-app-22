@@ -490,7 +490,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                   <span className="text-sm font-medium">Auto-assigned Priority:</span>
                   <Badge variant={priorityConfig.color as any}>{priorityConfig.label}</Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mb-3">{priorityConfig.description}</p>
+                <p className="text-xs text-muted-foreground mb-3 text-left">{priorityConfig.description}</p>
                 
                 {slaInfo && (
                   <div className="flex items-center gap-4 text-sm">
