@@ -75,6 +75,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [pendingNotListed, setPendingNotListed] = useState(false);
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -165,8 +166,34 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         if (error) throw error;
         setSubCategories(data || []);
         
-        // Reset sub-category selection
-        form.setValue('subCategoryId', '');
+        // Reset sub-category selection unless pending not listed
+        if (!pendingNotListed) {
+          form.setValue('subCategoryId', '');
+        }
+
+        // Handle pending "not listed" selection
+        if (pendingNotListed && data) {
+          const notListedSub = data.find(sub => 
+            sub.name.toLowerCase().includes('not listed') || 
+            sub.name.toLowerCase().includes('describe')
+          );
+          
+          if (notListedSub) {
+            form.setValue('subCategoryId', notListedSub.id);
+            setTimeout(() => form.setFocus('description'), 100);
+            toast({
+              title: "Category selected",
+              description: "Please describe your issue below."
+            });
+          } else {
+            toast({
+              title: "Please describe your issue",
+              description: "Choose any subcategory and provide details in the description."
+            });
+          }
+          
+          setPendingNotListed(false);
+        }
       } catch (error: any) {
         toast({
           title: "Error loading sub-categories",
@@ -177,7 +204,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     };
 
     loadSubCategories();
-  }, [selectedMainCategory, form, toast]);
+  }, [selectedMainCategory, form, toast, pendingNotListed]);
 
   // Update priority and SLA when sub-category changes
   useEffect(() => {
@@ -205,6 +232,26 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       low: { label: 'P4 - Low', color: 'outline', description: 'No immediate impact; planned task' }
     };
     return configs[priority as keyof typeof configs] || configs.medium;
+  };
+
+  const handleNotListedSelection = () => {
+    const otherCategory = mainCategories.find(cat => 
+      cat.name.toLowerCase().includes('other') || 
+      cat.name.toLowerCase().includes('general')
+    );
+    
+    if (!otherCategory) {
+      toast({
+        title: "Please select any category",
+        description: "Choose any category and describe your issue in detail.",
+        variant: "default"
+      });
+      return;
+    }
+
+    // Set the Other/General category and mark pending
+    form.setValue('mainCategoryId', otherCategory.id);
+    setPendingNotListed(true);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -326,7 +373,17 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Issue Type *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedMainCategory}>
+                    <Select 
+                      onValueChange={(value) => {
+                        if (value === '__not_listed__') {
+                          handleNotListedSelection();
+                        } else {
+                          field.onChange(value);
+                        }
+                      }} 
+                      value={field.value} 
+                      disabled={!selectedMainCategory}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-background">
                           <SelectValue placeholder="Select issue type" />
@@ -338,6 +395,11 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                             {subCategory.name}
                           </SelectItem>
                         ))}
+                        {subCategories.length > 0 && (
+                          <SelectItem value="__not_listed__" className="text-primary font-medium border-t border-border mt-1 pt-2">
+                            💭 My issue isn't mentioned here
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
