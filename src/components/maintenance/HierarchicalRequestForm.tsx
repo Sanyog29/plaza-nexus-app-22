@@ -278,6 +278,9 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       // Get all form values and ensure is_crisis is properly handled
       const formValues = form.getValues();
       
+      // Map priority to allowed enum values to ensure safety
+      const safePriority = ['urgent', 'high', 'medium', 'low'].includes(data.priority) ? data.priority : 'medium';
+      
       const requestData = {
         title: data.title,
         description: data.description,
@@ -286,19 +289,31 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         sub_category_id: data.subCategoryId,
         building_area_id: data.buildingAreaId,
         building_floor_id: data.buildingFloorId,
-        priority: data.priority as 'urgent' | 'high' | 'medium' | 'low',
+        priority: safePriority as 'urgent' | 'high' | 'medium' | 'low',
         status: 'pending' as const,
         reported_by: user.id,
-        gps_coordinates: currentLocation ? JSON.stringify(currentLocation) : null,
+        gps_coordinates: currentLocation || null, // Send as object, not JSON string
         auto_detected_location: !!currentLocation,
         is_crisis: Boolean(formValues.is_crisis) // ensures true or false, never undefined
       };
 
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .insert([requestData]);
+      console.log('requestData', requestData); // Debug payload
 
-      if (error) throw error;
+      const { data: result, error } = await supabase
+        .from('maintenance_requests')
+        .insert([requestData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error details:', { 
+          code: error.code, 
+          details: error.details, 
+          hint: error.hint, 
+          message: error.message 
+        });
+        throw error;
+      }
 
       toast({
         title: "Request submitted successfully!",
