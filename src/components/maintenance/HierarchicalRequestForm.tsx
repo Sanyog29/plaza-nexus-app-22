@@ -389,18 +389,29 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                           <SelectValue placeholder="Select issue type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-background border shadow-lg z-50">
-                        {subCategories.map((subCategory) => (
-                          <SelectItem key={subCategory.id} value={subCategory.id}>
-                            {subCategory.name}
-                          </SelectItem>
-                        ))}
-                        {subCategories.length > 0 && (
-                          <SelectItem value="__not_listed__" className="text-primary font-medium border-t border-border mt-1 pt-2">
-                            💭 My issue isn't mentioned here
-                          </SelectItem>
-                        )}
-                      </SelectContent>
+                          <SelectContent className="bg-background border shadow-lg z-50">
+                            {subCategories.length > 0 ? (
+                              <>
+                                {subCategories.map((subCategory) => (
+                                  <SelectItem key={subCategory.id} value={subCategory.id}>
+                                    {subCategory.name}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="__not_listed__" className="text-primary font-medium border-t border-border mt-1 pt-2">
+                                  💭 My issue isn't mentioned here
+                                </SelectItem>
+                              </>
+                            ) : (
+                              <>
+                                <SelectItem value="__no_options__" disabled>
+                                  No issue types found for this category
+                                </SelectItem>
+                                <SelectItem value="__not_listed__" className="text-primary font-medium mt-1">
+                                  💭 My issue isn't mentioned here
+                                </SelectItem>
+                              </>
+                            )}
+                          </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
