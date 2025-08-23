@@ -35,15 +35,15 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
               {icon}
             </div>
             {count !== undefined && (
-              <span className="bg-white/90 text-black text-xs font-semibold px-3 py-1.5 rounded-full">
+              <span className="bg-background/90 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
                 {count}
               </span>
             )}
           </div>
           
-          <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
+          <h3 className="text-lg font-semibold text-primary-foreground mb-1">{title}</h3>
           {description && (
-            <p className="text-white/90 text-sm mb-4">{description}</p>
+            <p className="text-primary-foreground/90 text-sm mb-4">{description}</p>
           )}
           
           {status && (

@@ -13,7 +13,7 @@ const AISummaryCards = () => {
               <Users size={24} className="text-blue-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Team Tasks</p>
+              <p className="text-sm font-medium text-primary-foreground">Team Tasks</p>
               <p className="text-xs text-blue-500">5 tasks pending for your team</p>
             </div>
           </div>
@@ -27,7 +27,7 @@ const AISummaryCards = () => {
               <Building size={24} className="text-purple-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Room Occupancy</p>
+              <p className="text-sm font-medium text-primary-foreground">Room Occupancy</p>
               <p className="text-xs text-purple-500">Meeting room occupancy at 76% today</p>
             </div>
           </div>
@@ -41,7 +41,7 @@ const AISummaryCards = () => {
               <Wrench size={24} className="text-amber-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Next Maintenance</p>
+              <p className="text-sm font-medium text-primary-foreground">Next Maintenance</p>
               <p className="text-xs text-amber-500">Fire Alarm Testing at 3 PM</p>
             </div>
           </div>
@@ -55,7 +55,7 @@ const AISummaryCards = () => {
               <MapPin size={24} className="text-red-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white">Zone Alert</p>
+              <p className="text-sm font-medium text-primary-foreground">Zone Alert</p>
               <p className="text-xs text-red-500">Your zone: Maintenance scheduled</p>
             </div>
           </div>

@@ -10,7 +10,7 @@ const BottomNavigation: React.FC = () => {
         <NavLink 
           to="/" 
           className={({ isActive }) => 
-            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-plaza-blue' : 'text-gray-400'}`
+            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-primary' : 'text-muted-foreground'}`
           }
           end
         >
@@ -21,7 +21,7 @@ const BottomNavigation: React.FC = () => {
         <NavLink 
           to="/requests" 
           className={({ isActive }) => 
-            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-plaza-blue' : 'text-gray-400'}`
+            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-primary' : 'text-muted-foreground'}`
           }
         >
           <MessageSquare size={20} />
@@ -31,7 +31,7 @@ const BottomNavigation: React.FC = () => {
         <NavLink 
           to="/services" 
           className={({ isActive }) => 
-            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-plaza-blue' : 'text-gray-400'}`
+            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-primary' : 'text-muted-foreground'}`
           }
         >
           <Coffee size={20} />
@@ -41,7 +41,7 @@ const BottomNavigation: React.FC = () => {
         <NavLink 
           to="/bookings" 
           className={({ isActive }) => 
-            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-plaza-blue' : 'text-gray-400'}`
+            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-primary' : 'text-muted-foreground'}`
           }
         >
           <Calendar size={20} />
@@ -51,7 +51,7 @@ const BottomNavigation: React.FC = () => {
         <NavLink 
           to="/profile" 
           className={({ isActive }) => 
-            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-plaza-blue' : 'text-gray-400'}`
+            `flex flex-col items-center justify-center w-full py-2 ${isActive ? 'text-primary' : 'text-muted-foreground'}`
           }
         >
           <User size={20} />
