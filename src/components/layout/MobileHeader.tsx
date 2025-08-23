@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, Bell, Wifi, WifiOff, Download, Home, Shield, Wrench, BarChart3, Settings, Info, BookOpen, Layout, Users, FileText, AlertTriangle, ClipboardList, Brain, Zap, Building, Calendar, ChefHat } from 'lucide-react';
+import { Menu, Search, Wifi, WifiOff, Download, Home, Shield, Wrench, BarChart3, Settings, Info, BookOpen, Layout, Users, FileText, AlertTriangle, ClipboardList, Brain, Zap, Building, Calendar, ChefHat, LogOut } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { usePWAContext } from '@/components/PWAProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -11,15 +11,24 @@ import { NotificationCenter } from '@/components/notifications/NotificationCente
 import { Link } from 'react-router-dom';
 import { SmartBreadcrumb } from '@/components/ui/smart-breadcrumb';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export const MobileHeader: React.FC = () => {
-  const { user, isAdmin, isStaff } = useAuth();
+  const { user, isAdmin, isStaff, signOut } = useAuth();
   const { isOnline, isInstallable, isInstalled, installApp } = usePWAContext();
   const { metrics } = useDashboardMetrics();
   const [searchOpen, setSearchOpen] = useState(false);
   
   // Initialize breadcrumbs context
   useBreadcrumbs();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const adminMenuItems = [
     { title: "Dashboard", url: "/admin/dashboard", icon: Home },
@@ -121,6 +130,15 @@ export const MobileHeader: React.FC = () => {
                       Install App
                     </Button>
                   )}
+                  <Button
+                    onClick={handleSignOut}
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start text-destructive hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
                 </div>
               </div>
             </SheetContent>
@@ -160,6 +178,9 @@ export const MobileHeader: React.FC = () => {
               <WifiOff className="h-4 w-4 text-destructive" />
             )}
           </div>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Notifications */}
           <NotificationCenter />

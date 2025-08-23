@@ -1,11 +1,23 @@
 
 import React from 'react';
-import { Bell, Book } from 'lucide-react';
+import { Book, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationCenter } from './notifications/NotificationCenter';
 import { SmartBreadcrumb } from './ui/smart-breadcrumb';
+import { ThemeToggle } from './theme/ThemeToggle';
+import { Button } from './ui/button';
+import { useAuth } from './AuthProvider';
 
 const Header: React.FC = () => {
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-10 px-4 py-3 bg-plaza-dark border-b border-border glass-effect">
@@ -25,12 +37,16 @@ const Header: React.FC = () => {
             <span className="hidden sm:inline">Manual</span>
           </Link>
           <NotificationCenter />
-          <Link to="/alerts" className="relative">
-            <Bell className="h-5 w-5 text-white" />
-            <span className="absolute -top-1 -right-1 bg-plaza-blue text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              3
-            </span>
-          </Link>
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="text-white hover:text-plaza-blue transition-colors p-2"
+            title="Sign Out"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </div>
       

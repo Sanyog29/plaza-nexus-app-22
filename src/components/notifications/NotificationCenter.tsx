@@ -13,7 +13,8 @@ import {
   Settings,
   CheckCheck,
   Trash2,
-  Filter
+  Filter,
+  ShieldAlert
 } from 'lucide-react';
 import {
   Sheet,
@@ -29,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
@@ -237,6 +239,11 @@ export function NotificationCenter() {
           <div className="flex items-center justify-between">
             <SheetTitle>Notifications</SheetTitle>
             <div className="flex items-center gap-2">
+              <Link to="/alerts">
+                <Button variant="ghost" size="sm" title="Facility Alerts">
+                  <ShieldAlert className="h-4 w-4" />
+                </Button>
+              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm">
