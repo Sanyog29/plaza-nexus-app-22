@@ -53,14 +53,30 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				// Semantic design tokens for app-specific colors
+				surface: {
+					DEFAULT: 'hsl(var(--card))',
+					elevated: 'hsl(var(--popover))',
+					foreground: 'hsl(var(--card-foreground))'
+				},
+				glass: 'hsl(var(--card-glass))',
+				// Legacy plaza colors - now semantic
 				plaza: {
-					blue: '#0066FF',
-					dark: '#0A0A0A',
-					grey: '#666666',
-					lightgrey: '#999999',
-					success: '#10B981',
-					warning: '#F59E0B',
-					danger: '#EF4444',
+					blue: 'hsl(var(--primary))',
+					dark: 'hsl(var(--background))',
+					grey: 'hsl(var(--muted))',
+					lightgrey: 'hsl(var(--muted-foreground))',
+					success: 'hsl(var(--success))',
+					warning: 'hsl(var(--warning))',
+					danger: 'hsl(var(--destructive))',
 				}
 			},
 			fontFamily: {

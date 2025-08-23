@@ -20,17 +20,17 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-10 px-4 py-3 bg-plaza-dark border-b border-border glass-effect">
+    <header className="sticky top-0 z-10 px-4 py-3 bg-surface border-b border-border glass-effect">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Link to="/" className="flex items-center space-x-2">
-            <h1 className="text-lg font-bold text-white">SS Plaza</h1>
+            <h1 className="text-lg font-bold text-foreground">SS Plaza</h1>
           </Link>
         </div>
         <div className="flex items-center space-x-4">
           <Link 
             to="/manual" 
-            className="flex items-center gap-2 text-white hover:text-plaza-blue transition-colors"
+            className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
             title="User Manual"
           >
             <Book className="h-5 w-5" />
@@ -42,7 +42,7 @@ const Header: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
-            className="text-white hover:text-plaza-blue transition-colors p-2"
+            className="text-foreground hover:text-primary transition-colors p-2"
             title="Sign Out"
           >
             <LogOut className="h-5 w-5" />

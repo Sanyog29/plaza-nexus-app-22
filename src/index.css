@@ -8,52 +8,114 @@
 
 @layer base {
   :root {
-    /* Base colors - Improved contrast */
-    --background: 220 23% 3%;
-    --foreground: 210 40% 98%;
+    /* Light theme - Pastel colors */
+    --background: 240 15% 98%;
+    --foreground: 240 25% 15%;
 
-    /* Card and surface colors - Better contrast */
-    --card: 224 20% 8%;
-    --card-foreground: 210 40% 98%;
-    --card-glass: 224 20% 9% / 0.6;
+    /* Card and surface colors */
+    --card: 240 15% 96%;
+    --card-foreground: 240 25% 15%;
+    --card-glass: 240 15% 96% / 0.8;
 
-    --popover: 224 20% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 15% 96%;
+    --popover-foreground: 240 25% 15%;
 
-    /* Primary brand colors */
-    --primary: 217 100% 55%;
-    --primary-foreground: 210 40% 98%;
-    --primary-glow: 217 100% 65%;
+    /* Primary brand colors - Soft blue pastel */
+    --primary: 200 80% 70%;
+    --primary-foreground: 240 25% 15%;
+    --primary-glow: 200 85% 75%;
     
-    /* Secondary colors - Better contrast */
-    --secondary: 215 9% 25%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary colors - Soft lavender */
+    --secondary: 270 50% 85%;
+    --secondary-foreground: 240 25% 15%;
 
-    /* Muted colors - Improved readability */
-    --muted: 215 9% 18%;
-    --muted-foreground: 215 15% 70%;
+    /* Muted colors - Light gray-blue */
+    --muted: 220 15% 92%;
+    --muted-foreground: 240 10% 45%;
 
-    /* Accent colors */
-    --accent: 217 100% 55%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent colors - Soft teal */
+    --accent: 180 60% 75%;
+    --accent-foreground: 240 25% 15%;
 
-    /* Status colors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 76% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 55%;
-    --warning-foreground: 220 20% 3%;
+    /* Status colors - Soft pastels */
+    --destructive: 350 60% 75%;
+    --destructive-foreground: 240 25% 15%;
+    --success: 140 50% 70%;
+    --success-foreground: 240 25% 15%;
+    --warning: 35 80% 70%;
+    --warning-foreground: 240 25% 15%;
     
     /* Enhanced UI colors */
-    --success-subtle: 142 76% 45% / 0.15;
-    --error-subtle: 0 84% 60% / 0.15;
-    --info-subtle: 217 100% 55% / 0.15;
+    --success-subtle: 140 50% 70% / 0.2;
+    --error-subtle: 350 60% 75% / 0.2;
+    --info-subtle: 200 80% 70% / 0.2;
 
-    /* UI elements - Better contrast */
-    --border: 215 9% 25%;
-    --input: 215 9% 25%;
-    --ring: 217 100% 55%;
+    /* UI elements */
+    --border: 220 15% 88%;
+    --input: 240 15% 96%;
+    --ring: 200 80% 70%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-glass: linear-gradient(135deg, hsl(var(--card-glass)), hsl(var(--muted) / 0.5));
+
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.25);
+    --shadow-glass: 0 8px 32px 0 hsl(240 20% 50% / 0.15);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark theme - Deep pastels */
+    --background: 240 15% 8%;
+    --foreground: 240 15% 92%;
+
+    /* Card and surface colors */
+    --card: 240 15% 12%;
+    --card-foreground: 240 15% 92%;
+    --card-glass: 240 15% 12% / 0.8;
+
+    --popover: 240 15% 12%;
+    --popover-foreground: 240 15% 92%;
+
+    /* Primary brand colors - Vibrant but soft blue */
+    --primary: 200 90% 65%;
+    --primary-foreground: 240 15% 8%;
+    --primary-glow: 200 95% 70%;
+    
+    /* Secondary colors - Deep lavender */
+    --secondary: 270 40% 30%;
+    --secondary-foreground: 240 15% 92%;
+
+    /* Muted colors */
+    --muted: 240 10% 20%;
+    --muted-foreground: 240 8% 65%;
+
+    /* Accent colors - Vibrant teal */
+    --accent: 180 70% 60%;
+    --accent-foreground: 240 15% 8%;
+
+    /* Status colors - Vibrant but balanced */
+    --destructive: 350 75% 65%;
+    --destructive-foreground: 240 15% 92%;
+    --success: 140 65% 55%;
+    --success-foreground: 240 15% 8%;
+    --warning: 35 85% 60%;
+    --warning-foreground: 240 15% 8%;
+    
+    /* Enhanced UI colors */
+    --success-subtle: 140 65% 55% / 0.2;
+    --error-subtle: 350 75% 65% / 0.2;
+    --info-subtle: 200 90% 65% / 0.2;
+
+    /* UI elements */
+    --border: 240 10% 25%;
+    --input: 240 15% 12%;
+    --ring: 200 90% 65%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -61,12 +123,7 @@
 
     /* Shadows */
     --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-    --shadow-glass: 0 8px 32px 0 hsl(220 20% 6% / 0.37);
-
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    --radius: 0.5rem;
+    --shadow-glass: 0 8px 32px 0 hsl(240 20% 6% / 0.37);
   }
 }
 

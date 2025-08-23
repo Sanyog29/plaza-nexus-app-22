@@ -5,7 +5,7 @@ import { Home, MessageSquare, Calendar, User, Coffee } from 'lucide-react';
 
 const BottomNavigation: React.FC = () => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-plaza-dark border-t border-border z-10">
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-10">
       <div className="flex justify-around items-center h-16">
         <NavLink 
           to="/" 

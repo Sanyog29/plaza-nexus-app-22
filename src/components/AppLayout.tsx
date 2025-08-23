@@ -99,7 +99,7 @@ const AppLayout: React.FC = () => {
   if (userRole === 'vendor') {
     return (
       <ErrorBoundary>
-        <div className="min-h-screen bg-plaza-dark pb-16">
+        <div className="min-h-screen bg-background pb-16">
           <MobileHeader />
           <main className="pt-4">
             <Outlet />
@@ -125,7 +125,7 @@ const AppLayout: React.FC = () => {
   if (isMobile) {
     return (
       <ErrorBoundary>
-        <div className="min-h-screen bg-plaza-dark pb-16">
+        <div className="min-h-screen bg-background pb-16">
           <MobileHeader />
           <MobileSystemStatus />
           <main className="pt-4">
@@ -141,7 +141,7 @@ const AppLayout: React.FC = () => {
   // Default layout for tenant users
   return (
     <ErrorBoundary>
-      <div className="flex flex-col min-h-screen bg-plaza-dark">
+      <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="flex-1 pb-16">
           <Outlet />
