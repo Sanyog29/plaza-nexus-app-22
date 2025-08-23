@@ -7,7 +7,7 @@ const AdminOrderOverview = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Order Overview</h2>
+          <h2 className="text-2xl font-bold text-foreground">Order Overview</h2>
           <p className="text-muted-foreground">Monitor all orders across vendors</p>
         </div>
         <Badge variant="secondary">Real-time</Badge>

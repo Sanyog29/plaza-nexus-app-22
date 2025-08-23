@@ -9,7 +9,7 @@ const DashboardHeader = () => {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h2 className="text-2xl font-bold text-white">Admin Dashboard</h2>
+        <h2 className="text-2xl font-bold text-foreground">Admin Dashboard</h2>
         <p className="text-sm text-gray-400 mt-1">Real-time building operations and analytics</p>
       </div>
       <div className="flex gap-2">

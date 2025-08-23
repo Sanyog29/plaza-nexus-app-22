@@ -10,7 +10,7 @@ const AccessRestricted = () => {
         <CardContent className="p-6">
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <ServerCog className="h-16 w-16 text-red-500" />
-            <h2 className="text-2xl font-bold text-white">Access Restricted</h2>
+            <h2 className="text-2xl font-bold text-foreground">Access Restricted</h2>
             <p className="text-gray-400">You don't have permission to access the Admin Dashboard.</p>
             <Button variant="default" className="mt-4" onClick={() => history.back()}>
               Go Back

@@ -52,7 +52,7 @@ const EquipmentCostChart = () => {
   return (
     <Card className="bg-card/50 backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-white text-lg">Equipment Maintenance Cost</CardTitle>
+        <CardTitle className="text-card-foreground text-lg">Equipment Maintenance Cost</CardTitle>
         <CardDescription>Monthly maintenance expenditure by equipment type</CardDescription>
       </CardHeader>
       <CardContent>

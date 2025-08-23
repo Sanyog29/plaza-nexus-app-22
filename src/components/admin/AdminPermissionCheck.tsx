@@ -20,7 +20,7 @@ export const AdminPermissionCheck: React.FC<AdminPermissionCheckProps> = ({
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-8 text-center">
           <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">Authentication Required</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">Authentication Required</h3>
           <p className="text-gray-400 mb-4">Please log in to access this content.</p>
           <Button variant="outline" onClick={() => window.location.href = '/auth'}>
             Log In
@@ -35,7 +35,7 @@ export const AdminPermissionCheck: React.FC<AdminPermissionCheckProps> = ({
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-8 text-center">
           <AlertTriangle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">Admin Access Required</h3>
+          <h3 className="text-lg font-medium text-foreground mb-2">Admin Access Required</h3>
           <p className="text-gray-400 mb-4">
             You need administrator privileges to access this content management system.
           </p>

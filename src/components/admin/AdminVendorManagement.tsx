@@ -98,7 +98,7 @@ const AdminVendorManagement = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Vendor Management</h2>
+          <h2 className="text-2xl font-bold text-foreground">Vendor Management</h2>
           <p className="text-muted-foreground">Manage food vendors and their operations</p>
         </div>
         
@@ -150,7 +150,7 @@ const AdminVendorManagement = () => {
                     />
                   )}
                   <div>
-                    <CardTitle className="text-xl text-white">{vendor.name}</CardTitle>
+                    <CardTitle className="text-xl text-card-foreground">{vendor.name}</CardTitle>
                     <CardDescription className="flex items-center gap-4 mt-1">
                       <span>{vendor.cuisine_type}</span>
                       <span className="flex items-center gap-1">
@@ -255,7 +255,7 @@ const AdminVendorManagement = () => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Plus className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">No Vendors Found</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Vendors Found</h3>
             <p className="text-muted-foreground text-center mb-4">
               {searchTerm ? 'No vendors match your search criteria.' : 'Get started by adding your first vendor.'}
             </p>
