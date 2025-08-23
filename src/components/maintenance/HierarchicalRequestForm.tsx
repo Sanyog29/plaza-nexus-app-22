@@ -153,11 +153,13 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   useEffect(() => {
     const loadSubCategories = async () => {
       if (!selectedMainCategory) {
+        console.log('🔍 No main category selected, clearing subcategories');
         setSubCategories([]);
         return;
       }
 
       try {
+        console.log('🔍 Loading subcategories for main category:', selectedMainCategory);
         const { data, error } = await supabase
           .from('sub_categories')
           .select('*')
@@ -166,6 +168,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
           .order('sort_order');
 
         if (error) throw error;
+        console.log('🔍 Subcategories loaded:', data?.length || 0, 'items', data);
         setSubCategories(data || []);
         
         // Reset sub-category selection unless pending not listed
