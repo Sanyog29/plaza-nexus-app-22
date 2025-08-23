@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from './AdminSidebar';
 import { useAuth } from '@/components/AuthProvider';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +15,14 @@ import { NavigationErrorBoundary } from '@/components/common/NavigationErrorBoun
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { supabase } from '@/integrations/supabase/client';
 import { SmartBreadcrumb } from '@/components/ui/smart-breadcrumb';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface ResponsiveLayoutProps {
   userRole: string;
 }
 
 export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
-  const { user, userRole: authUserRole, userDepartment } = useAuth();
+  const { user, userRole: authUserRole, userDepartment, signOut } = useAuth();
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
@@ -71,17 +72,31 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     {!isMobile && (
                       <NavigationErrorBoundary>
                         <GlobalSearch className="w-64" />
                       </NavigationErrorBoundary>
-                     )}
+                    )}
 
-                     {/* Enhanced Notification Center */}
-                     <NotificationCenter />
+                    {/* Theme Toggle (Light/Dark/System) */}
+                    <ThemeToggle />
 
-                    {/* User Menu */}
+                    {/* Notification Center */}
+                    <NotificationCenter />
+
+                    {/* Sign Out */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => signOut()}
+                      title="Sign out"
+                      className="p-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+
+                    {/* Profile Shortcut */}
                     <NavLink to="/profile">
                       <Button variant="ghost" size="sm" className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
