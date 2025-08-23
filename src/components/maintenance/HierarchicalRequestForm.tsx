@@ -275,6 +275,9 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     setIsSubmitting(true);
 
     try {
+      // Get all form values and ensure is_crisis is properly handled
+      const formValues = form.getValues();
+      
       const requestData = {
         title: data.title,
         description: data.description,
@@ -288,7 +291,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         reported_by: user.id,
         gps_coordinates: currentLocation ? JSON.stringify(currentLocation) : null,
         auto_detected_location: !!currentLocation,
-        is_crisis: Boolean((form.getValues() as any).is_crisis)
+        is_crisis: Boolean(formValues.is_crisis) // ensures true or false, never undefined
       };
 
       const { error } = await supabase
