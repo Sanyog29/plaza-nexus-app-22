@@ -266,7 +266,12 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log('🚀 Form submission started');
+    console.log('🚀 Form data:', data);
+    console.log('🚀 User:', user?.id);
+    
     if (!user) {
+      console.error('❌ No user found');
       toast({
         title: "Authentication required",
         description: "Please log in to submit a request",
@@ -275,6 +280,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       return;
     }
 
+    console.log('🚀 Setting isSubmitting to true');
     setIsSubmitting(true);
 
     try {
@@ -603,6 +609,12 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                 disabled={isSubmitting}
                 aria-disabled={isSubmitting}
                 className="w-full"
+                onClick={() => {
+                  console.log('🚀 Submit button clicked');
+                  console.log('🚀 Form errors:', form.formState.errors);
+                  console.log('🚀 Form values:', form.getValues());
+                  console.log('🚀 Form valid:', form.formState.isValid);
+                }}
               >
                 {isSubmitting ? (
                   <>
