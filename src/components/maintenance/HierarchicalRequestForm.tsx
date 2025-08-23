@@ -288,7 +288,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         reported_by: user.id,
         gps_coordinates: currentLocation ? JSON.stringify(currentLocation) : null,
         auto_detected_location: !!currentLocation,
-        is_crisis: (form.getValues() as any).is_crisis || false
+        is_crisis: Boolean((form.getValues() as any).is_crisis)
       };
 
       const { error } = await supabase
