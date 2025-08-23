@@ -267,12 +267,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   };
 
   const onSubmit = async (data: FormData) => {
-    console.log('🚀 Form submission started');
-    console.log('🚀 Form data:', data);
-    console.log('🚀 User:', user?.id);
-    
     if (!user) {
-      console.error('❌ No user found');
       toast({
         title: "Authentication required",
         description: "Please log in to submit a request",
@@ -281,7 +276,6 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       return;
     }
 
-    console.log('🚀 Setting isSubmitting to true');
     setIsSubmitting(true);
 
     try {
@@ -301,15 +295,13 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         sub_category_id: data.subCategoryId,
         building_area_id: data.buildingAreaId,
         building_floor_id: data.buildingFloorId,
-        priority: safePriority as 'urgent' | 'high' | 'medium' | 'low',
+        priority: safePriority,
         status: 'pending' as const,
         reported_by: user.id,
-        gps_coordinates: currentLocation || null, // Send as object, not JSON string
+        gps_coordinates: currentLocation || null,
         auto_detected_location: !!currentLocation,
-        is_crisis: Boolean(formValues.is_crisis) // ensures true or false, never undefined
+        is_crisis: Boolean(formValues.is_crisis)
       };
-
-      console.log('requestData', requestData); // Debug payload
 
       const { data: result, error } = await supabase
         .from('maintenance_requests')
@@ -612,12 +604,6 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                 disabled={isSubmitting}
                 aria-disabled={isSubmitting}
                 className="w-full"
-                onClick={() => {
-                  console.log('🚀 Submit button clicked');
-                  console.log('🚀 Form errors:', form.formState.errors);
-                  console.log('🚀 Form values:', form.getValues());
-                  console.log('🚀 Form valid:', form.formState.isValid);
-                }}
               >
                 {isSubmitting ? (
                   <>
