@@ -23,7 +23,7 @@ const formSchema = z.object({
   subCategoryId: z.string().min(1, 'Please select a sub-category'),
   buildingAreaId: z.string().min(1, 'Please select an area'),
   buildingFloorId: z.string().min(1, 'Please select a floor'),
-  priority: z.enum(['urgent', 'high', 'medium', 'low']),
+  priority: z.enum(['urgent', 'high', 'medium', 'low', 'critical']),
   is_crisis: z.boolean().optional()
 });
 
@@ -238,6 +238,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   const getPriorityConfig = (priority: string) => {
     const configs = {
       urgent: { label: 'P1 - Critical', color: 'destructive', description: 'Life-safety risk or service outage affecting >25% users' },
+      critical: { label: 'P1 - Critical', color: 'destructive', description: 'Life-safety risk or service outage affecting >25% users' },
       high: { label: 'P2 - High', color: 'destructive', description: 'Severe disruption to a team/floor or compliance risk' },
       medium: { label: 'P3 - Medium', color: 'secondary', description: 'Single-user productivity impact or aesthetic issue' },
       low: { label: 'P4 - Low', color: 'outline', description: 'No immediate impact; planned task' }
@@ -288,7 +289,9 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       const formValues = form.getValues();
       
       // Map priority to allowed enum values to ensure safety
-      const safePriority = ['urgent', 'high', 'medium', 'low'].includes(data.priority) ? data.priority : 'medium';
+      const safePriority = ['urgent', 'high', 'medium', 'low', 'critical'].includes(data.priority) 
+        ? (data.priority === 'critical' ? 'urgent' : data.priority) 
+        : 'medium';
       
       const requestData = {
         title: data.title,
