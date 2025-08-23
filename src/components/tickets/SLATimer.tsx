@@ -49,7 +49,11 @@ const SLATimer: React.FC<SLATimerProps> = ({
       const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
       if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m`);
+        if (minutes > 0) {
+          setTimeRemaining(`${hours}h ${minutes}m`);
+        } else {
+          setTimeRemaining(`${hours}h`);
+        }
       } else if (minutes > 0) {
         setTimeRemaining(`${minutes}m ${seconds}s`);
       } else {
