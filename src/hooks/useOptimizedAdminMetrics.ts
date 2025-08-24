@@ -52,12 +52,12 @@ export const useOptimizedAdminMetrics = () => {
       urgentRequests: 0,
       slaBreaches: 0,
       avgResponseTime: 0,
-      systemUptime: 99.5,
+      systemUptime: 0,
       staffUtilization: 0,
       systemHealth: 'healthy',
       lastUpdated: new Date().toISOString(),
       slowQueries: 0,
-      optimizationScore: 85,
+      optimizationScore: 0,
       lastBackup: null,
       backupHealth: 'good',
       criticalAlerts: 0,
@@ -139,14 +139,14 @@ export const useOptimizedAdminMetrics = () => {
         urgentRequests: urgentRequests.length,
         slaBreaches: slaBreaches.length,
         avgResponseTime: Math.round(avgResponseTime),
-        systemUptime: 99.5 + Math.random() * 0.4, // Simulate slight variation
-        staffUtilization: Math.min((activeRequests.length / 10) * 100, 100), // Estimate
+        systemUptime: 0,
+        staffUtilization: 0,
         systemHealth,
         lastUpdated: now.toISOString(),
-        slowQueries: Math.floor(Math.random() * 3), // Simulated for now
-        optimizationScore: 85 + Math.floor(Math.random() * 10),
-        lastBackup: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Yesterday
-        backupHealth: Math.random() > 0.9 ? 'warning' : 'good',
+        slowQueries: 0,
+        optimizationScore: 0,
+        lastBackup: null,
+        backupHealth: 'good',
         criticalAlerts,
         totalAlerts: alerts?.length || 0
       };

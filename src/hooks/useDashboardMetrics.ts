@@ -30,7 +30,7 @@ export const useDashboardMetrics = () => {
     totalVisitors: 0,
     pendingMaintenance: 0,
     operationalSystems: true,
-    currentTemperature: 24,
+    currentTemperature: 0,
     occupancyRate: 0,
     totalOccupants: 0,
   });
@@ -85,12 +85,12 @@ export const useDashboardMetrics = () => {
       const pendingMaintenance = requests?.filter(r => r.status === 'pending').length || 0;
       const operationalSystems = activeAlerts === 0 && pendingMaintenance === 0;
 
-      // Mock occupancy data (would come from IoT sensors in real implementation)
-      const occupancyRate = Math.floor(Math.random() * 20) + 75; // 75-95%
-      const totalOccupants = Math.floor((occupancyRate / 100) * 4000); // Assuming 4000 capacity
+      // Empty system - no occupancy or temperature data
+      const occupancyRate = 0;
+      const totalOccupants = 0;
 
-      // Mock temperature (would come from IoT sensors)
-      const currentTemperature = Math.floor(Math.random() * 4) + 22; // 22-26°C
+      // Empty system - no temperature data
+      const currentTemperature = 0;
 
       setMetrics({
         activeRequests,
