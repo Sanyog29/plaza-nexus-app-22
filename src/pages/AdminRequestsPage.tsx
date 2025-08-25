@@ -12,6 +12,7 @@ import { Search, Filter, Clock, AlertTriangle, CheckCircle, XCircle, Trash2 } fr
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { BroadcastTaskButton } from '@/components/admin/BroadcastTaskButton';
 
 interface MaintenanceRequest {
   id: string;
@@ -436,6 +437,15 @@ const RequestsList: React.FC<RequestsListProps> = ({
               
               {/* Action Buttons */}
               <div className="flex items-center gap-2 ml-4">
+                {/* Broadcast Button - Show for pending/open requests without assignment */}
+                {(request.status === 'pending' || request.status === 'open') && !request.assigned_to && (
+                  <BroadcastTaskButton
+                    requestId={request.id}
+                    requestTitle={request.title}
+                    isAssigned={!!request.assigned_to}
+                  />
+                )}
+                
                 {request.status === 'pending' && (
                   <Button
                     variant="destructive"

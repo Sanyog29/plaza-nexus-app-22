@@ -15,12 +15,14 @@ import RequestFeedbackSystem from '@/components/maintenance/RequestFeedbackSyste
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ClaimedTaskBanner } from '@/components/maintenance/ClaimedTaskBanner';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
   const [request, setRequest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStaff, setIsStaff] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -90,11 +92,53 @@ const RequestDetailsPage = () => {
     );
   }
 
+  const handleStartTask = async () => {
+    if (!requestId) return;
+    
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update({ 
+          status: 'in_progress',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      setRequest(prev => ({ ...prev, status: 'in_progress' }));
+      toast({
+        title: "Task Started",
+        description: "You have started working on this task.",
+      });
+    } catch (error) {
+      console.error('Error starting task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start task. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleUploadPhotos = () => {
+    // Navigate to photo upload or open a modal
+    toast({
+      title: "Photo Upload",
+      description: "Photo upload feature coming soon!",
+    });
+  };
+
   const formatSlaTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}h ${mins}m left`;
   };
+
+  const isCurrentUserAssigned = user && request?.assigned_to === user.id;
 
   return (
     <div className="px-4 py-6">
@@ -106,6 +150,18 @@ const RequestDetailsPage = () => {
           </Button>
         </Link>
       </div>
+
+      {/* Claimed Task Banner - Show if current user is assigned to this task */}
+      {isCurrentUserAssigned && (
+        <div className="mb-6">
+          <ClaimedTaskBanner
+            request={request}
+            onStartTask={handleStartTask}
+            onUploadPhotos={handleUploadPhotos}
+            isProcessing={isProcessing}
+          />
+        </div>
+      )}
 
       <Card className="bg-card">
         <CardContent className="p-6">

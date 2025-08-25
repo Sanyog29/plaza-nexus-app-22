@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { ProfileErrorBoundary } from '@/components/ProfileErrorBoundary';
 import { ActivityFeed } from '@/components/profile/ActivityFeed';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { IncomingTasks } from '@/components/profile/IncomingTasks';
 
 const ProfilePage = () => {
   const { user, signOut, isStaff, isAdmin, userRole, isLoading: authLoading } = useAuth();
@@ -270,6 +271,9 @@ const ProfilePage = () => {
                     </div>
                   </Card>
                 )}
+
+                {/* Incoming Tasks - Only show for field staff */}
+                {userRole === 'field_staff' && <IncomingTasks />}
 
                 {/* Activity Feed - Show for all users */}
                 <ActivityFeed />
