@@ -13,6 +13,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimedTaskBanner } from '@/components/maintenance/ClaimedTaskBanner';
+import UnifiedStatusTracker from '@/components/maintenance/UnifiedStatusTracker';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
@@ -159,6 +160,18 @@ const RequestDetailsPage = () => {
 
   const isCurrentUserAssigned = user && request?.assigned_to === user.id;
 
+  // Helper function to map status to workflow step
+  const mapStatusToStep = (status: string) => {
+    switch (status) {
+      case 'pending': return 1;
+      case 'assigned': return 2;
+      case 'en_route': return 3;
+      case 'in_progress': return 4;
+      case 'completed': return 5;
+      default: return 1;
+    }
+  };
+
   return (
     <div className="px-4 py-6">
       <div className="mb-6">
@@ -225,6 +238,26 @@ const RequestDetailsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Request Progress Tracker */}
+      <div className="mb-6">
+        <UnifiedStatusTracker
+          requestId={requestId!}
+          currentStatus={request.status}
+          workflowStep={mapStatusToStep(request.status)}
+          isStaff={isStaff}
+          assignedToUserId={request.assigned_to}
+          timestamps={{
+            created_at: request.created_at,
+            assigned_at: request.assigned_at,
+            en_route_at: request.en_route_at,
+            work_started_at: request.work_started_at,
+            completed_at: request.completed_at,
+          }}
+          estimatedArrival={request.estimated_arrival}
+          onStatusUpdate={fetchRequestDetails}
+        />
+      </div>
 
       {/* Claimed Task Banner - Show if current user is assigned to this task */}
       {isCurrentUserAssigned && (
