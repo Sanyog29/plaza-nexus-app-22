@@ -51,6 +51,10 @@ export const AssignToMeButton: React.FC<AssignToMeButtonProps> = ({
       if (result.success) {
         // Call onSuccess callback to refresh the parent component
         onSuccess?.();
+      } else if (result.error === 'already_assigned') {
+        // Additional handling for already assigned case - refresh to update UI
+        console.log('Request already assigned, refreshing UI...');
+        onSuccess?.();
       }
     } catch (error) {
       console.error('Unexpected error in handleAssignAndStart:', error);

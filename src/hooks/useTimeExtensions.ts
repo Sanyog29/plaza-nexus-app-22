@@ -155,47 +155,86 @@ export const useTimeExtensions = (requestId?: string) => {
     }
   };
 
-  // Assign and start request (L1) - Updated with better error handling
+  // Assign and start request (L1) - Updated with conditional logic and better error handling
   const assignAndStartRequest = async (requestId: string) => {
+    console.log('🚀 Starting assign and start request for:', requestId);
+    
     try {
-      console.log('Calling assign_and_start_request for:', requestId);
-      
       const { data, error } = await supabase.rpc('assign_and_start_request', {
-        request_id: requestId
+        p_request_id: requestId
       });
 
       if (error) {
-        console.error('RPC error:', error);
-        throw error;
+        console.error('❌ RPC error:', error);
+        toast({
+          title: "Assignment Failed",
+          description: error.message || "Failed to assign request",
+          variant: "destructive",
+        });
+        return { success: false, error: error.message };
       }
 
-      console.log('RPC response:', data);
-      
       const result = data as RPCResponse;
-      
-      // Check for application-level errors
+
       if (result?.error) {
-        throw new Error(result.error);
+        console.error('❌ Function returned error:', result.error, result.message);
+        
+        // Handle specific error cases
+        if (result.error === 'already_assigned') {
+          toast({
+            title: "Request Already Taken",
+            description: result.message || "This request has already been claimed by another technician",
+            variant: "destructive",
+          });
+        } else if (result.error === 'invalid_status') {
+          toast({
+            title: "Request Not Available", 
+            description: result.message || "Request is not available for assignment",
+            variant: "destructive",
+          });
+        } else if (result.error === 'not_staff') {
+          toast({
+            title: "Access Denied",
+            description: result.message || "Only staff can assign requests",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Assignment Failed", 
+            description: result.message || "Failed to assign request",
+            variant: "destructive",
+          });
+        }
+        return { success: false, error: result.error };
       }
 
-      // Show success message
-      toast({
-        title: "Success",
-        description: result?.message || "Request assigned and started successfully",
-        variant: "default"
-      });
+      if (result?.success) {
+        console.log('✅ Request assigned and started successfully');
+        toast({
+          title: "Success",
+          description: result.message || "Request assigned to you and started",
+          variant: "default",
+        });
+        return { success: true };
+      }
 
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error in assignAndStartRequest:', error);
-      
+      // Fallback for unexpected response
+      console.warn('⚠️ Unexpected response:', result);
       toast({
-        title: "Error",
-        description: error.message || "Failed to assign and start request",
-        variant: "destructive"
+        title: "Assignment Failed",
+        description: "Unexpected response from server",
+        variant: "destructive",
       });
-      
-      return { success: false, error: error.message };
+      return { success: false, error: "Unexpected response" };
+
+    } catch (error: any) {
+      console.error('❌ Unexpected error:', error);
+      toast({
+        title: "Assignment Failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      return { success: false, error: "Unexpected error" };
     }
   };
 
