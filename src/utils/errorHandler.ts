@@ -28,11 +28,24 @@ export const handleSupabaseError = (error: any): string => {
   }
   
   if (error.code === '23505') {
-    return 'This record already exists';
+    return 'This record already exists. Please check for duplicates.';
   }
   
   if (error.code === '23503') {
     return 'This action would violate data integrity constraints';
+  }
+  
+  // Handle constraint violation errors specifically
+  if (error.message?.includes('duplicate key value violates unique constraint')) {
+    return 'A record with these details already exists. Please check for duplicates.';
+  }
+  
+  if (error.message?.includes('no unique or exclusion constraint')) {
+    return 'Database configuration issue. Please try again or contact support.';
+  }
+  
+  if (error.message?.includes('violates foreign key constraint')) {
+    return 'Referenced data not found. Please ensure all required data exists.';
   }
   
   if (error.message?.includes('JWT')) {
@@ -41,6 +54,11 @@ export const handleSupabaseError = (error: any): string => {
   
   if (error.message?.includes('network')) {
     return 'Network error. Please check your connection and try again';
+  }
+
+  // Handle RPC function errors
+  if (error.message?.includes('function') && error.message?.includes('does not exist')) {
+    return 'Database function not available. Please contact support.';
   }
 
   return error.message || 'An unexpected error occurred';

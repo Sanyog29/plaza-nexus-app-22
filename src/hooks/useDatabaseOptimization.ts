@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
+import { handleSupabaseError } from '@/utils/errorHandler';
 
 interface QueryAnalysis {
   id: string;
@@ -52,53 +53,60 @@ export const useDatabaseOptimization = () => {
 
   // Analyze query performance
   const analyzeQuery = useCallback(async (query: string, executionTime: number, rowsAffected: number = 0) => {
-    const suggestions: string[] = [];
-    
-    // Basic query analysis
-    const queryLower = query.toLowerCase();
-    
-    // Check for missing WHERE clauses on large tables
-    if (queryLower.includes('select') && !queryLower.includes('where') && !queryLower.includes('limit')) {
-      suggestions.push('Consider adding WHERE clause to limit results');
-    }
-    
-    // Check for SELECT *
-    if (queryLower.includes('select *')) {
-      suggestions.push('Avoid SELECT * - specify only needed columns');
-    }
-    
-    // Check for N+1 queries
-    if (executionTime > 1000) {
-      suggestions.push('Query execution time is high - consider optimization');
-    }
-    
-    // Check for missing indexes
-    if (queryLower.includes('where') && executionTime > 500) {
-      suggestions.push('Consider adding indexes on WHERE clause columns');
-    }
-    
-    // Check for complex JOINs
-    const joinCount = (queryLower.match(/join/g) || []).length;
-    if (joinCount > 3) {
-      suggestions.push('Complex joins detected - consider query restructuring');
-    }
+    try {
+      const suggestions: string[] = [];
+      
+      // Basic query analysis
+      const queryLower = query.toLowerCase();
+      
+      // Check for missing WHERE clauses on large tables
+      if (queryLower.includes('select') && !queryLower.includes('where') && !queryLower.includes('limit')) {
+        suggestions.push('Consider adding WHERE clause to limit results');
+      }
+      
+      // Check for SELECT *
+      if (queryLower.includes('select *')) {
+        suggestions.push('Avoid SELECT * - specify only needed columns');
+      }
+      
+      // Check for N+1 queries
+      if (executionTime > 1000) {
+        suggestions.push('Query execution time is high - consider optimization');
+      }
+      
+      // Check for missing indexes
+      if (queryLower.includes('where') && executionTime > 500) {
+        suggestions.push('Consider adding indexes on WHERE clause columns');
+      }
+      
+      // Check for complex JOINs
+      const joinCount = (queryLower.match(/join/g) || []).length;
+      if (joinCount > 3) {
+        suggestions.push('Complex joins detected - consider query restructuring');
+      }
 
-    const analysis: QueryAnalysis = {
-      id: crypto.randomUUID(),
-      query: query.substring(0, 200) + (query.length > 200 ? '...' : ''),
-      executionTime,
-      rowsAffected,
-      timestamp: new Date().toISOString(),
-      suggestions,
-      optimizationApplied: false
-    };
+      const analysis: QueryAnalysis = {
+        id: crypto.randomUUID(),
+        query: query.substring(0, 200) + (query.length > 200 ? '...' : ''),
+        executionTime,
+        rowsAffected,
+        timestamp: new Date().toISOString(),
+        suggestions,
+        optimizationApplied: false
+      };
 
-    setQueryAnalyses(prev => [analysis, ...prev.slice(0, 49)]); // Keep last 50 analyses
-    
-    return analysis;
+      setQueryAnalyses(prev => [analysis, ...prev.slice(0, 49)]); // Keep last 50 analyses
+      
+      return analysis;
+    } catch (error) {
+      console.error('Error analyzing query:', error);
+      const errorMessage = handleSupabaseError(error);
+      toast.error(`Failed to analyze query: ${errorMessage}`);
+      throw error;
+    }
   }, []);
 
-  // Generate index recommendations
+  // Generate index recommendations with error handling
   const generateIndexRecommendations = useCallback(async () => {
     try {
       // Analyze maintenance_requests table
@@ -178,11 +186,13 @@ export const useDatabaseOptimization = () => {
       return allRecommendations;
     } catch (error) {
       console.error('Error generating index recommendations:', error);
+      const errorMessage = handleSupabaseError(error);
+      toast.error(`Failed to generate recommendations: ${errorMessage}`);
       return [];
     }
   }, []);
 
-  // Implement index recommendation
+  // Implement index recommendation with better error handling
   const implementIndexRecommendation = useCallback(async (recommendation: IndexRecommendation) => {
     try {
       const indexName = `idx_${recommendation.tableName}_${recommendation.columnNames.join('_')}`;
@@ -205,15 +215,17 @@ export const useDatabaseOptimization = () => {
       return indexSQL;
     } catch (error) {
       console.error('Error implementing index:', error);
-      toast.error('Failed to implement index recommendation');
+      const errorMessage = handleSupabaseError(error);
+      toast.error(`Failed to implement index: ${errorMessage}`);
       throw error;
     }
   }, []);
 
-  // Analyze database health
+  // Analyze database health with enhanced error handling
   const analyzeDatabaseHealth = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       
       // Get table statistics (simulated data for demo)
       const tableStats = [
@@ -302,60 +314,75 @@ export const useDatabaseOptimization = () => {
       
     } catch (error) {
       console.error('Error analyzing database health:', error);
-      setError('Failed to analyze database health');
+      const errorMessage = handleSupabaseError(error);
+      setError(errorMessage);
+      toast.error(`Failed to analyze database health: ${errorMessage}`);
       throw error;
     } finally {
       setLoading(false);
     }
   }, [queryAnalyses, indexRecommendations]);
 
-  // Optimize slow queries
+  // Optimize slow queries with error handling
   const optimizeSlowQueries = useCallback(async () => {
-    const slowQueries = queryAnalyses.filter(q => q.executionTime > 1000 && !q.optimizationApplied);
-    
-    for (const query of slowQueries) {
-      // Apply optimizations (simulated)
-      setQueryAnalyses(prev => prev.map(q => 
-        q.id === query.id 
-          ? { ...q, optimizationApplied: true }
-          : q
-      ));
-    }
+    try {
+      const slowQueries = queryAnalyses.filter(q => q.executionTime > 1000 && !q.optimizationApplied);
+      
+      for (const query of slowQueries) {
+        // Apply optimizations (simulated)
+        setQueryAnalyses(prev => prev.map(q => 
+          q.id === query.id 
+            ? { ...q, optimizationApplied: true }
+            : q
+        ));
+      }
 
-    toast.success(`Applied optimizations to ${slowQueries.length} slow queries`);
-    return slowQueries.length;
+      toast.success(`Applied optimizations to ${slowQueries.length} slow queries`);
+      return slowQueries.length;
+    } catch (error) {
+      console.error('Error optimizing queries:', error);
+      const errorMessage = handleSupabaseError(error);
+      toast.error(`Failed to optimize queries: ${errorMessage}`);
+      return 0;
+    }
   }, [queryAnalyses]);
 
-  // Export optimization report
+  // Export optimization report with error handling
   const exportOptimizationReport = useCallback(() => {
-    const report = {
-      generatedAt: new Date().toISOString(),
-      databaseHealth,
-      queryAnalyses: queryAnalyses.slice(0, 20),
-      indexRecommendations,
-      summary: {
-        totalQueriesAnalyzed: queryAnalyses.length,
-        slowQueries: queryAnalyses.filter(q => q.executionTime > 1000).length,
-        optimizationsApplied: queryAnalyses.filter(q => q.optimizationApplied).length,
-        indexesRecommended: indexRecommendations.length,
-        indexesImplemented: indexRecommendations.filter(r => r.implemented).length
-      }
-    };
+    try {
+      const report = {
+        generatedAt: new Date().toISOString(),
+        databaseHealth,
+        queryAnalyses: queryAnalyses.slice(0, 20),
+        indexRecommendations,
+        summary: {
+          totalQueriesAnalyzed: queryAnalyses.length,
+          slowQueries: queryAnalyses.filter(q => q.executionTime > 1000).length,
+          optimizationsApplied: queryAnalyses.filter(q => q.optimizationApplied).length,
+          indexesRecommended: indexRecommendations.length,
+          indexesImplemented: indexRecommendations.filter(r => r.implemented).length
+        }
+      };
 
-    const dataStr = JSON.stringify(report, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `database_optimization_report_${new Date().toISOString().split('T')[0]}.json`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    toast.success('Optimization report exported successfully');
+      const dataStr = JSON.stringify(report, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `database_optimization_report_${new Date().toISOString().split('T')[0]}.json`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('Optimization report exported successfully');
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      const errorMessage = handleSupabaseError(error);
+      toast.error(`Failed to export report: ${errorMessage}`);
+    }
   }, [databaseHealth, queryAnalyses, indexRecommendations]);
 
   useEffect(() => {
@@ -367,6 +394,8 @@ export const useDatabaseOptimization = () => {
         await analyzeDatabaseHealth();
       } catch (error) {
         console.error('Error initializing database optimization:', error);
+        const errorMessage = handleSupabaseError(error);
+        setError(errorMessage);
       }
     };
 

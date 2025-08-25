@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { handleSupabaseError } from '@/utils/errorHandler';
+import { toast } from "@/hooks/use-toast";
 
 interface DashboardMetrics {
   totalRequests: number;
@@ -38,17 +40,21 @@ export const useDashboardData = () => {
     
     try {
       setIsLoading(true);
+      setError(null);
       
-      // Maintenance requests metrics
+      // Maintenance requests metrics with error handling
       const requestsQuery = isStaff 
         ? supabase.from('maintenance_requests').select('*')
         : supabase.from('maintenance_requests').select('*').eq('reported_by', user.id);
       
       const { data: requests, error: requestsError } = await requestsQuery;
       
-      if (requestsError) throw requestsError;
+      if (requestsError) {
+        console.error('Error fetching maintenance requests:', requestsError);
+        throw new Error(handleSupabaseError(requestsError));
+      }
 
-      // Visitors metrics (staff only)
+      // Visitors metrics (staff only) with error handling
       let visitors = [];
       if (isStaff) {
         const { data: visitorsData, error: visitorsError } = await supabase
@@ -56,20 +62,26 @@ export const useDashboardData = () => {
           .select('*')
           .gte('visit_date', new Date().toISOString().split('T')[0]);
         
-        if (visitorsError) throw visitorsError;
+        if (visitorsError) {
+          console.error('Error fetching visitors:', visitorsError);
+          throw new Error(handleSupabaseError(visitorsError));
+        }
         visitors = visitorsData || [];
       }
 
-      // Room bookings
+      // Room bookings with error handling
       const { data: bookings, error: bookingsError } = await supabase
         .from('room_bookings')
         .select('*')
         .eq('user_id', user.id)
         .gte('start_time', new Date().toISOString());
       
-      if (bookingsError) throw bookingsError;
+      if (bookingsError) {
+        console.error('Error fetching room bookings:', bookingsError);
+        throw new Error(handleSupabaseError(bookingsError));
+      }
 
-      // System alerts (staff only)
+      // System alerts (staff only) with error handling
       let alerts = [];
       if (isStaff) {
         const { data: alertsData, error: alertsError } = await supabase
@@ -77,8 +89,13 @@ export const useDashboardData = () => {
           .select('*')
           .eq('is_active', true);
         
-        if (alertsError) throw alertsError;
-        alerts = alertsData || [];
+        if (alertsError) {
+          console.error('Error fetching alerts:', alertsError);
+          // Don't throw for alerts, just log and continue
+          console.warn('Continuing without alerts data');
+        } else {
+          alerts = alertsData || [];
+        }
       }
 
       // Calculate metrics
@@ -116,7 +133,13 @@ export const useDashboardData = () => {
 
     } catch (err) {
       console.error('Error fetching dashboard metrics:', err);
-      setError(err as Error);
+      const errorMessage = err instanceof Error ? err.message : handleSupabaseError(err);
+      setError(new Error(errorMessage));
+      toast({
+        title: "Error loading dashboard data",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
