@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { Search, Filter, Clock, AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
+import { Search, Filter, Clock, AlertTriangle, CheckCircle, Wrench, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useRealtimeRequests } from '@/hooks/useRealtimeUpdates';
 import { LoadingState } from '@/components/ui/loading-state';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { handleSupabaseError } from '@/utils/errorHandler';
 
 interface MaintenanceRequest {
   id: string;
@@ -34,6 +36,8 @@ const StaffRequestsPage = () => {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<MaintenanceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
@@ -65,6 +69,7 @@ const StaffRequestsPage = () => {
 
   const fetchRequests = async () => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from('maintenance_requests')
         .select(`
@@ -88,9 +93,12 @@ const StaffRequestsPage = () => {
       
       setRequests(transformedData);
     } catch (error: any) {
+      console.error('Error fetching requests:', error);
+      const errorMessage = handleSupabaseError(error);
+      setError(new Error(errorMessage));
       toast({
         title: "Error loading requests",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -144,6 +152,7 @@ const StaffRequestsPage = () => {
 
     const executeStatusUpdate = async (requestId: string, newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
       setConfirmDialog(prev => ({ ...prev, loading: true }));
+      setUpdatingRequestId(requestId);
       
       try {
         const { error } = await supabase
@@ -154,18 +163,33 @@ const StaffRequestsPage = () => {
           })
           .eq('id', requestId);
 
-        if (error) throw error;
-
+        if (error) {
+          // Handle duplicate key conflicts gracefully
+          if (error.code === '23505' || error.message?.includes('duplicate key')) {
+            console.warn('Status already updated by another user:', error);
+            toast({
+              title: "Already Updated",
+              description: "This request was already updated by another user",
+            });
+            fetchRequests();
+            return;
+          }
+          throw error;
+        }
 
         // Create notification for the reporter
         if (request?.reported_by) {
-          await supabase.rpc('create_notification', {
-            target_user_id: request.reported_by,
-            notification_title: 'Request Status Updated',
-            notification_message: `Your request "${request.title}" is now ${newStatus.replace('_', ' ')}`,
-            notification_type: newStatus === 'completed' ? 'success' : 'info',
-            action_url: `/requests/${requestId}`
-          });
+          try {
+            await supabase.rpc('create_notification', {
+              target_user_id: request.reported_by,
+              notification_title: 'Request Status Updated',
+              notification_message: `Your request "${request.title}" is now ${newStatus.replace('_', ' ')}`,
+              notification_type: newStatus === 'completed' ? 'success' : 'info',
+              action_url: `/requests/${requestId}`
+            });
+          } catch (err) {
+            console.warn('Error creating notification:', err);
+          }
         }
 
         toast({
@@ -176,12 +200,16 @@ const StaffRequestsPage = () => {
         setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
         fetchRequests();
       } catch (error: any) {
+        console.error('Error updating request:', error);
+        const errorMessage = handleSupabaseError(error);
         toast({
           title: "Error updating request",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
         setConfirmDialog(prev => ({ ...prev, loading: false }));
+      } finally {
+        setUpdatingRequestId(null);
       }
     };
 
@@ -230,6 +258,26 @@ const StaffRequestsPage = () => {
         <h1 className="text-2xl font-bold text-white mb-2">Maintenance Requests</h1>
         <p className="text-gray-400">Manage and track maintenance requests</p>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <Alert variant="destructive" className="mb-6 bg-red-950/50 border-red-900/50">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>Failed to load requests: {error.message}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchRequests}
+              disabled={isLoading}
+              className="ml-4"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Search and Filters */}
       <Card className="bg-card/50 backdrop-blur mb-6">
@@ -336,9 +384,10 @@ const StaffRequestsPage = () => {
                         <Button
                           size="sm"
                           onClick={() => updateRequestStatus(request.id, 'in_progress')}
+                          disabled={updatingRequestId === request.id}
                           className="bg-yellow-500 hover:bg-yellow-600"
                         >
-                          Start Work
+                          {updatingRequestId === request.id ? 'Starting...' : 'Start Work'}
                         </Button>
                       )}
                       
@@ -346,9 +395,10 @@ const StaffRequestsPage = () => {
                         <Button
                           size="sm"
                           onClick={() => updateRequestStatus(request.id, 'completed')}
+                          disabled={updatingRequestId === request.id}
                           className="bg-green-500 hover:bg-green-600"
                         >
-                          Mark Complete
+                          {updatingRequestId === request.id ? 'Completing...' : 'Mark Complete'}
                         </Button>
                       )}
 

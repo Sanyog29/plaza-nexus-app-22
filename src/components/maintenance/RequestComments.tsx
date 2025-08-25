@@ -5,8 +5,10 @@ import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, User } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Send, User, AlertCircle, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
+import { handleSupabaseError } from '@/utils/errorHandler';
 
 interface RequestCommentsProps {
   requestId: string;
@@ -27,6 +29,8 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [sendError, setSendError] = useState<Error | null>(null);
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -56,6 +60,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
   const fetchComments = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const { data: commentsData, error } = await supabase
         .from('request_comments')
         .select('id, content, created_at, user_id')
@@ -87,9 +92,11 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
       setComments(formattedComments);
     } catch (error: any) {
       console.error('Error fetching comments:', error);
+      const errorMessage = handleSupabaseError(error);
+      setError(new Error(errorMessage));
       toast({
         title: "Error fetching comments",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -110,6 +117,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
 
     try {
       setIsSending(true);
+      setSendError(null);
       
       const { error } = await supabase
         .from('request_comments')
@@ -119,7 +127,19 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
           content: newComment,
         });
 
-      if (error) throw error;
+      if (error) {
+        // Handle duplicate key conflicts gracefully
+        if (error.code === '23505' || error.message?.includes('duplicate key')) {
+          console.warn('Comment already exists:', error);
+          toast({
+            title: "Comment Already Posted",
+            description: "This comment was already posted",
+          });
+          setNewComment('');
+          return;
+        }
+        throw error;
+      }
       
       setNewComment('');
       
@@ -131,9 +151,11 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
       // The comment list will be updated by the realtime subscription
     } catch (error: any) {
       console.error('Error sending comment:', error);
+      const errorMessage = handleSupabaseError(error);
+      setSendError(new Error(errorMessage));
       toast({
         title: "Error sending comment",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -150,7 +172,27 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {comments.length === 0 && !isLoading && (
+          {/* Error Banner for Loading Comments */}
+          {error && (
+            <Alert variant="destructive" className="bg-red-950/50 border-red-900/50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>Failed to load comments: {error.message}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchComments}
+                  disabled={isLoading}
+                  className="ml-4"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {comments.length === 0 && !isLoading && !error && (
             <div className="text-center text-gray-400 py-4">
               No comments yet. Be the first to start the conversation.
             </div>
@@ -195,6 +237,25 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
           </div>
           
           <div className="pt-4 mt-2 border-t border-gray-700">
+            {/* Error Banner for Sending Comments */}
+            {sendError && (
+              <Alert variant="destructive" className="mb-4 bg-red-950/50 border-red-900/50">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span>Failed to send comment: {sendError.message}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSendComment}
+                    disabled={isSending || !newComment.trim()}
+                    className="ml-4"
+                  >
+                    Try Again
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <Textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}

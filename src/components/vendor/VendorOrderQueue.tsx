@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Clock, CheckCircle, XCircle, User, Phone } from 'lucide-react';
+import { handleSupabaseError } from '@/utils/errorHandler';
 
 interface VendorOrderQueueProps {
   vendorId: string;
@@ -45,7 +46,14 @@ const VendorOrderQueue: React.FC<VendorOrderQueueProps> = ({ vendorId }) => {
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', orderId);
 
-      if (error) throw error;
+      if (error) {
+        // Handle duplicate key conflicts gracefully
+        if (error.code === '23505' || error.message?.includes('duplicate key')) {
+          console.warn('Order status already updated:', error);
+          throw new Error('Order was already updated by another user');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-orders', vendorId] });
@@ -54,10 +62,12 @@ const VendorOrderQueue: React.FC<VendorOrderQueueProps> = ({ vendorId }) => {
         description: "Order status has been updated successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error updating order status:', error);
+      const errorMessage = handleSupabaseError(error);
       toast({
         title: "Error",
-        description: "Failed to update order status. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },

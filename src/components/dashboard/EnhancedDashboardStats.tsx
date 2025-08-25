@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { 
   ClipboardList, 
   Clock, 
@@ -10,14 +12,15 @@ import {
   Users,
   Calendar,
   TrendingUp,
-  Target
+  Target,
+  RefreshCw
 } from 'lucide-react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
 import { useAuth } from '@/components/AuthProvider';
 
 const EnhancedDashboardStats = () => {
-  const { metrics, isLoading, error } = useDashboardData();
+  const { metrics, isLoading, error, refetch } = useDashboardData();
   const { isStaff } = useAuth();
 
   const formatTime = (hours: number) => {
@@ -114,88 +117,110 @@ const EnhancedDashboardStats = () => {
   ];
 
   return (
-    <LoadingWrapper loading={isLoading} error={error}>
-      <div className="space-y-6">
-        {/* Main Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
-            <Card key={index} className="glass-card hover:shadow-lg transition-all duration-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground">{stat.description}</p>
-                  <Badge 
-                    variant={stat.trendDirection === 'up' ? 'destructive' : 'secondary'} 
-                    className="text-xs"
-                  >
-                    {stat.trend}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+    <div className="space-y-6">
+      {/* Error Banner */}
+      {error && (
+        <Alert variant="destructive" className="bg-red-950/50 border-red-900/50">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>Failed to load dashboard data: {error.message}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refetch}
+              disabled={isLoading}
+              className="ml-4"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
-        {/* Additional Stats */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {staffStats.map((stat, index) => (
-            <Card key={index} className="glass-card">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
-                <p className="text-xs text-primary mt-1">{stat.trend}</p>
-              </CardContent>
-            </Card>
-          ))}
-
-          {/* Performance Stats with Progress */}
-          {performanceStats.map((stat, index) => (
-            <Card key={index} className="glass-card">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
-                <div className="mt-3">
-                  <Progress 
-                    value={stat.progress} 
-                    className="h-2"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>0%</span>
-                    <span>100%</span>
+      <LoadingWrapper loading={isLoading} error={null}>
+        <div className="space-y-6">
+          {/* Main Stats Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {stats.map((stat, index) => (
+              <Card key={index} className="glass-card hover:shadow-lg transition-all duration-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-muted-foreground">{stat.description}</p>
+                    <Badge 
+                      variant={stat.trendDirection === 'up' ? 'destructive' : 'secondary'} 
+                      className="text-xs"
+                    >
+                      {stat.trend}
+                    </Badge>
                   </div>
-                </div>
-                {stat.status && (
-                  <Badge 
-                    className={`mt-2 ${stat.status.bg} ${stat.status.color}`}
-                    variant="secondary"
-                  >
-                    {stat.status.label}
-                  </Badge>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Additional Stats */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {staffStats.map((stat, index) => (
+              <Card key={index} className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                  <p className="text-xs text-primary mt-1">{stat.trend}</p>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Performance Stats with Progress */}
+            {performanceStats.map((stat, index) => (
+              <Card key={index} className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                  <div className="mt-3">
+                    <Progress 
+                      value={stat.progress} 
+                      className="h-2"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>0%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+                  {stat.status && (
+                    <Badge 
+                      className={`mt-2 ${stat.status.bg} ${stat.status.color}`}
+                      variant="secondary"
+                    >
+                      {stat.status.label}
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
-    </LoadingWrapper>
+      </LoadingWrapper>
+    </div>
   );
 };
 
