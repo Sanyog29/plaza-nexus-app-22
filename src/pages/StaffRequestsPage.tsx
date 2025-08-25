@@ -138,12 +138,12 @@ const StaffRequestsPage = () => {
 
   const updateRequestStatus = async (requestId: string, newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
     const request = requests.find(r => r.id === requestId);
-    const actionText = newStatus === 'in_progress' ? 'start work on' : 'mark as completed';
+    const actionText = 'mark as completed';
     
     const openDialog = () => {
       setConfirmDialog({
         open: true,
-        title: `${newStatus === 'in_progress' ? 'Start Work' : 'Complete Request'}`,
+        title: 'Complete Request',
         description: `Are you sure you want to ${actionText} "${request?.title}"?`,
         onConfirm: () => executeStatusUpdate(requestId, newStatus),
         loading: false
@@ -380,17 +380,6 @@ const StaffRequestsPage = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                      {request.status === 'pending' && (
-                        <Button
-                          size="sm"
-                          onClick={() => updateRequestStatus(request.id, 'in_progress')}
-                          disabled={updatingRequestId === request.id}
-                          className="bg-yellow-500 hover:bg-yellow-600"
-                        >
-                          {updatingRequestId === request.id ? 'Starting...' : 'Start Work'}
-                        </Button>
-                      )}
-                      
                       {request.status === 'in_progress' && (
                         <Button
                           size="sm"
