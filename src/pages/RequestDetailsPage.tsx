@@ -4,16 +4,11 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Clock, ArrowLeft, Timer, AlertTriangle, User } from 'lucide-react';
+import { MessageSquare, Clock, ArrowLeft, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import RequestDetailPanel from '@/components/maintenance/RequestDetailPanel';
 import AttachmentViewer from '@/components/maintenance/AttachmentViewer';
 import RequestFeedbackSystem from '@/components/maintenance/RequestFeedbackSystem';
-import UnifiedStatusTracker from '@/components/maintenance/UnifiedStatusTracker';
-import WorkflowTransitionHistory from '@/components/maintenance/WorkflowTransitionHistory';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -175,25 +170,61 @@ const RequestDetailsPage = () => {
         </Link>
       </div>
 
-      {/* Unified Status Tracker */}
-      <div className="mb-6">
-        <UnifiedStatusTracker
-          requestId={requestId!}
-          currentStatus={request.status}
-          workflowStep={request.workflow_step || 1}
-          isStaff={isStaff}
-          assignedToUserId={request.assigned_to}
-          timestamps={{
-            created_at: request.created_at,
-            assigned_at: request.assigned_at,
-            en_route_at: request.en_route_at,
-            work_started_at: request.work_started_at,
-            completed_at: request.completed_at,
-          }}
-          estimatedArrival={request.estimated_arrival}
-          onStatusUpdate={fetchRequestDetails}
-        />
-      </div>
+      {/* Issue Information - Showcased at the top */}
+      <Card className="bg-card mb-6">
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-white mb-3">{request.title}</h1>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge variant="outline">{request.category?.name || 'Uncategorized'}</Badge>
+                  <Badge 
+                    variant={request.priority === 'high' ? 'destructive' : 'default'}
+                    className="capitalize"
+                  >
+                    {request.priority} Priority
+                  </Badge>
+                  <Badge 
+                    className="capitalize"
+                    variant={request.status === 'in_progress' ? 'default' : 'secondary'}
+                  >
+                    {request.status?.replace('_', ' ')}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card/50 p-4 rounded-lg">
+              <h2 className="text-lg font-semibold text-white mb-2">Issue Description</h2>
+              <p className="text-gray-300 leading-relaxed mb-4">{request.description}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Clock className="h-4 w-4" />
+                  <span>Created: {new Date(request.created_at).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-400">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Reported by: {request.reported_by}</span>
+                </div>
+                {request.assigned_to && (
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <User className="h-4 w-4" />
+                    <span>Assigned to: {request.assigned_to}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-gray-400">
+                  <div className="h-4 w-4 flex items-center justify-center">
+                    📍
+                  </div>
+                  <span>Location: {request.location}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Claimed Task Banner - Show if current user is assigned to this task */}
       {isCurrentUserAssigned && (
@@ -206,148 +237,11 @@ const RequestDetailsPage = () => {
         </div>
       )}
 
-      <Card className="bg-card">
+      {/* Attachments Section */}
+      <Card className="bg-card mb-6">
         <CardContent className="p-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-2">{request.title}</h2>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Badge variant="outline">{request.category?.name || 'Uncategorized'}</Badge>
-                  <Badge 
-                    variant={request.priority === 'high' ? 'destructive' : 'default'}
-                    className="capitalize"
-                  >
-                    {request.priority} Priority
-                  </Badge>
-                </div>
-              </div>
-              <Badge 
-                className="capitalize"
-                variant={request.status === 'in_progress' ? 'default' : 'secondary'}
-              >
-                {request.status?.replace('_', ' ')}
-              </Badge>
-            </div>
-
-            {/* SLA Timer Card */}
-            {request.status !== 'completed' && request.sla_breach_at && (
-              <Card className="bg-card/50 border-yellow-800/30">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Timer size={18} className="text-yellow-500" />
-                      <div>
-                        <h3 className="font-medium text-white">SLA Timer</h3>
-                        <p className="text-sm text-yellow-400">
-                          Resolution by: {new Date(request.sla_breach_at).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-yellow-900/20 text-yellow-400">
-                      Due: {new Date(request.sla_breach_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Badge>
-                  </div>
-                  <Progress 
-                    value={35} 
-                    className="mt-3 h-2" 
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Auto Escalation Rules */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="mt-2 gap-2 bg-card/50 border-red-800/30 hover:bg-red-950/20">
-                  <AlertTriangle size={14} className="text-red-400" />
-                  <span className="text-sm text-red-400">View Auto-Escalation Workflow</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-card border-gray-700 text-white">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Auto-Escalation Workflow</DialogTitle>
-                  <DialogDescription className="text-gray-400">
-                    This request will automatically escalate if not resolved within the SLA.
-                  </DialogDescription>
-                </DialogHeader>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Condition</TableHead>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {[
-                      {
-                        condition: 'SLA < 30 min', 
-                        action: 'Notify Maintenance Manager',
-                        status: 'Pending'
-                      },
-                      {
-                        condition: 'SLA Breach', 
-                        action: 'Boost Priority to Critical',
-                        status: 'Pending'
-                      },
-                      {
-                        condition: 'SLA Breach + 30 min', 
-                        action: 'Escalate to Building Manager',
-                        status: 'Pending'
-                      }
-                    ].map((rule, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{rule.condition}</TableCell>
-                        <TableCell className="flex items-center gap-2">
-                          <User size={14} className="text-plaza-blue" />
-                          {rule.action}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-gray-800/50">
-                            {rule.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </DialogContent>
-            </Dialog>
-
-            <div className="grid gap-4 text-sm">
-              <div className="flex items-center gap-2 text-gray-400">
-                <Clock className="h-4 w-4" />
-                <span>Created: {new Date(request.created_at).toLocaleString()}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <MessageSquare className="h-4 w-4" />
-                <span>Reported by: {request.reported_by}</span>
-              </div>
-              {request.assigned_to && (
-                <div className="flex items-center gap-2 text-gray-400">
-                  <User className="h-4 w-4" />
-                  <span>Assigned to: {request.assigned_to}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
-              <p className="text-gray-400">{request.description}</p>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Location</h3>
-              <p className="text-gray-400">{request.location}</p>
-            </div>
-
-            {/* Attachments Section */}
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold text-white mb-3">Attachments</h3>
-              <AttachmentViewer requestId={requestId!} />
-            </div>
-          </div>
+          <h3 className="text-xl font-semibold text-white mb-3">Attachments</h3>
+          <AttachmentViewer requestId={requestId!} />
         </CardContent>
       </Card>
 
@@ -359,16 +253,6 @@ const RequestDetailsPage = () => {
             requestTitle={request.title}
             completedAt={request.completed_at}
             onFeedbackSubmitted={fetchRequestDetails}
-          />
-        </div>
-      )}
-      
-      {/* Workflow Transition History */}
-      {requestId && (
-        <div className="mt-6">
-          <WorkflowTransitionHistory 
-            requestId={requestId} 
-            isStaff={isStaff}
           />
         </div>
       )}
