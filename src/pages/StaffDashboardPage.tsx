@@ -28,6 +28,8 @@ import { toast } from '@/hooks/use-toast';
 import { FeatureGuard } from '@/components/common/FeatureGuard';
 import { FeatureNotificationSystem } from '@/components/common/FeatureNotificationSystem';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { RequestPopupNotification } from '@/components/staff/RequestPopupNotification';
+import { useNewRequestNotifications } from '@/hooks/useNewRequestNotifications';
 
 interface RequestStats {
   total: number;
@@ -47,6 +49,9 @@ const StaffDashboardPage = () => {
   });
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // New request notifications
+  const { newRequest, isVisible, handleAccept, handleDismiss } = useNewRequestNotifications();
 
   useEffect(() => {
     if (user) {
@@ -383,6 +388,16 @@ const StaffDashboardPage = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Request Popup Notification */}
+      {newRequest && (
+        <RequestPopupNotification
+          request={newRequest}
+          onAccept={handleAccept}
+          onDismiss={handleDismiss}
+          isVisible={isVisible}
+        />
+      )}
     </div>
   </>
   );

@@ -171,6 +171,10 @@
     animation: pulseGlow 2s ease-in-out infinite;
   }
 
+  .animate-vibrate {
+    animation: vibrate 0.3s ease-in-out infinite;
+  }
+
   /* Interactive elements */
   .btn-primary {
     @apply bg-primary hover:bg-primary/90 text-primary-foreground;
@@ -222,5 +226,17 @@
   }
   50% {
     box-shadow: 0 0 30px hsl(var(--primary) / 0.5);
+  }
+}
+
+@keyframes vibrate {
+  0%, 100% { 
+    transform: translateX(0); 
+  }
+  25% { 
+    transform: translateX(-2px); 
+  }
+  75% { 
+    transform: translateX(2px); 
   }
 }
