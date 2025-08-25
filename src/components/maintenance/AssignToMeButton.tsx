@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,12 +41,22 @@ export const AssignToMeButton: React.FC<AssignToMeButtonProps> = ({
 
   const handleAssignAndStart = async () => {
     setIsProcessing(true);
-    const result = await assignAndStartRequest(requestId);
     
-    if (result.success) {
-      onSuccess?.();
+    try {
+      console.log('Starting assignment process for request:', requestId);
+      const result = await assignAndStartRequest(requestId);
+      
+      console.log('Assignment result:', result);
+      
+      if (result.success) {
+        // Call onSuccess callback to refresh the parent component
+        onSuccess?.();
+      }
+    } catch (error) {
+      console.error('Unexpected error in handleAssignAndStart:', error);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   const getPriorityColor = (priority: string) => {

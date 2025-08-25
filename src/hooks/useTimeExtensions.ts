@@ -155,34 +155,46 @@ export const useTimeExtensions = (requestId?: string) => {
     }
   };
 
-  // Assign and start request (L1)
+  // Assign and start request (L1) - Updated with better error handling
   const assignAndStartRequest = async (requestId: string) => {
     try {
+      console.log('Calling assign_and_start_request for:', requestId);
+      
       const { data, error } = await supabase.rpc('assign_and_start_request', {
         request_id: requestId
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC error:', error);
+        throw error;
+      }
 
+      console.log('RPC response:', data);
+      
       const result = data as RPCResponse;
+      
+      // Check for application-level errors
       if (result?.error) {
         throw new Error(result.error);
       }
 
+      // Show success message
       toast({
         title: "Success",
-        description: result?.message || "Request assigned and started",
+        description: result?.message || "Request assigned and started successfully",
         variant: "default"
       });
 
       return { success: true };
     } catch (error: any) {
-      console.error('Error assigning and starting request:', error);
+      console.error('Error in assignAndStartRequest:', error);
+      
       toast({
         title: "Error",
         description: error.message || "Failed to assign and start request",
         variant: "destructive"
       });
+      
       return { success: false, error: error.message };
     }
   };
