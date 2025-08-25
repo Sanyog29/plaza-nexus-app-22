@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
+import { SoundEffects } from '@/utils/soundEffects';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -186,6 +188,9 @@ export function TaskManagement() {
   };
 
   const handleStartTask = (taskId: string) => {
+    // Play success sound effect
+    SoundEffects.playStartWorkSound();
+    
     setTasks(tasks.map(task => 
       task.id === taskId 
         ? { 
