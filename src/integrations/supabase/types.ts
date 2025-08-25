@@ -4246,7 +4246,7 @@ export type Database = {
           {
             foreignKeyName: "request_workflow_states_request_id_fkey"
             columns: ["request_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "maintenance_requests"
             referencedColumns: ["id"]
           },
