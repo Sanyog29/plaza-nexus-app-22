@@ -248,10 +248,15 @@ export function DataExportTools({ className }: DataExportToolsProps) {
             break;
 
           case 'performance':
-            const { data: metrics } = await supabase
+            const { data: metrics, error: metricsError } = await supabase
               .from('performance_metrics')
               .select('*')
               .order('metric_date', { ascending: false });
+
+            if (metricsError) {
+              console.error('Error fetching performance metrics:', metricsError);
+              throw metricsError;
+            }
 
             data = metrics?.map(m => ({
               Date: m.metric_date,
@@ -270,10 +275,15 @@ export function DataExportTools({ className }: DataExportToolsProps) {
           case 'analytics':
             if (!adminUser) break;
             
-            const { data: analytics } = await supabase
+            const { data: analytics, error: analyticsError } = await supabase
               .from('analytics_summaries')
               .select('*')
               .order('summary_date', { ascending: false });
+
+            if (analyticsError) {
+              console.error('Error fetching analytics summaries:', analyticsError);
+              throw analyticsError;
+            }
 
             data = analytics?.map(a => ({
               Date: a.summary_date,

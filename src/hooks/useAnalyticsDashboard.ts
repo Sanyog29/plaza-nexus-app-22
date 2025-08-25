@@ -70,7 +70,10 @@ export function useAnalyticsDashboard() {
         .lte('summary_date', dateRange.to.toISOString().split('T')[0])
         .order('summary_date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching analytics summaries:', error);
+        throw error;
+      }
       setSummaries(data || []);
     } catch (error) {
       console.error('Error fetching analytics summaries:', error);
@@ -96,7 +99,10 @@ export function useAnalyticsDashboard() {
         .eq('summary_date', today)
         .eq('summary_type', 'daily');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching generated analytics:', error);
+        throw error;
+      }
 
       if (data && data.length > 0) {
         const metrics: DashboardMetrics = {

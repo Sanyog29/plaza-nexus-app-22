@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { handleSupabaseError } from '@/utils/errorHandler';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, ComposedChart, Area, AreaChart
@@ -121,25 +122,39 @@ export const AdvancedAnalytics: React.FC = () => {
   };
 
   const fetchPerformanceMetrics = async () => {
-    const { data, error } = await supabase
-      .from('performance_metrics')
-      .select('*')
-      .gte('metric_date', getDateRange())
-      .order('metric_date', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('performance_metrics')
+        .select('*')
+        .gte('metric_date', getDateRange())
+        .order('metric_date', { ascending: false });
 
-    if (error) throw error;
+      if (error) {
+        console.error('Error fetching performance metrics:', error);
+        const errorMessage = handleSupabaseError(error);
+        throw new Error(errorMessage);
+      }
 
-    const metrics = data || [];
-    const avgResolutionTime = metrics.reduce((sum, m) => sum + (m.average_completion_time_minutes || 0), 0) / metrics.length || 0;
-    const totalRequests = metrics.reduce((sum, m) => sum + (m.total_requests || 0), 0);
-    const totalBreaches = metrics.reduce((sum, m) => sum + (m.sla_breaches || 0), 0);
-    const slaCompliance = totalRequests > 0 ? ((totalRequests - totalBreaches) / totalRequests) * 100 : 0;
+      const metrics = data || [];
+      const avgResolutionTime = metrics.reduce((sum, m) => sum + (m.average_completion_time_minutes || 0), 0) / metrics.length || 0;
+      const totalRequests = metrics.reduce((sum, m) => sum + (m.total_requests || 0), 0);
+      const totalBreaches = metrics.reduce((sum, m) => sum + (m.sla_breaches || 0), 0);
+      const slaCompliance = totalRequests > 0 ? ((totalRequests - totalBreaches) / totalRequests) * 100 : 0;
 
-    return {
-      avgResolutionTime: Math.round(avgResolutionTime),
-      slaCompliance: Math.round(slaCompliance),
-      staffEfficiency: Math.round(Math.random() * 30 + 70), // Mock calculation
-    };
+      return {
+        avgResolutionTime: Math.round(avgResolutionTime),
+        slaCompliance: Math.round(slaCompliance),
+        staffEfficiency: Math.round(Math.random() * 30 + 70), // Mock calculation
+      };
+    } catch (error) {
+      console.error('Error in fetchPerformanceMetrics:', error);
+      // Return default values if fetch fails
+      return {
+        avgResolutionTime: 0,
+        slaCompliance: 0,
+        staffEfficiency: 75,
+      };
+    }
   };
 
   const fetchCostAnalytics = async () => {

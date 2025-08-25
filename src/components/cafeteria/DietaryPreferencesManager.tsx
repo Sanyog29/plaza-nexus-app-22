@@ -120,37 +120,32 @@ export function DietaryPreferencesManager() {
         },
       };
 
-      // Check if preferences already exist to avoid constraint violations
-      const { data: existingPrefs, error: selectError } = await supabase
+      // Use upsert to handle unique constraint elegantly
+      const { error } = await supabase
         .from("dietary_preferences")
-        .select("id")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-
-      if (selectError) {
-        console.error("Error checking existing preferences:", selectError);
-        throw selectError;
-      }
-
-      let error;
-      if (existingPrefs) {
-        // Update existing preferences
-        const { error: updateError } = await supabase
-          .from("dietary_preferences")
-          .update(upsertData)
-          .eq("user_id", user.user.id);
-        error = updateError;
-      } else {
-        // Insert new preferences
-        const { error: insertError } = await supabase
-          .from("dietary_preferences")
-          .insert(upsertData);
-        error = insertError;
-      }
+        .upsert(upsertData, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
+        });
 
       if (error) {
-        console.error("Database operation error:", error);
-        throw error;
+        // Handle constraint violations gracefully
+        if (error.code === '23505' || error.message?.includes('duplicate key')) {
+          console.warn('Preferences already exist, updating instead:', error);
+          // Try a direct update as fallback
+          const { error: updateError } = await supabase
+            .from("dietary_preferences")
+            .update(upsertData)
+            .eq("user_id", user.user.id);
+          
+          if (updateError) {
+            console.error("Fallback update failed:", updateError);
+            throw updateError;
+          }
+        } else {
+          console.error("Database operation error:", error);
+          throw error;
+        }
       }
 
       toast({

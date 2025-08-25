@@ -70,11 +70,16 @@ export function EnhancedRealTimeAnalytics() {
         .select('*')
         .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
-      const { data: performance } = await supabase
+      const { data: performance, error: performanceError } = await supabase
         .from('performance_metrics')
         .select('*')
         .order('metric_date', { ascending: false })
         .limit(7);
+
+      if (performanceError) {
+        console.warn('Error fetching performance metrics:', performanceError);
+        // Continue without performance data rather than failing
+      }
 
       // Calculate current metrics
       const totalRequests = requests?.length || 0;

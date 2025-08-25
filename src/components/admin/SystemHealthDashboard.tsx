@@ -154,11 +154,16 @@ export const SystemHealthDashboard = () => {
       const criticalAlerts = alertStats?.filter(a => a.severity === 'critical' && a.is_active).length || 0;
 
       // Fetch performance metrics from actual database monitoring
-      const { data: performanceMetrics } = await supabase
+      const { data: performanceMetrics, error: performanceError } = await supabase
         .from('performance_metrics')
         .select('*')
         .order('calculated_at', { ascending: false })
         .limit(1);
+
+      if (performanceError) {
+        console.warn('Error fetching performance metrics:', performanceError);
+        // Continue without performance metrics rather than failing entirely
+      }
 
       // Calculate real database metrics
       const avgRequestResponse = performanceMetrics?.[0]?.average_completion_time_minutes || 250;

@@ -24,11 +24,16 @@ export const PerformanceCharts: React.FC = () => {
       setIsLoading(true);
       
       // Fetch performance metrics for line chart
-      const { data: performanceData } = await supabase
+      const { data: performanceData, error: performanceError } = await supabase
         .from('performance_metrics')
         .select('*')
         .order('metric_date', { ascending: true })
         .limit(6);
+
+      if (performanceError) {
+        console.error('Error fetching performance data:', performanceError);
+        throw performanceError;
+      }
 
       const lineData = performanceData?.map(item => ({
         name: new Date(item.metric_date).toLocaleDateString('en-US', { month: 'short' }),
