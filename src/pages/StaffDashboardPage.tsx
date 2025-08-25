@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CustomizableDashboard } from '@/components/dashboard/CustomizableDashboard';
 import { AdvancedNotificationCenter } from '@/components/notifications/AdvancedNotificationCenter';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { useRequestOffers } from '@/hooks/useRequestOffers';
+import { useProfile } from '@/hooks/useProfile';
 import { 
   ClipboardList, 
   Clock, 
@@ -21,7 +24,8 @@ import {
   Brain,
   BarChart3,
   FileSpreadsheet,
-  Database
+  Database,
+  User
 } from 'lucide-react';
 import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
 import { toast } from '@/hooks/use-toast';
@@ -30,6 +34,8 @@ import { FeatureNotificationSystem } from '@/components/common/FeatureNotificati
 import { SEOHead } from '@/components/seo/SEOHead';
 import { RequestPopupNotification } from '@/components/staff/RequestPopupNotification';
 import { useNewRequestNotifications } from '@/hooks/useNewRequestNotifications';
+import { SoundEffects } from '@/utils/soundEffects';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface RequestStats {
   total: number;
@@ -49,8 +55,11 @@ const StaffDashboardPage = () => {
   });
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [acceptedOffers, setAcceptedOffers] = useState<Set<string>>(new Set());
   
-  // New request notifications
+  // Hooks
+  const { offers, acceptOffer } = useRequestOffers();
+  const { profile } = useProfile();
   const { newRequest, isVisible, handleAccept, handleDismiss } = useNewRequestNotifications();
 
   useEffect(() => {
@@ -138,6 +147,106 @@ const StaffDashboardPage = () => {
         <h1 className="text-2xl font-bold text-white mb-2">Staff Dashboard</h1>
         <p className="text-gray-400">Monitor and manage facility operations</p>
       </div>
+
+      {/* Incoming Requests - Compact */}
+      <Card className="bg-card/50 backdrop-blur mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-lg">Incoming Requests</CardTitle>
+          <CardDescription>Tasks available for you to accept</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-64 overflow-y-auto space-y-3">
+            {offers.length === 0 && recentRequests.length === 0 ? (
+              <p className="text-gray-400 text-center py-4">No incoming requests</p>
+            ) : (
+              <>
+                {/* Show offers first (with Accept button) */}
+                {offers.slice(0, 5).map((offer) => (
+                  <div 
+                    key={offer.id}
+                    className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-medium text-white mb-1">{offer.request.title}</h4>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <span>{offer.request.location}</span>
+                        <span>•</span>
+                        <span>{new Date(offer.expires_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      {acceptedOffers.has(offer.request_id) ? (
+                        <div className="flex items-center space-x-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={profile?.avatar_url || ''} />
+                            <AvatarFallback className="text-xs">
+                              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm text-green-400">Assigned to you</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/requests/${offer.request_id}`)}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              await Haptics.impact({ style: ImpactStyle.Medium });
+                            } catch (e) {
+                              // Haptics not available, continue silently
+                            }
+                            
+                            const success = await acceptOffer(offer.request_id);
+                            if (success) {
+                              SoundEffects.playConfirmationBeep();
+                              setAcceptedOffers(prev => new Set([...prev, offer.request_id]));
+                            }
+                          }}
+                          className="bg-primary hover:bg-primary/80"
+                        >
+                          Accept
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Show recent requests without offers (with View button) */}
+                {offers.length < 5 && recentRequests
+                  .filter(req => !offers.some(offer => offer.request_id === req.id))
+                  .slice(0, 5 - offers.length)
+                  .map((request) => (
+                    <div 
+                      key={request.id}
+                      className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <h4 className="font-medium text-white mb-1">{request.title}</h4>
+                        <p className="text-sm text-gray-400">
+                          {new Date(request.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/requests/${request.id}`)}
+                      >
+                        View
+                      </Button>
+                    </div>
+                  ))
+                }
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <CustomizableDashboard userRole="staff" />
       <AdvancedNotificationCenter />
@@ -351,10 +460,10 @@ const StaffDashboardPage = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Requests */}
+      {/* All Recent Activity - Optional fallback section */}
       <Card className="bg-card/50 backdrop-blur">
         <CardHeader>
-          <CardTitle className="text-white">Recent Requests</CardTitle>
+          <CardTitle className="text-white">All Recent Activity</CardTitle>
           <CardDescription>Latest maintenance requests in the system</CardDescription>
         </CardHeader>
         <CardContent>
@@ -374,14 +483,16 @@ const StaffDashboardPage = () => {
                       {new Date(request.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge variant={getPriorityColor(request.priority)}>
-                      {request.priority}
-                    </Badge>
-                    <span className={`text-sm font-medium ${getStatusColor(request.status)}`}>
-                      {request.status.replace('_', ' ')}
-                    </span>
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/requests/${request.id}`);
+                    }}
+                  >
+                    View
+                  </Button>
                 </div>
               ))}
             </div>
