@@ -21,7 +21,7 @@ interface MaintenanceRequest {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   location: string;
   created_at: string;
@@ -138,12 +138,12 @@ const StaffRequestsPage = () => {
 
   const updateRequestStatus = async (requestId: string, newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
     const request = requests.find(r => r.id === requestId);
-    const actionText = 'mark as completed';
+    const actionText = newStatus === 'completed' ? 'mark as completed' : 'update status';
     
     const openDialog = () => {
       setConfirmDialog({
         open: true,
-        title: 'Complete Request',
+        title: newStatus === 'completed' ? 'Complete Request' : 'Update Status',
         description: `Are you sure you want to ${actionText} "${request?.title}"?`,
         onConfirm: () => executeStatusUpdate(requestId, newStatus),
         loading: false

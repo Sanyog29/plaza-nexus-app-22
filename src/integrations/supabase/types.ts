@@ -2726,6 +2726,7 @@ export type Database = {
       }
       maintenance_requests: {
         Row: {
+          assigned_at: string | null
           assigned_group: string | null
           assigned_to: string | null
           assignment_acknowledged_at: string | null
@@ -2737,8 +2738,10 @@ export type Database = {
           completed_at: string | null
           created_at: string
           description: string
+          en_route_at: string | null
           escalated_at: string | null
           escalation_level: number | null
+          estimated_arrival: string | null
           estimated_completion: string | null
           gps_coordinates: Json | null
           id: string
@@ -2753,10 +2756,14 @@ export type Database = {
           sla_breach_at: string | null
           status: Database["public"]["Enums"]["request_status"]
           sub_category_id: string | null
+          technician_location: Json | null
           title: string
           updated_at: string
+          work_started_at: string | null
+          workflow_step: number | null
         }
         Insert: {
+          assigned_at?: string | null
           assigned_group?: string | null
           assigned_to?: string | null
           assignment_acknowledged_at?: string | null
@@ -2768,8 +2775,10 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description: string
+          en_route_at?: string | null
           escalated_at?: string | null
           escalation_level?: number | null
+          estimated_arrival?: string | null
           estimated_completion?: string | null
           gps_coordinates?: Json | null
           id?: string
@@ -2784,10 +2793,14 @@ export type Database = {
           sla_breach_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           sub_category_id?: string | null
+          technician_location?: Json | null
           title: string
           updated_at?: string
+          work_started_at?: string | null
+          workflow_step?: number | null
         }
         Update: {
+          assigned_at?: string | null
           assigned_group?: string | null
           assigned_to?: string | null
           assignment_acknowledged_at?: string | null
@@ -2799,8 +2812,10 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           description?: string
+          en_route_at?: string | null
           escalated_at?: string | null
           escalation_level?: number | null
+          estimated_arrival?: string | null
           estimated_completion?: string | null
           gps_coordinates?: Json | null
           id?: string
@@ -2815,8 +2830,11 @@ export type Database = {
           sla_breach_at?: string | null
           status?: Database["public"]["Enums"]["request_status"]
           sub_category_id?: string | null
+          technician_location?: Json | null
           title?: string
           updated_at?: string
+          work_started_at?: string | null
+          workflow_step?: number | null
         }
         Relationships: [
           {
@@ -4163,6 +4181,64 @@ export type Database = {
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_workflow_transitions: {
+        Row: {
+          changed_at: string | null
+          changed_by: string | null
+          created_at: string | null
+          from_status: Database["public"]["Enums"]["request_status"] | null
+          id: string
+          metadata: Json | null
+          notes: string | null
+          request_id: string
+          to_status: Database["public"]["Enums"]["request_status"]
+        }
+        Insert: {
+          changed_at?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          from_status?: Database["public"]["Enums"]["request_status"] | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          request_id: string
+          to_status: Database["public"]["Enums"]["request_status"]
+        }
+        Update: {
+          changed_at?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          from_status?: Database["public"]["Enums"]["request_status"] | null
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          request_id?: string
+          to_status?: Database["public"]["Enums"]["request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_workflow_transitions_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_workflow_transitions_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_workflow_transitions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
             referencedColumns: ["id"]
           },
         ]

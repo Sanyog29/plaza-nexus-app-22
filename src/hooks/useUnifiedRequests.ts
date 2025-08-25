@@ -7,7 +7,7 @@ export interface UnifiedRequest {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   category_id: string;
   location: string;
@@ -29,7 +29,7 @@ export interface UnifiedRequest {
 }
 
 interface RequestFilters {
-  status?: ('pending' | 'in_progress' | 'completed' | 'cancelled')[];
+  status?: ('pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route')[];
   priority?: ('low' | 'medium' | 'high' | 'urgent')[];
   category?: string[];
   assigned_to?: string;

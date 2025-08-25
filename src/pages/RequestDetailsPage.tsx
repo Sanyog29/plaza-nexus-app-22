@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import RequestDetailPanel from '@/components/maintenance/RequestDetailPanel';
 import AttachmentViewer from '@/components/maintenance/AttachmentViewer';
 import RequestFeedbackSystem from '@/components/maintenance/RequestFeedbackSystem';
+import UnifiedStatusTracker from '@/components/maintenance/UnifiedStatusTracker';
+import WorkflowTransitionHistory from '@/components/maintenance/WorkflowTransitionHistory';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -61,6 +63,27 @@ const RequestDetailsPage = () => {
         
       if (error) throw error;
       setRequest(data);
+      
+      // Set up real-time subscription for workflow updates
+      const channel = supabase
+        .channel(`request_${requestId}_workflow`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'maintenance_requests',
+            filter: `id=eq.${requestId}`
+          },
+          (payload) => {
+            setRequest((prev: any) => ({ ...prev, ...payload.new }));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     } catch (error: any) {
       toast({
         title: "Error fetching request",
@@ -150,6 +173,26 @@ const RequestDetailsPage = () => {
             Back to Requests
           </Button>
         </Link>
+      </div>
+
+      {/* Unified Status Tracker */}
+      <div className="mb-6">
+        <UnifiedStatusTracker
+          requestId={requestId!}
+          currentStatus={request.status}
+          workflowStep={request.workflow_step || 1}
+          isStaff={isStaff}
+          assignedToUserId={request.assigned_to}
+          timestamps={{
+            created_at: request.created_at,
+            assigned_at: request.assigned_at,
+            en_route_at: request.en_route_at,
+            work_started_at: request.work_started_at,
+            completed_at: request.completed_at,
+          }}
+          estimatedArrival={request.estimated_arrival}
+          onStatusUpdate={fetchRequestDetails}
+        />
       </div>
 
       {/* Claimed Task Banner - Show if current user is assigned to this task */}
@@ -320,6 +363,16 @@ const RequestDetailsPage = () => {
         </div>
       )}
       
+      {/* Workflow Transition History */}
+      {requestId && (
+        <div className="mt-6">
+          <WorkflowTransitionHistory 
+            requestId={requestId} 
+            isStaff={isStaff}
+          />
+        </div>
+      )}
+
       {/* For staff, show the detailed management panel */}
       {isStaff && requestId && (
         <RequestDetailPanel 

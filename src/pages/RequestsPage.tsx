@@ -17,7 +17,7 @@ interface MaintenanceRequest {
   description: string;
   category_id: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route';
   reported_by: string;
   assigned_to: string | null;
   created_at: string;
