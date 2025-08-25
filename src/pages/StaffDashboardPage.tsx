@@ -34,8 +34,6 @@ import { FeatureNotificationSystem } from '@/components/common/FeatureNotificati
 import { SEOHead } from '@/components/seo/SEOHead';
 import { RequestPopupNotification } from '@/components/staff/RequestPopupNotification';
 import { useNewRequestNotifications } from '@/hooks/useNewRequestNotifications';
-import { SoundEffects } from '@/utils/soundEffects';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface RequestStats {
   total: number;
@@ -196,15 +194,8 @@ const StaffDashboardPage = () => {
                         <Button
                           size="sm"
                           onClick={async () => {
-                            try {
-                              await Haptics.impact({ style: ImpactStyle.Medium });
-                            } catch (e) {
-                              // Haptics not available, continue silently
-                            }
-                            
                             const success = await acceptOffer(offer.request_id);
                             if (success) {
-                              SoundEffects.playConfirmationBeep();
                               setAcceptedOffers(prev => new Set([...prev, offer.request_id]));
                             }
                           }}

@@ -14,7 +14,6 @@ import { format } from 'date-fns';
 import { useRealtimeRequests } from '@/hooks/useRealtimeUpdates';
 import { LoadingState } from '@/components/ui/loading-state';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { SoundEffects } from '@/utils/soundEffects';
 
 interface MaintenanceRequest {
   id: string;
@@ -157,12 +156,6 @@ const StaffRequestsPage = () => {
 
         if (error) throw error;
 
-        // Play sound effect based on action
-        if (newStatus === 'in_progress') {
-          SoundEffects.playStartWorkSound();
-        } else if (newStatus === 'completed') {
-          SoundEffects.playConfirmationBeep();
-        }
 
         // Create notification for the reporter
         if (request?.reported_by) {

@@ -16,7 +16,6 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimedTaskBanner } from '@/components/maintenance/ClaimedTaskBanner';
-import { SoundEffects } from '@/utils/soundEffects';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
@@ -108,8 +107,6 @@ const RequestDetailsPage = () => {
 
       if (error) throw error;
 
-      // Play success sound effect
-      SoundEffects.playStartWorkSound();
 
       setRequest(prev => ({ ...prev, status: 'in_progress' }));
       toast({
@@ -118,7 +115,6 @@ const RequestDetailsPage = () => {
       });
     } catch (error) {
       console.error('Error starting task:', error);
-      SoundEffects.playErrorSound();
       toast({
         title: "Error",
         description: "Failed to start task. Please try again.",

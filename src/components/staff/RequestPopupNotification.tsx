@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, CheckCircle, Clock, MapPin, AlertTriangle } from 'lucide-react';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface RequestPopupNotificationProps {
   request: {
@@ -32,13 +31,6 @@ export const RequestPopupNotification = ({
   useEffect(() => {
     if (isVisible) {
       setIsAnimating(true);
-      
-      // Trigger haptic feedback
-      try {
-        Haptics.impact({ style: ImpactStyle.Heavy });
-      } catch (error) {
-        console.log('Haptic feedback not available:', error);
-      }
       
       // Stop animation after 3 seconds
       const timer = setTimeout(() => {
