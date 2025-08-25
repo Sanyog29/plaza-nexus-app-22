@@ -3934,6 +3934,123 @@ export type Database = {
           },
         ]
       }
+      request_offer_recipients: {
+        Row: {
+          id: string
+          notified_at: string
+          offer_id: string
+          responded_at: string | null
+          response: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          notified_at?: string
+          offer_id: string
+          responded_at?: string | null
+          response?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          notified_at?: string
+          offer_id?: string
+          responded_at?: string | null
+          response?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_offer_recipients_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "request_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_offer_recipients_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_offer_recipients_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_offers: {
+        Row: {
+          category_id: string | null
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          level: number
+          request_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          level?: number
+          request_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          level?: number
+          request_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_offers_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_offers_claimed_by_fkey"
+            columns: ["claimed_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_offers_claimed_by_fkey"
+            columns: ["claimed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_offers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_status_history: {
         Row: {
           changed_at: string
@@ -7388,6 +7505,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_request_offer: {
+        Args: { p_request_id: string }
+        Returns: Json
+      }
       acknowledge_ticket: {
         Args: { ticket_id: string }
         Returns: boolean
@@ -7424,6 +7545,10 @@ export type Database = {
       approve_user: {
         Args: { approver_id: string; target_user_id: string }
         Returns: boolean
+      }
+      broadcast_request_offer: {
+        Args: { p_expires_in_minutes?: number; p_request_id: string }
+        Returns: Json
       }
       calculate_cross_module_kpis: {
         Args: Record<PropertyKey, never>
@@ -7470,6 +7595,10 @@ export type Database = {
           target_user_id: string
         }
         Returns: string
+      }
+      decline_request_offer: {
+        Args: { p_request_id: string }
+        Returns: Json
       }
       end_security_shift: {
         Args: { handover_notes?: string }
