@@ -73,7 +73,7 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
       timestamp: timestamps.assigned_at,
       isActive: workflowStep === 2,
       isCompleted: workflowStep > 2,
-      canTrigger: isStaff && workflowStep === 1,
+      canTrigger: false, // Removed to prevent conflicts with Assign to Me button
     },
     {
       step: 3,
@@ -197,6 +197,7 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
           <Progress 
             value={getProgressPercentage()} 
             className="h-2"
+            indicatorClassName="transition-all duration-700 ease-out"
           />
         </div>
 
@@ -214,10 +215,11 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
             {/* Step Circle */}
             <div className={cn(
               "w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 relative z-10 bg-card",
-              getStepColor(step)
+              getStepColor(step),
+              step.isCompleted ? 'animate-scale-in' : step.isActive ? 'animate-scale-in' : ''
             )}>
               {step.isCompleted ? (
-                <CheckCircle className="h-5 w-5 text-green-400" />
+                <CheckCircle className="h-5 w-5 text-green-400 animate-fade-in" />
               ) : (
                 step.icon
               )}
@@ -228,17 +230,17 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
               <p className={cn(
                 "text-sm font-medium",
                 step.isCompleted ? "text-green-400" : 
-                step.isActive ? "text-blue-400" : "text-gray-500"
+                step.isActive ? "text-blue-400 animate-fade-in" : "text-gray-500"
               )}>
                 {step.label}
               </p>
               {step.timestamp && (
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 mt-1 animate-fade-in">
                   {new Date(step.timestamp).toLocaleString()}
                 </p>
               )}
               {step.isActive && estimatedArrival && step.status === 'en_route' && (
-                <p className="text-xs text-yellow-400 mt-1">
+                <p className="text-xs text-yellow-400 mt-1 animate-fade-in">
                   ETA: {new Date(estimatedArrival).toLocaleTimeString()}
                 </p>
               )}
@@ -266,10 +268,11 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
           <div key={step.step} className="flex items-start space-x-3">
             <div className={cn(
               "w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-              getStepColor(step)
+              getStepColor(step),
+              step.isCompleted ? 'animate-scale-in' : step.isActive ? 'animate-scale-in' : ''
             )}>
               {step.isCompleted ? (
-                <CheckCircle className="h-4 w-4 text-green-400" />
+                <CheckCircle className="h-4 w-4 text-green-400 animate-fade-in" />
               ) : (
                 step.icon
               )}
@@ -280,18 +283,21 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
                 <h4 className={cn(
                   "text-sm font-medium",
                   step.isCompleted ? "text-green-400" : 
-                  step.isActive ? "text-blue-400" : "text-gray-500"
+                  step.isActive ? "text-blue-400 animate-fade-in" : "text-gray-500"
                 )}>
                   {step.label}
                 </h4>
                 {step.timestamp && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 animate-fade-in">
                     {new Date(step.timestamp).toLocaleString()}
                   </span>
                 )}
               </div>
               
-              <p className="text-xs text-gray-400 mt-1">
+              <p className={cn(
+                "text-xs text-gray-400 mt-1",
+                step.isActive ? "animate-fade-in" : ""
+              )}>
                 {step.description}
               </p>
               
@@ -318,24 +324,24 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
       </div>
 
       {/* Status Summary */}
-      <div className="mt-6 p-4 bg-card/50 rounded-lg border">
+      <div className="mt-6 p-4 bg-card/50 rounded-lg border animate-fade-in">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-400">Current Status</p>
-            <p className="text-lg font-semibold capitalize">
+            <p className="text-lg font-semibold capitalize animate-fade-in">
               {currentStatus.replace('_', ' ')}
             </p>
           </div>
           <Badge 
             variant={currentStatus === 'completed' ? 'default' : 'secondary'}
-            className="capitalize"
+            className="capitalize animate-scale-in"
           >
             {currentStatus.replace('_', ' ')}
           </Badge>
         </div>
         
         {!isStaff && (
-          <div className="mt-3 text-sm text-muted-foreground">
+          <div className="mt-3 text-sm text-muted-foreground animate-fade-in">
             {steps.find(s => s.isActive)?.description}
           </div>
         )}
