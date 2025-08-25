@@ -7708,7 +7708,7 @@ export type Database = {
         Returns: boolean
       }
       assign_and_start_request: {
-        Args: { request_id: string }
+        Args: { request_id: string } | { request_id: string; staff_id: string }
         Returns: Json
       }
       broadcast_request_offer: {
