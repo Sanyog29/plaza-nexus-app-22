@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Clock, MapPin, Wrench, Star, CircleDot } from 'lucide-react';
+import { CheckCircle, Clock, MapPin, Wrench, Star, CircleDot, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { format, isAfter } from 'date-fns';
 
 interface WorkflowStep {
   step: number;
@@ -33,6 +34,7 @@ interface UnifiedStatusTrackerProps {
     completed_at?: string;
   };
   estimatedArrival?: string;
+  slaBreachAt?: string;
   onStatusUpdate?: () => void;
 }
 
@@ -44,6 +46,7 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
   assignedToUserId,
   timestamps,
   estimatedArrival,
+  slaBreachAt,
   onStatusUpdate
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -149,16 +152,53 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
     return 'text-gray-500 border-gray-600 bg-gray-800/50';
   };
 
+  // Format due time for display
+  const formatDueTime = (dueTime?: string) => {
+    if (!dueTime) return null;
+    
+    const dueDate = new Date(dueTime);
+    const now = new Date();
+    const isOverdue = isAfter(now, dueDate);
+    
+    return {
+      formatted: format(dueDate, 'MMM dd, yyyy HH:mm'),
+      isOverdue,
+    };
+  };
+
+  const dueTimeInfo = formatDueTime(slaBreachAt);
+
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-white mb-2">Request Progress</h3>
-        <Progress 
-          value={getProgressPercentage()} 
-          className="h-2 bg-gray-800"
-          indicatorClassName="bg-gradient-to-r from-blue-500 to-green-500"
-        />
-      </div>
+    <div className="bg-card border border-border rounded-lg">
+      {/* Due Time Header */}
+      {dueTimeInfo && (
+        <div className={`px-4 py-2 border-b flex items-center justify-between ${
+          dueTimeInfo.isOverdue 
+            ? 'bg-destructive/10 border-destructive/20' 
+            : 'bg-muted/50'
+        }`}>
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4" />
+            <span className="font-medium">
+              Due by: {dueTimeInfo.formatted}
+            </span>
+          </div>
+          {dueTimeInfo.isOverdue && (
+            <Badge variant="destructive" className="text-xs">
+              Overdue
+            </Badge>
+          )}
+        </div>
+      )}
+      
+      <div className="p-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-2">Request Progress</h3>
+          <Progress 
+            value={getProgressPercentage()} 
+            className="h-2"
+          />
+        </div>
 
       {/* Desktop Timeline */}
       <div className="hidden md:flex items-center justify-between relative mb-6">
@@ -282,7 +322,7 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-400">Current Status</p>
-            <p className="text-lg font-semibold text-white capitalize">
+            <p className="text-lg font-semibold capitalize">
               {currentStatus.replace('_', ' ')}
             </p>
           </div>
@@ -295,10 +335,11 @@ const UnifiedStatusTracker: React.FC<UnifiedStatusTrackerProps> = ({
         </div>
         
         {!isStaff && (
-          <div className="mt-3 text-sm text-gray-400">
+          <div className="mt-3 text-sm text-muted-foreground">
             {steps.find(s => s.isActive)?.description}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

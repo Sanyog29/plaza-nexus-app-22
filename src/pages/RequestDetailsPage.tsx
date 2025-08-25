@@ -14,15 +14,20 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimedTaskBanner } from '@/components/maintenance/ClaimedTaskBanner';
 import UnifiedStatusTracker from '@/components/maintenance/UnifiedStatusTracker';
+import { AssignToMeButton } from '@/components/maintenance/AssignToMeButton';
+import { TimeExtensionModal } from '@/components/maintenance/TimeExtensionModal';
+import { useTimeExtensions } from '@/hooks/useTimeExtensions';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
   const [request, setRequest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStaff, setIsStaff] = useState(false);
+  const [showTimeExtensionModal, setShowTimeExtensionModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { extensions } = useTimeExtensions(requestId);
   
   useEffect(() => {
     if (requestId) {
@@ -239,6 +244,18 @@ const RequestDetailsPage = () => {
         </CardContent>
       </Card>
 
+      {/* Quick Assign Button for L1 Staff */}
+      <AssignToMeButton
+        requestId={requestId!}
+        requestStatus={request.status}
+        priority={request.priority}
+        location={request.location}
+        assignedTo={request.assigned_to}
+        userId={user?.id}
+        isStaff={isStaff}
+        onSuccess={fetchRequestDetails}
+      />
+
       {/* Request Progress Tracker */}
       <div className="mb-6">
         <UnifiedStatusTracker
@@ -255,6 +272,7 @@ const RequestDetailsPage = () => {
             completed_at: request.completed_at,
           }}
           estimatedArrival={request.estimated_arrival}
+          slaBreachAt={request.sla_breach_at}
           onStatusUpdate={fetchRequestDetails}
         />
       </div>
@@ -308,6 +326,14 @@ const RequestDetailsPage = () => {
           />
         </div>
       )}
+
+      {/* Time Extension Modal */}
+      <TimeExtensionModal
+        open={showTimeExtensionModal}
+        onOpenChange={setShowTimeExtensionModal}
+        requestId={requestId!}
+        onSuccess={fetchRequestDetails}
+      />
     </div>
   );
 };

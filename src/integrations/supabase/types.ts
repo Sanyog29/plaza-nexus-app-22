@@ -4118,6 +4118,87 @@ export type Database = {
           },
         ]
       }
+      request_time_extensions: {
+        Row: {
+          additional_hours: number
+          created_at: string
+          id: string
+          notes: string | null
+          reason: string
+          request_id: string
+          requested_by: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          additional_hours: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reason: string
+          request_id: string
+          requested_by: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          additional_hours?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reason?: string
+          request_id?: string
+          requested_by?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_time_extensions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_time_extensions_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_time_extensions_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_time_extensions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "request_time_extensions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_workflow_states: {
         Row: {
           after_photos_required: boolean
@@ -7589,6 +7670,10 @@ export type Database = {
         Args: { ticket_id: string }
         Returns: boolean
       }
+      add_business_hours: {
+        Args: { hours_to_add: number; start_time: string }
+        Returns: string
+      }
       admin_create_user_invitation: {
         Args:
           | {
@@ -7621,6 +7706,10 @@ export type Database = {
       approve_user: {
         Args: { approver_id: string; target_user_id: string }
         Returns: boolean
+      }
+      assign_and_start_request: {
+        Args: { request_id: string }
+        Returns: Json
       }
       broadcast_request_offer: {
         Args: { p_expires_in_minutes?: number; p_request_id: string }
@@ -7796,6 +7885,19 @@ export type Database = {
       reject_user: {
         Args: { approver_id: string; reason: string; target_user_id: string }
         Returns: boolean
+      }
+      request_time_extension: {
+        Args: {
+          additional_hours: number
+          notes?: string
+          reason: string
+          request_id: string
+        }
+        Returns: Json
+      }
+      review_time_extension: {
+        Args: { approved: boolean; extension_id: string; review_notes?: string }
+        Returns: Json
       }
       set_system_setting: {
         Args: {
