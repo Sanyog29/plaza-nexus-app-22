@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, MapPin, Play, Camera } from 'lucide-react';
+import { CheckCircle, Clock, MapPin, Camera } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ClaimedTaskBannerProps {
@@ -14,7 +14,6 @@ interface ClaimedTaskBannerProps {
     sla_breach_at: string | null;
     assignment_acknowledged_at: string | null;
   };
-  onStartTask?: () => void;
   onMarkInProgress?: () => void;
   onUploadPhotos?: () => void;
   isProcessing?: boolean;
@@ -22,7 +21,6 @@ interface ClaimedTaskBannerProps {
 
 export const ClaimedTaskBanner = ({ 
   request, 
-  onStartTask, 
   onMarkInProgress, 
   onUploadPhotos,
   isProcessing = false 
@@ -110,16 +108,8 @@ export const ClaimedTaskBanner = ({
 
         {!isStarted ? (
           <div className="space-y-3">
-            <p className="text-sm font-medium">Ready to start?</p>
+            <p className="text-sm font-medium">Ready to upload photos?</p>
             <div className="flex gap-2">
-              <Button 
-                onClick={onStartTask}
-                disabled={isProcessing}
-                className="flex items-center gap-2"
-              >
-                <Play className="h-4 w-4" />
-                {isProcessing ? 'Starting...' : 'Start Task'}
-              </Button>
               <Button 
                 variant="outline"
                 onClick={onUploadPhotos}

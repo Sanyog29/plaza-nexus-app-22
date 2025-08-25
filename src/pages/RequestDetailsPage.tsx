@@ -157,7 +157,6 @@ const RequestDetailsPage = () => {
         <div className="mb-6">
           <ClaimedTaskBanner
             request={request}
-            onStartTask={handleStartTask}
             onUploadPhotos={handleUploadPhotos}
             isProcessing={isProcessing}
           />
