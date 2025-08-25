@@ -120,11 +120,38 @@ export function DietaryPreferencesManager() {
         },
       };
 
-      const { error } = await supabase
+      // Check if preferences already exist to avoid constraint violations
+      const { data: existingPrefs, error: selectError } = await supabase
         .from("dietary_preferences")
-        .upsert(upsertData, { onConflict: "user_id" });
+        .select("id")
+        .eq("user_id", user.user.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (selectError) {
+        console.error("Error checking existing preferences:", selectError);
+        throw selectError;
+      }
+
+      let error;
+      if (existingPrefs) {
+        // Update existing preferences
+        const { error: updateError } = await supabase
+          .from("dietary_preferences")
+          .update(upsertData)
+          .eq("user_id", user.user.id);
+        error = updateError;
+      } else {
+        // Insert new preferences
+        const { error: insertError } = await supabase
+          .from("dietary_preferences")
+          .insert(upsertData);
+        error = insertError;
+      }
+
+      if (error) {
+        console.error("Database operation error:", error);
+        throw error;
+      }
 
       toast({
         title: "Preferences saved",
