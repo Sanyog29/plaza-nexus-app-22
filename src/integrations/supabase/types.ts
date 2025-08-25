@@ -7778,7 +7778,13 @@ export type Database = {
         | "staff"
       approval_status: "pending" | "approved" | "rejected"
       request_priority: "low" | "medium" | "high" | "urgent"
-      request_status: "pending" | "in_progress" | "completed" | "cancelled"
+      request_status:
+        | "pending"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "assigned"
+        | "en_route"
       utility_type:
         | "electricity"
         | "water"
@@ -7923,7 +7929,14 @@ export const Constants = {
       ],
       approval_status: ["pending", "approved", "rejected"],
       request_priority: ["low", "medium", "high", "urgent"],
-      request_status: ["pending", "in_progress", "completed", "cancelled"],
+      request_status: [
+        "pending",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "assigned",
+        "en_route",
+      ],
       utility_type: [
         "electricity",
         "water",
