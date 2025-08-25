@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimedTaskBanner } from '@/components/maintenance/ClaimedTaskBanner';
 import UnifiedStatusTracker from '@/components/maintenance/UnifiedStatusTracker';
-import { AssignToMeButton } from '@/components/maintenance/AssignToMeButton';
+import { ClaimAndStartButton } from '@/components/maintenance/ClaimAndStartButton';
 import { TimeExtensionModal } from '@/components/maintenance/TimeExtensionModal';
 import { useTimeExtensions } from '@/hooks/useTimeExtensions';
 
@@ -244,12 +244,10 @@ const RequestDetailsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Assign Button for L1 Staff */}
-      <AssignToMeButton
+      {/* Claim & Start Work Button for Staff */}
+      <ClaimAndStartButton
         requestId={requestId!}
         requestStatus={request.status}
-        priority={request.priority}
-        location={request.location}
         assignedTo={request.assigned_to}
         userId={user?.id}
         isStaff={isStaff}
