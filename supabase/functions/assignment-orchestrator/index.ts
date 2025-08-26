@@ -284,22 +284,36 @@ async function escalateTicket(supabase: any, ticketId: string, newLevel: number,
     })
     .eq('id', ticketId);
 
-  // Find appropriate staff for this escalation level
+  // Find appropriate staff for this escalation level with updated role mappings
   const levelMapping = {
-    1: ['field_staff'],
-    2: ['ops_supervisor'], 
-    3: ['admin'],
-    4: ['admin'], 
-    5: ['admin']
+    1: ['mst', 'fe', 'hk', 'se'], // L1: Maintenance, Facilities, Housekeeping, Security executives
+    2: ['assistant_manager', 'assistant_floor_manager'], // L2: Assistant managers
+    3: ['assistant_general_manager', 'assistant_vice_president'], // L3: Senior assistants
+    4: ['vp', 'ceo', 'cxo', 'admin'], // L4: VP and above
+    5: ['vp', 'ceo', 'cxo', 'admin']  // L5: VP and above
   };
 
   const targetRoles = levelMapping[newLevel as keyof typeof levelMapping] || ['admin'];
+  
+  console.log(`Escalating ticket ${ticketId} to level ${newLevel}, targeting roles:`, targetRoles);
 
   // Notify all users at the target level
-  const { data: targetUsers } = await supabase
+  const { data: targetUsers, error: userError } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name')
+    .select('id, first_name, last_name, role')
     .in('role', targetRoles);
+
+  if (userError) {
+    console.error(`Error fetching users for escalation level ${newLevel}:`, userError);
+    return;
+  }
+
+  if (!targetUsers || targetUsers.length === 0) {
+    console.warn(`No users found for escalation level ${newLevel} with roles:`, targetRoles);
+    return;
+  }
+  
+  console.log(`Found ${targetUsers.length} users for L${newLevel} escalation:`, targetUsers.map(u => `${u.first_name} ${u.last_name} (${u.role})`));
 
   for (const user of targetUsers || []) {
     await supabase
