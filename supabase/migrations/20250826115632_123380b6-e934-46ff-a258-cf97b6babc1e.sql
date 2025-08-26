@@ -1,0 +1,13 @@
+-- Migration Part 1: Add new enum values only
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'mst';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'fe';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'hk';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'se';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'assistant_manager';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'assistant_floor_manager';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'assistant_general_manager';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'assistant_vice_president';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'vp';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'ceo';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'cxo';
+ALTER TYPE app_role ADD VALUE IF NOT EXISTS 'tenant';

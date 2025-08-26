@@ -8318,6 +8318,18 @@ export type Database = {
         | "tenant_manager"
         | "vendor"
         | "staff"
+        | "mst"
+        | "fe"
+        | "hk"
+        | "se"
+        | "assistant_manager"
+        | "assistant_floor_manager"
+        | "assistant_general_manager"
+        | "assistant_vice_president"
+        | "vp"
+        | "ceo"
+        | "cxo"
+        | "tenant"
       approval_status: "pending" | "approved" | "rejected"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status:
@@ -8468,6 +8480,18 @@ export const Constants = {
         "tenant_manager",
         "vendor",
         "staff",
+        "mst",
+        "fe",
+        "hk",
+        "se",
+        "assistant_manager",
+        "assistant_floor_manager",
+        "assistant_general_manager",
+        "assistant_vice_president",
+        "vp",
+        "ceo",
+        "cxo",
+        "tenant",
       ],
       approval_status: ["pending", "approved", "rejected"],
       request_priority: ["low", "medium", "high", "urgent"],
