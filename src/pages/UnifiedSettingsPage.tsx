@@ -8,6 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { AdminPermissionCheck } from '@/components/admin/AdminPermissionCheck';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { SettingsForm } from '@/components/settings/SettingsForm';
+import { useProfile } from '@/hooks/useProfile';
 import { 
   Settings, 
   User, 
@@ -32,8 +35,15 @@ interface UnifiedSettingsPageProps {}
 
 export const UnifiedSettingsPage: React.FC<UnifiedSettingsPageProps> = () => {
   const { user, userRole, isAdmin } = useAuth();
+  const { profile, isLoading, updateProfile } = useProfile();
   const [activeTab, setActiveTab] = useState('profile');
   const [hasChanges, setHasChanges] = useState(false);
+
+  const handleAvatarUpdate = (url: string | null) => {
+    if (profile) {
+      updateProfile({ avatar_url: url });
+    }
+  };
 
   // Settings categories based on user role
   const getAvailableTabs = () => {
@@ -118,31 +128,35 @@ export const UnifiedSettingsPage: React.FC<UnifiedSettingsPageProps> = () => {
           <Card>
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your personal information and preferences</CardDescription>
+              <CardDescription>Update your personal information and profile photo</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" placeholder="Enter your first name" />
+            <CardContent className="space-y-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-muted-foreground">Loading profile...</div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" placeholder="Enter your last name" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input id="email" type="email" value={user?.email || ''} disabled />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" placeholder="Enter your phone number" />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="emailNotifications" />
-                <Label htmlFor="emailNotifications">Receive email notifications</Label>
-              </div>
+              ) : (
+                <>
+                  {/* Avatar Upload Section */}
+                  <div className="flex flex-col items-center space-y-4 py-6 border-b border-border">
+                    <AvatarUpload
+                      currentAvatarUrl={profile?.avatar_url}
+                      onAvatarUpdate={handleAvatarUpdate}
+                      size="lg"
+                    />
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Upload a profile photo to personalize your account
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Settings Form Section */}
+                  <div className="pt-4">
+                    <SettingsForm />
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
