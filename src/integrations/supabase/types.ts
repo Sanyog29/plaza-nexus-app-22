@@ -944,6 +944,39 @@ export type Database = {
           },
         ]
       }
+      certifications_master: {
+        Row: {
+          certification_name: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          is_mandatory: boolean | null
+          issuing_authority: string | null
+          skill_category: string | null
+          validity_months: number | null
+        }
+        Insert: {
+          certification_name: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_mandatory?: boolean | null
+          issuing_authority?: string | null
+          skill_category?: string | null
+          validity_months?: number | null
+        }
+        Update: {
+          certification_name?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_mandatory?: boolean | null
+          issuing_authority?: string | null
+          skill_category?: string | null
+          validity_months?: number | null
+        }
+        Relationships: []
+      }
       commission_records: {
         Row: {
           commission_amount: number
@@ -3140,6 +3173,98 @@ export type Database = {
         }
         Relationships: []
       }
+      operational_departments: {
+        Row: {
+          created_at: string
+          department_head_id: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department_head_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department_head_id?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_departments_department_head_id_fkey"
+            columns: ["department_head_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operational_departments_department_head_id_fkey"
+            columns: ["department_head_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operational_zones: {
+        Row: {
+          building: string | null
+          created_at: string
+          department_id: string | null
+          description: string | null
+          floor: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string
+          zone_code: string | null
+          zone_name: string
+        }
+        Insert: {
+          building?: string | null
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          floor?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+          zone_code?: string | null
+          zone_name: string
+        }
+        Update: {
+          building?: string | null
+          created_at?: string
+          department_id?: string | null
+          description?: string | null
+          floor?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+          zone_code?: string | null
+          zone_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_zones_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "operational_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       optimization_recommendations: {
         Row: {
           confidence_score: number | null
@@ -3706,22 +3831,30 @@ export type Database = {
           bio: string | null
           created_at: string
           department: string | null
+          designation: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relationship: string | null
+          employee_id: string | null
           first_name: string | null
           floor: string | null
+          government_id: string | null
           id: string
           interests: string[] | null
+          is_active: boolean | null
           last_name: string | null
           notification_preferences: Json | null
           office_number: string | null
+          onboarding_date: string | null
           phone_number: string | null
           profile_visibility: string | null
           rejection_reason: string | null
           role: Database["public"]["Enums"]["app_role"]
+          shift_end: string | null
+          shift_start: string | null
           skills: string[] | null
           specialization: string | null
+          supervisor_id: string | null
           updated_at: string
           zone: string | null
         }
@@ -3733,22 +3866,30 @@ export type Database = {
           bio?: string | null
           created_at?: string
           department?: string | null
+          designation?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
+          employee_id?: string | null
           first_name?: string | null
           floor?: string | null
+          government_id?: string | null
           id: string
           interests?: string[] | null
+          is_active?: boolean | null
           last_name?: string | null
           notification_preferences?: Json | null
           office_number?: string | null
+          onboarding_date?: string | null
           phone_number?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          shift_end?: string | null
+          shift_start?: string | null
           skills?: string[] | null
           specialization?: string | null
+          supervisor_id?: string | null
           updated_at?: string
           zone?: string | null
         }
@@ -3760,22 +3901,30 @@ export type Database = {
           bio?: string | null
           created_at?: string
           department?: string | null
+          designation?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
+          employee_id?: string | null
           first_name?: string | null
           floor?: string | null
+          government_id?: string | null
           id?: string
           interests?: string[] | null
+          is_active?: boolean | null
           last_name?: string | null
           notification_preferences?: Json | null
           office_number?: string | null
+          onboarding_date?: string | null
           phone_number?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          shift_end?: string | null
+          shift_start?: string | null
           skills?: string[] | null
           specialization?: string | null
+          supervisor_id?: string | null
           updated_at?: string
           zone?: string | null
         }
@@ -3790,6 +3939,20 @@ export type Database = {
           {
             foreignKeyName: "profiles_approved_by_fkey"
             columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -5348,6 +5511,33 @@ export type Database = {
         }
         Relationships: []
       }
+      skills_master: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          skill_name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          skill_name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          skill_name?: string
+        }
+        Relationships: []
+      }
       sla_configs: {
         Row: {
           category_id: string
@@ -5479,6 +5669,88 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_area_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          created_at: string
+          department_id: string
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          staff_id: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string
+          department_id: string
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          staff_id: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string
+          department_id?: string
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          staff_id?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_area_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_area_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_area_assignments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "operational_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_area_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_area_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_area_assignments_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "operational_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_attendance: {
         Row: {
           check_in_time: string
@@ -5573,6 +5845,87 @@ export type Database = {
             foreignKeyName: "staff_availability_staff_id_fkey"
             columns: ["staff_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_certifications: {
+        Row: {
+          certification_id: string
+          certification_number: string | null
+          created_at: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          is_verified: boolean | null
+          issued_date: string | null
+          issuing_authority: string | null
+          staff_id: string
+          updated_at: string
+          verified_by: string | null
+        }
+        Insert: {
+          certification_id: string
+          certification_number?: string | null
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_verified?: boolean | null
+          issued_date?: string | null
+          issuing_authority?: string | null
+          staff_id: string
+          updated_at?: string
+          verified_by?: string | null
+        }
+        Update: {
+          certification_id?: string
+          certification_number?: string | null
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_verified?: boolean | null
+          issued_date?: string | null
+          issuing_authority?: string | null
+          staff_id?: string
+          updated_at?: string
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_certifications_certification_id_fkey"
+            columns: ["certification_id"]
+            isOneToOne: false
+            referencedRelation: "certifications_master"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_certifications_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_certifications_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_certifications_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_certifications_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -7712,6 +8065,15 @@ export type Database = {
           | { p_request_id: string }
           | { p_request_id: string; p_staff_id: string }
         Returns: Json
+      }
+      assign_staff_to_zone: {
+        Args: {
+          p_department_id: string
+          p_is_primary?: boolean
+          p_staff_id: string
+          p_zone_id: string
+        }
+        Returns: string
       }
       broadcast_request_offer: {
         Args: { p_expires_in_minutes?: number; p_request_id: string }
