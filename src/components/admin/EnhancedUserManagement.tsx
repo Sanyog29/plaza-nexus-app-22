@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
 import { DepartmentSelector } from './DepartmentSelector';
+import { ALLOWED_ROLES, DEFAULT_ROLE, getRoleColor, requiresSpecialization } from '@/constants/roles';
 
 interface UserData {
   id: string;
@@ -69,23 +70,10 @@ export const EnhancedUserManagement: React.FC = () => {
     email: '',
     firstName: '',
     lastName: '',
-    role: 'tenant_manager',
+    role: DEFAULT_ROLE,
     department: '',
     specialization: ''
   });
-
-const roles = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'ops_supervisor', label: 'Operations Supervisor' },
-    { value: 'site_manager', label: 'Site Manager' },
-    { value: 'field_staff', label: 'Field Staff' },
-    { value: 'tenant_manager', label: 'Tenant Manager' },
-    { value: 'tenant_user', label: 'Tenant User' },
-    { value: 'sustain_mgr', label: 'Sustainability Manager' },
-    { value: 'fin_analyst', label: 'Finance Analyst' },
-    { value: 'client_readonly', label: 'Client Read-Only' },
-    { value: 'vendor', label: 'Vendor' }
-  ];
 
   useEffect(() => {
     if (isAdmin) {
@@ -118,12 +106,7 @@ const roles = [
     }
   };
 
-  // Check if role requires department specialization
-  const requiresSpecialization = (role: string) => {
-    return role === 'field_staff';
-  };
-
-  // Show department specialization field when field_staff is selected
+  // Show department specialization field for L1 roles
   const showDepartmentSpecialization = requiresSpecialization(newUser.role);
   
   const handleCreateUser = async () => {
@@ -140,7 +123,7 @@ const roles = [
     if (showDepartmentSpecialization && !newUser.specialization) {
       toast({
         title: "Missing Information",
-        description: "Please select a department specialization for field staff",
+        description: "Please select a department specialization for this role",
         variant: "destructive",
       });
       return;
@@ -178,7 +161,7 @@ const roles = [
         email: '',
         firstName: '',
         lastName: '',
-        role: 'tenant_manager',
+        role: DEFAULT_ROLE,
         department: '',
         specialization: ''
       });
@@ -310,21 +293,7 @@ const roles = [
     }
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800 border-red-200';
-      case 'ops_supervisor': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'site_manager': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      case 'field_staff': return 'bg-green-100 text-green-800 border-green-200';
-      case 'tenant_manager': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'tenant_user': return 'bg-violet-100 text-violet-800 border-violet-200';
-      case 'sustain_mgr': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case 'fin_analyst': return 'bg-cyan-100 text-cyan-800 border-cyan-200';
-      case 'client_readonly': return 'bg-slate-100 text-slate-800 border-slate-200';
-      case 'vendor': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
+  const getRoleBadgeColor = getRoleColor;
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -393,7 +362,7 @@ const roles = [
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {roles.map(role => (
+                  {ALLOWED_ROLES.map(role => (
                     <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -441,16 +410,9 @@ const roles = [
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
-                <SelectItem value="site_manager">Site Manager</SelectItem>
-                <SelectItem value="field_staff">Field Staff</SelectItem>
-                <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                <SelectItem value="tenant_user">Tenant User</SelectItem>
-                <SelectItem value="sustain_mgr">Sustainability Manager</SelectItem>
-                <SelectItem value="fin_analyst">Finance Analyst</SelectItem>
-                <SelectItem value="client_readonly">Client Read-Only</SelectItem>
-                <SelectItem value="vendor">Vendor</SelectItem>
+                {ALLOWED_ROLES.map(role => (
+                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -489,17 +451,17 @@ const roles = [
                                   <SelectTrigger className="w-48">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent>
-                                    {roles.map(role => (
-                                      <SelectItem key={role.value} value={role.value}>
-                                        {role.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
+                                   <SelectContent>
+                                     {ALLOWED_ROLES.map(role => (
+                                       <SelectItem key={role.value} value={role.value}>
+                                         {role.label}
+                                       </SelectItem>
+                                     ))}
+                                   </SelectContent>
                                 </Select>
                                 
-                                 {/* Department selector for field_staff */}
-                                 {newRole === 'field_staff' && (
+                                  {/* Department selector for L1 roles */}
+                                  {requiresSpecialization(newRole) && (
                                    <div className="mt-2 space-y-2">
                                      <DepartmentSelector
                                        selectedDepartment={departmentSelection.department}
@@ -531,9 +493,9 @@ const roles = [
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
-                              <Badge className={getRoleBadgeColor(user.role)}>
-                                {roles.find(r => r.value === user.role)?.label || user.role}
-                              </Badge>
+                               <Badge className={getRoleBadgeColor(user.role)}>
+                                 {ALLOWED_ROLES.find(r => r.value === user.role)?.label || user.role}
+                               </Badge>
                               <Button
                                 size="sm"
                                 variant="ghost"

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Shield, Users, UserCheck, UserX, Search, Filter, Settings, Eye } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ALLOWED_ROLES, getRoleLabel, getRoleColor } from '@/constants/roles';
 
 interface User {
   id: string;
@@ -36,22 +37,6 @@ const UserManagement = () => {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const { toast } = useToast();
 
-  const roles = [
-    { value: 'admin', label: 'Admin', color: 'bg-red-500' },
-    { value: 'mst', label: 'MST', color: 'bg-blue-500' },
-    { value: 'fe', label: 'Field Expert', color: 'bg-green-500' },
-    { value: 'hk', label: 'House Keeping', color: 'bg-yellow-500' },
-    { value: 'se', label: 'Security Executive', color: 'bg-purple-500' },
-    { value: 'assistant_manager', label: 'Assistant Manager', color: 'bg-indigo-500' },
-    { value: 'assistant_floor_manager', label: 'Assistant Floor Manager', color: 'bg-cyan-500' },
-    { value: 'assistant_general_manager', label: 'Assistant General Manager', color: 'bg-pink-500' },
-    { value: 'assistant_vice_president', label: 'Assistant Vice President', color: 'bg-rose-500' },
-    { value: 'vp', label: 'VP', color: 'bg-amber-500' },
-    { value: 'ceo', label: 'CEO', color: 'bg-emerald-500' },
-    { value: 'cxo', label: 'CXO', color: 'bg-teal-500' },
-    { value: 'tenant', label: 'Tenant', color: 'bg-gray-500' },
-    { value: 'vendor', label: 'Vendor', color: 'bg-orange-500' }
-  ];
 
   const statusOptions = [
     { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
@@ -206,10 +191,9 @@ const UserManagement = () => {
   const pendingUsers = users.filter(user => user.approval_status === 'pending');
 
   const getRoleBadge = (role: string) => {
-    const roleInfo = roles.find(r => r.value === role);
     return (
-      <Badge className={`${roleInfo?.color || 'bg-gray-500'} text-white`}>
-        {roleInfo?.label || role}
+      <Badge className={getRoleColor(role)}>
+        {getRoleLabel(role)}
       </Badge>
     );
   };
@@ -324,7 +308,7 @@ const UserManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                {roles.map(role => (
+                {ALLOWED_ROLES.map(role => (
                   <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
                 ))}
               </SelectContent>
@@ -378,7 +362,7 @@ const UserManagement = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {roles.map(role => (
+                          {ALLOWED_ROLES.map(role => (
                             <SelectItem key={role.value} value={role.value}>
                               {role.label}
                             </SelectItem>
@@ -510,7 +494,7 @@ const UserManagement = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {roles.map(role => (
+                {ALLOWED_ROLES.map(role => (
                   <div key={role.value} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
@@ -525,9 +509,9 @@ const UserManagement = () => {
                       <div className={role.value === 'admin' ? 'text-green-500' : 'text-red-500'}>
                         {role.value === 'admin' ? '✓' : '✗'} Manage Users
                       </div>
-                      <div className={['admin', 'ops_supervisor'].includes(role.value) ? 'text-green-500' : 'text-red-500'}>
-                        {['admin', 'ops_supervisor'].includes(role.value) ? '✓' : '✗'} View Analytics
-                      </div>
+                       <div className={['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager', 'assistant_general_manager', 'assistant_vice_president', 'vp', 'ceo', 'cxo'].includes(role.value) ? 'text-green-500' : 'text-red-500'}>
+                         {['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager', 'assistant_general_manager', 'assistant_vice_president', 'vp', 'ceo', 'cxo'].includes(role.value) ? '✓' : '✗'} View Analytics
+                       </div>
                     </div>
                   </div>
                 ))}

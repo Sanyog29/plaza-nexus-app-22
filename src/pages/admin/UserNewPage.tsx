@@ -9,6 +9,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DepartmentSelector } from "@/components/admin/DepartmentSelector";
+import { ALLOWED_ROLES, DEFAULT_ROLE, requiresSpecialization } from "@/constants/roles";
 
 export default function UserNewPage() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function UserNewPage() {
     firstName: "",
     lastName: "",
     email: "",
-    role: "",
+    role: DEFAULT_ROLE,
     department: "",
     specialization: "",
   });
@@ -156,11 +157,9 @@ export default function UserNewPage() {
                       <SelectValue placeholder="Select user role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="ops_supervisor">Operations Supervisor</SelectItem>
-                      <SelectItem value="field_staff">Field Staff</SelectItem>
-                      <SelectItem value="tenant_manager">Tenant Manager</SelectItem>
-                      <SelectItem value="vendor">Vendor</SelectItem>
+                      {ALLOWED_ROLES.map(role => (
+                        <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -172,8 +171,8 @@ export default function UserNewPage() {
                     selectedSpecialization={formData.specialization}
                     onDepartmentChange={(dept) => handleInputChange('department', dept)}
                     onSpecializationChange={(spec) => handleInputChange('specialization', spec)}
-                    showSpecialization={formData.role === 'field_staff'}
-                    required={formData.role === 'field_staff'}
+                    showSpecialization={requiresSpecialization(formData.role)}
+                    required={requiresSpecialization(formData.role)}
                     className="w-full"
                   />
                 </div>
