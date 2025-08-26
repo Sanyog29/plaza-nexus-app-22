@@ -8220,6 +8220,26 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_l1: {
+        Args: { uid: string }
+        Returns: boolean
+      }
+      is_l2: {
+        Args: { uid: string }
+        Returns: boolean
+      }
+      is_l3: {
+        Args: { uid: string }
+        Returns: boolean
+      }
+      is_l4: {
+        Args: { uid: string }
+        Returns: boolean
+      }
+      is_management: {
+        Args: { uid: string }
+        Returns: boolean
+      }
       is_ops_staff: {
         Args: { uid: string }
         Returns: boolean
@@ -8262,6 +8282,10 @@ export type Database = {
       review_time_extension: {
         Args: { approved: boolean; extension_id: string; review_notes?: string }
         Returns: Json
+      }
+      role_level: {
+        Args: { user_role: Database["public"]["Enums"]["app_role"] }
+        Returns: string
       }
       set_system_setting: {
         Args: {
