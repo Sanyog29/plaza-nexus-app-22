@@ -8,11 +8,10 @@ import { AlertTriangle, Shield, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const ArchitecturePage = () => {
-  const { user, isAdmin, isSiteManager, isOpsSupervisor, userRole } = useAuth();
+  const { user, isAdmin, isManagement, userRole } = useAuth();
 
   // Check if user has access to architecture diagrams (management roles)
-  const hasAccess = isAdmin || isSiteManager || isOpsSupervisor || 
-    ['fin_analyst', 'sustain_mgr'].includes(userRole || '');
+  const hasAccess = isAdmin || isManagement;
 
   if (!user) {
     return (
@@ -46,7 +45,7 @@ const ArchitecturePage = () => {
                 Current role: <span className="font-medium text-white">{userRole || 'User'}</span>
               </p>
               <p className="text-xs text-gray-600">
-                Access granted to: Admin, Site Manager, Operations Supervisor, Finance Analyst, Sustainability Manager
+                Access granted to: Admin, Assistant Manager, Assistant Floor Manager, Assistant General Manager, Assistant Vice President, VP, CEO, CXO
               </p>
             </div>
           </CardContent>

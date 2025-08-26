@@ -12,15 +12,14 @@ interface AuthContextType {
   approvalStatus: 'pending' | 'approved' | 'rejected' | null;
   isAdmin: boolean;
   isStaff: boolean;
-  isOpsSupervisor: boolean;
-  isFieldStaff: boolean;
-  isTenantManager: boolean;
-  isTenantUser: boolean;
+  isTenant: boolean;
   isVendor: boolean;
-  isSiteManager: boolean;
-  isSustainabilityManager: boolean;
-  isFinanceAnalyst: boolean;
-  isClientReadOnly: boolean;
+  // Internal role level checks (not exposed in UI)
+  isL1: boolean;
+  isL2: boolean;
+  isL3: boolean;
+  isL4: boolean;
+  isManagement: boolean;
   isLoading: boolean;
   permissions: Record<string, boolean>;
   signOut: () => Promise<void>;
@@ -35,15 +34,13 @@ const AuthContext = createContext<AuthContextType>({
   approvalStatus: null,
   isAdmin: false,
   isStaff: false,
-  isOpsSupervisor: false,
-  isFieldStaff: false,
-  isTenantManager: false,
-  isTenantUser: false,
+  isTenant: false,
   isVendor: false,
-  isSiteManager: false,
-  isSustainabilityManager: false,
-  isFinanceAnalyst: false,
-  isClientReadOnly: false,
+  isL1: false,
+  isL2: false,
+  isL3: false,
+  isL4: false,
+  isManagement: false,
   isLoading: true,
   permissions: {},
   signOut: async () => {},
@@ -66,15 +63,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
-  const [isOpsSupervisor, setIsOpsSupervisor] = useState(false);
-  const [isFieldStaff, setIsFieldStaff] = useState(false);
-  const [isTenantManager, setIsTenantManager] = useState(false);
-  const [isTenantUser, setIsTenantUser] = useState(false);
+  const [isTenant, setIsTenant] = useState(false);
   const [isVendor, setIsVendor] = useState(false);
-  const [isSiteManager, setIsSiteManager] = useState(false);
-  const [isSustainabilityManager, setIsSustainabilityManager] = useState(false);
-  const [isFinanceAnalyst, setIsFinanceAnalyst] = useState(false);
-  const [isClientReadOnly, setIsClientReadOnly] = useState(false);
+  const [isL1, setIsL1] = useState(false);
+  const [isL2, setIsL2] = useState(false);
+  const [isL3, setIsL3] = useState(false);
+  const [isL4, setIsL4] = useState(false);
+  const [isManagement, setIsManagement] = useState(false);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -82,16 +77,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserRole(role);
     setDepartmentSpecialization(specialization || null);
     setIsAdmin(role === 'admin');
-    setIsOpsSupervisor(role === 'ops_supervisor');
-    setIsFieldStaff(role === 'field_staff');
-    setIsTenantManager(role === 'tenant_manager');
-    setIsTenantUser(role === 'tenant_user');
+    setIsTenant(role === 'tenant');
     setIsVendor(role === 'vendor');
-    setIsSiteManager(role === 'site_manager');
-    setIsSustainabilityManager(role === 'sustain_mgr');
-    setIsFinanceAnalyst(role === 'fin_analyst');
-    setIsClientReadOnly(role === 'client_readonly');
-    setIsStaff(['admin', 'ops_supervisor', 'field_staff', 'site_manager'].includes(role));
+    
+    // Set internal level flags (not exposed in UI)
+    const l1Roles = ['mst', 'fe', 'hk', 'se'];
+    const l2Roles = ['assistant_manager', 'assistant_floor_manager'];
+    const l3Roles = ['assistant_general_manager', 'assistant_vice_president'];
+    const l4Roles = ['vp', 'ceo', 'cxo'];
+    
+    setIsL1(l1Roles.includes(role));
+    setIsL2(l2Roles.includes(role));
+    setIsL3(l3Roles.includes(role));
+    setIsL4(l4Roles.includes(role));
+    setIsManagement(l2Roles.includes(role) || l3Roles.includes(role) || l4Roles.includes(role));
+    
+    // Staff includes admin and L1/L2/L3 roles (operational and management staff)
+    setIsStaff(['admin', ...l1Roles, ...l2Roles, ...l3Roles].includes(role));
 
     // Enhanced permissions based on feature-to-role matrix
     const rolePermissions = {
@@ -107,7 +109,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_use_qr_instant_ticket: false,
         can_configure_auto_assign: true,
       },
-      ops_supervisor: {
+      // L2 Management roles
+      assistant_manager: {
         can_manage_users: false,
         can_view_all_requests: true,
         can_assign_requests: true,
@@ -119,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_use_qr_instant_ticket: false,
         can_configure_auto_assign: true,
       },
-      site_manager: {
+      assistant_floor_manager: {
         can_manage_users: false,
         can_view_all_requests: true,
         can_assign_requests: true,
@@ -129,9 +132,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_view_vendor_scorecards: true,
         can_manage_green_kpis: false,
         can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: true,
+      },
+      // L3 Senior Management roles
+      assistant_general_manager: {
+        can_manage_users: true,
+        can_view_all_requests: true,
+        can_assign_requests: true,
+        can_configure_sla: true,
+        can_view_analytics: true,
+        can_manage_vendors: true,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: true,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: true,
+      },
+      assistant_vice_president: {
+        can_manage_users: true,
+        can_view_all_requests: true,
+        can_assign_requests: true,
+        can_configure_sla: true,
+        can_view_analytics: true,
+        can_manage_vendors: true,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: true,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: true,
+      },
+      // L4 Executive roles
+      vp: {
+        can_manage_users: false,
+        can_view_all_requests: true,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
         can_configure_auto_assign: false,
       },
-      field_staff: {
+      ceo: {
+        can_manage_users: false,
+        can_view_all_requests: true,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+      },
+      cxo: {
+        can_manage_users: false,
+        can_view_all_requests: true,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+      },
+      // L1 Operational staff
+      mst: {
         can_manage_users: false,
         can_view_all_requests: false,
         can_assign_requests: false,
@@ -143,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_use_qr_instant_ticket: true,
         can_configure_auto_assign: false,
       },
-      tenant_manager: {
+      fe: {
         can_manage_users: false,
         can_view_all_requests: false,
         can_assign_requests: false,
@@ -155,7 +221,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_use_qr_instant_ticket: true,
         can_configure_auto_assign: false,
       },
-      tenant_user: {
+      hk: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: true,
+        can_configure_auto_assign: false,
+      },
+      se: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: true,
+        can_configure_auto_assign: false,
+      },
+      // Tenant role (formerly tenant_manager)
+      tenant: {
         can_manage_users: false,
         can_view_all_requests: false,
         can_assign_requests: false,
@@ -179,42 +270,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_use_qr_instant_ticket: false,
         can_configure_auto_assign: false,
       },
-      fin_analyst: {
-        can_manage_users: false,
-        can_view_all_requests: false,
-        can_assign_requests: false,
-        can_configure_sla: false,
-        can_view_analytics: true,
-        can_manage_vendors: false,
-        can_view_vendor_scorecards: true,
-        can_manage_green_kpis: false,
-        can_use_qr_instant_ticket: false,
-        can_configure_auto_assign: false,
-      },
-      sustain_mgr: {
-        can_manage_users: false,
-        can_view_all_requests: false,
-        can_assign_requests: false,
-        can_configure_sla: false,
-        can_view_analytics: true,
-        can_manage_vendors: false,
-        can_view_vendor_scorecards: false,
-        can_manage_green_kpis: true,
-        can_use_qr_instant_ticket: false,
-        can_configure_auto_assign: false,
-      },
-      client_readonly: {
-        can_manage_users: false,
-        can_view_all_requests: false,
-        can_assign_requests: false,
-        can_configure_sla: false,
-        can_view_analytics: false,
-        can_manage_vendors: false,
-        can_view_vendor_scorecards: false,
-        can_manage_green_kpis: false,
-        can_use_qr_instant_ticket: false,
-        can_configure_auto_assign: false,
-      },
     };
 
     setPermissions(rolePermissions[role as keyof typeof rolePermissions] || {});
@@ -230,7 +285,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) {
         console.error('Error fetching profile:', error);
-        updateRoleStates('tenant_manager');
+        updateRoleStates('tenant');
         setUserDepartment(null);
         setApprovalStatus('pending');
         return;
@@ -248,7 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: userId,
               first_name: '',
               last_name: '',
-              role: 'tenant_manager',
+              role: 'tenant',
               approval_status: 'pending'
             });
           
@@ -256,19 +311,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Profile creation failed:', insertError);
           }
           
-          updateRoleStates('tenant_manager');
+          updateRoleStates('tenant');
           setUserDepartment(null);
           setApprovalStatus('pending');
         } catch (createError) {
           console.error('Profile creation exception:', createError);
-          updateRoleStates('tenant_manager');
+          updateRoleStates('tenant');
           setUserDepartment(null);
           setApprovalStatus('pending');
         }
       }
     } catch (error) {
       console.error('Critical error in checkUserRole:', error);
-      updateRoleStates('tenant_manager');
+      updateRoleStates('tenant');
       setUserDepartment(null);
       setApprovalStatus('pending');
     }
@@ -281,15 +336,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setApprovalStatus(null);
     setIsAdmin(false);
     setIsStaff(false);
-    setIsOpsSupervisor(false);
-    setIsFieldStaff(false);
-    setIsTenantManager(false);
-    setIsTenantUser(false);
+    setIsTenant(false);
     setIsVendor(false);
-    setIsSiteManager(false);
-    setIsSustainabilityManager(false);
-    setIsFinanceAnalyst(false);
-    setIsClientReadOnly(false);
+    setIsL1(false);
+    setIsL2(false);
+    setIsL3(false);
+    setIsL4(false);
+    setIsManagement(false);
     setPermissions({});
   };
 
@@ -373,15 +426,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       approvalStatus,
       isAdmin, 
       isStaff, 
-      isOpsSupervisor,
-      isFieldStaff,
-      isTenantManager,
-      isTenantUser,
+      isTenant,
       isVendor,
-      isSiteManager,
-      isSustainabilityManager,
-      isFinanceAnalyst,
-      isClientReadOnly,
+      isL1,
+      isL2,
+      isL3,
+      isL4,
+      isManagement,
       permissions,
       isLoading, 
       signOut 

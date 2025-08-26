@@ -37,10 +37,19 @@ const UserManagement = () => {
   const { toast } = useToast();
 
   const roles = [
-    { value: 'admin', label: 'Administrator', color: 'bg-red-500' },
-    { value: 'ops_supervisor', label: 'Operations Supervisor', color: 'bg-blue-500' },
-    { value: 'field_staff', label: 'Field Staff', color: 'bg-green-500' },
-    { value: 'tenant_manager', label: 'Tenant Manager', color: 'bg-purple-500' },
+    { value: 'admin', label: 'Admin', color: 'bg-red-500' },
+    { value: 'mst', label: 'MST', color: 'bg-blue-500' },
+    { value: 'fe', label: 'Field Expert', color: 'bg-green-500' },
+    { value: 'hk', label: 'House Keeping', color: 'bg-yellow-500' },
+    { value: 'se', label: 'Security Executive', color: 'bg-purple-500' },
+    { value: 'assistant_manager', label: 'Assistant Manager', color: 'bg-indigo-500' },
+    { value: 'assistant_floor_manager', label: 'Assistant Floor Manager', color: 'bg-cyan-500' },
+    { value: 'assistant_general_manager', label: 'Assistant General Manager', color: 'bg-pink-500' },
+    { value: 'assistant_vice_president', label: 'Assistant Vice President', color: 'bg-rose-500' },
+    { value: 'vp', label: 'VP', color: 'bg-amber-500' },
+    { value: 'ceo', label: 'CEO', color: 'bg-emerald-500' },
+    { value: 'cxo', label: 'CXO', color: 'bg-teal-500' },
+    { value: 'tenant', label: 'Tenant', color: 'bg-gray-500' },
     { value: 'vendor', label: 'Vendor', color: 'bg-orange-500' }
   ];
 
@@ -72,7 +81,7 @@ const UserManagement = () => {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        role: user.role || 'tenant_manager',
+        role: user.role || 'tenant',
         approval_status: user.approval_status || 'pending',
         created_at: user.created_at,
         last_sign_in_at: user.last_sign_in_at,
