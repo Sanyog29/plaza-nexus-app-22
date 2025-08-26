@@ -343,9 +343,7 @@ const StaffDashboardPage = () => {
       <Card className="bg-card/50 backdrop-blur">
         
         <CardContent>
-          {recentRequests.length === 0 ? <p className="text-gray-400 text-center py-8">No recent requests found</p> : <div className="space-y-4">
-              {recentRequests.map(request => {})}
-            </div>}
+          <p className="text-gray-400 text-center py-8">No recent requests found</p>
         </CardContent>
       </Card>
       
