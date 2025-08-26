@@ -173,6 +173,9 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
   const renderWidget = (widget: DashboardWidget) => {
     if (!widget.visible) return null;
 
+    // Force requests-overview to be full width
+    const displaySize = widget.id === 'requests-overview' ? 'large' : widget.size;
+    
     const sizeClasses = {
       small: 'col-span-1',
       medium: 'col-span-2',
@@ -180,7 +183,7 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
     };
 
     return (
-      <Card key={widget.id} className={`bg-card/50 backdrop-blur ${sizeClasses[widget.size]}`}>
+      <Card key={widget.id} className={`bg-card/50 backdrop-blur ${sizeClasses[displaySize]}`}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-white">
             {widget.title}
@@ -203,18 +206,20 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
     const { data } = widget;
     
     if (widget.id === 'requests-overview') {
+      // Use live metrics instead of static data
+      const completed = metrics.totalRequests - metrics.activeRequests;
       return (
         <div className="grid grid-cols-3 gap-2 text-center">
           <div>
-            <div className="text-2xl font-bold text-white">{data?.total || 0}</div>
+            <div className="text-2xl font-bold text-white">{metrics.totalRequests}</div>
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-blue-400">{data?.active || 0}</div>
+            <div className="text-2xl font-bold text-blue-400">{metrics.activeRequests}</div>
             <div className="text-xs text-muted-foreground">Active</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-green-400">{data?.completed || 0}</div>
+            <div className="text-2xl font-bold text-green-400">{completed}</div>
             <div className="text-xs text-muted-foreground">Completed</div>
           </div>
         </div>

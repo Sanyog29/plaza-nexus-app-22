@@ -348,8 +348,8 @@ const StaffDashboardPage = () => {
       {/* Advanced Analytics & Tools */}
       <FeatureGuard
         feature="advancedDashboardsEnabled"
-        enableFeatureRequest={true}
-        showProgressiveDisclosure={true}
+        enableFeatureRequest={false}
+        showDisabledState={false}
         featureDisplayName="Advanced Analytics Dashboard"
         featureDescription="Access comprehensive analytics, forecasting, and performance insights."
         upgradeHint="Available for ops_supervisor and admin roles"
@@ -392,8 +392,8 @@ const StaffDashboardPage = () => {
       {/* Data Management Tools */}
       <FeatureGuard
         feature="dataExportEnabled"
-        enableFeatureRequest={true}
-        showProgressiveDisclosure={true}
+        enableFeatureRequest={false}
+        showDisabledState={false}
         featureDisplayName="Data Export & Import Tools"
         featureDescription="Export facility data and import bulk updates via CSV files."
         upgradeHint="Contact your supervisor for access to data management tools"
