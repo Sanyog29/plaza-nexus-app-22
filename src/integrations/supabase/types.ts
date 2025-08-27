@@ -8355,6 +8355,7 @@ export type Database = {
         | "cxo"
         | "tenant"
       approval_status: "pending" | "approved" | "rejected"
+      availability_status_type: "available" | "busy" | "offline" | "on_leave"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status:
         | "pending"
@@ -8363,6 +8364,8 @@ export type Database = {
         | "cancelled"
         | "assigned"
         | "en_route"
+      sla_priority_type: "critical" | "high" | "medium" | "low"
+      staff_group_type: "mst_field" | "housekeeping" | "security"
       utility_type:
         | "electricity"
         | "water"
@@ -8518,6 +8521,7 @@ export const Constants = {
         "tenant",
       ],
       approval_status: ["pending", "approved", "rejected"],
+      availability_status_type: ["available", "busy", "offline", "on_leave"],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: [
         "pending",
@@ -8527,6 +8531,8 @@ export const Constants = {
         "assigned",
         "en_route",
       ],
+      sla_priority_type: ["critical", "high", "medium", "low"],
+      staff_group_type: ["mst_field", "housekeeping", "security"],
       utility_type: [
         "electricity",
         "water",
