@@ -1288,6 +1288,33 @@ export type Database = {
           },
         ]
       }
+      crisis_keywords: {
+        Row: {
+          auto_escalate_to_level: number
+          category: string | null
+          created_at: string
+          id: string
+          keyword: string
+          severity_score: number
+        }
+        Insert: {
+          auto_escalate_to_level?: number
+          category?: string | null
+          created_at?: string
+          id?: string
+          keyword: string
+          severity_score?: number
+        }
+        Update: {
+          auto_escalate_to_level?: number
+          category?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string
+          severity_score?: number
+        }
+        Relationships: []
+      }
       daily_checklists: {
         Row: {
           approved_at: string | null
@@ -6572,6 +6599,58 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_assignment_attempts: {
+        Row: {
+          attempt_reason: string
+          attempt_result: string
+          attempted_at: string
+          attempted_staff_id: string | null
+          id: string
+          request_id: string
+          staff_group: Database["public"]["Enums"]["staff_group_type"] | null
+        }
+        Insert: {
+          attempt_reason: string
+          attempt_result: string
+          attempted_at?: string
+          attempted_staff_id?: string | null
+          id?: string
+          request_id: string
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
+        }
+        Update: {
+          attempt_reason?: string
+          attempt_result?: string
+          attempted_at?: string
+          attempted_staff_id?: string | null
+          id?: string
+          request_id?: string
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_assignment_attempts_attempted_staff_id_fkey"
+            columns: ["attempted_staff_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignment_attempts_attempted_staff_id_fkey"
+            columns: ["attempted_staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignment_attempts_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
             referencedColumns: ["id"]
           },
         ]
