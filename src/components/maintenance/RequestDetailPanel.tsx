@@ -207,6 +207,8 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         return <Badge className="bg-blue-600">Accepted</Badge>;
       case 'in_progress':
         return <Badge className="bg-blue-600">In Progress</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-600">Completed</Badge>;
       case 'closed':
         return <Badge className="bg-green-600">Closed</Badge>;
       case 'cancelled':

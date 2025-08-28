@@ -236,7 +236,7 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
         )}
 
         {/* Status Messages */}
-        {status === 'closed' && (
+        {(status === 'completed' || status === 'closed') && (
           <div className="text-center p-4 bg-green-900/30 rounded-lg">
             <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-400" />
             <p className="text-green-400 font-medium">Request Completed</p>
