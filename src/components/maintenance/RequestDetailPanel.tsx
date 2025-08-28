@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RequestComments from './RequestComments';
-import TicketProgressBar from './TicketProgressBar';
+
 import TechnicianWorkflowButtons from './TechnicianWorkflowButtons';
 import AssignedTechnicianInfo from './AssignedTechnicianInfo';
 import { format } from 'date-fns';
@@ -418,22 +418,6 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         )}
       </Card>
 
-      {/* Progress Bar */}
-      <Card className="bg-card/50 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="text-lg text-white">Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TicketProgressBar
-            status={request.status}
-            acceptedAt={request.assigned_at}
-            startedAt={request.work_started_at}
-            beforePhotoUrl={request.before_photo_url}
-            afterPhotoUrl={request.after_photo_url}
-            completedAt={request.completed_at}
-          />
-        </CardContent>
-      </Card>
 
       {/* Assigned Technician Info */}
       <AssignedTechnicianInfo
