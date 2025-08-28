@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Package, Camera } from "lucide-react";
-import EnhancedPhotoCapture from "../maintenance/EnhancedPhotoCapture";
+import { SimplePhotoCapture } from "../ui/SimplePhotoCapture";
 
 const deliverySchema = z.object({
   tracking_number: z.string().optional(),
@@ -304,7 +304,7 @@ export function DeliveryManagementForm({ onSuccess }: DeliveryManagementFormProp
               <Camera className="h-4 w-4" />
               Package Photos
             </FormLabel>
-            <EnhancedPhotoCapture
+            <SimplePhotoCapture
               onMediaCaptured={setCapturedMedia}
               disabled={isSubmitting}
             />

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Paperclip, X, FileText, Upload, ImageIcon, Zap, Video } from 'lucide-react';
-import EnhancedPhotoCapture from './EnhancedPhotoCapture';
+import { SimplePhotoCapture } from '../ui/SimplePhotoCapture';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
@@ -245,7 +245,7 @@ const EnhancedRequestAttachments: React.FC<EnhancedRequestAttachmentsProps> = ({
       <Label className="text-base font-medium">Attachments & Photos</Label>
       
       {showPhotoCapture ? (
-        <EnhancedPhotoCapture
+        <SimplePhotoCapture
           onMediaCaptured={handleMediaCaptured}
           disabled={isLoading}
         />

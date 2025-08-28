@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { CheckCircle, Play, Camera, X } from 'lucide-react';
-import EnhancedPhotoCapture from './EnhancedPhotoCapture';
+import { SimplePhotoCapture } from '../ui/SimplePhotoCapture';
 
 interface CapturedMedia {
   id: string;
@@ -215,7 +215,7 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <EnhancedPhotoCapture
+          <SimplePhotoCapture
             onMediaCaptured={handleMediaCaptured}
             disabled={false}
           />
