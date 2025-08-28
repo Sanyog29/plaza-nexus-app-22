@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 interface DashboardMetrics {
   activeRequests: number;
   totalRequests: number;
+  completedRequests: number;
   availableRooms: number;
   totalRooms: number;
   activeAlerts: number;
@@ -22,6 +23,7 @@ export const useDashboardMetrics = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     activeRequests: 0,
     totalRequests: 0,
+    completedRequests: 0,
     availableRooms: 0,
     totalRooms: 0,
     activeAlerts: 0,
@@ -47,6 +49,7 @@ export const useDashboardMetrics = () => {
 
       const activeRequests = requests?.filter(r => r.status === 'pending' || r.status === 'in_progress').length || 0;
       const totalRequests = requests?.length || 0;
+      const completedRequests = requests?.filter(r => r.status === 'completed').length || 0;
 
       // Fetch room availability (rooms not booked today)
       const { data: rooms } = await supabase
@@ -95,6 +98,7 @@ export const useDashboardMetrics = () => {
       setMetrics({
         activeRequests,
         totalRequests,
+        completedRequests,
         availableRooms,
         totalRooms,
         activeAlerts,

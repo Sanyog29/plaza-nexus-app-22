@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Filter, Clock, AlertTriangle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BroadcastTaskButton } from '@/components/admin/BroadcastTaskButton';
 
@@ -43,9 +43,16 @@ const AdminRequestsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchRequests();
+    
+    // Set initial filter from URL
+    const urlStatus = searchParams.get('status');
+    if (urlStatus && ['completed', 'in_progress', 'pending'].includes(urlStatus)) {
+      setStatusFilter(urlStatus);
+    }
   }, []);
 
   useEffect(() => {
@@ -285,6 +292,35 @@ const AdminRequestsPage = () => {
       {/* Filters */}
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-4">
+          {/* Filter indicator */}
+          {(statusFilter !== 'all' || priorityFilter !== 'all') && (
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-sm text-gray-400">Filtered by:</span>
+              {statusFilter !== 'all' && (
+                <Badge variant="outline" className="text-sm">
+                  Status: {statusFilter.replace('_', ' ')}
+                  <button 
+                    onClick={() => setStatusFilter('all')}
+                    className="ml-2 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              {priorityFilter !== 'all' && (
+                <Badge variant="outline" className="text-sm">
+                  Priority: {priorityFilter}
+                  <button 
+                    onClick={() => setPriorityFilter('all')}
+                    className="ml-2 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+            </div>
+          )}
+          
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">

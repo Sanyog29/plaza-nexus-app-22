@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 import { 
   Settings, 
   BarChart3, 
@@ -33,6 +34,7 @@ interface CustomizableDashboardProps {
 export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) {
   const { user } = useAuth();
   const { metrics } = useDashboardMetrics();
+  const navigate = useNavigate();
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
 
@@ -206,20 +208,29 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
     const { data } = widget;
     
     if (widget.id === 'requests-overview') {
-      // Use live metrics instead of static data
-      const completed = metrics.totalRequests - metrics.activeRequests;
+      // Determine routes based on role
+      const getRouteForStatus = (status: 'all' | 'in_progress' | 'completed') => {
+        const baseRoute = userRole === 'admin' ? '/admin/requests' : 
+                          userRole === 'staff' ? '/staff/requests' : 
+                          '/requests';
+        return status === 'all' ? baseRoute : `${baseRoute}?status=${status}`;
+      };
+
       return (
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
+          <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
+               onClick={() => navigate(getRouteForStatus('all'))}>
             <div className="text-2xl font-bold text-white">{metrics.totalRequests}</div>
             <div className="text-xs text-muted-foreground">Total</div>
           </div>
-          <div>
+          <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
+               onClick={() => navigate(getRouteForStatus('in_progress'))}>
             <div className="text-2xl font-bold text-blue-400">{metrics.activeRequests}</div>
             <div className="text-xs text-muted-foreground">Active</div>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-green-400">{completed}</div>
+          <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
+               onClick={() => navigate(getRouteForStatus('completed'))}>
+            <div className="text-2xl font-bold text-green-400">{metrics.completedRequests}</div>
             <div className="text-xs text-muted-foreground">Completed</div>
           </div>
         </div>

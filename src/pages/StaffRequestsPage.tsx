@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { Search, Filter, Clock, AlertTriangle, CheckCircle, Wrench, RefreshCw } from 'lucide-react';
@@ -33,6 +33,7 @@ interface MaintenanceRequest {
 const StaffRequestsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<MaintenanceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +62,13 @@ const StaffRequestsPage = () => {
 
   useEffect(() => {
     fetchRequests();
+    
+    // Set initial filter from URL
+    const urlStatus = searchParams.get('status');
+    if (urlStatus && ['completed', 'in_progress', 'pending'].includes(urlStatus)) {
+      setStatusFilter(urlStatus);
+      setActiveTab(urlStatus === 'completed' ? 'done' : urlStatus === 'in_progress' ? 'in_progress' : 'pending');
+    }
   }, []);
 
   useEffect(() => {
@@ -282,6 +290,35 @@ const StaffRequestsPage = () => {
       {/* Search and Filters */}
       <Card className="bg-card/50 backdrop-blur mb-6">
         <CardContent className="p-6">
+          {/* Filter indicator */}
+          {(statusFilter !== 'all' || priorityFilter !== 'all') && (
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-sm text-gray-400">Filtered by:</span>
+              {statusFilter !== 'all' && (
+                <Badge variant="outline" className="text-sm">
+                  Status: {statusFilter.replace('_', ' ')}
+                  <button 
+                    onClick={() => setStatusFilter('all')}
+                    className="ml-2 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+              {priorityFilter !== 'all' && (
+                <Badge variant="outline" className="text-sm">
+                  Priority: {priorityFilter}
+                  <button 
+                    onClick={() => setPriorityFilter('all')}
+                    className="ml-2 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )}
+            </div>
+          )}
+          
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />

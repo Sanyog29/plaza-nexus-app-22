@@ -1,7 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer, Trash2, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +33,8 @@ interface MaintenanceRequest {
 
 const RequestsPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -46,10 +48,17 @@ const RequestsPage = () => {
     loading: false
   });
   const [requestsWithFeedback, setRequestsWithFeedback] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     if (user) {
       fetchRequests();
+    }
+    
+    // Set initial filter from URL
+    const urlStatus = searchParams.get('status');
+    if (urlStatus && ['completed', 'in_progress', 'pending', 'all'].includes(urlStatus)) {
+      setStatusFilter(urlStatus);
     }
   }, [user]);
 
@@ -203,6 +212,26 @@ const RequestsPage = () => {
         </Link>
       </div>
 
+      {/* Filter indicator */}
+      {statusFilter !== 'all' && (
+        <Card className="bg-card/50 backdrop-blur mb-4">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">Filtered by:</span>
+              <Badge variant="outline" className="text-sm">
+                Status: {statusFilter.replace('_', ' ')}
+                <button 
+                  onClick={() => setStatusFilter('all')}
+                  className="ml-2 hover:text-red-400"
+                >
+                  ×
+                </button>
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <Card className="bg-card/50 backdrop-blur">
@@ -255,7 +284,7 @@ const RequestsPage = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {requests.map((request) => (
+          {requests.filter(req => statusFilter === 'all' || req.status === statusFilter).map((request) => (
             <Card key={request.id} className="bg-card hover:bg-card/80 transition-colors">
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
