@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Capacitor } from '@capacitor/core';
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { useCamera } from '@/hooks/useCamera';
+import { CameraDiagnosticsUI } from '@/components/ui/camera-diagnostics';
 
 interface CapturedMedia {
   id: string;
@@ -34,11 +36,14 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Use the new camera hook
+  const { start: startCameraStream, stop: stopCameraStream, getDiagnostics, streamRef } = useCamera();
 
   // Enhanced AI analysis for maintenance issues
   const analyzeMedia = async (blob: Blob, type: 'photo' | 'video'): Promise<CapturedMedia['analysis']> => {
@@ -69,79 +74,15 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
 
   const startCamera = useCallback(async () => {
     try {
-      // Check for secure context
-      if (!navigator.mediaDevices || window.isSecureContext === false) {
-        console.error('Camera requires HTTPS or localhost');
-        toast({
-          title: "Camera Error",
-          description: "Camera requires HTTPS or localhost",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Stop any existing stream first
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-
-      const baseConstraints = {
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false // Remove audio to avoid permission issues
-      };
-
-      let stream: MediaStream;
+      if (!videoRef.current) return;
       
-      try {
-        // Try preferred facing mode
-        stream = await navigator.mediaDevices.getUserMedia(baseConstraints);
-      } catch (error) {
-        console.warn('getUserMedia failed with preferred facing, trying fallback...', error);
-        // Fallback to any available camera
-        const fallbackConstraints = {
-          video: { 
-            facingMode: { ideal: 'user' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false
-        };
-        stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
-      }
+      await startCameraStream(videoRef.current, { facingMode });
+      setIsStreaming(true);
       
-      if (videoRef.current) {
-        const video = videoRef.current;
-        
-        // iOS/Safari requirements
-        video.setAttribute('playsinline', 'true');
-        video.muted = true;
-        video.autoplay = true;
-        
-        video.srcObject = stream;
-        streamRef.current = stream;
-        
-        // Wait for metadata to load before playing
-        await new Promise<void>((resolve) => {
-          const onLoaded = () => {
-            resolve();
-          };
-          video.addEventListener('loadedmetadata', onLoaded, { once: true });
-        });
-        
-        // Explicit play call
-        try {
-          await video.play();
-          setIsStreaming(true);
-        } catch (playError) {
-          console.warn('video.play() was blocked:', playError);
-          setIsStreaming(true); // Still set streaming, user might need to interact
-        }
-      }
+      toast({
+        title: "📷 Camera Ready",
+        description: "Camera started successfully"
+      });
     } catch (error) {
       console.error('Camera access failed:', error);
       toast({
@@ -164,16 +105,13 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
         captureWithFileInput();
       }
     }
-  }, [facingMode]);
+  }, [facingMode, startCameraStream]);
 
   const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
+    stopCameraStream();
     setIsStreaming(false);
     setIsRecording(false);
-  }, []);
+  }, [stopCameraStream]);
 
   const capturePhoto = async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -566,6 +504,12 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
           </div>
         </div>
       )}
+
+      {/* Camera Diagnostics (optional debugging panel) */}
+      <CameraDiagnosticsUI 
+        diagnostics={getDiagnostics()} 
+        className="mt-4"
+      />
     </div>
   );
 };
