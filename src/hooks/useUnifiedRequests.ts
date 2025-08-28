@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
 
@@ -47,8 +48,8 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
   const [totalCount, setTotalCount] = useState(0);
 
   // Map UI status to DB-allowed status for queries/updates
-  type DBRequestStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route';
-  const toDBStatus = (status: UnifiedRequest['status']): DBRequestStatus => (status === 'closed' ? 'completed' : status);
+  type DBRequestStatus = Database['public']['Enums']['request_status'];
+  const toDBStatus = (status: UnifiedRequest['status']): DBRequestStatus => (status === 'closed' ? 'completed' : status as DBRequestStatus);
 
   // Memoize the serialized filters to prevent unnecessary re-renders
   const serializedFilters = useMemo(() => {

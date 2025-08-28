@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
 
@@ -47,6 +48,10 @@ export const useEnhancedTicketSystem = () => {
   const [loading, setLoading] = useState(false);
   const [autoAssignmentRules, setAutoAssignmentRules] = useState<AutoAssignmentRule[]>([]);
 
+  // Map UI status to DB-allowed status for queries/updates
+  type DBRequestStatus = Database['public']['Enums']['request_status'];
+  const toDBStatus = (status: string): DBRequestStatus => (status === 'closed' ? 'completed' : status as DBRequestStatus);
+
   useEffect(() => {
     fetchTickets();
     fetchMetrics();
@@ -70,7 +75,8 @@ export const useEnhancedTicketSystem = () => {
 
       // Apply filters
       if (filters?.status?.length) {
-        query = query.in('status', filters.status as any);
+        const dbStatuses = [...new Set(filters.status.map(toDBStatus))] as readonly DBRequestStatus[];
+        query = query.in('status', dbStatuses);
       }
       if (filters?.priority?.length) {
         query = query.in('priority', filters.priority as any);
