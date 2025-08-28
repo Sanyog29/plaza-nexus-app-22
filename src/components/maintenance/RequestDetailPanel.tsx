@@ -39,7 +39,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
   const [statusNote, setStatusNote] = useState('');
   const [expanded, setExpanded] = useState(true);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isL1, isStaff } = useAuth();
 
   useEffect(() => {
     fetchRequestDetails();
@@ -81,7 +81,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['ops_supervisor', 'admin', 'field_staff']);
+        .in('role', ['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager']);
 
       if (error) throw error;
       setStaff(data || []);
@@ -219,7 +219,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
     }
   };
 
-  const isStaff = user && ['admin', 'ops_supervisor', 'field_staff'].includes(user?.user_metadata?.role);
+  // isStaff is now from useAuth hook
 
   return (
     <div className="space-y-4">
@@ -444,7 +444,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       />
 
       {/* Working Mode Panel - Only for L1 employees who have claimed the task */}
-      {isStaff && request.assigned_to === user?.id && (
+      {isL1 && request.assigned_to === user?.id && ['assigned', 'in_progress'].includes(request.status) && (
         <div id="working-mode-section">
           <WorkingModePanel
             requestId={requestId}

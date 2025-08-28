@@ -166,8 +166,8 @@ const WorkingModePanel: React.FC<WorkingModePanelProps> = ({
     setShowPhotoCapture(true);
   };
 
-  // Only show for in_progress status
-  if (status !== 'in_progress') {
+  // Only show for assigned or in_progress status
+  if (!['assigned', 'in_progress'].includes(status)) {
     return null;
   }
 
