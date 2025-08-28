@@ -1,13 +1,26 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { CheckCircle, Play, Camera, X } from 'lucide-react';
+import EnhancedPhotoCapture from './EnhancedPhotoCapture';
+
+interface CapturedMedia {
+  id: string;
+  type: 'photo' | 'video';
+  blob: Blob;
+  url: string;
+  timestamp: Date;
+  analysis?: {
+    category?: string;
+    urgency?: string;
+    description?: string;
+  };
+}
 
 interface TechnicianWorkflowButtonsProps {
   requestId: string;
@@ -27,40 +40,34 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
   onUpdate
 }) => {
   const [loading, setLoading] = useState<string | null>(null);
-  const [beforePhoto, setBeforePhoto] = useState<File | null>(null);
-  const [afterPhoto, setAfterPhoto] = useState<File | null>(null);
   const [closureReason, setClosureReason] = useState('');
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
+  const [photoType, setPhotoType] = useState<'before' | 'after'>('before');
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const callWorkflowAction = async (action: string, additionalData?: any) => {
+  const updateRequestStatus = async (newStatus: string, additionalFields: any = {}) => {
     try {
-      setLoading(action);
+      setLoading(newStatus);
       
-      const { data, error } = await supabase.functions.invoke('assignment-orchestrator', {
-        body: {
-          requestId,
-          action,
-          staffId: user?.id,
-          ...additionalData
-        }
-      });
+      const updateData = {
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+        ...additionalFields
+      };
+
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update(updateData)
+        .eq('id', requestId);
 
       if (error) throw error;
 
-      if (data.success) {
-        toast({
-          title: "Success",
-          description: data.message,
-        });
-        onUpdate();
-      } else {
-        toast({
-          title: "Error",
-          description: data.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Success",
+        description: `Request ${newStatus.replace('_', ' ')} successfully`,
+      });
+      onUpdate();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -72,11 +79,40 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
     }
   };
 
+  const handleAcceptRequest = () => {
+    updateRequestStatus('assigned', {
+      assigned_to: user?.id,
+      assigned_at: new Date().toISOString()
+    });
+  };
+
+  const handleStartWork = () => {
+    updateRequestStatus('in_progress', {
+      work_started_at: new Date().toISOString()
+    });
+  };
+
+  const handleCompleteRequest = () => {
+    if (!beforePhotoUrl || !afterPhotoUrl) {
+      toast({
+        title: "Photos Required",
+        description: "Both before and after photos are required to complete the request.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    updateRequestStatus('completed', {
+      completed_at: new Date().toISOString(),
+      closure_reason: closureReason || 'Work completed successfully'
+    });
+  };
+
   const uploadPhoto = async (file: File, type: 'before' | 'after') => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${requestId}_${type}_${Date.now()}.${fileExt}`;
-      const filePath = `request-photos/${fileName}`;
+      const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('maintenance-photos')
@@ -88,6 +124,21 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
         .from('maintenance-photos')
         .getPublicUrl(filePath);
 
+      // Update the request with the photo URL
+      const updateField = type === 'before' ? 'before_photo_url' : 'after_photo_url';
+      const { error: updateError } = await supabase
+        .from('maintenance_requests')
+        .update({ [updateField]: publicUrl })
+        .eq('id', requestId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Photo Uploaded",
+        description: `${type === 'before' ? 'Before' : 'After'} photo uploaded successfully`,
+      });
+      
+      onUpdate();
       return publicUrl;
     } catch (error: any) {
       toast({
@@ -99,28 +150,33 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
     }
   };
 
-  const handlePhotoUpload = async () => {
-    const photoUrls: any = {};
+  const handleMediaCaptured = async (capturedMedia: CapturedMedia[]) => {
+    if (capturedMedia.length === 0) return;
     
-    if (beforePhoto && !beforePhotoUrl) {
-      const beforeUrl = await uploadPhoto(beforePhoto, 'before');
-      if (beforeUrl) photoUrls.before_photo_url = beforeUrl;
-    }
+    const media = capturedMedia[0]; // Use the first captured photo
+    const file = new File([media.blob], `${photoType}_photo.jpg`, { type: 'image/jpeg' });
     
-    if (afterPhoto && !afterPhotoUrl) {
-      const afterUrl = await uploadPhoto(afterPhoto, 'after');
-      if (afterUrl) photoUrls.after_photo_url = afterUrl;
-    }
+    await uploadPhoto(file, photoType);
+    setShowPhotoCapture(false);
+  };
 
-    if (Object.keys(photoUrls).length > 0) {
-      await callWorkflowAction('upload_photos', { photoUrls });
-    }
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>, type: 'before' | 'after') => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    await uploadPhoto(file, type);
+    event.target.value = ''; // Reset input
+  };
+
+  const openPhotoCapture = (type: 'before' | 'after') => {
+    setPhotoType(type);
+    setShowPhotoCapture(true);
   };
 
   const canAccept = status === 'pending' && !assignedToUserId;
-  const canStart = status === 'accepted' && assignedToUserId === user?.id;
+  const canStart = status === 'assigned' && assignedToUserId === user?.id;
   const canUploadPhotos = status === 'in_progress' && assignedToUserId === user?.id;
-  const canClose = status === 'in_progress' && assignedToUserId === user?.id && beforePhotoUrl && afterPhotoUrl;
+  const canComplete = status === 'in_progress' && assignedToUserId === user?.id && beforePhotoUrl && afterPhotoUrl;
   const isAssignedToMe = assignedToUserId === user?.id;
 
   if (!isAssignedToMe && assignedToUserId) {
@@ -128,6 +184,33 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-4">
           <p className="text-gray-400">This ticket is assigned to another technician.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (showPhotoCapture) {
+    return (
+      <Card className="bg-card/50 backdrop-blur">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg text-white">
+              Capture {photoType === 'before' ? 'Before' : 'After'} Photo
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPhotoCapture(false)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <EnhancedPhotoCapture
+            onMediaCaptured={handleMediaCaptured}
+            disabled={false}
+          />
         </CardContent>
       </Card>
     );
@@ -142,24 +225,24 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
         {/* Accept Request */}
         {canAccept && (
           <Button
-            onClick={() => callWorkflowAction('accept_request')}
-            disabled={loading === 'accept_request'}
+            onClick={handleAcceptRequest}
+            disabled={loading === 'assigned'}
             className="w-full bg-green-600 hover:bg-green-700"
           >
             <CheckCircle className="w-4 h-4 mr-2" />
-            {loading === 'accept_request' ? 'Accepting...' : 'Accept Request'}
+            {loading === 'assigned' ? 'Accepting...' : 'Accept Request'}
           </Button>
         )}
 
         {/* Start Work */}
         {canStart && (
           <Button
-            onClick={() => callWorkflowAction('start_work')}
-            disabled={loading === 'start_work'}
+            onClick={handleStartWork}
+            disabled={loading === 'in_progress'}
             className="w-full bg-blue-600 hover:bg-blue-700"
           >
             <Play className="w-4 h-4 mr-2" />
-            {loading === 'start_work' ? 'Starting...' : 'Start Work'}
+            {loading === 'in_progress' ? 'Starting...' : 'Start Work'}
           </Button>
         )}
 
@@ -168,53 +251,96 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
           <div className="space-y-4">
             <h4 className="font-medium text-white">Upload Photos</h4>
             
-            {!beforePhotoUrl && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Before Photo (Required)
-                </label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setBeforePhoto(e.target.files?.[0] || null)}
-                  className="bg-gray-800 border-gray-700"
-                />
-              </div>
-            )}
+            {/* Before Photo */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Before Photo {!beforePhotoUrl && '(Required)'}
+              </label>
+              {beforePhotoUrl ? (
+                <div className="relative">
+                  <img src={beforePhotoUrl} alt="Before" className="w-full h-32 object-cover rounded" />
+                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                    ✓ Uploaded
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => openPhotoCapture('before')}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    Take Photo
+                  </Button>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, 'before')}
+                      className="hidden"
+                      id="before-photo-input"
+                    />
+                    <Button
+                      onClick={() => document.getElementById('before-photo-input')?.click()}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Choose File
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {!afterPhotoUrl && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  After Photo (Required)
-                </label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setAfterPhoto(e.target.files?.[0] || null)}
-                  className="bg-gray-800 border-gray-700"
-                />
-              </div>
-            )}
-
-            {((beforePhoto && !beforePhotoUrl) || (afterPhoto && !afterPhotoUrl)) && (
-              <Button
-                onClick={handlePhotoUpload}
-                disabled={loading === 'upload_photos'}
-                className="w-full bg-purple-600 hover:bg-purple-700"
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                {loading === 'upload_photos' ? 'Uploading...' : 'Upload Photos'}
-              </Button>
-            )}
+            {/* After Photo */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                After Photo {!afterPhotoUrl && '(Required)'}
+              </label>
+              {afterPhotoUrl ? (
+                <div className="relative">
+                  <img src={afterPhotoUrl} alt="After" className="w-full h-32 object-cover rounded" />
+                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                    ✓ Uploaded
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => openPhotoCapture('after')}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    Take Photo
+                  </Button>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, 'after')}
+                      className="hidden"
+                      id="after-photo-input"
+                    />
+                    <Button
+                      onClick={() => document.getElementById('after-photo-input')?.click()}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Choose File
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Close Request */}
-        {canClose && (
+        {/* Complete Request */}
+        {canComplete && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Closure Reason (Optional)
+                Completion Notes (Optional)
               </label>
               <Textarea
                 value={closureReason}
@@ -225,12 +351,12 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
             </div>
             
             <Button
-              onClick={() => callWorkflowAction('close_request', { closureReason })}
-              disabled={loading === 'close_request'}
+              onClick={handleCompleteRequest}
+              disabled={loading === 'completed'}
               className="w-full bg-green-600 hover:bg-green-700"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
-              {loading === 'close_request' ? 'Closing...' : 'Close Request'}
+              {loading === 'completed' ? 'Completing...' : 'Complete Request'}
             </Button>
           </div>
         )}

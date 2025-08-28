@@ -2856,6 +2856,7 @@ export type Database = {
       maintenance_requests: {
         Row: {
           acknowledgment_deadline: string | null
+          after_photo_url: string | null
           assigned_at: string | null
           assigned_group: string | null
           assigned_to: string | null
@@ -2863,9 +2864,11 @@ export type Database = {
           auto_assigned_count: number
           auto_assignment_attempts: number
           auto_detected_location: boolean | null
+          before_photo_url: string | null
           building_area_id: string | null
           building_floor_id: string | null
           category_id: string | null
+          closure_reason: string | null
           completed_at: string | null
           created_at: string
           crisis_detected_at: string | null
@@ -2898,6 +2901,7 @@ export type Database = {
         }
         Insert: {
           acknowledgment_deadline?: string | null
+          after_photo_url?: string | null
           assigned_at?: string | null
           assigned_group?: string | null
           assigned_to?: string | null
@@ -2905,9 +2909,11 @@ export type Database = {
           auto_assigned_count?: number
           auto_assignment_attempts?: number
           auto_detected_location?: boolean | null
+          before_photo_url?: string | null
           building_area_id?: string | null
           building_floor_id?: string | null
           category_id?: string | null
+          closure_reason?: string | null
           completed_at?: string | null
           created_at?: string
           crisis_detected_at?: string | null
@@ -2940,6 +2946,7 @@ export type Database = {
         }
         Update: {
           acknowledgment_deadline?: string | null
+          after_photo_url?: string | null
           assigned_at?: string | null
           assigned_group?: string | null
           assigned_to?: string | null
@@ -2947,9 +2954,11 @@ export type Database = {
           auto_assigned_count?: number
           auto_assignment_attempts?: number
           auto_detected_location?: boolean | null
+          before_photo_url?: string | null
           building_area_id?: string | null
           building_floor_id?: string | null
           category_id?: string | null
+          closure_reason?: string | null
           completed_at?: string | null
           created_at?: string
           crisis_detected_at?: string | null

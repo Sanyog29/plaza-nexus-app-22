@@ -24,14 +24,14 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
     switch (step) {
       case 'requested':
         return 'completed';
-      case 'accepted':
+      case 'assigned':
         return acceptedAt ? 'completed' : (status === 'pending' ? 'current' : 'pending');
       case 'in_progress':
-        return startedAt ? 'completed' : (status === 'accepted' ? 'current' : 'pending');
+        return startedAt ? 'completed' : (status === 'assigned' ? 'current' : 'pending');
       case 'photos_uploaded':
         return (beforePhotoUrl && afterPhotoUrl) ? 'completed' : (status === 'in_progress' ? 'current' : 'pending');
-      case 'closed':
-        return status === 'closed' ? 'completed' : 'pending';
+      case 'completed':
+        return status === 'completed' ? 'completed' : 'pending';
       default:
         return 'pending';
     }
@@ -45,10 +45,10 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
       status: getStepStatus('requested')
     },
     {
-      key: 'accepted',
-      label: 'Accepted',
+      key: 'assigned',
+      label: 'Assigned',
       icon: <CheckCircle className="w-4 h-4" />,
-      status: getStepStatus('accepted')
+      status: getStepStatus('assigned')
     },
     {
       key: 'in_progress',
@@ -63,10 +63,10 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
       status: getStepStatus('photos_uploaded')
     },
     {
-      key: 'closed',
-      label: 'Closed',
+      key: 'completed',
+      label: 'Completed',
       icon: <CheckCircle className="w-4 h-4" />,
-      status: getStepStatus('closed')
+      status: getStepStatus('completed')
     }
   ];
 
@@ -87,17 +87,24 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         {steps.map((step, index) => (
-          <div key={step.key} className="flex flex-col items-center flex-1">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getStepColor(step.status)} mb-2`}>
+          <div key={step.key} className="flex flex-col items-center flex-1 relative">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getStepColor(step.status)} mb-2 relative z-10`}>
               {step.icon}
             </div>
             <span className={`text-xs text-center ${step.status === 'completed' ? 'text-green-400' : step.status === 'current' ? 'text-blue-400' : 'text-gray-400'}`}>
               {step.label}
             </span>
             {index < steps.length - 1 && (
-              <div className={`absolute top-5 left-1/2 w-full h-0.5 transform -translate-y-1/2 ${
-                steps[index + 1].status === 'completed' ? 'bg-green-600' : 'bg-gray-600'
-              }`} style={{ marginLeft: '20px', width: 'calc(100% - 40px)' }} />
+              <div 
+                className={`absolute top-5 left-1/2 h-0.5 transform -translate-y-1/2 ${
+                  steps[index + 1].status === 'completed' ? 'bg-green-600' : 'bg-gray-600'
+                }`} 
+                style={{ 
+                  width: 'calc(100vw / 5 - 40px)', 
+                  marginLeft: '20px',
+                  zIndex: 1
+                }} 
+              />
             )}
           </div>
         ))}
@@ -105,7 +112,7 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
       
       <div className="flex flex-wrap gap-2 mt-4">
         <Badge className={getStepColor(getStepStatus(status))}>
-          {status.toUpperCase()}
+          {status.replace('_', ' ').toUpperCase()}
         </Badge>
         {beforePhotoUrl && <Badge variant="outline" className="text-green-300">Before Photo ✓</Badge>}
         {afterPhotoUrl && <Badge variant="outline" className="text-green-300">After Photo ✓</Badge>}
