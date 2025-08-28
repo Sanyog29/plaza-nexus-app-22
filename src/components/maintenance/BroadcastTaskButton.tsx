@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Broadcast, AlertTriangle } from 'lucide-react';
+import { Radio, AlertTriangle } from 'lucide-react';
 
 interface BroadcastTaskButtonProps {
   requestId: string;
@@ -34,16 +34,16 @@ const BroadcastTaskButton: React.FC<BroadcastTaskButtonProps> = ({
 
       if (error) throw error;
 
-      if (data?.success) {
+      if (data && typeof data === 'object' && 'success' in data && data.success) {
         toast({
           title: "✅ Task Broadcasted",
-          description: `Task offer sent to ${data.recipients_count} field staff members`,
+          description: `Task offer sent to ${(data as any).recipients_count || 0} field staff members`,
         });
         onSuccess?.();
       } else {
         let errorMessage = "Failed to broadcast task";
         
-        if (data?.reason === 'request_not_available') {
+        if (data && typeof data === 'object' && 'reason' in data && (data as any).reason === 'request_not_available') {
           if (assignedTo) {
             errorMessage = "This request is already assigned to a technician";
           } else if (requestStatus !== 'pending') {
@@ -94,7 +94,7 @@ const BroadcastTaskButton: React.FC<BroadcastTaskButtonProps> = ({
     <Card className="bg-card/50 backdrop-blur">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg text-white flex items-center gap-2">
-          <Broadcast className="w-5 h-5" />
+          <Radio className="w-5 h-5" />
           Broadcast to Field Staff
         </CardTitle>
       </CardHeader>
@@ -114,7 +114,7 @@ const BroadcastTaskButton: React.FC<BroadcastTaskButtonProps> = ({
           disabled={broadcasting}
           className="w-full bg-blue-600 hover:bg-blue-700"
         >
-          <Broadcast className="w-4 h-4 mr-2" />
+          <Radio className="w-4 h-4 mr-2" />
           {broadcasting ? 'Broadcasting...' : 'Broadcast Task (5 min offer)'}
         </Button>
       </CardContent>

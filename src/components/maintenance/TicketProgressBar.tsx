@@ -25,9 +25,9 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
       case 'requested':
         return 'completed';
       case 'assigned':
-        return acceptedAt ? 'completed' : (status === 'pending' ? 'current' : 'pending');
+        return (status === 'assigned' || status === 'in_progress' || status === 'completed') ? 'completed' : (status === 'pending' ? 'current' : 'pending');
       case 'in_progress':
-        return startedAt ? 'completed' : (status === 'assigned' ? 'current' : 'pending');
+        return (status === 'in_progress' || status === 'completed') ? 'completed' : (status === 'assigned' ? 'current' : 'pending');
       case 'photos_uploaded':
         return (beforePhotoUrl && afterPhotoUrl) ? 'completed' : (status === 'in_progress' ? 'current' : 'pending');
       case 'completed':
