@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import { Capacitor } from '@capacitor/core';
+import { Camera as CapacitorCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 interface CapturedMedia {
   id: string;
@@ -67,30 +69,100 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
 
   const startCamera = useCallback(async () => {
     try {
-      const constraints = {
+      // Check for secure context
+      if (!navigator.mediaDevices || window.isSecureContext === false) {
+        console.error('Camera requires HTTPS or localhost');
+        toast({
+          title: "Camera Error",
+          description: "Camera requires HTTPS or localhost",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Stop any existing stream first
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+
+      const baseConstraints = {
         video: {
-          facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          facingMode: { ideal: facingMode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         },
-        audio: true
+        audio: false // Remove audio to avoid permission issues
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
+      let stream: MediaStream;
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      try {
+        // Try preferred facing mode
+        stream = await navigator.mediaDevices.getUserMedia(baseConstraints);
+      } catch (error) {
+        console.warn('getUserMedia failed with preferred facing, trying fallback...', error);
+        // Fallback to any available camera
+        const fallbackConstraints = {
+          video: { 
+            facingMode: { ideal: 'user' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
       }
       
-      setIsStreaming(true);
+      if (videoRef.current) {
+        const video = videoRef.current;
+        
+        // iOS/Safari requirements
+        video.setAttribute('playsinline', 'true');
+        video.muted = true;
+        video.autoplay = true;
+        
+        video.srcObject = stream;
+        streamRef.current = stream;
+        
+        // Wait for metadata to load before playing
+        await new Promise<void>((resolve) => {
+          const onLoaded = () => {
+            resolve();
+          };
+          video.addEventListener('loadedmetadata', onLoaded, { once: true });
+        });
+        
+        // Explicit play call
+        try {
+          await video.play();
+          setIsStreaming(true);
+        } catch (playError) {
+          console.warn('video.play() was blocked:', playError);
+          setIsStreaming(true); // Still set streaming, user might need to interact
+        }
+      }
     } catch (error) {
+      console.error('Camera access failed:', error);
       toast({
         title: "Camera Error",
-        description: "Unable to access camera. Please check permissions.",
+        description: "Unable to access camera. Trying alternative methods...",
         variant: "destructive"
       });
+      
+      // Show native camera as fallback for mobile
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await captureWithNativeCamera();
+        } catch (nativeError) {
+          console.error('Native camera failed:', nativeError);
+          // Final fallback: file input
+          captureWithFileInput();
+        }
+      } else {
+        // Web fallback: file input
+        captureWithFileInput();
+      }
     }
   }, [facingMode]);
 
@@ -109,6 +181,16 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
     const canvas = canvasRef.current;
     const video = videoRef.current;
     
+    // Check if video is ready
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      toast({
+        title: "Camera Error",
+        description: "Camera not ready. Please try again in a moment.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
@@ -117,9 +199,19 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
 
     // Apply flash effect if enabled
     if (flashEnabled) {
-      document.body.style.backgroundColor = 'white';
+      const flashOverlay = document.createElement('div');
+      flashOverlay.style.position = 'fixed';
+      flashOverlay.style.top = '0';
+      flashOverlay.style.left = '0';
+      flashOverlay.style.width = '100%';
+      flashOverlay.style.height = '100%';
+      flashOverlay.style.backgroundColor = 'white';
+      flashOverlay.style.zIndex = '9999';
+      flashOverlay.style.pointerEvents = 'none';
+      document.body.appendChild(flashOverlay);
+
       setTimeout(() => {
-        document.body.style.backgroundColor = '';
+        document.body.removeChild(flashOverlay);
       }, 100);
     }
 
@@ -145,7 +237,81 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
         title: "📸 Photo Captured",
         description: analysis.description || "Photo captured successfully"
       });
-    }, 'image/jpeg', 0.9);
+    }, 'image/jpeg', 0.92);
+  };
+
+  const captureWithNativeCamera = async () => {
+    try {
+      const photo = await CapacitorCamera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        source: CameraSource.Camera,
+        resultType: CameraResultType.Uri,
+        correctOrientation: true,
+        saveToGallery: false,
+      });
+
+      if (photo.webPath) {
+        const response = await fetch(photo.webPath);
+        const blob = await response.blob();
+        const analysis = await analyzeMedia(blob, 'photo');
+        
+        const media: CapturedMedia = {
+          id: Date.now().toString(),
+          type: 'photo',
+          blob,
+          url: URL.createObjectURL(blob),
+          timestamp: new Date(),
+          analysis
+        };
+
+        setCapturedMedia(prev => [...prev, media]);
+        
+        toast({
+          title: "📸 Photo Captured",
+          description: analysis.description || "Photo captured successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Native camera capture failed:', error);
+      toast({
+        title: "Camera Error",
+        description: "Native camera capture failed",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const captureWithFileInput = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const analysis = await analyzeMedia(file, 'photo');
+        
+        const media: CapturedMedia = {
+          id: Date.now().toString(),
+          type: 'photo',
+          blob: file,
+          url: URL.createObjectURL(file),
+          timestamp: new Date(),
+          analysis
+        };
+
+        setCapturedMedia(prev => [...prev, media]);
+        
+        toast({
+          title: "📸 Photo Selected",
+          description: analysis.description || "Photo selected successfully"
+        });
+      }
+    };
+    
+    input.click();
   };
 
   const startVideoRecording = async () => {
@@ -217,10 +383,12 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
   };
 
   const switchCamera = () => {
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newFacingMode);
     if (isStreaming) {
       stopCamera();
-      setTimeout(startCamera, 100); // Small delay to ensure cleanup
+      // Small delay to ensure cleanup is complete
+      setTimeout(() => startCamera(), 200);
     }
   };
 
@@ -264,6 +432,8 @@ const EnhancedPhotoCapture: React.FC<EnhancedPhotoCaptureProps> = ({
                 className="w-full h-64 object-cover bg-black"
                 playsInline
                 muted
+                autoPlay
+                style={{ background: '#000' }}
               />
               <canvas ref={canvasRef} className="hidden" />
               
