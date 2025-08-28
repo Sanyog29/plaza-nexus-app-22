@@ -57,7 +57,9 @@ const RequestDetailsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          category:category_id(name)
+          category:category_id(name),
+          reporter:reported_by(first_name, last_name),
+          assignee:assigned_to(first_name, last_name)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -221,12 +223,12 @@ const RequestDetailsPage = () => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-400">
                   <MessageSquare className="h-4 w-4" />
-                  <span>Reported by: {request.reported_by}</span>
+                  <span>Reported by: {request.reporter ? `${request.reporter.first_name} ${request.reporter.last_name}` : 'Unknown'}</span>
                 </div>
-                {request.assigned_to && (
+                {request.assignee && (
                   <div className="flex items-center gap-2 text-gray-400">
                     <User className="h-4 w-4" />
-                    <span>Assigned to: {request.assigned_to}</span>
+                    <span>Assigned to: {request.assignee.first_name} {request.assignee.last_name}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-gray-400">
