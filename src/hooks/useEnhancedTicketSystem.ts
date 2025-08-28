@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
+import { toDBStatus, mapStatusArrayToDB, type UIStatus, type DBRequestStatus } from '@/utils/status';
 
 interface TicketMetrics {
   totalActive: number;
@@ -48,9 +48,7 @@ export const useEnhancedTicketSystem = () => {
   const [loading, setLoading] = useState(false);
   const [autoAssignmentRules, setAutoAssignmentRules] = useState<AutoAssignmentRule[]>([]);
 
-  // Map UI status to DB-allowed status for queries/updates
-  type DBRequestStatus = Database['public']['Enums']['request_status'];
-  const toDBStatus = (status: string): DBRequestStatus => (status === 'closed' ? 'completed' : status as DBRequestStatus);
+  // Status mapping is now handled by centralized utility
 
   useEffect(() => {
     fetchTickets();
@@ -75,7 +73,7 @@ export const useEnhancedTicketSystem = () => {
 
       // Apply filters
       if (filters?.status?.length) {
-        const dbStatuses = [...new Set(filters.status.map(toDBStatus))] as readonly DBRequestStatus[];
+        const dbStatuses = mapStatusArrayToDB(filters.status);
         query = query.in('status', dbStatuses);
       }
       if (filters?.priority?.length) {
@@ -215,19 +213,26 @@ export const useEnhancedTicketSystem = () => {
 
   const updateTicket = async (ticketId: string, updates: any) => {
     try {
-      const { data, error } = await supabase
-        .from('maintenance_requests')
-        .update(updates)
-        .eq('id', ticketId)
-        .select()
-        .single();
+        // Map status updates to DB status before sending to Supabase
+        const { status, ...otherUpdates } = updates;
+        const dbUpdates = {
+          ...otherUpdates,
+          ...(status ? { status: toDBStatus(status) } : {})
+        };
+
+        const { data, error } = await supabase
+          .from('maintenance_requests')
+          .update(dbUpdates)
+          .eq('id', ticketId)
+          .select()
+          .single();
 
       if (error) throw error;
 
-      // Update local state
-      setTickets(prev => prev.map(ticket => 
-        ticket.id === ticketId ? { ...ticket, ...updates } : ticket
-      ));
+        // Update local state with original updates (UI status)
+        setTickets(prev => prev.map(ticket => 
+          ticket.id === ticketId ? { ...ticket, ...updates } : ticket
+        ));
 
       toast({
         title: "Ticket Updated",
@@ -247,18 +252,25 @@ export const useEnhancedTicketSystem = () => {
 
   const bulkUpdateTickets = async (ticketIds: string[], updates: any) => {
     try {
-      const { data, error } = await supabase
-        .from('maintenance_requests')
-        .update(updates)
-        .in('id', ticketIds)
-        .select();
+        // Map status updates to DB status before sending to Supabase
+        const { status, ...otherUpdates } = updates;
+        const dbUpdates = {
+          ...otherUpdates,
+          ...(status ? { status: toDBStatus(status) } : {})
+        };
+
+        const { data, error } = await supabase
+          .from('maintenance_requests')
+          .update(dbUpdates)
+          .in('id', ticketIds)
+          .select();
 
       if (error) throw error;
 
-      // Update local state
-      setTickets(prev => prev.map(ticket => 
-        ticketIds.includes(ticket.id) ? { ...ticket, ...updates } : ticket
-      ));
+        // Update local state with original updates (UI status)
+        setTickets(prev => prev.map(ticket => 
+          ticketIds.includes(ticket.id) ? { ...ticket, ...updates } : ticket
+        ));
 
       toast({
         title: "Tickets Updated",
@@ -335,9 +347,8 @@ export const useEnhancedTicketSystem = () => {
 
       if (error) throw error;
 
-      // Update ticket status
+      // Update ticket assignment (keep status as is, just change assignee)
       await updateTicket(ticketId, { 
-        status: 'escalated',
         assigned_to: escalatedTo
       });
 

@@ -1,15 +1,15 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
+import { toDBStatus, mapStatusArrayToDB, type UIStatus, type DBRequestStatus } from '@/utils/status';
 
 export interface UnifiedRequest {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route' | 'closed';
+  status: UIStatus;
   priority: 'low' | 'medium' | 'high' | 'urgent';
   category_id: string;
   location: string;
@@ -31,7 +31,7 @@ export interface UnifiedRequest {
 }
 
 interface RequestFilters {
-  status?: ('pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route' | 'closed')[];
+  status?: UIStatus[];
   priority?: ('low' | 'medium' | 'high' | 'urgent')[];
   category?: string[];
   assigned_to?: string;
@@ -47,9 +47,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Map UI status to DB-allowed status for queries/updates
-  type DBRequestStatus = Database['public']['Enums']['request_status'];
-  const toDBStatus = (status: UnifiedRequest['status']): DBRequestStatus => (status === 'closed' ? 'completed' : status as DBRequestStatus);
+  // Status mapping is now handled by centralized utility
 
   // Memoize the serialized filters to prevent unnecessary re-renders
   const serializedFilters = useMemo(() => {
@@ -107,7 +105,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
 
       // Apply filters
       if (parsedFilters.status?.length) {
-        const dbStatuses = [...new Set(parsedFilters.status.map(toDBStatus))] as readonly DBRequestStatus[];
+        const dbStatuses = mapStatusArrayToDB(parsedFilters.status);
         query = query.in('status', dbStatuses);
       }
 
