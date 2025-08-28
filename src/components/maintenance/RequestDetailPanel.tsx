@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import WorkingModePanel from './WorkingModePanel';
 import { Textarea } from '@/components/ui/textarea';
 import { User, Clock, CheckCircle, AlertTriangle, MessageSquare, Calendar, MapPin, ChevronDown, ChevronUp, Timer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -442,8 +443,21 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         status={request.status}
       />
 
-      {/* Technician Workflow Buttons */}
-      {isStaff && (
+      {/* Working Mode Panel - Only for L1 employees who have claimed the task */}
+      {isStaff && request.assigned_to === user?.id && (
+        <div id="working-mode-section">
+          <WorkingModePanel
+            requestId={requestId}
+            status={request.status}
+            beforePhotoUrl={request.before_photo_url}
+            afterPhotoUrl={request.after_photo_url}
+            onUpdate={fetchRequestDetails}
+          />
+        </div>
+      )}
+
+      {/* Other staff can only see assignment buttons if not yet assigned */}
+      {isStaff && !request.assigned_to && (
         <div id="technician-workflow-section">
           <TechnicianWorkflowButtons
             requestId={requestId}
