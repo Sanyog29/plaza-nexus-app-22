@@ -55,7 +55,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           *,
           category:category_id(name),
           reporter:reported_by(first_name, last_name),
-          assignee:assigned_to(first_name, last_name)
+          assignee:assigned_to_user_id(first_name, last_name)
         `)
         .eq('id', requestId)
         .maybeSingle();
