@@ -907,25 +907,34 @@ export type Database = {
       }
       category_group_mappings: {
         Row: {
+          auto_assignment_priority: number | null
           category_id: string
           created_at: string
           group_id: string
           id: string
           priority_override: string | null
+          required_specializations: string[] | null
+          staff_group: Database["public"]["Enums"]["staff_group_type"] | null
         }
         Insert: {
+          auto_assignment_priority?: number | null
           category_id: string
           created_at?: string
           group_id: string
           id?: string
           priority_override?: string | null
+          required_specializations?: string[] | null
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
         }
         Update: {
+          auto_assignment_priority?: number | null
           category_id?: string
           created_at?: string
           group_id?: string
           id?: string
           priority_override?: string | null
+          required_specializations?: string[] | null
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
         }
         Relationships: [
           {
@@ -1690,6 +1699,66 @@ export type Database = {
           {
             foreignKeyName: "dietary_preferences_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enhanced_staff_availability: {
+        Row: {
+          auto_offline_at: string | null
+          availability_status: Database["public"]["Enums"]["availability_status_type"]
+          created_at: string
+          current_workload: number
+          id: string
+          is_available: boolean
+          last_status_change: string
+          max_concurrent_tickets: number
+          specialization: string[] | null
+          staff_group: Database["public"]["Enums"]["staff_group_type"] | null
+          staff_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_offline_at?: string | null
+          availability_status?: Database["public"]["Enums"]["availability_status_type"]
+          created_at?: string
+          current_workload?: number
+          id?: string
+          is_available?: boolean
+          last_status_change?: string
+          max_concurrent_tickets?: number
+          specialization?: string[] | null
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
+          staff_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_offline_at?: string | null
+          availability_status?: Database["public"]["Enums"]["availability_status_type"]
+          created_at?: string
+          current_workload?: number
+          id?: string
+          is_available?: boolean
+          last_status_change?: string
+          max_concurrent_tickets?: number
+          specialization?: string[] | null
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
+          staff_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enhanced_staff_availability_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: true
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enhanced_staff_availability_staff_id_fkey"
+            columns: ["staff_id"]
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2786,10 +2855,12 @@ export type Database = {
       }
       maintenance_requests: {
         Row: {
+          acknowledgment_deadline: string | null
           assigned_at: string | null
           assigned_group: string | null
           assigned_to: string | null
           assignment_acknowledged_at: string | null
+          auto_assigned_count: number
           auto_assignment_attempts: number
           auto_detected_location: boolean | null
           building_area_id: string | null
@@ -2797,6 +2868,7 @@ export type Database = {
           category_id: string | null
           completed_at: string | null
           created_at: string
+          crisis_detected_at: string | null
           description: string
           en_route_at: string | null
           escalated_at: string | null
@@ -2813,7 +2885,9 @@ export type Database = {
           reported_by: string | null
           resolution_sla_at: string | null
           response_sla_at: string | null
+          response_sla_breach_at: string | null
           sla_breach_at: string | null
+          staff_group: Database["public"]["Enums"]["staff_group_type"] | null
           status: Database["public"]["Enums"]["request_status"]
           sub_category_id: string | null
           technician_location: Json | null
@@ -2823,10 +2897,12 @@ export type Database = {
           workflow_step: number | null
         }
         Insert: {
+          acknowledgment_deadline?: string | null
           assigned_at?: string | null
           assigned_group?: string | null
           assigned_to?: string | null
           assignment_acknowledged_at?: string | null
+          auto_assigned_count?: number
           auto_assignment_attempts?: number
           auto_detected_location?: boolean | null
           building_area_id?: string | null
@@ -2834,6 +2910,7 @@ export type Database = {
           category_id?: string | null
           completed_at?: string | null
           created_at?: string
+          crisis_detected_at?: string | null
           description: string
           en_route_at?: string | null
           escalated_at?: string | null
@@ -2850,7 +2927,9 @@ export type Database = {
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
+          response_sla_breach_at?: string | null
           sla_breach_at?: string | null
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
           status?: Database["public"]["Enums"]["request_status"]
           sub_category_id?: string | null
           technician_location?: Json | null
@@ -2860,10 +2939,12 @@ export type Database = {
           workflow_step?: number | null
         }
         Update: {
+          acknowledgment_deadline?: string | null
           assigned_at?: string | null
           assigned_group?: string | null
           assigned_to?: string | null
           assignment_acknowledged_at?: string | null
+          auto_assigned_count?: number
           auto_assignment_attempts?: number
           auto_detected_location?: boolean | null
           building_area_id?: string | null
@@ -2871,6 +2952,7 @@ export type Database = {
           category_id?: string | null
           completed_at?: string | null
           created_at?: string
+          crisis_detected_at?: string | null
           description?: string
           en_route_at?: string | null
           escalated_at?: string | null
@@ -2887,7 +2969,9 @@ export type Database = {
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
+          response_sla_breach_at?: string | null
           sla_breach_at?: string | null
+          staff_group?: Database["public"]["Enums"]["staff_group_type"] | null
           status?: Database["public"]["Enums"]["request_status"]
           sub_category_id?: string | null
           technician_location?: Json | null
@@ -8396,6 +8480,13 @@ export type Database = {
       }
       toggle_access_point_lock: {
         Args: { lock_state: boolean; point_id: string }
+        Returns: boolean
+      }
+      update_enhanced_staff_availability: {
+        Args: {
+          auto_offline_minutes?: number
+          new_status: Database["public"]["Enums"]["availability_status_type"]
+        }
         Returns: boolean
       }
       update_staff_availability: {
