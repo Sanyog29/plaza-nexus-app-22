@@ -6820,6 +6820,47 @@ export type Database = {
           },
         ]
       }
+      ticket_closures: {
+        Row: {
+          after_photo_url: string | null
+          before_photo_url: string | null
+          closed_at: string
+          closed_by: string
+          created_at: string
+          id: string
+          request_id: string
+          updated_at: string
+        }
+        Insert: {
+          after_photo_url?: string | null
+          before_photo_url?: string | null
+          closed_at?: string
+          closed_by: string
+          created_at?: string
+          id?: string
+          request_id: string
+          updated_at?: string
+        }
+        Update: {
+          after_photo_url?: string | null
+          before_photo_url?: string | null
+          closed_at?: string
+          closed_by?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_ticket_closures_request_id"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_programs: {
         Row: {
           created_at: string
