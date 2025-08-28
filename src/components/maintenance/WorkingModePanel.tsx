@@ -122,30 +122,28 @@ const WorkingModePanel: React.FC<WorkingModePanelProps> = ({
   };
 
   const handleCloseRequest = async () => {
-    if (!beforePhotoUrl || !afterPhotoUrl) {
-      toast({
-        title: "Photos Required",
-        description: "Both before and after photos must be uploaded before closing the request.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setLoading('close');
     try {
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', requestId);
+      const { data, error } = await supabase.rpc('complete_request', {
+        request_id: requestId,
+        completion_notes: 'Request completed via Working Mode'
+      });
 
       if (error) throw error;
 
+      const result = data as any;
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
         title: "Request Completed",
-        description: "The maintenance request has been marked as completed."
+        description: result?.message || "The maintenance request has been marked as completed."
       });
 
       onUpdate();

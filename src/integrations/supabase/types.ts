@@ -8283,6 +8283,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      complete_request: {
+        Args: { completion_notes?: string; request_id: string }
+        Returns: Json
+      }
       create_amc_alerts: {
         Args: Record<PropertyKey, never>
         Returns: undefined

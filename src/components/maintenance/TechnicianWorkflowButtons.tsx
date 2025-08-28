@@ -92,20 +92,41 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
     });
   };
 
-  const handleCompleteRequest = () => {
-    if (!beforePhotoUrl || !afterPhotoUrl) {
+  const handleCompleteRequest = async () => {
+    setLoading('completed');
+    try {
+      const { data, error } = await supabase.rpc('complete_request', {
+        request_id: requestId,
+        completion_notes: closureReason || 'Work completed successfully'
+      });
+
+      if (error) throw error;
+
+      const result = data as any;
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
-        title: "Photos Required",
-        description: "Both before and after photos are required to complete the request.",
+        title: "Success",
+        description: result?.message || "Request completed successfully"
+      });
+
+      onUpdate();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to complete request",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setLoading(null);
     }
-    
-    updateRequestStatus('completed', {
-      completed_at: new Date().toISOString(),
-      closure_reason: closureReason || 'Work completed successfully'
-    });
   };
 
   const uploadPhoto = async (file: File, type: 'before' | 'after') => {
@@ -125,7 +146,16 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
         .from('maintenance-attachments')
         .getPublicUrl(filePath);
 
-      // Insert into request_attachments with proper stage - the trigger will sync to maintenance_requests
+      // Update maintenance_requests with photo URL
+      const updateField = type === 'before' ? 'before_photo_url' : 'after_photo_url';
+      const { error: updateError } = await supabase
+        .from('maintenance_requests')
+        .update({ [updateField]: publicUrl })
+        .eq('id', requestId);
+
+      if (updateError) throw updateError;
+
+      // Insert into request_attachments for record keeping
       const { error: attachmentError } = await supabase
         .from('request_attachments')
         .insert({
@@ -136,10 +166,13 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
           file_size: file.size,
           uploaded_by: user?.id,
           attachment_type: 'work_photo',
-          stage: type // 'before' or 'after' - this triggers our sync function
+          stage: type
         });
 
-      if (attachmentError) throw attachmentError;
+      if (attachmentError) {
+        console.error('Error creating attachment record:', attachmentError);
+        // Don't fail the upload if attachment record fails
+      }
 
       toast({
         title: "Photo Uploaded",
