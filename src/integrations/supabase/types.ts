@@ -8284,7 +8284,7 @@ export type Database = {
         Returns: undefined
       }
       complete_request: {
-        Args: { closure_reason?: string; request_id: string }
+        Args: { p_closure_reason?: string; request_id: string }
         Returns: Json
       }
       create_amc_alerts: {

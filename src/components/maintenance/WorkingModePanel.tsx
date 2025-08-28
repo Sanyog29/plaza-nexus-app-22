@@ -126,7 +126,7 @@ const WorkingModePanel: React.FC<WorkingModePanelProps> = ({
     try {
       const { data, error } = await supabase.rpc('complete_request', {
         request_id: requestId,
-        closure_reason: 'Request completed via Working Mode'
+        p_closure_reason: 'Request completed via Working Mode'
       });
 
       if (error) {
