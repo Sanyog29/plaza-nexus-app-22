@@ -444,14 +444,16 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
 
       {/* Technician Workflow Buttons */}
       {isStaff && (
-        <TechnicianWorkflowButtons
-          requestId={requestId}
-          status={request.status}
-          assignedToUserId={request.assigned_to}
-          beforePhotoUrl={request.before_photo_url}
-          afterPhotoUrl={request.after_photo_url}
-          onUpdate={fetchRequestDetails}
-        />
+        <div id="technician-workflow-section">
+          <TechnicianWorkflowButtons
+            requestId={requestId}
+            status={request.status}
+            assignedToUserId={request.assigned_to}
+            beforePhotoUrl={request.before_photo_url}
+            afterPhotoUrl={request.after_photo_url}
+            onUpdate={fetchRequestDetails}
+          />
+        </div>
       )}
 
       {/* Comments Section */}

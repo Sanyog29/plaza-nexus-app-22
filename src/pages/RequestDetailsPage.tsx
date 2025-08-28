@@ -150,11 +150,19 @@ const RequestDetailsPage = () => {
   };
 
   const handleUploadPhotos = () => {
-    // Navigate to photo upload or open a modal
-    toast({
-      title: "Photo Upload",
-      description: "Photo upload feature coming soon!",
-    });
+    // Scroll to the TechnicianWorkflowButtons section for photo upload
+    const workflowSection = document.getElementById('technician-workflow-section');
+    if (workflowSection) {
+      workflowSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    } else {
+      toast({
+        title: "Photo Upload",
+        description: "Please scroll down to the workflow section to upload photos.",
+      });
+    }
   };
 
   const formatSlaTime = (minutes: number) => {
