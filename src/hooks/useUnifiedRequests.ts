@@ -46,6 +46,10 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Map UI status to DB-allowed status for queries/updates
+  type DBRequestStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route';
+  const toDBStatus = (status: UnifiedRequest['status']): DBRequestStatus => (status === 'closed' ? 'completed' : status);
+
   // Memoize the serialized filters to prevent unnecessary re-renders
   const serializedFilters = useMemo(() => {
     return JSON.stringify(filters || {});
@@ -102,7 +106,8 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
 
       // Apply filters
       if (parsedFilters.status?.length) {
-        query = query.in('status', parsedFilters.status);
+        const dbStatuses = [...new Set(parsedFilters.status.map(toDBStatus))] as readonly DBRequestStatus[];
+        query = query.in('status', dbStatuses);
       }
 
       if (parsedFilters.priority?.length) {
@@ -189,12 +194,16 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     if (!user) return false;
 
     try {
+      const { status, ...rest } = updates;
+      const dbUpdates: any = {
+        ...rest,
+        ...(status ? { status: toDBStatus(status as UnifiedRequest['status']) } : {}),
+        updated_at: new Date().toISOString(),
+      };
+
       const { error } = await supabase
         .from('maintenance_requests')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
+        .update(dbUpdates as any)
         .eq('id', requestId);
 
       if (error) throw error;
@@ -220,7 +229,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           assigned_to: assigneeId,
           status: 'in_progress',
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq('id', requestId);
 
       if (error) throw error;
