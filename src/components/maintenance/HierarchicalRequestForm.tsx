@@ -77,6 +77,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [pendingNotListed, setPendingNotListed] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -266,6 +267,60 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     setPendingNotListed(true);
   };
 
+  const uploadPendingFiles = async (requestId: string) => {
+    for (const file of pendingFiles) {
+      try {
+        // Create unique file path
+        const fileExtension = file.name.split('.').pop();
+        const fileName = `${user!.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+        
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from('maintenance-attachments')
+          .upload(fileName, file);
+        
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+          toast({
+            title: "File upload warning",
+            description: `Failed to upload ${file.name}`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        // Insert attachment record
+        const { error: insertError } = await supabase
+          .from('request_attachments')
+          .insert({
+            request_id: requestId,
+            file_name: file.name,
+            file_type: file.type,
+            file_size: file.size,
+            file_url: fileName,
+            uploaded_by: user!.id,
+            attachment_type: 'user_upload'
+          });
+
+        if (insertError) {
+          console.error('Attachment record error:', insertError);
+          toast({
+            title: "Attachment warning",
+            description: `File uploaded but failed to link to request: ${file.name}`,
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Attachment processing error:', error);
+        toast({
+          title: "File processing error",
+          description: `Error processing ${file.name}`,
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     if (!user) {
       toast({
@@ -319,6 +374,11 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         throw error;
       }
 
+      // Upload pending files to the created request
+      if (pendingFiles.length > 0) {
+        await uploadPendingFiles(result.id);
+      }
+
       toast({
         title: "Request submitted successfully!",
         description: "Your maintenance request has been created and assigned."
@@ -326,6 +386,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
 
       form.reset();
       setSlaInfo(null);
+      setPendingFiles([]);
       onSuccess?.();
     } catch (error: any) {
       toast({
@@ -590,9 +651,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
               
               <DragDropAttachments 
                 isLoading={isSubmitting}
-                onFilesChange={(files) => {
-                  // Handle file changes if needed
-                }}
+                onFilesChange={(files) => setPendingFiles(files)}
                 showTips={true}
                 maxFiles={5}
               />
