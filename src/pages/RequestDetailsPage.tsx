@@ -133,7 +133,6 @@ const RequestDetailsPage = () => {
 
       if (error) throw error;
 
-
       setRequest(prev => ({ ...prev, status: 'in_progress' }));
       toast({
         title: "Task Started",
@@ -174,7 +173,6 @@ const RequestDetailsPage = () => {
   };
 
   const isCurrentUserAssigned = user && request?.assigned_to === user.id;
-
 
   return (
     <div className="px-4 py-6">
@@ -289,8 +287,8 @@ const RequestDetailsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Feedback System for completed requests */}
-      {request.status === 'completed' && requestId && (
+      {/* Feedback System for closed requests */}
+      {request.status === 'closed' && requestId && (
         <div className="mt-6">
           <RequestFeedbackSystem
             requestId={requestId}

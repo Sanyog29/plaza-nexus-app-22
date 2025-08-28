@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -125,7 +126,7 @@ const WorkingModePanel: React.FC<WorkingModePanelProps> = ({
     setLoading('close');
     try {
       const { data, error } = await supabase.rpc('complete_request', {
-        request_id: requestId,
+        p_request_id: requestId,
         p_closure_reason: 'Request completed via Working Mode'
       });
 

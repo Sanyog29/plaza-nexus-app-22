@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -96,7 +95,7 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
     setLoading('closed');
     try {
       const { data, error } = await supabase.rpc('complete_request', {
-        request_id: requestId,
+        p_request_id: requestId,
         p_closure_reason: closureReason || 'Work completed successfully'
       });
 

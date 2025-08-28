@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -7,7 +8,7 @@ export interface UnifiedRequest {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route' | 'closed';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   category_id: string;
   location: string;
@@ -29,7 +30,7 @@ export interface UnifiedRequest {
 }
 
 interface RequestFilters {
-  status?: ('pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route')[];
+  status?: ('pending' | 'in_progress' | 'completed' | 'cancelled' | 'assigned' | 'en_route' | 'closed')[];
   priority?: ('low' | 'medium' | 'high' | 'urgent')[];
   category?: string[];
   assigned_to?: string;
@@ -239,16 +240,18 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', requestId);
+      const { data, error } = await supabase.rpc('complete_request', {
+        p_request_id: requestId,
+        p_closure_reason: completionNotes || 'Request completed'
+      });
 
       if (error) throw error;
+
+      const result = data as any;
+      if (result?.success === false) {
+        toast.error(result.error || 'Failed to complete request');
+        return false;
+      }
 
       toast.success('Request completed successfully');
       await fetchRequests();
