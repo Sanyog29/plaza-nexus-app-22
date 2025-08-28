@@ -23,17 +23,17 @@ serve(async (req) => {
     console.log(`Processing action: ${action} for request: ${requestId} by staff: ${staffId}`)
 
     if (action === 'accept_request') {
-      // Accept: UPDATE maintenance_requests SET assigned_to_user_id = :tech_id, accepted_at = NOW(), status = 'accepted' 
-      // WHERE id = :request_id AND assigned_to_user_id IS NULL
+      // Accept: UPDATE maintenance_requests SET assigned_to = :tech_id, assigned_at = NOW(), status = 'accepted' 
+      // WHERE id = :request_id AND assigned_to IS NULL
       const { data, error } = await supabase
         .from('maintenance_requests')
         .update({ 
-          assigned_to_user_id: staffId,
-          accepted_at: new Date().toISOString(),
+          assigned_to: staffId,
+          assigned_at: new Date().toISOString(),
           status: 'accepted'
         })
         .eq('id', requestId)
-        .is('assigned_to_user_id', null)
+        .is('assigned_to', null)
         .select()
 
       if (error) throw error
@@ -53,15 +53,15 @@ serve(async (req) => {
     }
 
     if (action === 'start_work') {
-      // Start Work: UPDATE SET started_at = NOW(), status = 'in_progress'
+      // Start Work: UPDATE SET work_started_at = NOW(), status = 'in_progress'
       const { error } = await supabase
         .from('maintenance_requests')
         .update({ 
-          started_at: new Date().toISOString(),
+          work_started_at: new Date().toISOString(),
           status: 'in_progress'
         })
         .eq('id', requestId)
-        .eq('assigned_to_user_id', staffId)
+        .eq('assigned_to', staffId)
 
       if (error) throw error
 
@@ -86,7 +86,7 @@ serve(async (req) => {
         .from('maintenance_requests')
         .update(updateData)
         .eq('id', requestId)
-        .eq('assigned_to_user_id', staffId)
+        .eq('assigned_to', staffId)
 
       if (error) throw error
 
@@ -98,17 +98,17 @@ serve(async (req) => {
     }
 
     if (action === 'close_request') {
-      // Close Ticket: UPDATE SET completed_at = NOW(), status = 'closed', closed_by_user_id = :tech_id 
+      // Close Ticket: UPDATE SET completed_at = NOW(), status = 'completed'
       // WHERE before_photo_url IS NOT NULL AND after_photo_url IS NOT NULL
       const { data, error } = await supabase
         .from('maintenance_requests')
         .update({ 
-          status: 'closed',
-          closed_by_user_id: staffId,
+          status: 'completed',
+          completed_at: new Date().toISOString(),
           closure_reason: closureReason || 'Work completed successfully'
         })
         .eq('id', requestId)
-        .eq('assigned_to_user_id', staffId)
+        .eq('assigned_to', staffId)
         .not('before_photo_url', 'is', null)
         .not('after_photo_url', 'is', null)
         .select()
