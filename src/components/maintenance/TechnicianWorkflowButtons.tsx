@@ -97,7 +97,7 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
     try {
       const { data, error } = await supabase.rpc('complete_request', {
         request_id: requestId,
-        completion_notes: closureReason || 'Work completed successfully'
+        closure_reason: closureReason || 'Work completed successfully'
       });
 
       if (error) throw error;

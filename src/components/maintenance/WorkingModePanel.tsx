@@ -126,16 +126,24 @@ const WorkingModePanel: React.FC<WorkingModePanelProps> = ({
     try {
       const { data, error } = await supabase.rpc('complete_request', {
         request_id: requestId,
-        completion_notes: 'Request completed via Working Mode'
+        closure_reason: 'Request completed via Working Mode'
       });
 
-      if (error) throw error;
-
-      const result = data as any;
-      if (result?.error) {
+      if (error) {
+        console.error('Error calling complete_request RPC:', error);
         toast({
           title: "Error",
-          description: result.error,
+          description: `Failed to close request: ${error.message}`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const result = data as any;
+      if (result?.success === false) {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to close request",
           variant: "destructive"
         });
         return;
