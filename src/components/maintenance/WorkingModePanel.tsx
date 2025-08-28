@@ -150,8 +150,8 @@ const WorkingModePanel: React.FC<WorkingModePanelProps> = ({
       }
 
       toast({
-        title: "Request Completed",
-        description: result?.message || "The maintenance request has been marked as completed."
+        title: "Request Closed",
+        description: result?.message || "The maintenance request has been marked as closed."
       });
 
       onUpdate();

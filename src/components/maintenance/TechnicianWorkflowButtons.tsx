@@ -93,7 +93,7 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
   };
 
   const handleCompleteRequest = async () => {
-    setLoading('completed');
+    setLoading('closed');
     try {
       const { data, error } = await supabase.rpc('complete_request', {
         request_id: requestId,
@@ -114,14 +114,14 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
 
       toast({
         title: "Success",
-        description: result?.message || "Request completed successfully"
+        description: result?.message || "Request closed successfully"
       });
 
       onUpdate();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to complete request",
+        description: error.message || "Failed to close request",
         variant: "destructive"
       });
     } finally {
@@ -393,11 +393,11 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
             
             <Button
               onClick={handleCompleteRequest}
-              disabled={loading === 'completed'}
+              disabled={loading === 'closed'}
               className="w-full bg-green-600 hover:bg-green-700"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
-              {loading === 'completed' ? 'Completing...' : 'Complete Request'}
+              {loading === 'closed' ? 'Closing...' : 'Close Request'}
             </Button>
           </div>
         )}
@@ -406,7 +406,7 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
         {(status === 'completed' || status === 'closed') && (
           <div className="text-center p-4 bg-green-900/30 rounded-lg">
             <CheckCircle className="w-8 h-8 mx-auto mb-2 text-green-400" />
-            <p className="text-green-400 font-medium">Request Completed</p>
+            <p className="text-green-400 font-medium">Request Closed</p>
           </div>
         )}
       </CardContent>
