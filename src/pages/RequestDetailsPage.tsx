@@ -13,7 +13,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaimedTaskBanner } from '@/components/maintenance/ClaimedTaskBanner';
-import UnifiedStatusTracker from '@/components/maintenance/UnifiedStatusTracker';
+import TicketProgressBar from '@/components/maintenance/TicketProgressBar';
 import { AssignToMeButton } from '@/components/maintenance/AssignToMeButton';
 import { TimeExtensionModal } from '@/components/maintenance/TimeExtensionModal';
 import { useTimeExtensions } from '@/hooks/useTimeExtensions';
@@ -173,17 +173,6 @@ const RequestDetailsPage = () => {
 
   const isCurrentUserAssigned = user && request?.assigned_to === user.id;
 
-  // Helper function to map status to workflow step
-  const mapStatusToStep = (status: string) => {
-    switch (status) {
-      case 'pending': return 1;
-      case 'assigned': return 2;
-      case 'en_route': return 3;
-      case 'in_progress': return 4;
-      case 'completed': return 5;
-      default: return 1;
-    }
-  };
 
   return (
     <div className="px-4 py-6">
@@ -265,25 +254,19 @@ const RequestDetailsPage = () => {
       />
 
       {/* Request Progress Tracker */}
-      <div className="mb-6">
-        <UnifiedStatusTracker
-          requestId={requestId!}
-          currentStatus={request.status}
-          workflowStep={mapStatusToStep(request.status)}
-          isStaff={isStaff}
-          assignedToUserId={request.assigned_to}
-          timestamps={{
-            created_at: request.created_at,
-            assigned_at: request.assigned_at,
-            en_route_at: request.en_route_at,
-            work_started_at: request.work_started_at,
-            completed_at: request.completed_at,
-          }}
-          estimatedArrival={request.estimated_arrival}
-          slaBreachAt={request.sla_breach_at}
-          onStatusUpdate={fetchRequestDetails}
-        />
-      </div>
+      <Card className="bg-card mb-6">
+        <CardContent className="p-6">
+          <h3 className="text-xl font-semibold text-white mb-4">Request Progress</h3>
+          <TicketProgressBar
+            status={request.status}
+            acceptedAt={request.assigned_at}
+            startedAt={request.work_started_at}
+            beforePhotoUrl={request.before_photo_url}
+            afterPhotoUrl={request.after_photo_url}
+            completedAt={request.completed_at}
+          />
+        </CardContent>
+      </Card>
 
       {/* Claimed Task Banner - Show if current user is assigned to this task */}
       {isCurrentUserAssigned && (
