@@ -114,24 +114,32 @@ const TechnicianWorkflowButtons: React.FC<TechnicianWorkflowButtonsProps> = ({
       const fileName = `${requestId}_${type}_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
+      // Upload to maintenance-attachments bucket
       const { error: uploadError } = await supabase.storage
-        .from('maintenance-photos')
+        .from('maintenance-attachments')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('maintenance-photos')
+        .from('maintenance-attachments')
         .getPublicUrl(filePath);
 
-      // Update the request with the photo URL
-      const updateField = type === 'before' ? 'before_photo_url' : 'after_photo_url';
-      const { error: updateError } = await supabase
-        .from('maintenance_requests')
-        .update({ [updateField]: publicUrl })
-        .eq('id', requestId);
+      // Insert into request_attachments with proper stage - the trigger will sync to maintenance_requests
+      const { error: attachmentError } = await supabase
+        .from('request_attachments')
+        .insert({
+          request_id: requestId,
+          file_name: fileName,
+          file_type: file.type,
+          file_url: publicUrl,
+          file_size: file.size,
+          uploaded_by: user?.id,
+          attachment_type: 'work_photo',
+          stage: type // 'before' or 'after' - this triggers our sync function
+        });
 
-      if (updateError) throw updateError;
+      if (attachmentError) throw attachmentError;
 
       toast({
         title: "Photo Uploaded",
