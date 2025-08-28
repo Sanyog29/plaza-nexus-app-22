@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -55,7 +54,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           *,
           category:category_id(name),
           reporter:reported_by(first_name, last_name),
-          assignee:assigned_to_user_id(first_name, last_name)
+          assignee:assigned_to(first_name, last_name)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -63,7 +62,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       if (error) throw error;
       setRequest(data);
       setUpdatedStatus(data.status);
-      setUpdatedAssignee(data.assigned_to_user_id);
+      setUpdatedAssignee(data.assigned_to);
       setUpdatedPriority(data.priority);
     } catch (error: any) {
       toast({
@@ -95,7 +94,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       setUpdating(true);
       const updates = {
         status: updatedStatus as RequestStatus,
-        assigned_to_user_id: updatedAssignee,
+        assigned_to: updatedAssignee,
         priority: updatedPriority as RequestPriority,
         updated_at: new Date().toISOString()
       };
@@ -424,8 +423,8 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         <CardContent>
           <TicketProgressBar
             status={request.status}
-            acceptedAt={request.accepted_at}
-            startedAt={request.started_at}
+            acceptedAt={request.assigned_at}
+            startedAt={request.work_started_at}
             beforePhotoUrl={request.before_photo_url}
             afterPhotoUrl={request.after_photo_url}
             completedAt={request.completed_at}
@@ -435,9 +434,9 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
 
       {/* Assigned Technician Info */}
       <AssignedTechnicianInfo
-        assignedToUserId={request.assigned_to_user_id}
-        acceptedAt={request.accepted_at}
-        startedAt={request.started_at}
+        assignedToUserId={request.assigned_to}
+        acceptedAt={request.assigned_at}
+        startedAt={request.work_started_at}
         status={request.status}
       />
 
@@ -446,7 +445,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         <TechnicianWorkflowButtons
           requestId={requestId}
           status={request.status}
-          assignedToUserId={request.assigned_to_user_id}
+          assignedToUserId={request.assigned_to}
           beforePhotoUrl={request.before_photo_url}
           afterPhotoUrl={request.after_photo_url}
           onUpdate={fetchRequestDetails}
