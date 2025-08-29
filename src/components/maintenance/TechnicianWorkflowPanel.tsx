@@ -53,7 +53,7 @@ const TechnicianWorkflowPanel: React.FC<TechnicianWorkflowPanelProps> = ({
         .from('request_workflow_states')
         .select('*')
         .eq('request_id', requestId)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') { // Not found error
         throw error;

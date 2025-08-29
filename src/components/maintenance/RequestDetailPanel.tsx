@@ -3,15 +3,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import WorkingModePanel from './WorkingModePanel';
+import RequestWorkflowManager from './RequestWorkflowManager';
 import { Textarea } from '@/components/ui/textarea';
 import { User, Clock, CheckCircle, AlertTriangle, MessageSquare, Calendar, MapPin, ChevronDown, ChevronUp, Timer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RequestComments from './RequestComments';
-
-import TechnicianWorkflowButtons from './TechnicianWorkflowButtons';
 import AssignedTechnicianInfo from './AssignedTechnicianInfo';
 import { format } from 'date-fns';
 import { useAuth } from '@/components/AuthProvider';
@@ -427,25 +425,12 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         status={request.status}
       />
 
-      {/* Working Mode Panel - Only for L1 employees who have claimed the task */}
-      {isL1 && request.assigned_to === user?.id && ['assigned', 'in_progress'].includes(request.status) && (
-        <div id="working-mode-section">
-          <WorkingModePanel
+      {/* Unified Workflow Manager - For all staff */}
+      {isStaff && (
+        <div id="workflow-manager-section">
+          <RequestWorkflowManager
             requestId={requestId}
-            status={request.status}
-            beforePhotoUrl={request.before_photo_url}
-            afterPhotoUrl={request.after_photo_url}
-            onUpdate={fetchRequestDetails}
-          />
-        </div>
-      )}
-
-      {/* Other staff can only see assignment buttons if not yet assigned */}
-      {isStaff && !request.assigned_to && (
-        <div id="technician-workflow-section">
-          <TechnicianWorkflowButtons
-            requestId={requestId}
-            status={request.status}
+            requestStatus={request.status}
             assignedToUserId={request.assigned_to}
             beforePhotoUrl={request.before_photo_url}
             afterPhotoUrl={request.after_photo_url}
