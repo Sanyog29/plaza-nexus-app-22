@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,13 +6,13 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CustomizableDashboard } from '@/components/dashboard/CustomizableDashboard';
 import { AdvancedNotificationCenter } from '@/components/notifications/AdvancedNotificationCenter';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { useRequestOffers } from '@/hooks/useRequestOffers';
 import { useProfile } from '@/hooks/useProfile';
+import { useRealtimeMaintenanceRequests } from '@/hooks/useRealtimeMaintenanceRequests';
+import { TaskCompletionNotifier } from '@/components/realtime/TaskCompletionNotifier';
 import { ClipboardList, Clock, CheckCircle, AlertTriangle, TrendingUp, Users, Wrench, Shield, Activity, GraduationCap, Brain, BarChart3, FileSpreadsheet, Database, User } from 'lucide-react';
 import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
-import { toast } from '@/hooks/use-toast';
 import { FeatureGuard } from '@/components/common/FeatureGuard';
 import { FeatureNotificationSystem } from '@/components/common/FeatureNotificationSystem';
 import { SEOHead } from '@/components/seo/SEOHead';
@@ -26,77 +26,19 @@ interface RequestStats {
 }
 const StaffDashboardPage = () => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
-  const [requestStats, setRequestStats] = useState<RequestStats>({
-    total: 0,
-    pending: 0,
-    inProgress: 0,
-    completed: 0
-  });
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
   const [acceptedOffers, setAcceptedOffers] = useState<Set<string>>(new Set());
 
   // Hooks
-  const {
-    offers,
-    acceptOffer
-  } = useRequestOffers();
-  const {
-    profile
-  } = useProfile();
+  const { offers, acceptOffer } = useRequestOffers();
+  const { profile } = useProfile();
+  const { requestStats, recentRequests, isLoading } = useRealtimeMaintenanceRequests();
   const {
     newRequest,
     isVisible,
     handleAccept,
     handleDismiss
   } = useNewRequestNotifications();
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
-  const fetchDashboardData = async () => {
-    try {
-      // Fetch maintenance requests statistics
-      const {
-        data: requests,
-        error: requestsError
-      } = await supabase.from('maintenance_requests').select('status, created_at, title, priority, id').order('created_at', {
-        ascending: false
-      }).limit(10);
-      if (requestsError) throw requestsError;
-
-      // Calculate stats
-      const stats = requests?.reduce((acc, req) => {
-        acc.total++;
-        if (req.status === 'pending') acc.pending++;else if (req.status === 'in_progress') acc.inProgress++;else if (req.status === 'completed') acc.completed++;
-        return acc;
-      }, {
-        total: 0,
-        pending: 0,
-        inProgress: 0,
-        completed: 0
-      }) || {
-        total: 0,
-        pending: 0,
-        inProgress: 0,
-        completed: 0
-      };
-      setRequestStats(stats);
-      setRecentRequests(requests?.slice(0, 5) || []);
-    } catch (error: any) {
-      toast({
-        title: "Error loading dashboard data",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
@@ -111,6 +53,7 @@ const StaffDashboardPage = () => {
         return 'default';
     }
   };
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -128,8 +71,13 @@ const StaffDashboardPage = () => {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-plaza-blue"></div>
       </div>;
   }
-  return <>
+  return (
+    <>
       <SEOHead title="Staff Dashboard" description="Monitor and manage facility operations." url={`${window.location.origin}/staff/dashboard`} type="website" noindex />
+      
+      {/* Real-time Task Completion Notifier */}
+      <TaskCompletionNotifier />
+      
       <div className="container mx-auto px-4 py-8 pb-20">
       {/* Feature Notification System */}
       <FeatureNotificationSystem />
@@ -350,6 +298,7 @@ const StaffDashboardPage = () => {
       {/* Request Popup Notification */}
       {newRequest && <RequestPopupNotification request={newRequest} onAccept={handleAccept} onDismiss={handleDismiss} isVisible={isVisible} />}
     </div>
-  </>;
+  </>
+  );
 };
 export default StaffDashboardPage;

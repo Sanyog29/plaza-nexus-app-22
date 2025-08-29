@@ -13,6 +13,7 @@ import { Search, Filter, Clock, AlertTriangle, CheckCircle, Wrench, RefreshCw } 
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useRealtimeRequests } from '@/hooks/useRealtimeUpdates';
+import { TaskCompletionNotifier } from '@/components/realtime/TaskCompletionNotifier';
 import { LoadingState } from '@/components/ui/loading-state';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { handleSupabaseError } from '@/utils/errorHandler';
@@ -63,12 +64,30 @@ const StaffRequestsPage = () => {
   useEffect(() => {
     fetchRequests();
     
+    // Set up real-time subscription for better UX feedback
+    const channel = supabase
+      .channel('staff-requests-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'maintenance_requests'
+      }, (payload) => {
+        // Refetch data when requests change
+        console.log('Request update received:', payload);
+        fetchRequests();
+      })
+      .subscribe();
+    
     // Set initial filter from URL
     const urlStatus = searchParams.get('status');
     if (urlStatus && ['completed', 'in_progress', 'pending'].includes(urlStatus)) {
       setStatusFilter(urlStatus);
       setActiveTab(urlStatus === 'completed' ? 'done' : urlStatus === 'in_progress' ? 'in_progress' : 'pending');
     }
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -262,6 +281,9 @@ const StaffRequestsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 pb-20">
+      {/* Real-time Task Completion Notifier */}
+      <TaskCompletionNotifier />
+      
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2">Maintenance Requests</h1>
         <p className="text-gray-400">Manage and track maintenance requests</p>
