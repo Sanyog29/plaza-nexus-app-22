@@ -5,8 +5,8 @@ import { CheckCircle, Clock, Camera, XCircle } from 'lucide-react';
 
 interface TicketProgressBarProps {
   status: string;
-  acceptedAt?: string;
-  startedAt?: string;
+  assignedAt?: string;
+  workStartedAt?: string;
   beforePhotoUrl?: string;
   afterPhotoUrl?: string;
   completedAt?: string;
@@ -14,8 +14,8 @@ interface TicketProgressBarProps {
 
 const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
   status,
-  acceptedAt,
-  startedAt,
+  assignedAt,
+  workStartedAt,
   beforePhotoUrl,
   afterPhotoUrl,
   completedAt
@@ -23,15 +23,23 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
   const getStepStatus = (step: string) => {
     switch (step) {
       case 'requested':
-        return 'completed';
+        return 'completed'; // Always completed since request exists
       case 'assigned':
-        return (status === 'assigned' || status === 'in_progress' || status === 'completed') ? 'completed' : (status === 'pending' ? 'current' : 'pending');
+        if (assignedAt) return 'completed';
+        if (status === 'pending') return 'current';
+        return 'pending';
       case 'in_progress':
-        return (status === 'in_progress' || status === 'completed') ? 'completed' : (status === 'assigned' ? 'current' : 'pending');
+        if (workStartedAt) return 'completed';
+        if (assignedAt && !workStartedAt) return 'current';
+        return 'pending';
       case 'photos_uploaded':
-        return (beforePhotoUrl && afterPhotoUrl) ? 'completed' : (status === 'in_progress' ? 'current' : 'pending');
+        if (beforePhotoUrl && afterPhotoUrl) return 'completed';
+        if (workStartedAt && (!beforePhotoUrl || !afterPhotoUrl)) return 'current';
+        return 'pending';
       case 'completed':
-        return status === 'completed' ? 'completed' : 'pending';
+        if (completedAt) return 'completed';
+        if (beforePhotoUrl && afterPhotoUrl && !completedAt) return 'current';
+        return 'pending';
       default:
         return 'pending';
     }
@@ -114,6 +122,8 @@ const TicketProgressBar: React.FC<TicketProgressBarProps> = ({
         <Badge className={getStepColor(getStepStatus(status))}>
           {status.replace('_', ' ').toUpperCase()}
         </Badge>
+        {assignedAt && <Badge variant="outline" className="text-green-300">Assigned ✓</Badge>}
+        {workStartedAt && <Badge variant="outline" className="text-green-300">Work Started ✓</Badge>}
         {beforePhotoUrl && <Badge variant="outline" className="text-green-300">Before Photo ✓</Badge>}
         {afterPhotoUrl && <Badge variant="outline" className="text-green-300">After Photo ✓</Badge>}
       </div>

@@ -259,8 +259,8 @@ const RequestDetailsPage = () => {
           <h3 className="text-xl font-semibold text-white mb-4">Request Progress</h3>
           <TicketProgressBar
             status={request.status}
-            acceptedAt={request.assigned_at}
-            startedAt={request.work_started_at}
+            assignedAt={request.assigned_at}
+            workStartedAt={request.work_started_at}
             beforePhotoUrl={request.before_photo_url}
             afterPhotoUrl={request.after_photo_url}
             completedAt={request.completed_at}
