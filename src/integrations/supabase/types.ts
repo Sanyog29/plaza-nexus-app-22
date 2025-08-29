@@ -8325,8 +8325,8 @@ export type Database = {
         Returns: undefined
       }
       complete_request: {
-        Args: { p_closure_reason?: string; p_request_id: string }
-        Returns: Json
+        Args: { closure_notes?: string; request_id: string }
+        Returns: boolean
       }
       create_amc_alerts: {
         Args: Record<PropertyKey, never>
