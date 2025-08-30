@@ -200,7 +200,7 @@ const RequestWorkflowManager: React.FC<RequestWorkflowManagerProps> = ({
     input.click();
   };
 
-  // Complete request - duplicated from StaffRequestsPage logic
+  // Complete request - uses identical logic to working StaffRequestsPage
   const updateRequestStatusToComplete = async (requestId: string, newStatus: 'completed') => {
     const actionText = 'mark as completed';
     
@@ -219,11 +219,12 @@ const RequestWorkflowManager: React.FC<RequestWorkflowManagerProps> = ({
       setUpdatingRequestId(requestId);
       
       try {
+        // Use exact same logic as working "Mark Complete" button
         const { error } = await supabase
           .from('maintenance_requests')
           .update({ 
             status: newStatus,
-            assigned_to: user?.id
+            assigned_to: null  // Set to null like the working button
           })
           .eq('id', requestId);
 
