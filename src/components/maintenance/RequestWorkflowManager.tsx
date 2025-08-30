@@ -3,10 +3,11 @@ import { Camera, CheckCircle, Upload, AlertTriangle, Clock, Play } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { handleSupabaseError } from '@/utils/errorHandler';
 
 interface RequestWorkflowManagerProps {
   requestId: string;
@@ -29,7 +30,20 @@ const RequestWorkflowManager: React.FC<RequestWorkflowManagerProps> = ({
   const { toast } = useToast();
   
   const [loading, setLoading] = useState<string | null>(null);
-  const [closureNotes, setClosureNotes] = useState('');
+  const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    loading: boolean;
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+    loading: false
+  });
 
   // Permission checks
   const isAssignedToMe = assignedToUserId === user?.id;
@@ -186,43 +200,69 @@ const RequestWorkflowManager: React.FC<RequestWorkflowManagerProps> = ({
     input.click();
   };
 
-  // Complete request
-  const handleCompleteRequest = async () => {
-    try {
-      setLoading('complete');
+  // Complete request - duplicated from StaffRequestsPage logic
+  const updateRequestStatusToComplete = async (requestId: string, newStatus: 'completed') => {
+    const actionText = 'mark as completed';
+    
+    const openDialog = () => {
+      setConfirmDialog({
+        open: true,
+        title: 'Complete Request',
+        description: `Are you sure you want to ${actionText} this request?`,
+        onConfirm: () => executeStatusUpdate(requestId, newStatus),
+        loading: false
+      });
+    };
+
+    const executeStatusUpdate = async (requestId: string, newStatus: 'completed') => {
+      setConfirmDialog(prev => ({ ...prev, loading: true }));
+      setUpdatingRequestId(requestId);
       
-      const { data, error } = await supabase.rpc('complete_request', {
-        p_request_id: requestId,
-        p_closure_reason: closureNotes || 'Request completed successfully'
-      });
+      try {
+        const { error } = await supabase
+          .from('maintenance_requests')
+          .update({ 
+            status: newStatus,
+            assigned_to: user?.id
+          })
+          .eq('id', requestId);
 
-      if (error) throw error;
+        if (error) {
+          // Handle duplicate key conflicts gracefully
+          if (error.code === '23505' || error.message?.includes('duplicate key')) {
+            console.warn('Status already updated by another user:', error);
+            toast({
+              title: "Already Updated",
+              description: "This request was already updated by another user",
+            });
+            onUpdate();
+            return;
+          }
+          throw error;
+        }
 
-      const result = data as any;
-      if (result?.success === false) {
         toast({
-          title: "Error",
-          description: result.error || "Failed to complete request",
-          variant: "destructive"
+          title: "Request updated successfully",
+          description: `Request status changed to ${newStatus.replace('_', ' ')}`,
         });
-        return;
+
+        setConfirmDialog(prev => ({ ...prev, open: false, loading: false }));
+        onUpdate();
+      } catch (error: any) {
+        console.error('Error updating request:', error);
+        const errorMessage = handleSupabaseError(error);
+        toast({
+          title: "Error updating request",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setConfirmDialog(prev => ({ ...prev, loading: false }));
+      } finally {
+        setUpdatingRequestId(null);
       }
+    };
 
-      toast({
-        title: "Success",
-        description: result?.message || "Request completed successfully"
-      });
-
-      onUpdate();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to complete request",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(null);
-    }
+    openDialog();
   };
 
   const statusConfig = getStatusConfig(requestStatus);
@@ -351,31 +391,17 @@ const RequestWorkflowManager: React.FC<RequestWorkflowManagerProps> = ({
           </div>
         )}
 
-        {/* Complete Request */}
+        {/* Complete Request - using duplicated logic from StaffRequestsPage */}
         {canComplete && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Completion Notes (Optional)
-              </label>
-              <Textarea
-                value={closureNotes}
-                onChange={(e) => setClosureNotes(e.target.value)}
-                placeholder="Describe work completed..."
-                rows={3}
-              />
-            </div>
-            
-            <Button
-              onClick={handleCompleteRequest}
-              disabled={loading === 'complete'}
-              className="w-full"
-              size="lg"
-            >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              {loading === 'complete' ? 'Completing...' : 'Complete Request'}
-            </Button>
-          </div>
+          <Button
+            onClick={() => updateRequestStatusToComplete(requestId, 'completed')}
+            disabled={updatingRequestId === requestId}
+            className="w-full bg-green-500 hover:bg-green-600"
+            size="lg"
+          >
+            <CheckCircle className="w-4 h-4 mr-2" />
+            {updatingRequestId === requestId ? 'Completing...' : 'Mark Complete'}
+          </Button>
         )}
 
         {/* Completed Status */}
@@ -399,6 +425,17 @@ const RequestWorkflowManager: React.FC<RequestWorkflowManagerProps> = ({
           </div>
         )}
       </CardContent>
+
+      <ConfirmationDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        onConfirm={confirmDialog.onConfirm}
+        confirmText="Complete"
+        variant="default"
+        loading={confirmDialog.loading}
+      />
     </Card>
   );
 };
