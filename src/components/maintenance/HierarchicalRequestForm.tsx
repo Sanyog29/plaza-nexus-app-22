@@ -20,11 +20,21 @@ const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   mainCategoryId: z.string().min(1, 'Please select a category'),
-  subCategoryId: z.string().min(1, 'Please select a sub-category'),
+  issueType: z.string().min(1, 'Please select an issue type'),
+  customIssueType: z.string().optional(),
   buildingAreaId: z.string().min(1, 'Please select an area'),
   buildingFloorId: z.string().min(1, 'Please select a floor'),
   priority: z.enum(['urgent', 'high', 'medium', 'low', 'critical']),
   is_crisis: z.boolean().optional()
+}).refine((data) => {
+  // If issue type is custom, require custom issue type field
+  if (data.issueType === '__custom__') {
+    return data.customIssueType && data.customIssueType.trim().length >= 3;
+  }
+  return true;
+}, {
+  message: "Please describe your custom issue (minimum 3 characters)",
+  path: ["customIssueType"]
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -37,13 +47,97 @@ interface MainCategory {
   color: string;
 }
 
-interface SubCategory {
-  id: string;
+interface IssueTypeMapping {
   name: string;
   default_priority: string;
   response_sla_minutes: number;
   resolution_sla_minutes: number;
 }
+
+// Category to Issue Type mappings
+const CATEGORY_ISSUE_MAPPINGS: Record<string, IssueTypeMapping[]> = {
+  'Workstation & Furniture': [
+    { name: 'Chair broken', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 1440 },
+    { name: 'Desk alignment', default_priority: 'low', response_sla_minutes: 480, resolution_sla_minutes: 2880 },
+    { name: 'Locker not opening', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 1440 }
+  ],
+  'Electrical & Lighting': [
+    { name: 'Power outage', default_priority: 'urgent', response_sla_minutes: 30, resolution_sla_minutes: 120 },
+    { name: 'Socket fault', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 },
+    { name: 'UPS failure', default_priority: 'high', response_sla_minutes: 60, resolution_sla_minutes: 240 },
+    { name: 'Light not working', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 1440 }
+  ],
+  'HVAC & Air Quality': [
+    { name: 'AC breakdown (bay)', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 },
+    { name: 'Uneven cooling', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 1440 },
+    { name: 'Filter cleaning', default_priority: 'low', response_sla_minutes: 480, resolution_sla_minutes: 2880 }
+  ],
+  'Plumbing & Washrooms': [
+    { name: 'Flush not working', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 },
+    { name: 'Tap leakage', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'No water supply', default_priority: 'urgent', response_sla_minutes: 30, resolution_sla_minutes: 120 }
+  ],
+  'Housekeeping & Cleaning': [
+    { name: 'Daily cleaning', default_priority: 'medium', response_sla_minutes: 480, resolution_sla_minutes: 1440 },
+    { name: 'Dusting', default_priority: 'low', response_sla_minutes: 720, resolution_sla_minutes: 2880 },
+    { name: 'Deep cleaning', default_priority: 'low', response_sla_minutes: 1440, resolution_sla_minutes: 4320 },
+    { name: 'Pest control', default_priority: 'high', response_sla_minutes: 240, resolution_sla_minutes: 1440 }
+  ],
+  'Pantry & F&B': [
+    { name: 'Coffee machine down', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'Stock shortage', default_priority: 'low', response_sla_minutes: 480, resolution_sla_minutes: 1440 },
+    { name: 'Vendor delay', default_priority: 'low', response_sla_minutes: 720, resolution_sla_minutes: 2880 }
+  ],
+  'Security & Access Control': [
+    { name: 'ID card issues', default_priority: 'high', response_sla_minutes: 60, resolution_sla_minutes: 240 },
+    { name: 'Turnstile not working', default_priority: 'high', response_sla_minutes: 60, resolution_sla_minutes: 240 },
+    { name: 'CCTV fault', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 }
+  ],
+  'IT & Connectivity': [
+    { name: 'Wi-Fi down', default_priority: 'high', response_sla_minutes: 60, resolution_sla_minutes: 240 },
+    { name: 'Printer error', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'LAN port dead', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 }
+  ],
+  'AV & Meeting Rooms': [
+    { name: 'VC not connecting', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 },
+    { name: 'Display not working', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'Booking issue', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 }
+  ],
+  'Lifts & Vertical Transport': [
+    { name: 'Lift breakdown', default_priority: 'urgent', response_sla_minutes: 15, resolution_sla_minutes: 60 },
+    { name: 'Stuck lift', default_priority: 'critical', response_sla_minutes: 5, resolution_sla_minutes: 30 },
+    { name: 'Call button not working', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 }
+  ],
+  'Building Services': [
+    { name: 'Ceiling tile damage', default_priority: 'medium', response_sla_minutes: 480, resolution_sla_minutes: 2880 },
+    { name: 'Wall painting', default_priority: 'low', response_sla_minutes: 1440, resolution_sla_minutes: 7200 },
+    { name: 'Glass crack', default_priority: 'high', response_sla_minutes: 240, resolution_sla_minutes: 1440 }
+  ],
+  'Environment & Sustainability': [
+    { name: 'Waste segregation', default_priority: 'medium', response_sla_minutes: 480, resolution_sla_minutes: 1440 },
+    { name: 'Recycling', default_priority: 'low', response_sla_minutes: 720, resolution_sla_minutes: 2880 },
+    { name: 'Solar/energy issues', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 1440 }
+  ],
+  'Health & Safety': [
+    { name: 'Fire alarm', default_priority: 'critical', response_sla_minutes: 5, resolution_sla_minutes: 30 },
+    { name: 'First aid', default_priority: 'urgent', response_sla_minutes: 10, resolution_sla_minutes: 60 },
+    { name: 'PPE', default_priority: 'high', response_sla_minutes: 120, resolution_sla_minutes: 480 },
+    { name: 'Fire drills', default_priority: 'medium', response_sla_minutes: 480, resolution_sla_minutes: 1440 }
+  ],
+  'Business Support & Admin': [
+    { name: 'Courier', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'Stationery', default_priority: 'low', response_sla_minutes: 480, resolution_sla_minutes: 1440 },
+    { name: 'Visitor support', default_priority: 'medium', response_sla_minutes: 120, resolution_sla_minutes: 480 }
+  ],
+  'Events & Community': [
+    { name: 'Space booking', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'Event support', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 720 },
+    { name: 'Surveys', default_priority: 'low', response_sla_minutes: 720, resolution_sla_minutes: 2880 }
+  ],
+  'Other/General': [
+    { name: 'Any unclassified', default_priority: 'medium', response_sla_minutes: 240, resolution_sla_minutes: 1440 }
+  ]
+};
 
 interface BuildingArea {
   id: string;
@@ -69,14 +163,14 @@ interface HierarchicalRequestFormProps {
 
 const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuccess }) => {
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([]);
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [availableIssueTypes, setAvailableIssueTypes] = useState<IssueTypeMapping[]>([]);
   const [buildingAreas, setBuildingAreas] = useState<BuildingArea[]>([]);
   const [buildingFloors, setBuildingFloors] = useState<BuildingFloor[]>([]);
   const [slaInfo, setSlaInfo] = useState<SLAInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [pendingNotListed, setPendingNotListed] = useState(false);
+  const [showCustomIssueType, setShowCustomIssueType] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   
   const { toast } = useToast();
@@ -88,7 +182,8 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       title: '',
       description: '',
       mainCategoryId: '',
-      subCategoryId: '',
+      issueType: '',
+      customIssueType: '',
       buildingAreaId: '',
       buildingFloorId: '',
       priority: 'medium',
@@ -97,7 +192,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   });
 
   const selectedMainCategory = form.watch('mainCategoryId');
-  const selectedSubCategory = form.watch('subCategoryId');
+  const selectedIssueType = form.watch('issueType');
   const selectedPriority = form.watch('priority');
 
   // Get current location on mobile
@@ -150,79 +245,47 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     loadData();
   }, [toast]);
 
-  // Load sub-categories when main category changes
+  // Load issue types when main category changes
   useEffect(() => {
-    const loadSubCategories = async () => {
-      if (!selectedMainCategory) {
-        console.log('🔍 No main category selected, clearing subcategories');
-        setSubCategories([]);
-        return;
-      }
+    if (!selectedMainCategory) {
+      setAvailableIssueTypes([]);
+      setShowCustomIssueType(false);
+      return;
+    }
 
-      try {
-        console.log('🔍 Loading subcategories for main category:', selectedMainCategory);
-        const { data, error } = await supabase
-          .from('sub_categories')
-          .select('*')
-          .eq('main_category_id', selectedMainCategory)
-          .eq('is_active', true)
-          .order('sort_order');
+    const selectedCategoryData = mainCategories.find(cat => cat.id === selectedMainCategory);
+    if (!selectedCategoryData) return;
 
-        if (error) throw error;
-        console.log('🔍 Subcategories loaded:', data?.length || 0, 'items', data);
-        setSubCategories(data || []);
-        
-        // Reset sub-category selection unless pending not listed
-        if (!pendingNotListed) {
-          form.setValue('subCategoryId', '');
-        }
+    const issueTypes = CATEGORY_ISSUE_MAPPINGS[selectedCategoryData.name] || [];
+    setAvailableIssueTypes(issueTypes);
+    
+    // Reset issue type selection
+    form.setValue('issueType', '');
+    form.setValue('customIssueType', '');
+    setShowCustomIssueType(false);
+  }, [selectedMainCategory, mainCategories, form]);
 
-        // Handle pending "not listed" selection
-        if (pendingNotListed && data) {
-          const notListedSub = data.find(sub => 
-            sub.name.toLowerCase().includes('not listed') || 
-            sub.name.toLowerCase().includes('describe')
-          );
-          
-          if (notListedSub) {
-            form.setValue('subCategoryId', notListedSub.id);
-            setTimeout(() => form.setFocus('description'), 100);
-            toast({
-              title: "Category selected",
-              description: "Please describe your issue below."
-            });
-          } else {
-            toast({
-              title: "Please describe your issue",
-              description: "Choose any subcategory and provide details in the description."
-            });
-          }
-          
-          setPendingNotListed(false);
-        }
-      } catch (error: any) {
-        toast({
-          title: "Error loading sub-categories",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-    };
-
-    loadSubCategories();
-  }, [selectedMainCategory, form, toast, pendingNotListed]);
-
-  // Update priority and SLA when sub-category changes
+  // Update priority and SLA when issue type changes
   useEffect(() => {
-    const selectedSub = subCategories.find(sub => sub.id === selectedSubCategory);
-    if (selectedSub) {
-      form.setValue('priority', selectedSub.default_priority as any);
+    if (selectedIssueType === '__custom__') {
+      setShowCustomIssueType(true);
+      // Set default SLA for custom issues
       setSlaInfo({
-        response_sla_minutes: selectedSub.response_sla_minutes,
-        resolution_sla_minutes: selectedSub.resolution_sla_minutes
+        response_sla_minutes: 240,
+        resolution_sla_minutes: 1440
+      });
+      return;
+    }
+
+    const selectedIssue = availableIssueTypes.find(issue => issue.name === selectedIssueType);
+    if (selectedIssue) {
+      form.setValue('priority', selectedIssue.default_priority as any);
+      setSlaInfo({
+        response_sla_minutes: selectedIssue.response_sla_minutes,
+        resolution_sla_minutes: selectedIssue.resolution_sla_minutes
       });
     }
-  }, [selectedSubCategory, subCategories, form]);
+  }, [selectedIssueType, availableIssueTypes, form]);
 
   const formatSLATime = (minutes: number) => {
     if (minutes < 60) return `${minutes}m`;
@@ -248,23 +311,16 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   };
 
   const handleNotListedSelection = () => {
-    const otherCategory = mainCategories.find(cat => 
-      cat.name.toLowerCase().includes('other') || 
-      cat.name.toLowerCase().includes('general')
-    );
+    // Don't change category - keep the user's selected category
+    // Just enable custom issue type input
+    form.setValue('issueType', '__custom__');
+    setShowCustomIssueType(true);
     
-    if (!otherCategory) {
-      toast({
-        title: "Please select any category",
-        description: "Choose any category and describe your issue in detail.",
-        variant: "default"
-      });
-      return;
-    }
-
-    // Set the Other/General category and mark pending
-    form.setValue('mainCategoryId', otherCategory.id);
-    setPendingNotListed(true);
+    toast({
+      title: "Custom issue type enabled",
+      description: "Please describe your specific issue below.",
+      variant: "default"
+    });
   };
 
   const uploadPendingFiles = async (requestId: string) => {
@@ -342,12 +398,15 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         ? (data.priority === 'critical' ? 'urgent' : data.priority) 
         : 'medium';
       
+      // Get the final issue type (either selected or custom)
+      const finalIssueType = data.issueType === '__custom__' ? data.customIssueType : data.issueType;
+      
       const requestData = {
         title: data.title,
         description: data.description,
         location: `${buildingAreas.find(a => a.id === data.buildingAreaId)?.name || ''} - ${buildingFloors.find(f => f.id === data.buildingFloorId)?.name || ''}`,
-        main_category_id: data.mainCategoryId,
-        sub_category_id: data.subCategoryId,
+        category_id: data.mainCategoryId, // Use the selected category, not sub-category
+        issue_type: finalIssueType,
         building_area_id: data.buildingAreaId,
         building_floor_id: data.buildingFloorId,
         priority: safePriority,
@@ -387,6 +446,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       form.reset();
       setSlaInfo(null);
       setPendingFiles([]);
+      setShowCustomIssueType(false);
       onSuccess?.();
     } catch (error: any) {
       toast({
@@ -458,10 +518,10 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                 )}
               />
 
-              {/* Sub Category */}
+              {/* Issue Type */}
               <FormField
                 control={form.control}
-                name="subCategoryId"
+                name="issueType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Issue Type *</FormLabel>
@@ -471,6 +531,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                           handleNotListedSelection();
                         } else {
                           field.onChange(value);
+                          setShowCustomIssueType(false);
                         }
                       }} 
                       value={field.value} 
@@ -481,34 +542,54 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                           <SelectValue placeholder="Select issue type" />
                         </SelectTrigger>
                       </FormControl>
-                          <SelectContent className="bg-background border shadow-lg z-50">
-                            {subCategories.length > 0 ? (
-                              <>
-                                {subCategories.map((subCategory) => (
-                                  <SelectItem key={subCategory.id} value={subCategory.id}>
-                                    {subCategory.name}
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="__not_listed__" className="text-primary font-medium border-t border-border mt-1 pt-2">
-                                  💭 My issue isn't mentioned here
-                                </SelectItem>
-                              </>
-                            ) : (
-                              <>
-                                <SelectItem value="__no_options__" disabled>
-                                  No issue types found for this category
-                                </SelectItem>
-                                <SelectItem value="__not_listed__" className="text-primary font-medium mt-1">
-                                  💭 My issue isn't mentioned here
-                                </SelectItem>
-                              </>
-                            )}
-                          </SelectContent>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {availableIssueTypes.length > 0 ? (
+                          <>
+                            {availableIssueTypes.map((issueType) => (
+                              <SelectItem key={issueType.name} value={issueType.name}>
+                                {issueType.name}
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="__not_listed__" className="text-primary font-medium border-t border-border mt-1 pt-2">
+                              💭 My issue isn't mentioned here
+                            </SelectItem>
+                          </>
+                        ) : selectedMainCategory ? (
+                          <SelectItem value="__not_listed__" className="text-primary font-medium">
+                            💭 Describe your issue
+                          </SelectItem>
+                        ) : (
+                          <SelectItem value="__no_selection__" disabled>
+                            Please select a category first
+                          </SelectItem>
+                        )}
+                      </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Custom Issue Type Input */}
+              {showCustomIssueType && (
+                <FormField
+                  control={form.control}
+                  name="customIssueType"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>Describe your issue *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Please describe your specific issue" 
+                          {...field} 
+                          className="bg-background"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* Building Area */}
               <FormField
@@ -567,7 +648,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
             </div>
 
             {/* Priority Display */}
-            {selectedSubCategory && (
+            {(selectedIssueType || showCustomIssueType) && (
               <div className="bg-muted/50 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Auto-assigned Priority:</span>
