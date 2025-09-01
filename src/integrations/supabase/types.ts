@@ -2881,6 +2881,7 @@ export type Database = {
           gps_coordinates: Json | null
           id: string
           is_crisis: boolean
+          issue_type: string | null
           location: string
           main_category_id: string | null
           next_escalation_at: string | null
@@ -2926,6 +2927,7 @@ export type Database = {
           gps_coordinates?: Json | null
           id?: string
           is_crisis?: boolean
+          issue_type?: string | null
           location: string
           main_category_id?: string | null
           next_escalation_at?: string | null
@@ -2971,6 +2973,7 @@ export type Database = {
           gps_coordinates?: Json | null
           id?: string
           is_crisis?: boolean
+          issue_type?: string | null
           location?: string
           main_category_id?: string | null
           next_escalation_at?: string | null
