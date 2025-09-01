@@ -3032,7 +3032,7 @@ export type Database = {
             foreignKeyName: "maintenance_requests_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "maintenance_categories"
+            referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
           {

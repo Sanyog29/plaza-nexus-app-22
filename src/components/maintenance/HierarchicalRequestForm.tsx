@@ -390,7 +390,6 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     setIsSubmitting(true);
 
     try {
-      // Get all form values and ensure is_crisis is properly handled
       const formValues = form.getValues();
       
       // Map priority to allowed enum values to ensure safety
@@ -405,7 +404,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         title: data.title,
         description: data.description,
         location: `${buildingAreas.find(a => a.id === data.buildingAreaId)?.name || ''} - ${buildingFloors.find(f => f.id === data.buildingFloorId)?.name || ''}`,
-        category_id: data.mainCategoryId, // Use the selected category, not sub-category
+        category_id: data.mainCategoryId, // This now correctly points to main_categories
         issue_type: finalIssueType,
         building_area_id: data.buildingAreaId,
         building_floor_id: data.buildingFloorId,
@@ -416,6 +415,8 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         auto_detected_location: !!currentLocation,
         is_crisis: Boolean(formValues.is_crisis)
       };
+
+      console.log('Submitting request data:', requestData);
 
       const { data: result, error } = await supabase
         .from('maintenance_requests')
@@ -449,6 +450,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       setShowCustomIssueType(false);
       onSuccess?.();
     } catch (error: any) {
+      console.error('Error submitting request:', error);
       toast({
         title: "Error submitting request",
         description: error.message,
