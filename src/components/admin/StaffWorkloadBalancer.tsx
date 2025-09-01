@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +22,9 @@ import { extractCategoryName } from '@/utils/categoryUtils';
 
 interface StaffMember {
   id: string;
-  email: string;
-  full_name?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
   department?: string;
   workload: {
     active: number;
@@ -69,12 +71,12 @@ const StaffWorkloadBalancer: React.FC = () => {
     
     setLoading(true);
     try {
-      // Fetch staff members
+      // Fetch staff members - get both profiles and auth.users data
       const { data: profiles } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_type', 'staff')
-        .eq('status', 'active');
+        .in('role', ['field_staff', 'ops_supervisor'])
+        .eq('approval_status', 'approved');
 
       if (profiles) {
         // Get unique departments
@@ -109,10 +111,16 @@ const StaffWorkloadBalancer: React.FC = () => {
             const pending = activeRequests?.filter(r => r.status === 'assigned').length || 0;
             const completed_today = completedToday?.length || 0;
 
+            // Get display name
+            const displayName = profile.first_name && profile.last_name 
+              ? `${profile.first_name} ${profile.last_name}` 
+              : profile.first_name || 'Staff Member';
+
             return {
               id: profile.id,
-              email: profile.email,
-              full_name: profile.full_name,
+              email: '', // Not available from profiles table
+              first_name: profile.first_name,
+              last_name: profile.last_name,
               department: profile.department,
               workload: {
                 active,
@@ -234,11 +242,9 @@ const StaffWorkloadBalancer: React.FC = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredStaff.map(staff => {
           const distribution = workloadDistribution.find(d => d.staff_id === staff.id);
-          const totalRequests = distribution?.request_count || 0;
-          const urgentTasks = distribution?.priority_breakdown?.urgent || 0;
-          const highTasks = distribution?.priority_breakdown?.high || 0;
-          const mediumTasks = distribution?.priority_breakdown?.medium || 0;
-          const lowTasks = distribution?.priority_breakdown?.low || 0;
+          const displayName = staff.first_name && staff.last_name 
+            ? `${staff.first_name} ${staff.last_name}` 
+            : staff.first_name || 'Staff Member';
 
           return (
             <Card key={staff.id}>
@@ -246,7 +252,7 @@ const StaffWorkloadBalancer: React.FC = () => {
                 <CardTitle className="text-sm font-medium">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    {staff.full_name || staff.email}
+                    {displayName}
                   </div>
                 </CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />

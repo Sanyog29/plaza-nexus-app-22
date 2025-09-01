@@ -1,59 +1,72 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  CheckCircle2, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line
+} from 'recharts';
+import { 
+  CheckCircle, 
   Clock, 
-  AlertTriangle, 
-  TrendingUp, 
+  TrendingUp,
+  Target,
   Calendar,
-  Filter,
-  Download
+  Users,
+  AlertTriangle,
+  Award
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
+import { extractCategoryName } from '@/utils/categoryUtils';
 
 interface TaskMetrics {
   totalTasks: number;
   completedTasks: number;
-  pendingTasks: number;
-  overdueTasks: number;
-  avgCompletionTime: number;
+  activeTasks: number;
+  averageCompletionTime: number;
   completionRate: number;
-  onTimeCompletionRate: number;
-}
-
-interface TaskTrend {
-  date: string;
-  completed: number;
-  created: number;
-  overdue: number;
-}
-
-interface CategoryMetrics {
-  category: string;
-  total: number;
-  completed: number;
-  avgTime: number;
-  completionRate: number;
+  categoryBreakdown: Array<{
+    category: string;
+    completed: number;
+    pending: number;
+    avgTime: number;
+  }>;
+  dailyProgress: Array<{
+    date: string;
+    completed: number;
+    started: number;
+  }>;
+  performanceScore: number;
 }
 
 export const TaskAnalyticsDashboard: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<TaskMetrics | null>(null);
-  const [trends, setTrends] = useState<TaskTrend[]>([]);
-  const [categoryMetrics, setCategoryMetrics] = useState<CategoryMetrics[]>([]);
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'quarter'>('month');
+  const [viewType, setViewType] = useState<'personal' | 'team'>('personal');
 
   useEffect(() => {
     if (user) {
       fetchTaskAnalytics();
     }
-  }, [user, timeRange]);
+  }, [user, timeRange, viewType]);
 
   const fetchTaskAnalytics = async () => {
     if (!user) return;
@@ -76,124 +89,121 @@ export const TaskAnalyticsDashboard: React.FC = () => {
           break;
       }
 
-      // Fetch maintenance requests
-      const { data: maintenanceRequests } = await supabase
+      // Fetch tasks based on view type
+      const query = supabase
         .from('maintenance_requests')
         .select(`
           *,
-          maintenance_categories(name)
+          main_categories(name)
         `)
-        .eq('assigned_to', user.id)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
-      // Fetch task assignments
-      const { data: taskAssignments } = await supabase
-        .from('task_assignments')
-        .select('*')
-        .eq('assigned_to', user.id)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+      if (viewType === 'personal') {
+        query.eq('assigned_to', user.id);
+      }
 
-      if (maintenanceRequests) {
-        // Calculate metrics
-        const totalTasks = maintenanceRequests.length;
-        const completedTasks = maintenanceRequests.filter(t => t.status === 'completed').length;
-        const pendingTasks = maintenanceRequests.filter(t => t.status === 'in_progress' || t.status === 'pending').length;
-        const overdueTasks = maintenanceRequests.filter(t => 
-          t.sla_breach_at && new Date(t.sla_breach_at) < new Date() && t.status !== 'completed'
-        ).length;
+      const { data: tasks } = await query;
 
+      if (tasks) {
+        // Calculate basic metrics
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(t => t.status === 'completed').length;
+        const activeTasks = tasks.filter(t => t.status === 'in_progress').length;
+        
         // Calculate average completion time
-        const completedWithTimes = maintenanceRequests.filter(t => 
+        const completedWithTime = tasks.filter(t => 
           t.status === 'completed' && t.completed_at && t.created_at
         );
-        
-        const avgCompletionTime = completedWithTimes.length > 0
-          ? completedWithTimes.reduce((sum, task) => {
-              const completionTime = new Date(task.completed_at!).getTime() - new Date(task.created_at).getTime();
-              return sum + (completionTime / (1000 * 60 * 60)); // Convert to hours
-            }, 0) / completedWithTimes.length
+        const averageCompletionTime = completedWithTime.length > 0
+          ? completedWithTime.reduce((sum, task) => {
+              const duration = new Date(task.completed_at!).getTime() - new Date(task.created_at).getTime();
+              return sum + (duration / (1000 * 60 * 60)); // Convert to hours
+            }, 0) / completedWithTime.length
           : 0;
 
-        // Calculate on-time completion rate
-        const onTimeCompletions = completedWithTimes.filter(t => 
-          !t.sla_breach_at || new Date(t.completed_at!) <= new Date(t.sla_breach_at)
+        const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+        // Process category breakdown
+        const categoryMap = new Map<string, {
+          completed: number;
+          pending: number;
+          totalTime: number;
+          completedCount: number;
+        }>();
+
+        tasks.forEach(task => {
+          const categoryName = extractCategoryName(task.main_categories);
+          
+          if (!categoryMap.has(categoryName)) {
+            categoryMap.set(categoryName, {
+              completed: 0,
+              pending: 0,
+              totalTime: 0,
+              completedCount: 0
+            });
+          }
+
+          const category = categoryMap.get(categoryName)!;
+          
+          if (task.status === 'completed') {
+            category.completed++;
+            if (task.completed_at && task.created_at) {
+              const duration = new Date(task.completed_at).getTime() - new Date(task.created_at).getTime();
+              category.totalTime += duration / (1000 * 60 * 60); // Convert to hours
+              category.completedCount++;
+            }
+          } else {
+            category.pending++;
+          }
+        });
+
+        const categoryBreakdown = Array.from(categoryMap.entries()).map(([category, data]) => ({
+          category,
+          completed: data.completed,
+          pending: data.pending,
+          avgTime: data.completedCount > 0 ? data.totalTime / data.completedCount : 0
+        }));
+
+        // Generate daily progress (last 7 days)
+        const dailyProgress = Array.from({ length: 7 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          date.setHours(0, 0, 0, 0);
+          
+          const nextDay = new Date(date);
+          nextDay.setDate(nextDay.getDate() + 1);
+          
+          const dayTasks = tasks.filter(t => {
+            const taskDate = new Date(t.created_at);
+            return taskDate >= date && taskDate < nextDay;
+          });
+          
+          return {
+            date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            completed: dayTasks.filter(t => t.status === 'completed').length,
+            started: dayTasks.filter(t => t.status === 'in_progress').length
+          };
+        }).reverse();
+
+        // Calculate performance score (simplified)
+        const slaCompliance = tasks.filter(t => 
+          !t.sla_breach_at || (t.completed_at && new Date(t.completed_at) <= new Date(t.sla_breach_at))
         ).length;
+        const performanceScore = totalTasks > 0 
+          ? Math.round(((completionRate * 0.4) + ((slaCompliance / totalTasks) * 100 * 0.6)))
+          : 0;
 
         setMetrics({
           totalTasks,
           completedTasks,
-          pendingTasks,
-          overdueTasks,
-          avgCompletionTime,
-          completionRate: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
-          onTimeCompletionRate: completedTasks > 0 ? (onTimeCompletions / completedTasks) * 100 : 0
+          activeTasks,
+          averageCompletionTime,
+          completionRate,
+          categoryBreakdown,
+          dailyProgress,
+          performanceScore
         });
-
-        // Calculate trends (daily data for the selected period)
-        const trendData: TaskTrend[] = [];
-        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        for (let i = 0; i < Math.min(daysDiff, 30); i++) {
-          const date = new Date(startDate);
-          date.setDate(startDate.getDate() + i);
-          const dateStr = date.toISOString().split('T')[0];
-          
-          const dayTasks = maintenanceRequests.filter(t => 
-            t.created_at.split('T')[0] === dateStr
-          );
-          
-          const dayCompleted = maintenanceRequests.filter(t => 
-            t.completed_at && t.completed_at.split('T')[0] === dateStr
-          );
-          
-          const dayOverdue = maintenanceRequests.filter(t => 
-            t.sla_breach_at && t.sla_breach_at.split('T')[0] === dateStr &&
-            (!t.completed_at || new Date(t.completed_at) > new Date(t.sla_breach_at))
-          );
-
-          trendData.push({
-            date: dateStr,
-            created: dayTasks.length,
-            completed: dayCompleted.length,
-            overdue: dayOverdue.length
-          });
-        }
-        setTrends(trendData);
-
-        // Calculate category metrics
-        const categoryMap = new Map<string, any[]>();
-        maintenanceRequests.forEach(task => {
-          const category = task.maintenance_categories?.name || 'Uncategorized';
-          if (!categoryMap.has(category)) {
-            categoryMap.set(category, []);
-          }
-          categoryMap.get(category)!.push(task);
-        });
-
-        const categoryStats: CategoryMetrics[] = Array.from(categoryMap.entries()).map(([category, tasks]) => {
-          const completed = tasks.filter(t => t.status === 'completed');
-          const avgTime = completed.length > 0
-            ? completed.reduce((sum, task) => {
-                if (task.completed_at && task.created_at) {
-                  const time = new Date(task.completed_at).getTime() - new Date(task.created_at).getTime();
-                  return sum + (time / (1000 * 60 * 60));
-                }
-                return sum;
-              }, 0) / completed.length
-            : 0;
-
-          return {
-            category,
-            total: tasks.length,
-            completed: completed.length,
-            avgTime,
-            completionRate: (completed.length / tasks.length) * 100
-          };
-        });
-
-        setCategoryMetrics(categoryStats.sort((a, b) => b.total - a.total));
       }
 
     } catch (error) {
@@ -208,32 +218,7 @@ export const TaskAnalyticsDashboard: React.FC = () => {
     }
   };
 
-  const exportData = () => {
-    if (!metrics || !trends.length) return;
-    
-    const data = {
-      metrics,
-      trends,
-      categoryMetrics,
-      exportedAt: new Date().toISOString(),
-      timeRange
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `task-analytics-${timeRange}-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Success",
-      description: "Task analytics exported successfully"
-    });
-  };
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   if (loading) {
     return (
@@ -261,245 +246,196 @@ export const TaskAnalyticsDashboard: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Task Analytics</h1>
-          <p className="text-muted-foreground">Detailed analysis of your task performance</p>
+          <p className="text-muted-foreground">Performance insights and task management metrics</p>
         </div>
         <div className="flex gap-2">
-          {(['week', 'month', 'quarter'] as const).map((range) => (
-            <Button
-              key={range}
-              variant={timeRange === range ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setTimeRange(range)}
-            >
-              {range.charAt(0).toUpperCase() + range.slice(1)}
-            </Button>
-          ))}
-          <Button variant="outline" size="sm" onClick={exportData}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <Select value={viewType} onValueChange={(value: any) => setViewType(value)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="personal">My Tasks</SelectItem>
+              <SelectItem value="team">Team Tasks</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={timeRange} onValueChange={(value: any) => setTimeRange(value)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">Week</SelectItem>
+              <SelectItem value="month">Month</SelectItem>
+              <SelectItem value="quarter">Quarter</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metrics?.totalTasks || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {metrics?.pendingTasks || 0} pending, {metrics?.completedTasks || 0} completed
-            </p>
-          </CardContent>
-        </Card>
+      {metrics && (
+        <>
+          {/* Key Metrics */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{metrics.totalTasks}</div>
+                <p className="text-xs text-muted-foreground">
+                  {timeRange} period
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {metrics?.completionRate ? `${metrics.completionRate.toFixed(1)}%` : '0%'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {metrics?.completedTasks || 0} of {metrics?.totalTasks || 0} tasks
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Completed</CardTitle>
+                <Award className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">{metrics.completedTasks}</div>
+                <p className="text-xs text-muted-foreground">
+                  {metrics.completionRate.toFixed(1)}% completion rate
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Completion Time</CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {metrics?.avgCompletionTime ? `${metrics.avgCompletionTime.toFixed(1)}h` : '0h'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Time from assignment to completion
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active</CardTitle>
+                <Clock className="h-4 w-4 text-orange-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">{metrics.activeTasks}</div>
+                <p className="text-xs text-muted-foreground">
+                  In progress
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue Tasks</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {metrics?.overdueTasks || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Tasks past their SLA deadline
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Avg Time</CardTitle>
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {metrics.averageCompletionTime.toFixed(1)}h
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Per task
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* Performance Analysis */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>On-Time Performance</CardTitle>
-            <CardDescription>Tasks completed within SLA timeframes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">On-Time Completion Rate</span>
-                <span className="text-lg font-bold">
-                  {metrics?.onTimeCompletionRate ? `${metrics.onTimeCompletionRate.toFixed(1)}%` : '0%'}
-                </span>
-              </div>
-              <Progress 
-                value={metrics?.onTimeCompletionRate || 0} 
-                className="h-3"
-              />
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-green-600 font-semibold">
-                    {metrics && metrics.completedTasks ? 
-                      Math.round((metrics.onTimeCompletionRate / 100) * metrics.completedTasks) : 0
-                    }
-                  </div>
-                  <div className="text-muted-foreground">On-time</div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Performance</CardTitle>
+                <Target className="h-4 w-4 text-purple-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-purple-600">
+                  {metrics.performanceScore}%
                 </div>
-                <div>
-                  <div className="text-red-600 font-semibold">
-                    {metrics && metrics.completedTasks ? 
-                      metrics.completedTasks - Math.round((metrics.onTimeCompletionRate / 100) * metrics.completedTasks) : 0
-                    }
-                  </div>
-                  <div className="text-muted-foreground">Late</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Task Distribution</CardTitle>
-            <CardDescription>Current task status breakdown</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-sm">Completed</span>
-                  </div>
-                  <span className="font-semibold">{metrics?.completedTasks || 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <span className="text-sm">Pending</span>
-                  </div>
-                  <span className="font-semibold">{metrics?.pendingTasks || 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-sm">Overdue</span>
-                  </div>
-                  <span className="font-semibold">{metrics?.overdueTasks || 0}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Category Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Performance by Category</CardTitle>
-          <CardDescription>Task completion metrics across different categories</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {categoryMetrics.length > 0 ? (
-              categoryMetrics.map((category, index) => (
-                <div key={index} className="p-4 border rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold">{category.category}</h4>
-                    <Badge variant="outline">
-                      {category.completionRate.toFixed(1)}% completion
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <div className="font-semibold">{category.total}</div>
-                      <div className="text-muted-foreground">Total tasks</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-green-600">{category.completed}</div>
-                      <div className="text-muted-foreground">Completed</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-blue-600">
-                        {category.avgTime.toFixed(1)}h
-                      </div>
-                      <div className="text-muted-foreground">Avg time</div>
-                    </div>
-                  </div>
-                  <Progress value={category.completionRate} className="h-2 mt-2" />
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No category data available for the selected time period
-              </div>
-            )}
+                <Progress value={metrics.performanceScore} className="mt-2" />
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Trends */}
-      {trends.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Task Trends</CardTitle>
-            <CardDescription>Daily task activity over the selected period</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {trends.reduce((sum, day) => sum + day.created, 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Tasks Created</div>
+          {/* Charts */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daily Progress</CardTitle>
+                <CardDescription>Task completion over the last 7 days</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={metrics.dailyProgress}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="completed" fill="#82ca9d" />
+                    <Bar dataKey="started" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Category Performance</CardTitle>
+                <CardDescription>Task distribution by category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {metrics.categoryBreakdown.slice(0, 5).map((category) => (
+                    <div key={category.category} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{category.category}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{category.completed}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {category.avgTime.toFixed(1)}h avg
+                          </span>
+                        </div>
+                      </div>
+                      <Progress 
+                        value={category.completed + category.pending > 0 ? 
+                          (category.completed / (category.completed + category.pending)) * 100 : 0} 
+                        className="h-2" 
+                      />
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {trends.reduce((sum, day) => sum + day.completed, 0)}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Performance Insights */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Insights</CardTitle>
+              <CardDescription>Key insights from your task performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Strong Performance</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {metrics.completionRate > 80 ? 'Excellent' : 'Good'} completion rate of {metrics.completionRate.toFixed(1)}%
+                    </p>
                   </div>
-                  <div className="text-sm text-muted-foreground">Tasks Completed</div>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">
-                    {trends.reduce((sum, day) => sum + day.overdue, 0)}
+                
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Time Management</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Average {metrics.averageCompletionTime.toFixed(1)} hours per task completion
+                    </p>
                   </div>
-                  <div className="text-sm text-muted-foreground">Tasks Overdue</div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="h-5 w-5 text-purple-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium">Growth Area</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Focus on {metrics.categoryBreakdown[0]?.category || 'efficiency'} for improvement
+                    </p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="text-center text-sm text-muted-foreground">
-                <TrendingUp className="h-4 w-4 inline mr-1" />
-                Daily average: {(trends.reduce((sum, day) => sum + day.completed, 0) / trends.length).toFixed(1)} tasks completed
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );
