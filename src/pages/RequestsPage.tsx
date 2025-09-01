@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Clock, CheckCircle, AlertTriangle, Timer, Trash2, Star } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -25,7 +24,7 @@ interface MaintenanceRequest {
   completed_at: string | null;
   location: string;
   sla_breach_at: string | null;
-  maintenance_categories?: {
+  main_categories?: {
     name: string;
     icon: string;
   };
@@ -71,7 +70,7 @@ const RequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          maintenance_categories (
+          main_categories (
             name,
             icon
           )
@@ -81,12 +80,23 @@ const RequestsPage = () => {
 
       if (error) throw error;
 
-      setRequests(data || []);
+      // Process the data to handle the array structure from Supabase
+      const processedData = (data || []).map(request => {
+        const categoryArray = request.main_categories as any;
+        return {
+          ...request,
+          main_categories: Array.isArray(categoryArray) && categoryArray.length > 0 
+            ? categoryArray[0]
+            : categoryArray || undefined
+        };
+      });
+
+      setRequests(processedData);
       
       // Calculate stats
-      const activeCount = data?.filter(req => ['pending', 'in_progress'].includes(req.status)).length || 0;
-      const pendingCount = data?.filter(req => req.status === 'pending').length || 0;
-      const resolvedCount = data?.filter(req => req.status === 'completed').length || 0;
+      const activeCount = processedData?.filter(req => ['pending', 'in_progress'].includes(req.status)).length || 0;
+      const pendingCount = processedData?.filter(req => req.status === 'pending').length || 0;
+      const resolvedCount = processedData?.filter(req => req.status === 'completed').length || 0;
       
       setStats({
         active: activeCount,
@@ -95,7 +105,7 @@ const RequestsPage = () => {
       });
 
       // Check which completed requests have feedback
-      const completedRequests = data?.filter(req => req.status === 'completed') || [];
+      const completedRequests = processedData?.filter(req => req.status === 'completed') || [];
       if (completedRequests.length > 0) {
         const { data: feedbackData } = await supabase
           .from('maintenance_request_feedback')
@@ -200,6 +210,7 @@ const RequestsPage = () => {
       </div>
     );
   }
+
   return (
     <div className="px-4 py-6">
       <div className="flex justify-between items-center mb-6">
@@ -298,7 +309,7 @@ const RequestsPage = () => {
                         {getPriorityBadge(request.priority)}
                       </div>
                       <p className="text-sm text-gray-400 mt-1">
-                        {request.maintenance_categories?.name || 'General'}
+                        {request.main_categories?.name || 'General'}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">{request.location}</p>
                       <div className="mt-2 space-y-1">

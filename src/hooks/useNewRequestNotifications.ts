@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -34,7 +35,7 @@ export const useNewRequestNotifications = () => {
         async (payload) => {
           const newRequestData = payload.new as any;
           
-          // Fetch the complete request data with category
+          // Fetch the complete request data with category from main_categories
           const { data: requestWithCategory } = await supabase
             .from('maintenance_requests')
             .select(`
@@ -43,13 +44,22 @@ export const useNewRequestNotifications = () => {
               priority,
               location,
               created_at,
-              category:maintenance_categories(name)
+              category:main_categories(name)
             `)
             .eq('id', newRequestData.id)
             .single();
 
           if (requestWithCategory) {
-            setNewRequest(requestWithCategory);
+            // Handle the category array structure
+            const categoryArray = requestWithCategory.category as any;
+            const processedRequest: NewRequest = {
+              ...requestWithCategory,
+              category: Array.isArray(categoryArray) && categoryArray.length > 0 
+                ? { name: categoryArray[0].name }
+                : categoryArray || undefined
+            };
+            
+            setNewRequest(processedRequest);
             setIsVisible(true);
             
             // Auto-hide after 10 seconds

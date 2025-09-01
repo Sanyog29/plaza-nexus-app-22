@@ -42,7 +42,7 @@ export const useRequestOffers = () => {
         return;
       }
 
-      // Then get the offers with request details
+      // Then get the offers with request details from main_categories
       const { data, error } = await supabase
         .from('request_offers')
         .select(`
@@ -54,7 +54,7 @@ export const useRequestOffers = () => {
             title,
             priority,
             location,
-            category:maintenance_categories(name)
+            category:main_categories(name)
           )
         `)
         .in('id', offerIds)
@@ -63,10 +63,20 @@ export const useRequestOffers = () => {
 
       if (error) throw error;
       
-      const typedOffers = (data || []).map(offer => ({
-        ...offer,
-        status: offer.status as 'open' | 'claimed' | 'expired' | 'cancelled'
-      }));
+      const typedOffers = (data || []).map(offer => {
+        // Handle the category array structure
+        const categoryArray = offer.request.category as any;
+        return {
+          ...offer,
+          status: offer.status as 'open' | 'claimed' | 'expired' | 'cancelled',
+          request: {
+            ...offer.request,
+            category: Array.isArray(categoryArray) && categoryArray.length > 0 
+              ? { name: categoryArray[0].name }
+              : categoryArray || { name: 'Unknown' }
+          }
+        };
+      });
       
       setOffers(typedOffers);
     } catch (error) {
