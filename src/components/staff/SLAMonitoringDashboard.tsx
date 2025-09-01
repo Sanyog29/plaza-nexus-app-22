@@ -84,12 +84,12 @@ export const SLAMonitoringDashboard: React.FC = () => {
           break;
       }
 
-      // Fetch maintenance requests with SLA data
+      // Fetch maintenance requests with SLA data from main_categories
       const { data: requests } = await supabase
         .from('maintenance_requests')
         .select(`
           *,
-          maintenance_categories(name)
+          main_categories(name)
         `)
         .eq('assigned_to', user.id)
         .gte('created_at', startDate.toISOString())
@@ -170,7 +170,9 @@ export const SLAMonitoringDashboard: React.FC = () => {
               ? (new Date(req.completed_at || new Date()).getTime() - new Date(req.sla_breach_at).getTime()) / (1000 * 60 * 60)
               : 0,
             status: req.status,
-            category: req.maintenance_categories?.name
+            category: Array.isArray(req.main_categories) && req.main_categories.length > 0 
+              ? req.main_categories[0].name 
+              : req.main_categories?.name || 'Unknown'
           }))
           .sort((a, b) => new Date(b.slaBreachAt).getTime() - new Date(a.slaBreachAt).getTime());
 
@@ -186,7 +188,9 @@ export const SLAMonitoringDashboard: React.FC = () => {
             slaBreachAt: req.sla_breach_at!,
             breachDuration: (new Date().getTime() - new Date(req.sla_breach_at!).getTime()) / (1000 * 60 * 60),
             status: req.status,
-            category: req.maintenance_categories?.name
+            category: Array.isArray(req.main_categories) && req.main_categories.length > 0 
+              ? req.main_categories[0].name 
+              : req.main_categories?.name || 'Unknown'
           }))
           .sort((a, b) => b.breachDuration - a.breachDuration);
 

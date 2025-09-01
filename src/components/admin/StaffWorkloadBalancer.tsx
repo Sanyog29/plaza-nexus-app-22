@@ -1,384 +1,281 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Users, Clock, AlertTriangle, CheckCircle, 
-  ArrowRight, RotateCcw, Zap 
-} from 'lucide-react';
+  Users, 
+  Clock, 
+  AlertTriangle,
+  CheckCircle,
+  TrendingUp,
+  User,
+  BarChart3,
+  Calendar
+} from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
+import { extractCategoryName } from '@/utils/categoryUtils';
 
 interface StaffMember {
   id: string;
-  name: string;
-  role: string;
-  activeRequests: number;
-  completedToday: number;
-  avgResponseTime: number;
-  workload: number;
-  availability: 'available' | 'busy' | 'offline';
-  specialties: string[];
+  email: string;
+  full_name?: string;
+  department?: string;
+  workload: {
+    active: number;
+    pending: number;
+    completed_today: number;
+    avg_resolution_time: number;
+    utilization_rate: number;
+  };
+  performance: {
+    sla_compliance: number;
+    customer_rating: number;
+    tasks_completed: number;
+  };
 }
 
-interface PendingRequest {
-  id: string;
-  title: string;
-  priority: string;
-  category: string;
-  estimatedTime: number;
-  suggestedStaff: string;
+interface WorkloadDistribution {
+  staff_id: string;
+  request_count: number;
+  priority_breakdown: {
+    urgent: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+  category_breakdown: { [key: string]: number };
 }
 
-const StaffWorkloadBalancer = () => {
+const StaffWorkloadBalancer: React.FC = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [autoBalanceEnabled, setAutoBalanceEnabled] = useState(false);
+  const [workloadDistribution, setWorkloadDistribution] = useState<WorkloadDistribution[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+  const [departments, setDepartments] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetchStaffWorkload();
+    }
+  }, [user, selectedDepartment]);
 
   const fetchStaffWorkload = async () => {
+    if (!user) return;
+    
+    setLoading(true);
     try {
       // Fetch staff members
-      const { data: staffProfiles } = await supabase.rpc('get_user_management_data');
-      const staffList = staffProfiles?.filter(s => s.role === 'staff' || s.role === 'admin') || [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_type', 'staff')
+        .eq('status', 'active');
 
-      // Fetch active requests for each staff member
-      const staffWithWorkload = await Promise.all(
-        staffList.map(async (staff) => {
-          const { data: activeRequests } = await supabase
-            .from('maintenance_requests')
-            .select('*')
-            .eq('assigned_to', staff.id)
-            .in('status', ['pending', 'in_progress']);
+      if (profiles) {
+        // Get unique departments
+        const depts = [...new Set(profiles.map(p => p.department).filter(Boolean))];
+        setDepartments(depts);
 
-          const { data: completedToday } = await supabase
-            .from('maintenance_requests')
-            .select('*')
-            .eq('assigned_to', staff.id)
-            .eq('status', 'completed')
-            .gte('completed_at', new Date().toISOString().split('T')[0]);
+        // Fetch workload data for each staff member
+        const staffWithWorkload = await Promise.all(
+          profiles.map(async (profile) => {
+            // Active requests
+            const { data: activeRequests } = await supabase
+              .from('maintenance_requests')
+              .select(`
+                *,
+                main_categories(name)
+              `)
+              .eq('assigned_to', profile.id)
+              .in('status', ['assigned', 'in_progress']);
 
-          // Calculate average response time
-          const { data: completedRequests } = await supabase
-            .from('maintenance_requests')
-            .select('created_at, completed_at')
-            .eq('assigned_to', staff.id)
-            .eq('status', 'completed')
-            .limit(10);
+            // Completed requests today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const { data: completedToday } = await supabase
+              .from('maintenance_requests')
+              .select('id')
+              .eq('assigned_to', profile.id)
+              .eq('status', 'completed')
+              .gte('completed_at', today.toISOString());
 
-          let avgResponseTime = 0;
-          if (completedRequests && completedRequests.length > 0) {
-            const totalTime = completedRequests.reduce((acc, req) => {
-              const created = new Date(req.created_at);
-              const completed = new Date(req.completed_at);
-              return acc + (completed.getTime() - created.getTime());
-            }, 0);
-            avgResponseTime = totalTime / (completedRequests.length * 60 * 60 * 1000); // Convert to hours
-          }
+            // Calculate metrics
+            const active = activeRequests?.length || 0;
+            const pending = activeRequests?.filter(r => r.status === 'assigned').length || 0;
+            const completed_today = completedToday?.length || 0;
 
-          const workload = Math.min((activeRequests?.length || 0) * 25, 100);
-          
-          return {
-            id: staff.id,
-            name: `${staff.first_name} ${staff.last_name}`.trim() || 'Unknown',
-            role: staff.role,
-            activeRequests: activeRequests?.length || 0,
-            completedToday: completedToday?.length || 0,
-            avgResponseTime: Number(avgResponseTime.toFixed(1)),
-            workload,
-            availability: workload > 75 ? 'busy' : workload > 40 ? 'available' : 'available',
-            specialties: ['General Maintenance', 'HVAC'] // Mock data - could be expanded
-          } as StaffMember;
-        })
-      );
+            return {
+              id: profile.id,
+              email: profile.email,
+              full_name: profile.full_name,
+              department: profile.department,
+              workload: {
+                active,
+                pending,
+                completed_today,
+                avg_resolution_time: 0, // Would calculate from historical data
+                utilization_rate: Math.min((active / 10) * 100, 100) // Assuming max 10 concurrent tasks
+              },
+              performance: {
+                sla_compliance: 95, // Would calculate from SLA data
+                customer_rating: 4.5, // Would get from feedback
+                tasks_completed: completed_today
+              }
+            };
+          })
+        );
 
-      // Fetch unassigned pending requests
-      const { data: unassignedRequests } = await supabase
-        .from('maintenance_requests')
-        .select(`
-          id,
-          title,
-          priority,
-          category:maintenance_categories(name)
-        `)
-        .eq('status', 'pending')
-        .is('assigned_to', null);
+        setStaffMembers(staffWithWorkload);
 
-      const pendingWithSuggestions = (unassignedRequests || []).map(req => {
-        // Simple algorithm to suggest best staff member
-        const availableStaff = staffWithWorkload
-          .filter(s => s.availability === 'available')
-          .sort((a, b) => a.workload - b.workload);
-        
-        const suggestedStaff = availableStaff[0]?.name || 'No available staff';
-        
-        return {
-          id: req.id,
-          title: req.title,
-          priority: req.priority,
-          category: req.category?.name || 'General',
-          estimatedTime: req.priority === 'urgent' ? 2 : req.priority === 'high' ? 4 : 8,
-          suggestedStaff
-        };
-      });
+        // Calculate workload distribution
+        const distribution = await Promise.all(
+          profiles.map(async (profile) => {
+            const { data: requests } = await supabase
+              .from('maintenance_requests')
+              .select(`
+                priority,
+                main_categories(name)
+              `)
+              .eq('assigned_to', profile.id)
+              .in('status', ['assigned', 'in_progress']);
 
-      setStaffMembers(staffWithWorkload);
-      setPendingRequests(pendingWithSuggestions);
+            const priority_breakdown = {
+              urgent: 0,
+              high: 0,
+              medium: 0,
+              low: 0
+            };
+
+            const category_breakdown: { [key: string]: number } = {};
+
+            requests?.forEach(req => {
+              // Count by priority
+              priority_breakdown[req.priority as keyof typeof priority_breakdown]++;
+              
+              // Count by category
+              const categoryName = extractCategoryName(req.main_categories);
+              category_breakdown[categoryName] = (category_breakdown[categoryName] || 0) + 1;
+            });
+
+            return {
+              staff_id: profile.id,
+              request_count: requests?.length || 0,
+              priority_breakdown,
+              category_breakdown
+            };
+          })
+        );
+
+        setWorkloadDistribution(distribution);
+      }
 
     } catch (error) {
       console.error('Error fetching staff workload:', error);
       toast({
-        title: "Error loading staff workload",
-        description: "Please try again later",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to load staff workload data",
+        variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchStaffWorkload();
-    
-    // Refresh every 2 minutes
-    const interval = setInterval(fetchStaffWorkload, 120000);
-    
-    return () => clearInterval(interval);
-  }, []);
+  const filteredStaff = selectedDepartment === 'all'
+    ? staffMembers
+    : staffMembers.filter(staff => staff.department === selectedDepartment);
 
-  const assignRequest = async (requestId: string, staffId: string) => {
-    try {
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .update({ assigned_to: staffId })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Request assigned successfully",
-        description: "The request has been assigned to the staff member",
-      });
-
-      fetchStaffWorkload(); // Refresh data
-    } catch (error) {
-      console.error('Error assigning request:', error);
-      toast({
-        title: "Error assigning request",
-        description: "Please try again",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const autoBalance = async () => {
-    try {
-      // Simple auto-balance algorithm
-      const availableStaff = staffMembers
-        .filter(s => s.availability === 'available')
-        .sort((a, b) => a.workload - b.workload);
-
-      const urgentRequests = pendingRequests
-        .filter(r => r.priority === 'urgent')
-        .slice(0, availableStaff.length);
-
-      for (let i = 0; i < urgentRequests.length && i < availableStaff.length; i++) {
-        await assignRequest(urgentRequests[i].id, availableStaff[i].id);
-      }
-
-      toast({
-        title: "Auto-balance completed",
-        description: `Assigned ${Math.min(urgentRequests.length, availableStaff.length)} urgent requests`,
-      });
-
-    } catch (error) {
-      console.error('Error during auto-balance:', error);
-      toast({
-        title: "Auto-balance failed",
-        description: "Please try manual assignment",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <Card className="bg-card/50 backdrop-blur">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 bg-muted rounded w-1/3"></div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-muted rounded w-2/3"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/3"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-semibold text-white">Staff Workload Balancer</h3>
-          <p className="text-sm text-muted-foreground">Optimize task distribution and staff efficiency</p>
+          <h1 className="text-3xl font-bold text-foreground">Staff Workload Balancer</h1>
+          <p className="text-muted-foreground">Monitor and manage staff workload distribution</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setAutoBalanceEnabled(!autoBalanceEnabled)}
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Auto-Balance: {autoBalanceEnabled ? 'ON' : 'OFF'}
-          </Button>
-          <Button 
-            variant="default" 
-            size="sm"
-            onClick={autoBalance}
-            disabled={pendingRequests.length === 0}
-          >
-            <Zap className="h-4 w-4 mr-2" />
-            Balance Now
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Staff Overview */}
-        <Card className="bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Users className="h-4 w-4 mr-2" />
-              Staff Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {staffMembers.map((staff) => (
-              <div key={staff.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                      {staff.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium text-white text-sm">{staff.name}</div>
-                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          staff.availability === 'available' ? 'text-green-400 border-green-400' :
-                          staff.availability === 'busy' ? 'text-yellow-400 border-yellow-400' :
-                          'text-gray-400 border-gray-400'
-                        }`}
-                      >
-                        {staff.availability}
-                      </Badge>
-                      <span>{staff.role}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right space-y-1">
-                  <div className="text-xs text-muted-foreground">Workload</div>
-                  <div className="flex items-center space-x-2">
-                    <Progress value={staff.workload} className="w-20 h-2" />
-                    <span className="text-xs text-white min-w-[30px]">{staff.workload}%</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {staff.activeRequests} active • {staff.completedToday} today
-                  </div>
-                </div>
-              </div>
+        <Select onValueChange={setSelectedDepartment} defaultValue={selectedDepartment}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by Dept" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Departments</SelectItem>
+            {departments.map(dept => (
+              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
             ))}
-          </CardContent>
-        </Card>
-
-        {/* Pending Assignments */}
-        <Card className="bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Clock className="h-4 w-4 mr-2" />
-              Pending Assignments ({pendingRequests.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {pendingRequests.length === 0 ? (
-              <div className="flex items-center justify-center py-8 text-muted-foreground">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                All requests are assigned!
-              </div>
-            ) : (
-              pendingRequests.slice(0, 5).map((request) => (
-                <div key={request.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
-                  <div className="flex-1">
-                    <div className="font-medium text-white text-sm">{request.title}</div>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          request.priority === 'urgent' ? 'text-red-400 border-red-400' :
-                          request.priority === 'high' ? 'text-orange-400 border-orange-400' :
-                          request.priority === 'medium' ? 'text-yellow-400 border-yellow-400' :
-                          'text-green-400 border-green-400'
-                        }`}
-                      >
-                        {request.priority}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{request.category}</span>
-                      <span className="text-xs text-muted-foreground">~{request.estimatedTime}h</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Suggested: {request.suggestedStaff}
-                    </div>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => {
-                      const suggestedStaff = staffMembers.find(s => s.name === request.suggestedStaff);
-                      if (suggestedStaff) {
-                        assignRequest(request.id, suggestedStaff.id);
-                      }
-                    }}
-                  >
-                    <ArrowRight className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Workload Distribution Chart */}
-      <Card className="bg-card/50 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Workload Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-              <div className="text-2xl font-bold text-green-400">
-                {staffMembers.filter(s => s.availability === 'available').length}
-              </div>
-              <div className="text-sm text-green-400">Available Staff</div>
-            </div>
-            <div className="text-center p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-              <div className="text-2xl font-bold text-yellow-400">
-                {staffMembers.filter(s => s.availability === 'busy').length}
-              </div>
-              <div className="text-sm text-yellow-400">Busy Staff</div>
-            </div>
-            <div className="text-center p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <div className="text-2xl font-bold text-blue-400">
-                {Math.round(staffMembers.reduce((acc, s) => acc + s.workload, 0) / staffMembers.length) || 0}%
-              </div>
-              <div className="text-sm text-blue-400">Avg Workload</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredStaff.map(staff => {
+          const distribution = workloadDistribution.find(d => d.staff_id === staff.id);
+          const totalRequests = distribution?.request_count || 0;
+          const urgentTasks = distribution?.priority_breakdown?.urgent || 0;
+          const highTasks = distribution?.priority_breakdown?.high || 0;
+          const mediumTasks = distribution?.priority_breakdown?.medium || 0;
+          const lowTasks = distribution?.priority_breakdown?.low || 0;
+
+          return (
+            <Card key={staff.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    {staff.full_name || staff.email}
+                  </div>
+                </CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Active Tasks</span>
+                    <span className="font-medium">{staff.workload.active}</span>
+                  </div>
+                  <Progress value={staff.workload.utilization_rate} className="h-2" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Pending Tasks</span>
+                    <span className="font-medium">{staff.workload.pending}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Completed Today</span>
+                    <span className="font-medium">{staff.workload.completed_today}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">SLA Compliance</span>
+                    <span className="font-medium">{staff.performance.sla_compliance}%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };
