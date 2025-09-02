@@ -131,8 +131,8 @@ const handler = async (req: Request): Promise<Response> => {
       send_invitation = false
     } = await req.json() as CreateUserRequest;
 
-    // Resolve the role to proper app_role
-    const { data: resolvedRole, error: roleError } = await supabase.rpc('resolve_app_role', {
+    // Get the role mapping but preserve the exact title for storage
+    const { data: resolvedRole, error: roleError } = await supabase.rpc('get_role_from_title', {
       input_role: inputRole
     });
 
@@ -349,13 +349,14 @@ const handler = async (req: Request): Promise<Response> => {
         });
       }
 
-      // Update profile with additional information
+      // Update profile with additional information including assigned role title
       await supabase
         .from('profiles')
         .update({
           first_name,
           last_name,
           role,
+          assigned_role_title: inputRole, // Store the original role title assigned
           department: role === 'tenant' ? null : department,
           specialization,
           emp_id,

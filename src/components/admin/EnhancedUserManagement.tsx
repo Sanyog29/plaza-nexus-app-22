@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { 
   UserPlus, 
   Mail, 
@@ -34,6 +35,7 @@ interface UserData {
   first_name: string;
   last_name: string;
   role: string;
+  assigned_role_title: string;
   approval_status: string;
   created_at: string;
   confirmed_at: string;
@@ -185,13 +187,13 @@ export const EnhancedUserManagement: React.FC = () => {
 
     try {
       if (sendInvitation) {
-        // Use RPC for invitation
+        // Use RPC for invitation - send the title instead of app_role
         const { data, error } = await supabase.rpc('admin_create_user_invitation', {
           invitation_email: newUser.email || null,
           invitation_phone_number: newUser.mobileNumber || null,
           invitation_first_name: newUser.firstName,
           invitation_last_name: newUser.lastName,
-          invitation_role: newUser.role,
+          invitation_role: roles.find(r => r.app_role === newUser.role)?.title || newUser.role, // Send the title
           invitation_department: newUser.department || null,
           invitation_specialization: newUser.specialization || null,
           invitation_password: newUser.password || null,
@@ -214,21 +216,21 @@ export const EnhancedUserManagement: React.FC = () => {
           description: "User invitation sent successfully",
         });
       } else {
-        // Use edge function for direct creation
-        const { data, error } = await supabase.functions.invoke('admin-create-user', {
-          body: {
-            email: newUser.email || undefined,
-            mobile_number: newUser.mobileNumber || undefined,
-            first_name: newUser.firstName,
-            last_name: newUser.lastName,
-            role: newUser.role,
-            department: newUser.department || undefined,
-            specialization: newUser.specialization || undefined,
-            password: newUser.password,
-            emp_id: newUser.empId || undefined,
-            send_invitation: false
-          }
-        });
+      // Use the title directly instead of role for user creation
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: newUser.email || undefined,
+          mobile_number: newUser.mobileNumber || undefined,
+          first_name: newUser.firstName,
+          last_name: newUser.lastName,
+          role: roles.find(r => r.app_role === newUser.role)?.title || newUser.role, // Send the title, not app_role
+          department: newUser.department || undefined,
+          specialization: newUser.specialization || undefined,
+          password: newUser.password,
+          emp_id: newUser.empId || undefined,
+          send_invitation: false
+        }
+      });
 
         if (error) throw error;
 
@@ -535,12 +537,11 @@ export const EnhancedUserManagement: React.FC = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="mobileNumber">Mobile Number</Label>
-              <Input
-                id="mobileNumber"
-                type="tel"
+              <PhoneInput
                 value={newUser.mobileNumber}
-                onChange={(e) => setNewUser({ ...newUser, mobileNumber: e.target.value })}
+                onChange={(value) => setNewUser({ ...newUser, mobileNumber: value })}
                 placeholder="Enter mobile number"
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
@@ -711,19 +712,19 @@ export const EnhancedUserManagement: React.FC = () => {
                               </Button>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-2">
-                               <Badge className={getRoleBadgeColor(user.role)}>
-                                 {roles.find(r => r.title === user.role || r.app_role === user.role)?.title || user.role}
-                               </Badge>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleStartRoleEdit(user.id, user.role)}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Edit3 className="h-3 w-3" />
-                              </Button>
-                            </div>
+                             <div className="flex items-center gap-2">
+                                <Badge className={getRoleBadgeColor(user.role)}>
+                                  {user.assigned_role_title || user.role}
+                                </Badge>
+                               <Button
+                                 size="sm"
+                                 variant="ghost"
+                                 onClick={() => handleStartRoleEdit(user.id, user.role)}
+                                 className="h-6 w-6 p-0"
+                               >
+                                 <Edit3 className="h-3 w-3" />
+                               </Button>
+                             </div>
                           )}
                           
                           <Badge 

@@ -16,6 +16,7 @@ import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 import { OAuthButtons } from './OAuthButtons';
 import { FormField } from './FormField';
 import { NetworkErrorHandler } from './NetworkErrorHandler';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { supabase } from '@/integrations/supabase/client';
 import { isNetworkError as checkIsNetworkError, createNetworkAwareRequest } from '@/utils/networkUtils';
 

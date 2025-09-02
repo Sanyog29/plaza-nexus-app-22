@@ -4052,6 +4052,7 @@ export type Database = {
           approval_status: Database["public"]["Enums"]["approval_status"]
           approved_at: string | null
           approved_by: string | null
+          assigned_role_title: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -4089,6 +4090,7 @@ export type Database = {
           approval_status?: Database["public"]["Enums"]["approval_status"]
           approved_at?: string | null
           approved_by?: string | null
+          assigned_role_title?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -4126,6 +4128,7 @@ export type Database = {
           approval_status?: Database["public"]["Enums"]["approval_status"]
           approved_at?: string | null
           approved_by?: string | null
+          assigned_role_title?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -8537,6 +8540,10 @@ export type Database = {
       get_role_defaults: {
         Args: { role_slug: string }
         Returns: Json
+      }
+      get_role_from_title: {
+        Args: { input_role: string }
+        Returns: string
       }
       get_room_availability_data: {
         Args: { target_date: string }
