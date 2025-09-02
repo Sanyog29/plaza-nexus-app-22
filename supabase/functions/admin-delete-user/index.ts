@@ -115,6 +115,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
+      // Log the failed deletion attempt
+      await supabaseAdmin
+        .from('audit_logs')
+        .insert({
+          user_id: user.id,
+          action: 'delete_user_failed',
+          resource_type: 'user',
+          resource_id: user_id,
+          new_values: {
+            error: deleteError.message,
+            target_email: userToDelete.user.email,
+            attempted_by: user.email
+          }
+        });
+      
       return new Response(
         JSON.stringify({ error: 'Failed to delete user', details: deleteError.message }),
         { 
@@ -123,6 +138,21 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     }
+
+    // Log successful deletion
+    await supabaseAdmin
+      .from('audit_logs')
+      .insert({
+        user_id: user.id,
+        action: 'delete_user',
+        resource_type: 'user',
+        resource_id: user_id,
+        new_values: {
+          deleted_user_email: userToDelete.user.email,
+          deleted_by: user.email,
+          deletion_timestamp: new Date().toISOString()
+        }
+      });
 
     console.log(`User ${userToDelete.user.email} deleted by admin ${user.email}`);
 

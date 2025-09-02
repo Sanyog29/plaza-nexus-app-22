@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
 import { DepartmentSelector } from './DepartmentSelector';
 import { ALLOWED_ROLES, DEFAULT_ROLE, getRoleColor, requiresSpecialization } from '@/constants/roles';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 
 interface UserData {
   id: string;
@@ -40,13 +41,18 @@ interface UserData {
 
 export const EnhancedUserManagement: React.FC = () => {
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  
+  // Delete confirmation state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
   
   // Role editing state
   const [editingRoleUserId, setEditingRoleUserId] = useState<string | null>(null);
@@ -290,6 +296,71 @@ export const EnhancedUserManagement: React.FC = () => {
       });
     } finally {
       setIsUpdatingRole(false);
+    }
+  };
+
+  const handleDeleteUser = async (user: UserData) => {
+    // Prevent admin from deleting themselves
+    if (user.id === currentUser?.id) {
+      toast({
+        title: "Error",
+        description: "Cannot delete your own account",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setIsDeletingUser(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { user_id: userToDelete.id }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to delete user');
+      }
+
+      // Handle response from edge function
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: "Success",
+        description: `User ${userToDelete.email} has been permanently deleted`,
+      });
+
+      setDeleteConfirmOpen(false);
+      setUserToDelete(null);
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Delete user error:', error);
+      
+      // Handle specific error cases
+      let errorMessage = error.message || 'Failed to delete user';
+      
+      if (error.message?.includes('Cannot delete your own account')) {
+        errorMessage = 'Cannot delete your own account';
+      } else if (error.message?.includes('Insufficient permissions')) {
+        errorMessage = 'Insufficient permissions. Admin access required.';
+      } else if (error.message?.includes('User not found')) {
+        errorMessage = 'User not found or already deleted';
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingUser(false);
     }
   };
 
@@ -551,6 +622,17 @@ export const EnhancedUserManagement: React.FC = () => {
                       <RotateCcw className="h-4 w-4 mr-1" />
                       Reset Password
                     </Button>
+                    {/* Delete Button - Only show for admins, disable for self */}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteUser(user)}
+                      disabled={user.id === currentUser?.id}
+                      title={user.id === currentUser?.id ? "Cannot delete your own account" : "Permanently delete user"}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -558,6 +640,19 @@ export const EnhancedUserManagement: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete User Account"
+        description={`Are you sure you want to permanently delete ${userToDelete?.first_name} ${userToDelete?.last_name}'s account? This action cannot be undone and will remove all associated data.`}
+        itemName={userToDelete?.email}
+        deleteText="Delete User"
+        onConfirm={confirmDeleteUser}
+        loading={isDeletingUser}
+        destructive={true}
+      />
     </div>
   );
 };
