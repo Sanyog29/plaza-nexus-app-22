@@ -10,6 +10,8 @@ export interface InvitationRole {
   requires_specialization: boolean;
   color_class?: string;
   sort_order: number;
+  default_department?: string;
+  default_specialization?: string;
 }
 
 export const useInvitationRoles = () => {
@@ -59,6 +61,19 @@ export const useInvitationRoles = () => {
     return foundRole?.requires_specialization || false;
   };
 
+  const getRoleDefaults = (role: string) => {
+    const foundRole = getRoleByTitle(role);
+    return {
+      department: foundRole?.default_department || null,
+      specialization: foundRole?.default_specialization || null,
+    };
+  };
+
+  const requiresDepartment = (role: string) => {
+    const foundRole = getRoleByTitle(role);
+    return foundRole?.app_role !== 'tenant_manager';
+  };
+
   return {
     roles,
     isLoading,
@@ -66,5 +81,7 @@ export const useInvitationRoles = () => {
     getRoleByTitle,
     getRoleColor,
     requiresSpecialization,
+    getRoleDefaults,
+    requiresDepartment,
   };
 };

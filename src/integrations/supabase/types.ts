@@ -2422,6 +2422,8 @@ export type Database = {
           app_role: Database["public"]["Enums"]["app_role"]
           color_class: string | null
           created_at: string
+          default_department: string | null
+          default_specialization: string | null
           id: string
           is_active: boolean
           requires_specialization: boolean
@@ -2434,6 +2436,8 @@ export type Database = {
           app_role: Database["public"]["Enums"]["app_role"]
           color_class?: string | null
           created_at?: string
+          default_department?: string | null
+          default_specialization?: string | null
           id?: string
           is_active?: boolean
           requires_specialization?: boolean
@@ -2446,6 +2450,8 @@ export type Database = {
           app_role?: Database["public"]["Enums"]["app_role"]
           color_class?: string | null
           created_at?: string
+          default_department?: string | null
+          default_specialization?: string | null
           id?: string
           is_active?: boolean
           requires_specialization?: boolean
@@ -8514,6 +8520,10 @@ export type Database = {
           request_status: string
           request_title: string
         }[]
+      }
+      get_role_defaults: {
+        Args: { role_slug: string }
+        Returns: Json
       }
       get_room_availability_data: {
         Args: { target_date: string }

@@ -14,7 +14,7 @@ import { useInvitationRoles } from "@/hooks/useInvitationRoles";
 export default function UserNewPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { roles, isLoading: rolesLoading, requiresSpecialization } = useInvitationRoles();
+  const { roles, isLoading: rolesLoading, requiresSpecialization, getRoleDefaults, requiresDepartment } = useInvitationRoles();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -28,15 +28,36 @@ export default function UserNewPage() {
     specialization: "",
   });
 
-  // Set default role when roles are loaded
+  // Set default role when roles are loaded  
   useEffect(() => {
     if (roles.length > 0 && !formData.role) {
-      setFormData(prev => ({ ...prev, role: roles[0].title }));
+      const defaultRole = roles[0].title;
+      const roleDefaults = getRoleDefaults(defaultRole);
+      const showDept = requiresDepartment(defaultRole);
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        role: defaultRole,
+        department: showDept ? (roleDefaults.department || '') : '',
+        specialization: roleDefaults.specialization || ''
+      }));
     }
-  }, [roles, formData.role]);
+  }, [roles, formData.role, getRoleDefaults, requiresDepartment]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'role') {
+      const roleDefaults = getRoleDefaults(value);
+      const showDept = requiresDepartment(value);
+      
+      setFormData(prev => ({
+        ...prev,
+        role: value,
+        department: showDept ? (roleDefaults.department || prev.department) : '',
+        specialization: roleDefaults.specialization || ''
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +84,7 @@ export default function UserNewPage() {
     }
 
     // Validate department for non-tenant roles
-    if (formData.role !== 'tenant_manager' && !formData.department) {
+    if (requiresDepartment(formData.role) && !formData.department) {
       toast({
         title: "Department Required",
         description: "Department is required for this role",
@@ -82,7 +103,7 @@ export default function UserNewPage() {
           first_name: formData.firstName,
           last_name: formData.lastName,
           role: formData.role,
-          department: formData.role === 'tenant_manager' ? null : (formData.department || null),
+          department: requiresDepartment(formData.role) ? (formData.department || null) : null,
           specialization: formData.specialization || null,
           password: formData.password || null,
           emp_id: formData.empId || null,
@@ -235,8 +256,8 @@ export default function UserNewPage() {
                   </Select>
                 </div>
                 
-                {/* Department Selector - Only show for non-tenant roles */}
-                {formData.role && formData.role !== 'tenant_manager' && (
+                {/* Department Selector - Only show for roles that require departments */}
+                {formData.role && requiresDepartment(formData.role) && (
                   <div className="space-y-4">
                     <DepartmentSelector
                       selectedDepartment={formData.department}
@@ -250,10 +271,10 @@ export default function UserNewPage() {
                   </div>
                 )}
                 
-                {formData.role === 'tenant_manager' && (
+                {formData.role && !requiresDepartment(formData.role) && (
                   <div className="p-4 bg-muted/50 rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      <strong>Note:</strong> Tenant managers are not assigned to specific departments.
+                      <strong>Note:</strong> This role does not require department assignment.
                     </p>
                   </div>
                 )}

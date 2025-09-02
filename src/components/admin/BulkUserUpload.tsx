@@ -7,6 +7,7 @@ import { Upload, FileSpreadsheet, Download, CheckCircle, XCircle, AlertCircle } 
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
+import { useInvitationRoles } from "@/hooks/useInvitationRoles";
 
 interface BulkUserUploadProps {
   onSuccess?: () => void;
@@ -20,6 +21,7 @@ interface UserRecord {
   mobile_number?: string;
   role: string;
   department?: string;
+  specialization?: string;
   password?: string;
 }
 
@@ -28,17 +30,19 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
   const [uploadResults, setUploadResults] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { requiresDepartment, getRoleDefaults } = useInvitationRoles();
 
   const downloadTemplate = () => {
     const template = [
       {
         emp_id: "EMP001",
         first_name: "John",
-        last_name: "Doe",
+        last_name: "Doe", 
         email: "john.doe@company.com",
         mobile_number: "+1234567890",
-        role: "mst",
+        role: "Multi Skilled Technician",
         department: "Operations",
+        specialization: "Multi Skilled Technician",
         password: "TempPassword123"
       },
       {
@@ -46,10 +50,22 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
         first_name: "Jane",
         last_name: "Smith",
         email: "",
-        mobile_number: "+0987654321",
-        role: "tenant_manager",
+        mobile_number: "+0987654321", 
+        role: "Tenant Manager",
         department: "",
+        specialization: "",
         password: ""
+      },
+      {
+        emp_id: "EMP003",
+        first_name: "Alice",
+        last_name: "Johnson",
+        email: "alice.johnson@company.com",
+        mobile_number: "",
+        role: "Front desk and Facility Executive",
+        department: "Administration",
+        specialization: "Facility Management",
+        password: "SecurePass456"
       }
     ];
 
@@ -101,6 +117,11 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
         if (!row.email && !row.mobile_number) {
           errors.push("Either email or mobile number is required");
         }
+        
+        // Check if department is required for this role
+        if (requiresDepartment(row.role) && !row.department) {
+          errors.push("Department is required for this role");
+        }
 
         return {
           ...row,
@@ -130,11 +151,17 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
         return;
       }
 
-      // Generate passwords for empty password fields
-      const processedData = jsonData.map(row => ({
-        ...row,
-        password: row.password || generatePassword()
-      }));
+      // Generate passwords for empty password fields and apply role defaults
+      const processedData = jsonData.map(row => {
+        const roleDefaults = getRoleDefaults(row.role);
+        return {
+          ...row,
+          password: row.password || generatePassword(),
+          // Auto-populate department and specialization if not provided
+          department: row.department || (requiresDepartment(row.role) ? roleDefaults.department : '') || '',
+          specialization: row.specialization || roleDefaults.specialization || ''
+        };
+      });
 
       // Call the bulk create function
       const { data, error } = await supabase.rpc('admin_bulk_create_users', {
