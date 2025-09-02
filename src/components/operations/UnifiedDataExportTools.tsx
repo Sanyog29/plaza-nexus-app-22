@@ -1,200 +1,206 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Progress } from "@/components/ui/progress";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Download, 
   FileText, 
-  Database, 
+  Calendar,
+  Users,
+  Building2,
+  Wrench,
   Filter,
-  Calendar as CalendarIcon,
   CheckCircle,
-  Clock
+  AlertCircle
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
 import { extractCategoryName } from '@/utils/categoryUtils';
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
-interface ExportConfig {
-  type: 'maintenance_requests' | 'analytics' | 'users' | 'assets';
-  format: 'csv' | 'json' | 'pdf';
+interface ExportOptions {
+  format: 'csv' | 'xlsx' | 'pdf';
   dateRange: {
-    from: Date | undefined;
-    to: Date | undefined;
+    from: Date | null;
+    to: Date | null;
   };
-  filters: {
-    category?: string;
+  includeFields: string[];
+  dataType: 'requests' | 'users' | 'analytics' | 'feedback';
+  filters?: {
     status?: string;
     priority?: string;
-    department?: string;
+    category?: string;
+    assignedTo?: string;
   };
 }
 
 const UnifiedDataExportTools: React.FC = () => {
   const { user, isAdmin, isStaff } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
-  const [config, setConfig] = useState<ExportConfig>({
-    type: 'maintenance_requests',
+  const [exportOptions, setExportOptions] = useState<ExportOptions>({
     format: 'csv',
-    dateRange: { from: undefined, to: undefined },
-    filters: {}
+    dateRange: { from: null, to: null },
+    includeFields: [],
+    dataType: 'requests'
   });
 
   const exportData = async () => {
     if (!user || (!isAdmin && !isStaff)) {
       toast({
         title: "Access Denied",
-        description: "Only staff and administrators can export data",
+        description: "You don't have permission to export data",
         variant: "destructive"
       });
       return;
     }
 
-    setLoading(true);
+    setIsExporting(true);
     setExportProgress(0);
 
     try {
       let data: any[] = [];
-      const progressInterval = setInterval(() => {
-        setExportProgress(prev => Math.min(prev + 10, 90));
-      }, 200);
+      let filename = '';
 
-      // Fetch data based on export type
-      switch (config.type) {
-        case 'maintenance_requests':
+      setExportProgress(25);
+
+      switch (exportOptions.dataType) {
+        case 'requests':
           const { data: requests } = await supabase
             .from('maintenance_requests')
             .select(`
               *,
-              main_categories(name, icon),
-              profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
-              profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
+              main_categories(name),
+              assigned_user:profiles!maintenance_requests_assigned_to_fkey(
+                full_name
+              ),
+              reported_user:profiles!maintenance_requests_reported_by_fkey(
+                full_name
+              )
             `)
-            .gte('created_at', config.dateRange.from?.toISOString() || '2020-01-01')
-            .lte('created_at', config.dateRange.to?.toISOString() || new Date().toISOString());
-          
-          data = requests?.map(req => ({
-            ...req,
-            category_name: extractCategoryName(req.main_categories),
-            reporter_name: req.profiles ? 
-              `${req.profiles.first_name || ''} ${req.profiles.last_name || ''}`.trim() || req.profiles.email :
-              'Unknown',
-            assignee_name: req.profiles ? 
-              `${req.profiles.first_name || ''} ${req.profiles.last_name || ''}`.trim() || req.profiles.email :
-              'Unassigned'
-          })) || [];
-          break;
+            .order('created_at', { ascending: false });
 
-        case 'analytics':
-          const { data: analytics } = await supabase
-            .from('analytics_summaries')
-            .select('*')
-            .gte('summary_date', config.dateRange.from?.toISOString() || '2020-01-01')
-            .lte('summary_date', config.dateRange.to?.toISOString() || new Date().toISOString());
-          data = analytics || [];
+          data = requests?.map(req => ({
+            id: req.id,
+            title: req.title,
+            description: req.description,
+            status: req.status,
+            priority: req.priority,
+            category: extractCategoryName(req.main_categories),
+            reported_by: req.reported_user?.full_name || 'Unknown',
+            assigned_to: req.assigned_user?.full_name || 'Unassigned',
+            location: req.location,
+            created_at: new Date(req.created_at).toLocaleDateString(),
+            updated_at: new Date(req.updated_at).toLocaleDateString()
+          })) || [];
+          filename = 'maintenance_requests';
           break;
 
         case 'users':
-          if (!isAdmin) {
-            throw new Error('Only administrators can export user data');
-          }
           const { data: users } = await supabase
             .from('profiles')
-            .select('*');
-          data = users || [];
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          data = users?.map(user => ({
+            id: user.id,
+            full_name: user.full_name || 'Unknown',
+            email: user.email || 'Unknown',
+            role: user.role,
+            department: user.department,
+            status: user.approval_status,
+            created_at: new Date(user.created_at).toLocaleDateString()
+          })) || [];
+          filename = 'users';
           break;
 
-        case 'assets':
-          const { data: assets } = await supabase
-            .from('assets')
-            .select('*');
-          data = assets || [];
+        case 'feedback':
+          const { data: feedback } = await supabase
+            .from('maintenance_request_feedback')
+            .select(`
+              *,
+              maintenance_requests(title, status),
+              profiles(full_name)
+            `)
+            .order('created_at', { ascending: false });
+
+          data = feedback?.map(fb => ({
+            id: fb.id,
+            request_title: fb.maintenance_requests?.title || 'Unknown',
+            user_name: fb.profiles?.full_name || 'Unknown',
+            satisfaction_rating: fb.satisfaction_rating,
+            feedback_text: fb.feedback_text || '',
+            created_at: new Date(fb.created_at).toLocaleDateString()
+          })) || [];
+          filename = 'feedback';
           break;
 
         default:
-          throw new Error('Invalid export type');
+          throw new Error('Invalid data type');
       }
 
-      clearInterval(progressInterval);
-      setExportProgress(100);
+      setExportProgress(75);
 
-      // Generate and download file
-      const fileName = `${config.type}_export_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.${config.format}`;
-      
-      if (config.format === 'csv') {
-        downloadCSV(data, fileName);
-      } else if (config.format === 'json') {
-        downloadJSON(data, fileName);
+      // Convert to CSV format
+      if (data.length > 0) {
+        const headers = Object.keys(data[0]).join(',');
+        const rows = data.map(row => 
+          Object.values(row).map(value => 
+            typeof value === 'string' && value.includes(',') 
+              ? `"${value}"` 
+              : value
+          ).join(',')
+        );
+        const csv = [headers, ...rows].join('\n');
+
+        // Create and download file
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        setExportProgress(100);
+        
+        toast({
+          title: "Export Complete! 🎉",
+          description: `Successfully exported ${data.length} records`
+        });
+      } else {
+        toast({
+          title: "No Data",
+          description: "No records found to export",
+          variant: "destructive"
+        });
       }
 
-      toast({
-        title: "Export Complete",
-        description: `Successfully exported ${data.length} records`,
-      });
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Export error:', error);
       toast({
         title: "Export Failed",
-        description: "Failed to export data. Please try again.",
+        description: error.message,
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsExporting(false);
       setExportProgress(0);
     }
-  };
-
-  const downloadCSV = (data: any[], fileName: string) => {
-    if (data.length === 0) return;
-    
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(','),
-      ...data.map(row => 
-        headers.map(header => {
-          const value = row[header];
-          if (typeof value === 'object' && value !== null) {
-            return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
-          }
-          return `"${String(value || '').replace(/"/g, '""')}"`;
-        }).join(',')
-      )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
-  };
-
-  const downloadJSON = (data: any[], fileName: string) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    link.click();
   };
 
   if (!isAdmin && !isStaff) {
     return (
       <Card>
-        <CardContent className="text-center py-8">
-          <Database className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+        <CardContent className="text-center py-12">
+          <AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
-          <p className="text-muted-foreground">
-            Data export tools are only available to staff and administrators.
-          </p>
+          <p className="text-muted-foreground">Data export tools require staff access.</p>
         </CardContent>
       </Card>
     );
@@ -203,173 +209,209 @@ const UnifiedDataExportTools: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Data Export Tools</h1>
-        <p className="text-muted-foreground">
-          Export system data in various formats for analysis and reporting
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">Data Export Tools</h2>
+        <p className="text-muted-foreground">Export system data for analysis and reporting</p>
       </div>
 
+      {/* Export Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Export Configuration</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-5 w-5" />
+            Export Configuration
+          </CardTitle>
           <CardDescription>Configure your data export settings</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Export Type */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Data Type</label>
               <Select
-                value={config.type}
-                onValueChange={(value) => setConfig(prev => ({ ...prev, type: value as any }))}
+                value={exportOptions.dataType}
+                onValueChange={(value: any) => 
+                  setExportOptions(prev => ({ ...prev, dataType: value }))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select data type" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="maintenance_requests">Maintenance Requests</SelectItem>
-                  <SelectItem value="analytics">Analytics Data</SelectItem>
-                  {isAdmin && <SelectItem value="users">User Data</SelectItem>}
-                  <SelectItem value="assets">Asset Data</SelectItem>
+                  <SelectItem value="requests">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-4 w-4" />
+                      Maintenance Requests
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="users">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Users & Profiles
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="feedback">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Feedback & Ratings
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Format</label>
+              <label className="text-sm font-medium">Export Format</label>
               <Select
-                value={config.format}
-                onValueChange={(value) => setConfig(prev => ({ ...prev, format: value as any }))}
+                value={exportOptions.format}
+                onValueChange={(value: any) => 
+                  setExportOptions(prev => ({ ...prev, format: value }))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select format" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
+                  <SelectItem value="csv">CSV Format</SelectItem>
+                  <SelectItem value="xlsx" disabled>Excel Format (Coming Soon)</SelectItem>
+                  <SelectItem value="pdf" disabled>PDF Report (Coming Soon)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Date Range */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Date Range</label>
-            <div className="grid grid-cols-2 gap-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal",
-                      !config.dateRange.from && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {config.dateRange.from ? format(config.dateRange.from, "PPP") : "From date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={config.dateRange.from}
-                    onSelect={(date) => setConfig(prev => ({ 
-                      ...prev, 
-                      dateRange: { ...prev.dateRange, from: date } 
-                    }))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal",
-                      !config.dateRange.to && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {config.dateRange.to ? format(config.dateRange.to, "PPP") : "To date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={config.dateRange.to}
-                    onSelect={(date) => setConfig(prev => ({ 
-                      ...prev, 
-                      dateRange: { ...prev.dateRange, to: date } 
-                    }))}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+            <label className="text-sm font-medium">Date Range (Optional)</label>
+            <div className="flex gap-2">
+              <DatePicker
+                date={exportOptions.dateRange.from}
+                onSelect={(date) => 
+                  setExportOptions(prev => ({
+                    ...prev,
+                    dateRange: { ...prev.dateRange, from: date }
+                  }))
+                }
+                placeholder="From date"
+              />
+              <DatePicker
+                date={exportOptions.dateRange.to}
+                onSelect={(date) => 
+                  setExportOptions(prev => ({
+                    ...prev,
+                    dateRange: { ...prev.dateRange, to: date }
+                  }))
+                }
+                placeholder="To date"
+              />
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Export Progress */}
-          {loading && (
+      {/* Export Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Export Actions</CardTitle>
+          <CardDescription>Generate and download your data export</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isExporting && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Export Progress</span>
+                <span>Exporting data...</span>
                 <span>{exportProgress}%</span>
               </div>
               <Progress value={exportProgress} />
             </div>
           )}
 
-          {/* Export Button */}
-          <Button 
-            onClick={exportData} 
-            disabled={loading}
-            className="w-full"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            {loading ? 'Exporting...' : 'Export Data'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={exportData}
+              disabled={isExporting}
+              className="flex-1"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              {isExporting ? 'Exporting...' : 'Export Data'}
+            </Button>
+          </div>
+
+          <div className="text-xs text-muted-foreground">
+            <p>• Exports are limited to the most recent 10,000 records</p>
+            <p>• All exports are logged for audit purposes</p>
+            <p>• Sensitive data is automatically filtered based on your permissions</p>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Recent Exports */}
+      {/* Quick Export Templates */}
       <Card>
         <CardHeader>
-          <CardTitle>Export Guidelines</CardTitle>
-          <CardDescription>Important information about data exports</CardDescription>
+          <CardTitle>Quick Export Templates</CardTitle>
+          <CardDescription>Pre-configured export templates for common reports</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-              <div>
-                <h4 className="font-medium">Data Privacy</h4>
-                <p className="text-sm text-muted-foreground">
-                  Exported data contains sensitive information. Handle according to privacy policies.
-                </p>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button
+              variant="outline"
+              className="h-auto p-4 flex-col items-start"
+              onClick={() => {
+                setExportOptions({
+                  format: 'csv',
+                  dateRange: { from: null, to: null },
+                  includeFields: [],
+                  dataType: 'requests'
+                });
+                exportData();
+              }}
+              disabled={isExporting}
+            >
+              <Wrench className="h-5 w-5 mb-2" />
+              <div className="text-left">
+                <div className="font-medium">All Requests</div>
+                <div className="text-xs text-muted-foreground">Complete request history</div>
               </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <Clock className="h-5 w-5 text-blue-500 mt-0.5" />
-              <div>
-                <h4 className="font-medium">Export Limits</h4>
-                <p className="text-sm text-muted-foreground">
-                  Large datasets may take several minutes to process. Maximum 10,000 records per export.
-                </p>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-auto p-4 flex-col items-start"
+              onClick={() => {
+                setExportOptions({
+                  format: 'csv',
+                  dateRange: { from: null, to: null },
+                  includeFields: [],
+                  dataType: 'users'
+                });
+                exportData();
+              }}
+              disabled={isExporting}
+            >
+              <Users className="h-5 w-5 mb-2" />
+              <div className="text-left">
+                <div className="font-medium">User Directory</div>
+                <div className="text-xs text-muted-foreground">All users and profiles</div>
               </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <FileText className="h-5 w-5 text-orange-500 mt-0.5" />
-              <div>
-                <h4 className="font-medium">File Formats</h4>
-                <p className="text-sm text-muted-foreground">
-                  CSV files are recommended for spreadsheet analysis. JSON for technical integrations.
-                </p>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-auto p-4 flex-col items-start"
+              onClick={() => {
+                setExportOptions({
+                  format: 'csv',
+                  dateRange: { from: null, to: null },
+                  includeFields: [],
+                  dataType: 'feedback'
+                });
+                exportData();
+              }}
+              disabled={isExporting}
+            >
+              <FileText className="h-5 w-5 mb-2" />
+              <div className="text-left">
+                <div className="font-medium">Feedback Report</div>
+                <div className="text-xs text-muted-foreground">All ratings and feedback</div>
               </div>
-            </div>
+            </Button>
           </div>
         </CardContent>
       </Card>

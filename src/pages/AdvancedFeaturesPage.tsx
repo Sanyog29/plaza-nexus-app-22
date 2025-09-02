@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Users, TrendingUp, Leaf, Bot, MessageSquare, Wrench, BarChart3 } from 'lucide-react';
 import { SmartRequestRouting } from '@/components/automation/SmartRequestRouting';
 import { PredictiveEscalation } from '@/components/automation/PredictiveEscalation';
-import { TenantSatisfactionScoring } from '@/components/client/TenantSatisfactionScoring';
+import TenantSatisfactionScoring from '@/components/client/TenantSatisfactionScoring';
 import { SelfServicePortal } from '@/components/client/SelfServicePortal';
 import { CarbonFootprintTracking } from '@/components/insights/CarbonFootprintTracking';
 import { useAuth } from '@/components/AuthProvider';

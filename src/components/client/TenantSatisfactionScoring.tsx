@@ -47,38 +47,44 @@ const TenantSatisfactionScoring: React.FC = () => {
     
     setLoading(true);
     try {
-      // Fetch completed requests with feedback
-      const { data: requests } = await supabase
-        .from('maintenance_requests')
+      // First fetch feedback data from the maintenance_request_feedback table
+      const { data: feedbackData } = await supabase
+        .from('maintenance_request_feedback')
         .select(`
           *,
-          main_categories(name)
+          maintenance_requests!inner(
+            id,
+            title,
+            created_at,
+            completed_at,
+            sla_breach_at,
+            main_categories(name)
+          )
         `)
-        .eq('reported_by', user.id)
-        .eq('status', 'completed')
-        .not('tenant_rating', 'is', null)
-        .order('completed_at', { ascending: false })
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
         .limit(50);
 
-      if (requests) {
-        const metrics: SatisfactionMetric[] = requests.map(req => {
-          const completionTime = req.completed_at && req.created_at
-            ? (new Date(req.completed_at).getTime() - new Date(req.created_at).getTime()) / (1000 * 60 * 60)
+      if (feedbackData) {
+        const metrics: SatisfactionMetric[] = feedbackData.map(feedback => {
+          const request = feedback.maintenance_requests;
+          const completionTime = request.completed_at && request.created_at
+            ? (new Date(request.completed_at).getTime() - new Date(request.created_at).getTime()) / (1000 * 60 * 60)
             : 0;
           
-          const slaBreached = req.sla_breach_at && req.completed_at
-            ? new Date(req.completed_at) > new Date(req.sla_breach_at)
+          const slaBreached = request.sla_breach_at && request.completed_at
+            ? new Date(request.completed_at) > new Date(request.sla_breach_at)
             : false;
 
           return {
-            id: req.id,
-            request_id: req.id,
-            rating: req.tenant_rating || 0,
-            feedback: req.tenant_feedback || '',
-            category: extractCategoryName(req.main_categories),
+            id: feedback.id,
+            request_id: request.id,
+            rating: feedback.satisfaction_rating || 0,
+            feedback: feedback.feedback_text || '',
+            category: extractCategoryName(request.main_categories),
             completion_time_hours: completionTime,
             sla_met: !slaBreached,
-            created_at: req.completed_at || req.created_at
+            created_at: feedback.created_at
           };
         });
 
