@@ -5,24 +5,32 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DepartmentSelector } from "@/components/admin/DepartmentSelector";
-import { ALLOWED_ROLES, DEFAULT_ROLE, requiresSpecialization } from "@/constants/roles";
+import { useInvitationRoles } from "@/hooks/useInvitationRoles";
 
 export default function UserNewPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { roles, isLoading: rolesLoading, requiresSpecialization } = useInvitationRoles();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    role: DEFAULT_ROLE,
+    role: "",
     department: "",
     specialization: "",
   });
+
+  // Set default role when roles are loaded
+  useEffect(() => {
+    if (roles.length > 0 && !formData.role) {
+      setFormData(prev => ({ ...prev, role: roles[0].title }));
+    }
+  }, [roles, formData.role]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -157,8 +165,8 @@ export default function UserNewPage() {
                       <SelectValue placeholder="Select user role" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ALLOWED_ROLES.map(role => (
-                        <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                      {roles.map(role => (
+                        <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

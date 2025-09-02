@@ -24,7 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
 import { DepartmentSelector } from './DepartmentSelector';
-import { ALLOWED_ROLES, DEFAULT_ROLE, getRoleColor, requiresSpecialization } from '@/constants/roles';
+import { useInvitationRoles } from '@/hooks/useInvitationRoles';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 
 interface UserData {
@@ -42,6 +42,7 @@ interface UserData {
 export const EnhancedUserManagement: React.FC = () => {
   const { toast } = useToast();
   const { isAdmin, user: currentUser } = useAuth();
+  const { roles, isLoading: rolesLoading, getRoleColor, requiresSpecialization } = useInvitationRoles();
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,7 +77,7 @@ export const EnhancedUserManagement: React.FC = () => {
     email: '',
     firstName: '',
     lastName: '',
-    role: DEFAULT_ROLE,
+    role: '',
     department: '',
     specialization: ''
   });
@@ -86,6 +87,13 @@ export const EnhancedUserManagement: React.FC = () => {
       fetchUsers();
     }
   }, [isAdmin]);
+
+  // Set default role when roles are loaded
+  useEffect(() => {
+    if (roles.length > 0 && !newUser.role) {
+      setNewUser(prev => ({ ...prev, role: roles[0].title }));
+    }
+  }, [roles, newUser.role]);
 
   const fetchUsers = async () => {
     try {
@@ -167,7 +175,7 @@ export const EnhancedUserManagement: React.FC = () => {
         email: '',
         firstName: '',
         lastName: '',
-        role: DEFAULT_ROLE,
+        role: roles.length > 0 ? roles[0].title : '',
         department: '',
         specialization: ''
       });
@@ -433,8 +441,8 @@ export const EnhancedUserManagement: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ALLOWED_ROLES.map(role => (
-                    <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                  {roles.map(role => (
+                    <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -481,8 +489,8 @@ export const EnhancedUserManagement: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                {ALLOWED_ROLES.map(role => (
-                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                {roles.map(role => (
+                  <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -523,9 +531,9 @@ export const EnhancedUserManagement: React.FC = () => {
                                     <SelectValue />
                                   </SelectTrigger>
                                    <SelectContent>
-                                     {ALLOWED_ROLES.map(role => (
-                                       <SelectItem key={role.value} value={role.value}>
-                                         {role.label}
+                                     {roles.map(role => (
+                                       <SelectItem key={role.id} value={role.title}>
+                                         {role.title}
                                        </SelectItem>
                                      ))}
                                    </SelectContent>
@@ -565,7 +573,7 @@ export const EnhancedUserManagement: React.FC = () => {
                           ) : (
                             <div className="flex items-center gap-2">
                                <Badge className={getRoleBadgeColor(user.role)}>
-                                 {ALLOWED_ROLES.find(r => r.value === user.role)?.label || user.role}
+                                 {roles.find(r => r.title === user.role || r.app_role === user.role)?.title || user.role}
                                </Badge>
                               <Button
                                 size="sm"

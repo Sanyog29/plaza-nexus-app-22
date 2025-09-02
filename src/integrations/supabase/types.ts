@@ -2360,6 +2360,45 @@ export type Database = {
           },
         ]
       }
+      invitation_roles: {
+        Row: {
+          app_role: Database["public"]["Enums"]["app_role"]
+          color_class: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          requires_specialization: boolean
+          slug: string
+          sort_order: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          app_role: Database["public"]["Enums"]["app_role"]
+          color_class?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          requires_specialization?: boolean
+          slug: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          app_role?: Database["public"]["Enums"]["app_role"]
+          color_class?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          requires_specialization?: boolean
+          slug?: string
+          sort_order?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       iot_sensor_data: {
         Row: {
           device_id: string
@@ -6918,6 +6957,7 @@ export type Database = {
           office_number: string | null
           phone_number: string | null
           role: Database["public"]["Enums"]["app_role"]
+          role_title: string | null
           specialization: string | null
           status: string
           updated_at: string
@@ -6936,6 +6976,7 @@ export type Database = {
           office_number?: string | null
           phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          role_title?: string | null
           specialization?: string | null
           status?: string
           updated_at?: string
@@ -6954,6 +6995,7 @@ export type Database = {
           office_number?: string | null
           phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          role_title?: string | null
           specialization?: string | null
           status?: string
           updated_at?: string

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserPlus, Shield, Users, UserCheck, UserX, Search, Filter, Settings, Eye } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ALLOWED_ROLES, getRoleLabel, getRoleColor } from '@/constants/roles';
+import { useInvitationRoles } from '@/hooks/useInvitationRoles';
 
 interface User {
   id: string;
@@ -27,6 +27,7 @@ interface User {
 }
 
 const UserManagement = () => {
+  const { roles, isLoading: rolesLoading, getRoleColor } = useInvitationRoles();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -191,9 +192,10 @@ const UserManagement = () => {
   const pendingUsers = users.filter(user => user.approval_status === 'pending');
 
   const getRoleBadge = (role: string) => {
+    const foundRole = roles.find(r => r.title === role || r.app_role === role);
     return (
       <Badge className={getRoleColor(role)}>
-        {getRoleLabel(role)}
+        {foundRole?.title || role}
       </Badge>
     );
   };
@@ -308,8 +310,8 @@ const UserManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                {ALLOWED_ROLES.map(role => (
-                  <SelectItem key={role.value} value={role.value}>{role.label}</SelectItem>
+                {roles.map(role => (
+                  <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -362,9 +364,9 @@ const UserManagement = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {ALLOWED_ROLES.map(role => (
-                            <SelectItem key={role.value} value={role.value}>
-                              {role.label}
+                          {roles.map(role => (
+                            <SelectItem key={role.id} value={role.app_role}>
+                              {role.title}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -494,23 +496,23 @@ const UserManagement = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {ALLOWED_ROLES.map(role => (
-                  <div key={role.value} className="border rounded-lg p-4">
+                {roles.map(role => (
+                  <div key={role.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        {getRoleBadge(role.value)}
-                        <span className="font-medium">{role.label}</span>
+                        {getRoleBadge(role.title)}
+                        <span className="font-medium">{role.title}</span>
                       </div>
                       <Button size="sm" variant="outline">Configure</Button>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                       <div className="text-green-500">✓ View Dashboard</div>
                       <div className="text-green-500">✓ Create Requests</div>
-                      <div className={role.value === 'admin' ? 'text-green-500' : 'text-red-500'}>
-                        {role.value === 'admin' ? '✓' : '✗'} Manage Users
+                      <div className={role.app_role === 'admin' ? 'text-green-500' : 'text-red-500'}>
+                        {role.app_role === 'admin' ? '✓' : '✗'} Manage Users
                       </div>
-                       <div className={['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager', 'assistant_general_manager', 'assistant_vice_president', 'vp', 'ceo', 'cxo'].includes(role.value) ? 'text-green-500' : 'text-red-500'}>
-                         {['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager', 'assistant_general_manager', 'assistant_vice_president', 'vp', 'ceo', 'cxo'].includes(role.value) ? '✓' : '✗'} View Analytics
+                       <div className={['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager', 'assistant_general_manager', 'assistant_vice_president', 'vp', 'ceo', 'cxo'].includes(role.app_role) ? 'text-green-500' : 'text-red-500'}>
+                         {['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager', 'assistant_general_manager', 'assistant_vice_president', 'vp', 'ceo', 'cxo'].includes(role.app_role) ? '✓' : '✗'} View Analytics
                        </div>
                     </div>
                   </div>
