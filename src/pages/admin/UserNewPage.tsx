@@ -51,18 +51,21 @@ export default function UserNewPage() {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.rpc('admin_create_user_invitation', {
-        invitation_email: formData.email,
-        invitation_first_name: formData.firstName,
-        invitation_last_name: formData.lastName,
-        invitation_role: formData.role,
-        invitation_department: formData.department || null,
-        invitation_specialization: formData.specialization || null,
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: formData.email,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          role: formData.role,
+          department: formData.department || null,
+          specialization: formData.specialization || null,
+          send_invitation: true,
+        }
       });
 
       if (error) throw error;
 
-      if (data && typeof data === 'object' && 'error' in data) {
+      if (data && 'error' in data) {
         toast({
           title: "Error",
           description: data.error as string,
@@ -72,16 +75,16 @@ export default function UserNewPage() {
       }
 
       toast({
-        title: "Success",
-        description: "User invitation created successfully",
+        title: "Invitation Sent!",
+        description: `Invitation email sent to ${formData.email}. They will receive an email to set up their account.`,
       });
       
       navigate('/admin/users');
     } catch (error: any) {
-      console.error('Error creating user invitation:', error);
+      console.error('Error sending user invitation:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create user invitation",
+        description: error.message || "Failed to send user invitation",
         variant: "destructive",
       });
     } finally {
@@ -117,7 +120,7 @@ export default function UserNewPage() {
               User Information
             </CardTitle>
             <CardDescription>
-              Enter the details for the new user account
+              Enter the details and send an invitation email to the new user
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -191,7 +194,7 @@ export default function UserNewPage() {
                     className="flex-1"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Creating..." : "Create User"}
+                    {isLoading ? "Sending Invitation..." : "Send Invitation"}
                   </Button>
                   <Button 
                     type="button"

@@ -80,15 +80,13 @@ const handler = async (req: Request): Promise<Response> => {
     if (send_invitation) {
       // Create invitation instead of directly creating user
       const { data: invitationId, error: inviteError } = await supabase
-        .rpc('create_user_invitation', {
+        .rpc('admin_create_user_invitation', {
           invitation_email: email,
           invitation_first_name: first_name,
           invitation_last_name: last_name,
           invitation_role: role,
           invitation_department: department,
-          invitation_phone_number: phone_number,
-          invitation_office_number: office_number,
-          invitation_floor: floor
+          invitation_specialization: null,
         });
 
       if (inviteError) {
@@ -148,8 +146,7 @@ const handler = async (req: Request): Promise<Response> => {
           body: JSON.stringify({
             to: email,
             subject: 'Welcome to Plaza Management - Set Up Your Account',
-            html: emailHtml,
-            type: 'general'
+            content: emailHtml,
           }),
         });
 
