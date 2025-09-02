@@ -8640,6 +8640,10 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_app_role: {
+        Args: { input_role: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       review_time_extension: {
         Args: { approved: boolean; extension_id: string; review_notes?: string }
         Returns: Json

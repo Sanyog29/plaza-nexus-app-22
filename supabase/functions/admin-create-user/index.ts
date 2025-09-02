@@ -1,10 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 interface CreateUserRequest {
   email?: string;
@@ -22,6 +17,11 @@ interface CreateUserRequest {
   send_invitation?: boolean;
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -29,13 +29,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Initialize Supabase client with service role key for admin operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get authorization header
+    // Verify admin authorization
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
@@ -69,35 +67,60 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const {
-      email,
-      mobile_number,
-      first_name,
-      last_name,
-      role,
-      department,
-      specialization,
+    const { 
+      email, 
+      mobile_number, 
+      first_name, 
+      last_name, 
+      role: inputRole,
+      department, 
+      specialization, 
       password,
       emp_id,
       phone_number,
       office_number,
       floor,
-      send_invitation = true
-    }: CreateUserRequest = await req.json();
+      send_invitation = false
+    } = await req.json() as CreateUserRequest;
+
+    // Resolve the role to proper app_role
+    const { data: resolvedRole, error: roleError } = await supabase.rpc('resolve_app_role', {
+      input_role: inputRole
+    });
+
+    if (roleError) {
+      console.error('Error resolving role:', roleError);
+      return new Response(JSON.stringify({ 
+        error: `Invalid role: ${inputRole}. Please select a valid role.` 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const role = resolvedRole;
 
     if (send_invitation) {
-      // Create invitation instead of directly creating user
-      const { data, error } = await supabase.rpc('admin_create_user_invitation', {
-        invitation_email: email || null,
-        invitation_phone_number: mobile_number || null,
-        invitation_first_name: first_name,
-        invitation_last_name: last_name,
-        invitation_role: role,
-        invitation_department: role === 'tenant_manager' ? null : department,
-        invitation_specialization: specialization,
-        invitation_password: password,
-        invitation_emp_id: emp_id,
-      });
+      // Create user invitation
+      const { data, error } = await supabase
+        .from('user_invitations')
+        .insert({
+          email,
+          mobile_number,
+          first_name,
+          last_name,
+          role,
+          department: role === 'tenant' ? null : department,
+          specialization,
+          password,
+          emp_id,
+          phone_number,
+          office_number,
+          floor,
+          invited_by: user.id
+        })
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Error creating invitation:', error);
@@ -278,7 +301,7 @@ const handler = async (req: Request): Promise<Response> => {
           first_name,
           last_name,
           role,
-          department: role === 'tenant_manager' ? null : department,
+          department: role === 'tenant' ? null : department,
           specialization,
           emp_id,
           phone_number: mobile_number || phone_number,

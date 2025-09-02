@@ -43,7 +43,7 @@ interface UserData {
 export const EnhancedUserManagement: React.FC = () => {
   const { toast } = useToast();
   const { isAdmin, user: currentUser } = useAuth();
-  const { roles, isLoading: rolesLoading, getRoleColor, requiresSpecialization } = useInvitationRoles();
+  const { roles, isLoading: rolesLoading, getRoleColor, requiresSpecialization, getRoleDefaults } = useInvitationRoles();
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -97,9 +97,30 @@ export const EnhancedUserManagement: React.FC = () => {
   // Set default role when roles are loaded
   useEffect(() => {
     if (roles.length > 0 && !newUser.role) {
-      setNewUser(prev => ({ ...prev, role: roles[0].title }));
+      setNewUser(prev => ({ ...prev, role: roles[0].app_role }));
     }
   }, [roles, newUser.role]);
+
+  // Update specialization visibility when role changes
+  useEffect(() => {
+    const shouldShow = requiresSpecialization(newUser.role);
+    setShowDepartmentSpecialization(shouldShow);
+    
+    if (shouldShow) {
+      const defaults = getRoleDefaults(newUser.role);
+      if (defaults.department && !newUser.department) {
+        setNewUser(prev => ({ ...prev, department: defaults.department! }));
+      }
+      if (defaults.specialization && !newUser.specialization) {
+        setNewUser(prev => ({ ...prev, specialization: defaults.specialization! }));
+      }
+    } else {
+      setNewUser(prev => ({ ...prev, department: '', specialization: '' }));
+    }
+  }, [newUser.role, requiresSpecialization, getRoleDefaults]);
+
+  // Get role display name for current selection
+  const currentRoleDisplay = roles.find(r => r.app_role === newUser.role)?.title || newUser.role;
 
   const fetchUsers = async () => {
     try {
@@ -126,8 +147,9 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   };
 
+  
   // Show department specialization field for L1 roles
-  const showDepartmentSpecialization = requiresSpecialization(newUser.role);
+  const [showDepartmentSpecialization, setShowDepartmentSpecialization] = useState(false);
   
   const handleCreateUser = async () => {
     if ((!newUser.email && !newUser.mobileNumber) || !newUser.firstName || !newUser.lastName) {
@@ -230,7 +252,7 @@ export const EnhancedUserManagement: React.FC = () => {
         mobileNumber: '',
         firstName: '',
         lastName: '',
-        role: roles.length > 0 ? roles[0].title : '',
+        role: roles.length > 0 ? roles[0].app_role : '',
         department: '',
         specialization: '',
         password: '',
@@ -551,11 +573,13 @@ export const EnhancedUserManagement: React.FC = () => {
               <Label htmlFor="role">Role *</Label>
               <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a role">
+                    {currentRoleDisplay}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map(role => (
-                    <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
+                    <SelectItem key={role.id} value={role.app_role}>{role.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -606,7 +630,7 @@ export const EnhancedUserManagement: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
                 {roles.map(role => (
-                  <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
+                  <SelectItem key={role.id} value={role.app_role}>{role.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -646,9 +670,9 @@ export const EnhancedUserManagement: React.FC = () => {
                                   <SelectTrigger className="w-48">
                                     <SelectValue />
                                   </SelectTrigger>
-                                   <SelectContent>
+                                    <SelectContent>
                                      {roles.map(role => (
-                                       <SelectItem key={role.id} value={role.title}>
+                                       <SelectItem key={role.id} value={role.app_role}>
                                          {role.title}
                                        </SelectItem>
                                      ))}
