@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Create invitation instead of directly creating user
       const { data, error } = await supabase.rpc('admin_create_user_invitation', {
         invitation_email: email || null,
-        invitation_mobile_number: mobile_number || null,
+        invitation_phone_number: mobile_number || null,
         invitation_first_name: first_name,
         invitation_last_name: last_name,
         invitation_role: role,

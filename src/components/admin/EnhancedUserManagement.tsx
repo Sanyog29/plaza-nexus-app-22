@@ -75,6 +75,7 @@ export const EnhancedUserManagement: React.FC = () => {
 
   const [newUser, setNewUser] = useState({
     email: '',
+    mobileNumber: '',
     firstName: '',
     lastName: '',
     role: '',
@@ -124,10 +125,10 @@ export const EnhancedUserManagement: React.FC = () => {
   const showDepartmentSpecialization = requiresSpecialization(newUser.role);
   
   const handleCreateUser = async () => {
-    if (!newUser.email || !newUser.firstName || !newUser.lastName) {
+    if ((!newUser.email && !newUser.mobileNumber) || !newUser.firstName || !newUser.lastName) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields. Either email or mobile number is required.",
         variant: "destructive",
       });
       return;
@@ -147,7 +148,8 @@ export const EnhancedUserManagement: React.FC = () => {
 
     try {
       const { data, error } = await supabase.rpc('admin_create_user_invitation', {
-        invitation_email: newUser.email,
+        invitation_email: newUser.email || null,
+        invitation_phone_number: newUser.mobileNumber || null,
         invitation_first_name: newUser.firstName,
         invitation_last_name: newUser.lastName,
         invitation_role: newUser.role,
@@ -173,6 +175,7 @@ export const EnhancedUserManagement: React.FC = () => {
 
       setNewUser({
         email: '',
+        mobileNumber: '',
         firstName: '',
         lastName: '',
         role: roles.length > 0 ? roles[0].title : '',
@@ -425,13 +428,23 @@ export const EnhancedUserManagement: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={newUser.email}
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                 placeholder="Enter email address"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="mobileNumber">Mobile Number</Label>
+              <Input
+                id="mobileNumber"
+                type="tel"
+                value={newUser.mobileNumber}
+                onChange={(e) => setNewUser({ ...newUser, mobileNumber: e.target.value })}
+                placeholder="Enter mobile number"
               />
             </div>
             <div className="space-y-2">
