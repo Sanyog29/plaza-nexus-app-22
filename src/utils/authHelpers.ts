@@ -26,6 +26,12 @@ export const validateEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
+export const validatePhone = (phone: string): boolean => {
+  // Basic phone validation - will be enhanced by phoneUtils
+  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+  return phoneRegex.test(phone.replace(/\s/g, ''));
+};
+
 export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   

@@ -8,6 +8,7 @@ import WelcomeCard from "@/components/auth/WelcomeCard";
 import InvitationAcceptance from "@/components/auth/InvitationAcceptance";
 import { createNetworkAwareRequest } from "@/utils/networkUtils";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { normalizeToE164, validateAndFormatPhone } from "@/utils/phoneUtils";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -38,7 +39,15 @@ const AuthPage = () => {
       setError(null);
 
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-      const isMobile = /^\+?[1-9]\d{1,14}$/.test(identifier.replace(/\s/g, ''));
+      
+      // Try to normalize phone number if not email
+      let normalizedPhone = null;
+      if (!isEmail) {
+        const phoneValidation = validateAndFormatPhone(identifier);
+        if (phoneValidation.isValid) {
+          normalizedPhone = phoneValidation.formatted;
+        }
+      }
       
       if (isSignUpMode) {
         if (isEmail) {
@@ -50,19 +59,14 @@ const AuthPage = () => {
             }
           });
           if (error) throw error;
-        } else if (isMobile) {
+        } else if (normalizedPhone) {
           const { error } = await supabase.auth.signUp({
-            phone: identifier,
+            phone: normalizedPhone,
             password,
           });
-          if (error) {
-            if (error.message?.includes('Phone login is not enabled')) {
-              throw new Error('Phone number registration is currently disabled. Please use your email address instead.');
-            }
-            throw error;
-          }
+          if (error) throw error;
         } else {
-          throw new Error('Please enter a valid email address or mobile number');
+          throw new Error('Please enter a valid email address or mobile number with country code (e.g., +91 9876543210)');
         }
         setEmailSent(true);
         toast({
@@ -77,19 +81,14 @@ const AuthPage = () => {
             password,
           });
           if (error) throw error;
-        } else if (isMobile) {
+        } else if (normalizedPhone) {
           const { error } = await supabase.auth.signInWithPassword({
-            phone: identifier,
+            phone: normalizedPhone,
             password,
           });
-          if (error) {
-            if (error.message?.includes('Phone login is not enabled')) {
-              throw new Error('Phone number sign-in is currently disabled. Please use your email address instead.');
-            }
-            throw error;
-          }
+          if (error) throw error;
         } else {
-          throw new Error('Please enter a valid email address or mobile number');
+          throw new Error('Please enter a valid email address or mobile number with country code (e.g., +91 9876543210)');
         }
         
         toast({

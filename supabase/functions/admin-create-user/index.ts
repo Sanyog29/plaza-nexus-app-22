@@ -1,6 +1,54 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Phone number normalization utility
+const normalizePhoneToE164 = (phoneNumber: string): string | null => {
+  if (!phoneNumber) return null;
+  
+  // Remove all spaces, dashes, parentheses, and other non-digit characters except +
+  let cleaned = phoneNumber.replace(/[^\d+]/g, '');
+  
+  // If already in E.164 format, validate and return
+  if (cleaned.startsWith('+')) {
+    const e164Regex = /^\+[1-9]\d{1,14}$/;
+    return e164Regex.test(cleaned) ? cleaned : null;
+  }
+  
+  // If starts with 00, replace with +
+  if (cleaned.startsWith('00')) {
+    cleaned = '+' + cleaned.substring(2);
+    const e164Regex = /^\+[1-9]\d{1,14}$/;
+    return e164Regex.test(cleaned) ? cleaned : null;
+  }
+  
+  // If it's just digits, try to determine the format
+  if (/^\d+$/.test(cleaned)) {
+    // For Indian numbers starting with 91
+    if (cleaned.startsWith('91') && cleaned.length === 12) {
+      return '+' + cleaned;
+    }
+    
+    // For US numbers (10 digits)
+    if (cleaned.length === 10) {
+      return '+1' + cleaned;
+    }
+    
+    // For Indian mobile numbers (10 digits starting with 6-9)
+    if (cleaned.length === 10 && /^[6-9]/.test(cleaned)) {
+      return '+91' + cleaned;
+    }
+    
+    // If longer than 10 digits, assume it includes country code without +
+    if (cleaned.length > 10) {
+      const withPlus = '+' + cleaned;
+      const e164Regex = /^\+[1-9]\d{1,14}$/;
+      return e164Regex.test(withPlus) ? withPlus : null;
+    }
+  }
+  
+  return null;
+};
+
 interface CreateUserRequest {
   email?: string;
   mobile_number?: string;
@@ -232,11 +280,18 @@ const handler = async (req: Request): Promise<Response> => {
         }
       }
       
-      if (mobile_number && !createError) {
-        const { data: existingUser } = await supabase.auth.admin.listUsers();
-        const phoneExists = existingUser.users.some(u => u.phone === mobile_number);
-        if (phoneExists) {
-          createError = new Error(`User with phone number ${mobile_number} already exists`);
+      // Normalize phone number to E.164 format
+      let normalizedPhone = null;
+      if (mobile_number) {
+        normalizedPhone = normalizePhoneToE164(mobile_number);
+        if (!normalizedPhone) {
+          createError = new Error(`Invalid phone number format: ${mobile_number}. Please use E.164 format (e.g., +919876543210)`);
+        } else {
+          const { data: existingUser } = await supabase.auth.admin.listUsers();
+          const phoneExists = existingUser.users.some(u => u.phone === normalizedPhone);
+          if (phoneExists) {
+            createError = new Error(`User with phone number ${normalizedPhone} already exists`);
+          }
         }
       }
       
@@ -261,10 +316,10 @@ const handler = async (req: Request): Promise<Response> => {
           });
           newUser = result.data;
           createError = result.error;
-        } else if (mobile_number) {
+        } else if (normalizedPhone) {
           // Create user with phone number
           const result = await supabase.auth.admin.createUser({
-            phone: mobile_number,
+            phone: normalizedPhone,
             password: userPassword,
             phone_confirm: true, // Allow immediate login
             user_metadata: {
@@ -274,7 +329,7 @@ const handler = async (req: Request): Promise<Response> => {
               department,
               specialization,
               emp_id,
-              phone_number,
+              phone_number: normalizedPhone,
               office_number,
               floor
             }
@@ -304,7 +359,7 @@ const handler = async (req: Request): Promise<Response> => {
           department: role === 'tenant' ? null : department,
           specialization,
           emp_id,
-          phone_number: mobile_number || phone_number,
+          phone_number: normalizedPhone || mobile_number || phone_number,
           office_number,
           floor
         })
@@ -316,7 +371,7 @@ const handler = async (req: Request): Promise<Response> => {
         .insert({
           user_id: user.id,
           title: 'User Created',
-          message: `User ${email || mobile_number} created successfully with role ${role}`,
+          message: `User ${email || normalizedPhone || mobile_number} created successfully with role ${role}`,
           type: 'success'
         });
 
