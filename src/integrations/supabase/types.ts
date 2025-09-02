@@ -8372,6 +8372,19 @@ export type Database = {
           | {
               invitation_department?: string
               invitation_email: string
+              invitation_emp_id?: string
+              invitation_first_name: string
+              invitation_floor?: string
+              invitation_last_name: string
+              invitation_office_number?: string
+              invitation_password?: string
+              invitation_phone_number?: string
+              invitation_role: string
+              invitation_specialization?: string
+            }
+          | {
+              invitation_department?: string
+              invitation_email: string
               invitation_first_name: string
               invitation_floor?: string
               invitation_last_name: string

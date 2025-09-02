@@ -80,7 +80,9 @@ export const EnhancedUserManagement: React.FC = () => {
     lastName: '',
     role: '',
     department: '',
-    specialization: ''
+    specialization: '',
+    password: '',
+    empId: ''
   });
 
   useEffect(() => {
@@ -155,6 +157,8 @@ export const EnhancedUserManagement: React.FC = () => {
         invitation_role: newUser.role,
         invitation_department: newUser.department || null,
         invitation_specialization: newUser.specialization || null,
+        invitation_password: newUser.password || null,
+        invitation_emp_id: newUser.empId || null,
       });
 
       if (error) throw error;
@@ -180,7 +184,9 @@ export const EnhancedUserManagement: React.FC = () => {
         lastName: '',
         role: roles.length > 0 ? roles[0].title : '',
         department: '',
-        specialization: ''
+        specialization: '',
+        password: '',
+        empId: ''
       });
 
       fetchUsers();
@@ -445,6 +451,25 @@ export const EnhancedUserManagement: React.FC = () => {
                 value={newUser.mobileNumber}
                 onChange={(e) => setNewUser({ ...newUser, mobileNumber: e.target.value })}
                 placeholder="Enter mobile number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                placeholder="Enter password (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="empId">Employee ID</Label>
+              <Input
+                id="empId"
+                value={newUser.empId}
+                onChange={(e) => setNewUser({ ...newUser, empId: e.target.value })}
+                placeholder="Enter employee ID (optional)"
               />
             </div>
             <div className="space-y-2">
