@@ -197,44 +197,70 @@ const handler = async (req: Request): Promise<Response> => {
       let newUser;
       let createError;
       
+      // Use provided password or generate one if not provided
+      const userPassword = password || Math.random().toString(36).slice(-12);
+      
+      // Check for existing user first
       if (email) {
-        // Create user with email
-        const result = await supabase.auth.admin.createUser({
-          email,
-          password: Math.random().toString(36).slice(-12), // Generate random password
-          email_confirm: false, // Require email confirmation
-          user_metadata: {
-            first_name,
-            last_name,
-            role,
-            department,
-            phone_number,
-            office_number,
-            floor
-          }
-        });
-        newUser = result.data;
-        createError = result.error;
-      } else if (mobile_number) {
-        // Create user with phone number
-        const result = await supabase.auth.admin.createUser({
-          phone: mobile_number,
-          password: Math.random().toString(36).slice(-12), // Generate random password
-          phone_confirm: false, // Require phone confirmation
-          user_metadata: {
-            first_name,
-            last_name,
-            role,
-            department,
-            phone_number,
-            office_number,
-            floor
-          }
-        });
-        newUser = result.data;
-        createError = result.error;
-      } else {
-        createError = new Error('Either email or mobile number is required');
+        const { data: existingUser } = await supabase.auth.admin.listUsers();
+        const emailExists = existingUser.users.some(u => u.email === email);
+        if (emailExists) {
+          createError = new Error(`User with email ${email} already exists`);
+        }
+      }
+      
+      if (mobile_number && !createError) {
+        const { data: existingUser } = await supabase.auth.admin.listUsers();
+        const phoneExists = existingUser.users.some(u => u.phone === mobile_number);
+        if (phoneExists) {
+          createError = new Error(`User with phone number ${mobile_number} already exists`);
+        }
+      }
+      
+      if (!createError) {
+        if (email) {
+          // Create user with email
+          const result = await supabase.auth.admin.createUser({
+            email,
+            password: userPassword,
+            email_confirm: true, // Allow immediate login
+            user_metadata: {
+              first_name,
+              last_name,
+              role,
+              department,
+              specialization,
+              emp_id,
+              phone_number,
+              office_number,
+              floor
+            }
+          });
+          newUser = result.data;
+          createError = result.error;
+        } else if (mobile_number) {
+          // Create user with phone number
+          const result = await supabase.auth.admin.createUser({
+            phone: mobile_number,
+            password: userPassword,
+            phone_confirm: true, // Allow immediate login
+            user_metadata: {
+              first_name,
+              last_name,
+              role,
+              department,
+              specialization,
+              emp_id,
+              phone_number,
+              office_number,
+              floor
+            }
+          });
+          newUser = result.data;
+          createError = result.error;
+        } else {
+          createError = new Error('Either email or mobile number is required');
+        }
       }
 
       if (createError) {
@@ -252,8 +278,10 @@ const handler = async (req: Request): Promise<Response> => {
           first_name,
           last_name,
           role,
-          department,
-          phone_number,
+          department: role === 'tenant_manager' ? null : department,
+          specialization,
+          emp_id,
+          phone_number: mobile_number || phone_number,
           office_number,
           floor
         })

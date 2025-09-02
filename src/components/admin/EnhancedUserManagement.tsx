@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 import { 
   UserPlus, 
   Mail, 
@@ -84,6 +85,8 @@ export const EnhancedUserManagement: React.FC = () => {
     password: '',
     empId: ''
   });
+  
+  const [sendInvitation, setSendInvitation] = useState(true);
 
   useEffect(() => {
     if (isAdmin) {
@@ -146,36 +149,81 @@ export const EnhancedUserManagement: React.FC = () => {
       return;
     }
 
+    // If creating account now, password is required
+    if (!sendInvitation && !newUser.password) {
+      toast({
+        title: "Missing Information",
+        description: "Password is required when creating account directly",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsCreatingUser(true);
 
     try {
-      const { data, error } = await supabase.rpc('admin_create_user_invitation', {
-        invitation_email: newUser.email || null,
-        invitation_phone_number: newUser.mobileNumber || null,
-        invitation_first_name: newUser.firstName,
-        invitation_last_name: newUser.lastName,
-        invitation_role: newUser.role,
-        invitation_department: newUser.department || null,
-        invitation_specialization: newUser.specialization || null,
-        invitation_password: newUser.password || null,
-        invitation_emp_id: newUser.empId || null,
-      });
-
-      if (error) throw error;
-
-      if (data && typeof data === 'object' && 'error' in data) {
-        toast({
-          title: "Error",
-          description: data.error as string,
-          variant: "destructive",
+      if (sendInvitation) {
+        // Use RPC for invitation
+        const { data, error } = await supabase.rpc('admin_create_user_invitation', {
+          invitation_email: newUser.email || null,
+          invitation_phone_number: newUser.mobileNumber || null,
+          invitation_first_name: newUser.firstName,
+          invitation_last_name: newUser.lastName,
+          invitation_role: newUser.role,
+          invitation_department: newUser.department || null,
+          invitation_specialization: newUser.specialization || null,
+          invitation_password: newUser.password || null,
+          invitation_emp_id: newUser.empId || null,
         });
-        return;
-      }
 
-      toast({
-        title: "Success",
-        description: "User invitation sent successfully",
-      });
+        if (error) throw error;
+
+        if (data && typeof data === 'object' && 'error' in data) {
+          toast({
+            title: "Error",
+            description: data.error as string,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Success",
+          description: "User invitation sent successfully",
+        });
+      } else {
+        // Use edge function for direct creation
+        const { data, error } = await supabase.functions.invoke('admin-create-user', {
+          body: {
+            email: newUser.email || undefined,
+            mobile_number: newUser.mobileNumber || undefined,
+            first_name: newUser.firstName,
+            last_name: newUser.lastName,
+            role: newUser.role,
+            department: newUser.department || undefined,
+            specialization: newUser.specialization || undefined,
+            password: newUser.password,
+            emp_id: newUser.empId || undefined,
+            send_invitation: false
+          }
+        });
+
+        if (error) throw error;
+
+        if (data?.error) {
+          toast({
+            title: "Error",
+            description: data.error,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Success",
+          description: "User account created successfully. They can sign in immediately.",
+        });
+      }
 
       setNewUser({
         email: '',
@@ -194,7 +242,7 @@ export const EnhancedUserManagement: React.FC = () => {
       console.error('Error creating user:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create user invitation",
+        description: error.message || `Failed to ${sendInvitation ? 'create user invitation' : 'create user account'}`,
         variant: "destructive",
       });
     } finally {
@@ -414,6 +462,26 @@ export const EnhancedUserManagement: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Creation Mode Toggle */}
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="send-invitation"
+                  checked={sendInvitation}
+                  onCheckedChange={setSendInvitation}
+                />
+                <Label htmlFor="send-invitation">Send invitation</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {sendInvitation 
+                  ? "User will receive an email/SMS to set their password and activate account"
+                  : "Account will be created immediately with provided credentials - user can sign in right away"
+                }
+              </p>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name *</Label>
@@ -454,14 +522,21 @@ export const EnhancedUserManagement: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">
+                Password {!sendInvitation && <span className="text-red-500">*</span>}
+              </Label>
               <Input
                 id="password"
                 type="password"
                 value={newUser.password}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                placeholder="Enter password (optional)"
+                placeholder={sendInvitation ? "Enter password (optional)" : "Enter password (required)"}
               />
+              {!sendInvitation && (
+                <p className="text-xs text-muted-foreground">
+                  User will use this password to sign in immediately
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="empId">Employee ID</Label>
@@ -503,7 +578,10 @@ export const EnhancedUserManagement: React.FC = () => {
             disabled={isCreatingUser}
             className="w-full md:w-auto"
           >
-            {isCreatingUser ? "Creating..." : "Create User & Send Invitation"}
+            {isCreatingUser 
+              ? (sendInvitation ? "Sending..." : "Creating...") 
+              : (sendInvitation ? "Create User & Send Invitation" : "Create Account Now")
+            }
           </Button>
         </CardContent>
       </Card>
