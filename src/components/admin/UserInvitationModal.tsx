@@ -17,6 +17,7 @@ interface UserInvitationModalProps {
 
 interface InvitationData {
   email: string;
+  mobile_number: string;
   first_name: string;
   last_name: string;
   role: string;
@@ -35,6 +36,7 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<InvitationData>({
     email: '',
+    mobile_number: '',
     first_name: '',
     last_name: '',
     role: 'tenant_manager',
@@ -47,18 +49,29 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that either email or mobile number is provided
+    if (!formData.email && !formData.mobile_number) {
+      toast({
+        title: "Error",
+        description: "Either email or mobile number is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
       if (formData.send_invitation) {
         // Use RPC function for invitation
         const { data, error } = await supabase.rpc('admin_create_user_invitation', {
-          invitation_email: formData.email,
+          invitation_email: formData.email || null,
           invitation_first_name: formData.first_name,
           invitation_last_name: formData.last_name,
           invitation_role: formData.role,
           invitation_department: formData.department || null,
-          invitation_phone_number: formData.phone_number || null,
+          invitation_phone_number: formData.mobile_number || formData.phone_number || null,
           invitation_office_number: formData.office_number || null,
           invitation_floor: formData.floor || null
         });
@@ -72,7 +85,7 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
 
         toast({
           title: "Success",
-          description: `Invitation sent to ${formData.email}`,
+          description: `Invitation sent to ${formData.email || formData.mobile_number}`,
         });
       } else {
         // For direct user creation, we'll still use the Edge Function as it requires admin privileges
@@ -94,6 +107,7 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
       // Reset form
       setFormData({
         email: '',
+        mobile_number: '',
         first_name: '',
         last_name: '',
         role: 'tenant_manager',
@@ -162,21 +176,39 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="email">Email Address *</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => updateFormData('email', e.target.value)}
-                  className="pl-10"
-                  placeholder="user@example.com"
-                  required
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="email">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => updateFormData('email', e.target.value)}
+                    className="pl-10"
+                    placeholder="user@example.com"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="mobile_number">Mobile Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="mobile_number"
+                    type="tel"
+                    value={formData.mobile_number}
+                    onChange={(e) => updateFormData('mobile_number', e.target.value)}
+                    className="pl-10"
+                    placeholder="+1234567890"
+                  />
+                </div>
               </div>
             </div>
+            <p className="text-sm text-muted-foreground">
+              * Either email or mobile number is required for login
+            </p>
 
             <div>
               <Label htmlFor="role">Role *</Label>

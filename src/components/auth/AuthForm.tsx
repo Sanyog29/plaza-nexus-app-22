@@ -20,8 +20,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { isNetworkError as checkIsNetworkError, createNetworkAwareRequest } from '@/utils/networkUtils';
 
 interface AuthFormProps {
-  email: string;
-  setEmail: (email: string) => void;
+  identifier: string;
+  setIdentifier: (identifier: string) => void;
   password: string;
   setPassword: (password: string) => void;
   isLoading: boolean;
@@ -33,8 +33,8 @@ interface AuthFormProps {
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({
-  email,
-  setEmail,
+  identifier,
+  setIdentifier,
   password,
   setPassword,
   isLoading,
@@ -46,7 +46,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
 }) => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
-  const [formErrors, setFormErrors] = useState<{email?: string; password?: string}>({});
+  const [formErrors, setFormErrors] = useState<{identifier?: string; password?: string}>({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [authError, setAuthError] = useState<string>('');
   const [accountLocked, setAccountLocked] = useState(false);
@@ -55,11 +55,16 @@ const AuthForm: React.FC<AuthFormProps> = ({
 
   // Real-time validation
   useEffect(() => {
-    const errors: {email?: string; password?: string} = {};
+    const errors: {identifier?: string; password?: string} = {};
     
-    // Email validation
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
+    // Identifier validation (email or mobile)
+    if (identifier) {
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      const isMobile = /^\+?[1-9]\d{1,14}$/.test(identifier.replace(/\s/g, ''));
+      
+      if (!isEmail && !isMobile) {
+        errors.identifier = 'Please enter a valid email address or mobile number';
+      }
     }
     
     // Password validation for signup
@@ -70,8 +75,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
     }
     
     setFormErrors(errors);
-    setIsFormValid(email.length > 0 && password.length > 0 && Object.keys(errors).length === 0);
-  }, [email, password, isSignUp]);
+    setIsFormValid(identifier.length > 0 && password.length > 0 && Object.keys(errors).length === 0);
+  }, [identifier, password, isSignUp]);
 
   const checkUserExistsLocal = async (email: string) => {
     try {
@@ -158,7 +163,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
       setFailedAttempts(0);
       setAccountLocked(false);
     } catch (error: any) {
-      await handleAuthError(error, email);
+      await handleAuthError(error, identifier);
     }
   };
 
@@ -207,8 +212,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
                 <div>
                   <h3 className="font-medium mb-1 text-success">Check your email</h3>
                   <p className="text-sm text-muted-foreground">
-                    We've sent a confirmation email to <span className="font-medium text-primary">{email}</span>.
-                    Please check your inbox (and spam folder) to verify your account.
+                    We've sent a confirmation to <span className="font-medium text-primary">{identifier}</span>.
+                    Please check your inbox/messages (and spam folder) to verify your account.
                   </p>
                 </div>
               </div>
@@ -224,20 +229,20 @@ const AuthForm: React.FC<AuthFormProps> = ({
 
           <form onSubmit={handleFormSubmit} className="space-y-5">
             <FormField
-              id="email"
-              label="Work Email"
-              type="email"
-              value={email}
+              id="identifier"
+              label="Email or Mobile Number"
+              type="text"
+              value={identifier}
               onChange={(value) => {
-                setEmail(value);
+                setIdentifier(value);
                 setAuthError(''); // Clear error when user types
               }}
-              placeholder="you@company.com"
+              placeholder="you@company.com or +1234567890"
               required
-              autoComplete="email"
+              autoComplete="username"
               icon={<Mail size={16} className="text-muted-foreground" />}
-              error={formErrors.email}
-              success={!!email && !formErrors.email}
+              error={formErrors.identifier}
+              success={!!identifier && !formErrors.identifier}
             />
 
             <div className="space-y-3">

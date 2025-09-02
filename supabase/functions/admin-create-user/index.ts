@@ -194,20 +194,48 @@ const handler = async (req: Request): Promise<Response> => {
 
     } else {
       // Direct user creation (for admin use)
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email,
-        password: Math.random().toString(36).slice(-12), // Generate random password
-        email_confirm: false, // Require email confirmation
-        user_metadata: {
-          first_name,
-          last_name,
-          role,
-          department,
-          phone_number,
-          office_number,
-          floor
-        }
-      });
+      let newUser;
+      let createError;
+      
+      if (email) {
+        // Create user with email
+        const result = await supabase.auth.admin.createUser({
+          email,
+          password: Math.random().toString(36).slice(-12), // Generate random password
+          email_confirm: false, // Require email confirmation
+          user_metadata: {
+            first_name,
+            last_name,
+            role,
+            department,
+            phone_number,
+            office_number,
+            floor
+          }
+        });
+        newUser = result.data;
+        createError = result.error;
+      } else if (mobile_number) {
+        // Create user with phone number
+        const result = await supabase.auth.admin.createUser({
+          phone: mobile_number,
+          password: Math.random().toString(36).slice(-12), // Generate random password
+          phone_confirm: false, // Require phone confirmation
+          user_metadata: {
+            first_name,
+            last_name,
+            role,
+            department,
+            phone_number,
+            office_number,
+            floor
+          }
+        });
+        newUser = result.data;
+        createError = result.error;
+      } else {
+        createError = new Error('Either email or mobile number is required');
+      }
 
       if (createError) {
         console.error('Error creating user:', createError);
@@ -232,12 +260,12 @@ const handler = async (req: Request): Promise<Response> => {
         .eq('id', newUser.user.id);
 
       // Create notification for admin
-      await supabase
+        await supabase
         .from('notifications')
         .insert({
           user_id: user.id,
           title: 'User Created',
-          message: `User ${email} created successfully with role ${role}`,
+          message: `User ${email || mobile_number} created successfully with role ${role}`,
           type: 'success'
         });
 

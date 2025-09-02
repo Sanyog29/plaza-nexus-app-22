@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { AuthForm } from "@/components/AuthForm";
+import AuthForm from "@/components/auth/AuthForm";
 import WelcomeCard from "@/components/auth/WelcomeCard";
 import InvitationAcceptance from "@/components/auth/InvitationAcceptance";
 import { createNetworkAwareRequest } from "@/utils/networkUtils";
@@ -16,6 +16,8 @@ const AuthPage = () => {
   const [isSignUpMode, setIsSignUpMode] = React.useState(false);
   const [emailSent, setEmailSent] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [identifier, setIdentifier] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -27,7 +29,8 @@ const AuthPage = () => {
     return <InvitationAcceptance />;
   }
 
-  const handleSubmit = async (identifier: string, password: string, isSignUp = false) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!identifier || !password) return;
     
     try {
@@ -35,8 +38,9 @@ const AuthPage = () => {
       setError(null);
 
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      const isMobile = /^\+?[1-9]\d{1,14}$/.test(identifier.replace(/\s/g, ''));
       
-      if (isSignUp) {
+      if (isSignUpMode) {
         if (isEmail) {
           const { error } = await supabase.auth.signUp({
             email: identifier,
@@ -46,17 +50,19 @@ const AuthPage = () => {
             }
           });
           if (error) throw error;
-        } else {
+        } else if (isMobile) {
           const { error } = await supabase.auth.signUp({
             phone: identifier,
             password,
           });
           if (error) throw error;
+        } else {
+          throw new Error('Please enter a valid email address or mobile number');
         }
         setEmailSent(true);
         toast({
           title: "Account Created!",
-          description: "Please check your email to verify your account.",
+          description: isEmail ? "Please check your email to verify your account." : "Please check your messages to verify your account.",
         });
       } else {
         // For sign in, we need to determine if it's email or phone
@@ -66,8 +72,14 @@ const AuthPage = () => {
             password,
           });
           if (error) throw error;
+        } else if (isMobile) {
+          const { error } = await supabase.auth.signInWithPassword({
+            phone: identifier,
+            password,
+          });
+          if (error) throw error;
         } else {
-          throw new Error('Mobile number authentication not yet implemented');
+          throw new Error('Please enter a valid email address or mobile number');
         }
         
         toast({
@@ -82,11 +94,13 @@ const AuthPage = () => {
       if (error.message?.includes('Invalid login credentials')) {
         setError('Invalid email/mobile number or password. Please try again.');
       } else if (error.message?.includes('User already registered')) {
-        setError('An account with this email already exists. Please sign in instead.');
+        setError('An account with this email/mobile number already exists. Please sign in instead.');
       } else if (error.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in.');
+      } else if (error.message?.includes('Phone not confirmed')) {
+        setError('Please check your messages and confirm your phone number before signing in.');
       } else if (error.message?.includes('No account found')) {
-        setError('No account found with this mobile number. Please check the number or sign up.');
+        setError('No account found. Please check your details or sign up.');
       } else {
         setError(error.message || 'Authentication failed. Please try again.');
       }
@@ -126,12 +140,16 @@ const AuthPage = () => {
           </div>
           <div className="w-full max-w-md mx-auto lg:max-w-none">
             <AuthForm
-              onSignIn={handleSubmit}
+              identifier={identifier}
+              setIdentifier={setIdentifier}
+              password={password}
+              setPassword={setPassword}
               isLoading={isLoading}
-              error={error}
-              isSignUpMode={isSignUpMode}
-              setIsSignUpMode={setIsSignUpMode}
-              emailSent={emailSent}
+              isSignUp={isSignUpMode}
+              setIsSignUp={setIsSignUpMode}
+              showEmailSentMessage={emailSent}
+              setShowEmailSentMessage={setEmailSent}
+              onSubmit={handleSubmit}
             />
           </div>
         </div>
