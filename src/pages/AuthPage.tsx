@@ -55,7 +55,12 @@ const AuthPage = () => {
             phone: identifier,
             password,
           });
-          if (error) throw error;
+          if (error) {
+            if (error.message?.includes('Phone login is not enabled')) {
+              throw new Error('Phone number registration is currently disabled. Please use your email address instead.');
+            }
+            throw error;
+          }
         } else {
           throw new Error('Please enter a valid email address or mobile number');
         }
@@ -77,7 +82,12 @@ const AuthPage = () => {
             phone: identifier,
             password,
           });
-          if (error) throw error;
+          if (error) {
+            if (error.message?.includes('Phone login is not enabled')) {
+              throw new Error('Phone number sign-in is currently disabled. Please use your email address instead.');
+            }
+            throw error;
+          }
         } else {
           throw new Error('Please enter a valid email address or mobile number');
         }
