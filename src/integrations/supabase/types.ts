@@ -716,6 +716,63 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_user_uploads: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_summary: Json | null
+          failed_records: number
+          filename: string
+          id: string
+          success_summary: Json | null
+          successful_records: number
+          total_records: number
+          upload_status: string
+          uploaded_by: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_summary?: Json | null
+          failed_records?: number
+          filename: string
+          id?: string
+          success_summary?: Json | null
+          successful_records?: number
+          total_records?: number
+          upload_status?: string
+          uploaded_by: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_summary?: Json | null
+          failed_records?: number
+          filename?: string
+          id?: string
+          success_summary?: Json | null
+          successful_records?: number
+          total_records?: number
+          upload_status?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_uploaded_by"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_uploaded_by"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cafeteria_menu_categories: {
         Row: {
           created_at: string
@@ -4005,9 +4062,11 @@ export type Database = {
           interests: string[] | null
           is_active: boolean | null
           last_name: string | null
+          mobile_number: string | null
           notification_preferences: Json | null
           office_number: string | null
           onboarding_date: string | null
+          password_hash: string | null
           phone_number: string | null
           profile_visibility: string | null
           rejection_reason: string | null
@@ -4040,9 +4099,11 @@ export type Database = {
           interests?: string[] | null
           is_active?: boolean | null
           last_name?: string | null
+          mobile_number?: string | null
           notification_preferences?: Json | null
           office_number?: string | null
           onboarding_date?: string | null
+          password_hash?: string | null
           phone_number?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
@@ -4075,9 +4136,11 @@ export type Database = {
           interests?: string[] | null
           is_active?: boolean | null
           last_name?: string | null
+          mobile_number?: string | null
           notification_preferences?: Json | null
           office_number?: string | null
           onboarding_date?: string | null
+          password_hash?: string | null
           phone_number?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
@@ -6947,6 +7010,7 @@ export type Database = {
           created_at: string
           department: string | null
           email: string
+          emp_id: string | null
           expires_at: string
           first_name: string | null
           floor: string | null
@@ -6954,7 +7018,9 @@ export type Database = {
           invitation_token: string
           invited_by: string | null
           last_name: string | null
+          mobile_number: string | null
           office_number: string | null
+          password: string | null
           phone_number: string | null
           role: Database["public"]["Enums"]["app_role"]
           role_title: string | null
@@ -6966,6 +7032,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email: string
+          emp_id?: string | null
           expires_at?: string
           first_name?: string | null
           floor?: string | null
@@ -6973,7 +7040,9 @@ export type Database = {
           invitation_token?: string
           invited_by?: string | null
           last_name?: string | null
+          mobile_number?: string | null
           office_number?: string | null
+          password?: string | null
           phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           role_title?: string | null
@@ -6985,6 +7054,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string
+          emp_id?: string | null
           expires_at?: string
           first_name?: string | null
           floor?: string | null
@@ -6992,7 +7062,9 @@ export type Database = {
           invitation_token?: string
           invited_by?: string | null
           last_name?: string | null
+          mobile_number?: string | null
           office_number?: string | null
+          password?: string | null
           phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           role_title?: string | null
@@ -8285,6 +8357,10 @@ export type Database = {
         Args: { hours_to_add: number; start_time: string }
         Returns: string
       }
+      admin_bulk_create_users: {
+        Args: { users_data: Json }
+        Returns: Json
+      }
       admin_create_user_invitation: {
         Args:
           | {
@@ -8548,6 +8624,10 @@ export type Database = {
       role_level: {
         Args: { user_role: Database["public"]["Enums"]["app_role"] }
         Returns: string
+      }
+      role_requires_department: {
+        Args: { user_role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
       }
       set_system_setting: {
         Args: {

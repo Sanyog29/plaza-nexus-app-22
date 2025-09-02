@@ -7,11 +7,15 @@ const corsHeaders = {
 };
 
 interface CreateUserRequest {
-  email: string;
+  email?: string;
+  mobile_number?: string;
   first_name: string;
   last_name: string;
   role: string;
   department?: string;
+  specialization?: string;
+  password?: string;
+  emp_id?: string;
   phone_number?: string;
   office_number?: string;
   floor?: string;
@@ -67,10 +71,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     const {
       email,
+      mobile_number,
       first_name,
       last_name,
       role,
       department,
+      specialization,
+      password,
+      emp_id,
       phone_number,
       office_number,
       floor,
@@ -79,41 +87,39 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (send_invitation) {
       // Create invitation instead of directly creating user
-      const { data: invitationId, error: inviteError } = await supabase
-        .rpc('admin_create_user_invitation', {
-          invitation_email: email,
-          invitation_first_name: first_name,
-          invitation_last_name: last_name,
-          invitation_role: role,
-          invitation_department: department,
-          invitation_specialization: null,
-        });
+      const { data, error } = await supabase.rpc('admin_create_user_invitation', {
+        invitation_email: email || null,
+        invitation_mobile_number: mobile_number || null,
+        invitation_first_name: first_name,
+        invitation_last_name: last_name,
+        invitation_role: role,
+        invitation_department: role === 'tenant_manager' ? null : department,
+        invitation_specialization: specialization,
+        invitation_password: password,
+        invitation_emp_id: emp_id,
+      });
 
-      if (inviteError) {
-        console.error('Error creating invitation:', inviteError);
-        return new Response(JSON.stringify({ error: inviteError.message }), {
+      if (error) {
+        console.error('Error creating invitation:', error);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to create user invitation: ' + error.message 
+        }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      // Get invitation details for email
-      const { data: invitation, error: getInviteError } = await supabase
-        .from('user_invitations')
-        .select('*')
-        .eq('id', invitationId)
-        .single();
-
-      if (getInviteError) {
-        console.error('Error fetching invitation:', getInviteError);
-        return new Response(JSON.stringify({ error: 'Failed to fetch invitation details' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Send invitation email
-      const inviteUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 'https://your-app.com'}/auth?invitation=${invitation.invitation_token}`;
+      // Send invitation email if email is provided
+      if (email) {
+        // Get the invitation details to get the token
+        const { data: invitationData } = await supabase
+          .from('user_invitations')
+          .select('invitation_token')
+          .eq('email', email)
+          .eq('status', 'pending')
+          .single();
+      
+        const inviteUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 'https://your-app.com'}/auth?invitation=${invitationData?.invitation_token || 'token'}`;
       
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -167,15 +173,24 @@ const handler = async (req: Request): Promise<Response> => {
           type: 'success'
         });
 
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'User invitation sent successfully',
-        invitation_id: invitationId,
-        invitation_token: invitation.invitation_token
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'User invitation created successfully',
+          invitation_id: data
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } else {
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'User invitation created successfully (no email sent)',
+          invitation_id: data
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
     } else {
       // Direct user creation (for admin use)

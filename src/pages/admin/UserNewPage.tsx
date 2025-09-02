@@ -20,6 +20,9 @@ export default function UserNewPage() {
     firstName: "",
     lastName: "",
     email: "",
+    mobileNumber: "",
+    password: "",
+    empId: "",
     role: "",
     department: "",
     specialization: "",
@@ -39,10 +42,31 @@ export default function UserNewPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.role) {
+    // Validate required fields
+    if (!formData.firstName || !formData.lastName || !formData.role) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email or mobile number is provided
+    if (!formData.email && !formData.mobileNumber) {
+      toast({
+        title: "Contact Information Required",
+        description: "Please provide either email address or mobile number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate department for non-tenant roles
+    if (formData.role !== 'tenant_manager' && !formData.department) {
+      toast({
+        title: "Department Required",
+        description: "Department is required for this role",
         variant: "destructive",
       });
       return;
@@ -53,12 +77,15 @@ export default function UserNewPage() {
     try {
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
         body: {
-          email: formData.email,
+          email: formData.email || null,
+          mobile_number: formData.mobileNumber || null,
           first_name: formData.firstName,
           last_name: formData.lastName,
           role: formData.role,
-          department: formData.department || null,
+          department: formData.role === 'tenant_manager' ? null : (formData.department || null),
           specialization: formData.specialization || null,
+          password: formData.password || null,
+          emp_id: formData.empId || null,
           send_invitation: true,
         }
       });
@@ -75,8 +102,8 @@ export default function UserNewPage() {
       }
 
       toast({
-        title: "Invitation Sent!",
-        description: `Invitation email sent to ${formData.email}. They will receive an email to set up their account.`,
+        title: "User Created Successfully!",
+        description: `User account created${formData.email ? ` and invitation sent to ${formData.email}` : ''}. ${formData.password ? 'Password has been set for direct login.' : ''}`,
       });
       
       navigate('/admin/users');
@@ -120,7 +147,7 @@ export default function UserNewPage() {
               User Information
             </CardTitle>
             <CardDescription>
-              Enter the details and send an invitation email to the new user
+              Enter the user details. Email or mobile number is required. Password is optional (will be auto-generated if not provided).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -149,16 +176,49 @@ export default function UserNewPage() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="Enter email address"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="Enter email address"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobileNumber">Mobile Number</Label>
+                    <Input 
+                      id="mobileNumber" 
+                      type="tel" 
+                      placeholder="Enter mobile number"
+                      value={formData.mobileNumber}
+                      onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="empId">Employee ID</Label>
+                    <Input 
+                      id="empId" 
+                      placeholder="Enter employee ID"
+                      value={formData.empId}
+                      onChange={(e) => handleInputChange('empId', e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      placeholder="Leave blank to auto-generate"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
@@ -175,18 +235,28 @@ export default function UserNewPage() {
                   </Select>
                 </div>
                 
-                {/* Enhanced Department Selector */}
-                <div className="col-span-2">
-                  <DepartmentSelector
-                    selectedDepartment={formData.department}
-                    selectedSpecialization={formData.specialization}
-                    onDepartmentChange={(dept) => handleInputChange('department', dept)}
-                    onSpecializationChange={(spec) => handleInputChange('specialization', spec)}
-                    showSpecialization={requiresSpecialization(formData.role)}
-                    required={requiresSpecialization(formData.role)}
-                    className="w-full"
-                  />
-                </div>
+                {/* Department Selector - Only show for non-tenant roles */}
+                {formData.role && formData.role !== 'tenant_manager' && (
+                  <div className="space-y-4">
+                    <DepartmentSelector
+                      selectedDepartment={formData.department}
+                      selectedSpecialization={formData.specialization}
+                      onDepartmentChange={(dept) => handleInputChange('department', dept)}
+                      onSpecializationChange={(spec) => handleInputChange('specialization', spec)}
+                      showSpecialization={requiresSpecialization(formData.role)}
+                      required={true}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+                
+                {formData.role === 'tenant_manager' && (
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Note:</strong> Tenant managers are not assigned to specific departments.
+                    </p>
+                  </div>
+                )}
                 
                 <div className="flex gap-4 pt-4">
                   <Button 
@@ -194,7 +264,7 @@ export default function UserNewPage() {
                     className="flex-1"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Sending Invitation..." : "Send Invitation"}
+                    {isLoading ? "Creating User..." : "Create User"}
                   </Button>
                   <Button 
                     type="button"

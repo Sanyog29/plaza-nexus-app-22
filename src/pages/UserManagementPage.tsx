@@ -1,6 +1,7 @@
 
-import React from 'react';
 import { EnhancedUserManagement } from '@/components/admin/EnhancedUserManagement';
+import { BulkUserUpload } from '@/components/admin/BulkUserUpload';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const UserManagementPage = () => {
   return (
@@ -13,7 +14,22 @@ const UserManagementPage = () => {
           </p>
         </div>
         
-        <EnhancedUserManagement />
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="users">
+            <EnhancedUserManagement />
+          </TabsContent>
+          
+          <TabsContent value="bulk-upload">
+            <BulkUserUpload onSuccess={() => {
+              // Optionally refresh the user list or show a success message
+            }} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

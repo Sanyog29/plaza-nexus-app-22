@@ -1,103 +1,99 @@
 
 import React from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { toast } from '@/components/ui/sonner';
-import { supabase } from '@/integrations/supabase/client';
-import WelcomeCard from '@/components/auth/WelcomeCard';
-import AuthForm from '@/components/auth/AuthForm';
-import InvitationAcceptance from '@/components/auth/InvitationAcceptance';
-import { SEOHead } from '@/components/seo/SEOHead';
-import { getAuthErrorMessage } from '@/utils/authHelpers';
-import { createNetworkAwareRequest } from '@/utils/networkUtils';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { AuthForm } from "@/components/AuthForm";
+import WelcomeCard from "@/components/auth/WelcomeCard";
+import InvitationAcceptance from "@/components/auth/InvitationAcceptance";
+import { createNetworkAwareRequest } from "@/utils/networkUtils";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const invitation = searchParams.get('invitation');
-  
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isSignUpMode, setIsSignUpMode] = React.useState(false);
+  const [emailSent, setEmailSent] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+
+  const from = location.state?.from?.pathname || "/";
+
   // If there's an invitation token, show the invitation acceptance form
   if (invitation) {
     return <InvitationAcceptance />;
   }
 
-  // Otherwise, show the regular auth form
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isSignUp, setIsSignUp] = React.useState(false);
-  const [showEmailSentMessage, setShowEmailSentMessage] = React.useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from?.pathname || "/";
-
-  const handleSubmit = createNetworkAwareRequest(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setShowEmailSentMessage(false);
-
+  const handleSubmit = async (identifier: string, password: string, isSignUp = false) => {
+    if (!identifier || !password) return;
+    
     try {
+      setIsLoading(true);
+      setError(null);
+
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      
       if (isSignUp) {
-        const { error, data } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              email: email,
+        if (isEmail) {
+          const { error } = await supabase.auth.signUp({
+            email: identifier,
+            password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/`
             }
-          }
-        });
-        
-        if (error) {
-          // Handle specific signup errors
-          if (error.message?.includes('User already registered')) {
-            toast.error("Account Already Exists", {
-              description: "An account with this email already exists. Please sign in instead.",
-            });
-            setIsSignUp(false);
-            return;
-          }
-          throw error;
+          });
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.auth.signUp({
+            phone: identifier,
+            password,
+          });
+          if (error) throw error;
         }
-        
-        // Show a more detailed message about email confirmation
-        setShowEmailSentMessage(true);
-        toast.success("Account Created Successfully", {
-          description: "Please check your email (including spam folder) to confirm your account before signing in.",
+        setEmailSent(true);
+        toast({
+          title: "Account Created!",
+          description: "Please check your email to verify your account.",
         });
       } else {
-        const { error, data } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) {
-          // Handle specific signin errors
-          if (error.message?.includes('Invalid login credentials')) {
-            toast.error("Invalid credentials", {
-              description: "Email or password is incorrect. You can try again or create a new account.",
-            });
-            setIsSignUp(true);
-            return;
-          }
-          toast.error("Sign in failed", { description: getAuthErrorMessage(error) });
-          throw error;
+        // For sign in, we need to determine if it's email or phone
+        if (isEmail) {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: identifier,
+            password,
+          });
+          if (error) throw error;
+        } else {
+          throw new Error('Mobile number authentication not yet implemented');
         }
         
-        toast.success("Welcome back!", {
+        toast({
+          title: "Welcome back!",
           description: "You have successfully signed in.",
         });
         navigate(from);
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
+      console.error('Auth error:', error);
       
-      // Let AuthForm handle the specific error display
-      throw error;
+      if (error.message?.includes('Invalid login credentials')) {
+        setError('Invalid email/mobile number or password. Please try again.');
+      } else if (error.message?.includes('User already registered')) {
+        setError('An account with this email already exists. Please sign in instead.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('Please check your email and click the confirmation link before signing in.');
+      } else if (error.message?.includes('No account found')) {
+        setError('No account found with this mobile number. Please check the number or sign up.');
+      } else {
+        setError(error.message || 'Authentication failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
-  });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background mobile-safe">
@@ -130,16 +126,12 @@ const AuthPage = () => {
           </div>
           <div className="w-full max-w-md mx-auto lg:max-w-none">
             <AuthForm
-              email={email}
-              setEmail={setEmail}
-              password={password}
-              setPassword={setPassword}
+              onSignIn={handleSubmit}
               isLoading={isLoading}
-              isSignUp={isSignUp}
-              setIsSignUp={setIsSignUp}
-              showEmailSentMessage={showEmailSentMessage}
-              setShowEmailSentMessage={setShowEmailSentMessage}
-              onSubmit={handleSubmit}
+              error={error}
+              isSignUpMode={isSignUpMode}
+              setIsSignUpMode={setIsSignUpMode}
+              emailSent={emailSent}
             />
           </div>
         </div>
