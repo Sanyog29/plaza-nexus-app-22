@@ -4,9 +4,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, BarChart3, Settings, Database } from 'lucide-react';
 import UnifiedDataExportTools from './UnifiedDataExportTools';
 
-export const OperationsTabs: React.FC = () => {
+interface OperationsTabsProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  canUseAdvancedDashboards: boolean;
+  canImportCSV: boolean;
+  canExportData: boolean;
+  canForecast: boolean;
+}
+
+export const OperationsTabs: React.FC<OperationsTabsProps> = ({ 
+  activeTab, 
+  onTabChange,
+  canExportData 
+}) => {
   return (
-    <Tabs defaultValue="export" className="space-y-6">
+    <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="export" className="flex items-center gap-2">
           <Download className="h-4 w-4" />
@@ -27,7 +40,11 @@ export const OperationsTabs: React.FC = () => {
       </TabsList>
 
       <TabsContent value="export">
-        <UnifiedDataExportTools />
+        {canExportData ? <UnifiedDataExportTools /> : (
+          <div className="text-center py-12 text-muted-foreground">
+            Data export tools require additional permissions.
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="analytics">

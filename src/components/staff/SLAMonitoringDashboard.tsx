@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { extractCategoryName } from '@/utils/categoryUtils';
 import { toast } from '@/hooks/use-toast';
 
 interface SLABreach {
@@ -89,7 +90,7 @@ export const SLAMonitoringDashboard: React.FC = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories(name)
+          main_categories!maintenance_requests_category_id_fkey(name)
         `)
         .eq('assigned_to', user.id)
         .gte('created_at', startDate.toISOString())
@@ -170,9 +171,7 @@ export const SLAMonitoringDashboard: React.FC = () => {
               ? (new Date(req.completed_at || new Date()).getTime() - new Date(req.sla_breach_at).getTime()) / (1000 * 60 * 60)
               : 0,
             status: req.status,
-            category: Array.isArray(req.main_categories) && req.main_categories.length > 0 
-              ? req.main_categories[0].name 
-              : req.main_categories?.name || 'Unknown'
+            category: extractCategoryName(req.main_categories)
           }))
           .sort((a, b) => new Date(b.slaBreachAt).getTime() - new Date(a.slaBreachAt).getTime());
 
@@ -188,9 +187,7 @@ export const SLAMonitoringDashboard: React.FC = () => {
             slaBreachAt: req.sla_breach_at!,
             breachDuration: (new Date().getTime() - new Date(req.sla_breach_at!).getTime()) / (1000 * 60 * 60),
             status: req.status,
-            category: Array.isArray(req.main_categories) && req.main_categories.length > 0 
-              ? req.main_categories[0].name 
-              : req.main_categories?.name || 'Unknown'
+            category: extractCategoryName(req.main_categories)
           }))
           .sort((a, b) => b.breachDuration - a.breachDuration);
 

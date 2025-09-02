@@ -75,10 +75,10 @@ const UnifiedDataExportTools: React.FC = () => {
               *,
               main_categories(name),
               assigned_user:profiles!maintenance_requests_assigned_to_fkey(
-                full_name
+                first_name, last_name
               ),
               reported_user:profiles!maintenance_requests_reported_by_fkey(
-                full_name
+                first_name, last_name
               )
             `)
             .order('created_at', { ascending: false });
@@ -90,8 +90,8 @@ const UnifiedDataExportTools: React.FC = () => {
             status: req.status,
             priority: req.priority,
             category: extractCategoryName(req.main_categories),
-            reported_by: req.reported_user?.full_name || 'Unknown',
-            assigned_to: req.assigned_user?.full_name || 'Unassigned',
+            reported_by: req.reported_user ? `${req.reported_user.first_name || ''} ${req.reported_user.last_name || ''}`.trim() || 'Unknown' : 'Unknown',
+            assigned_to: req.assigned_user ? `${req.assigned_user.first_name || ''} ${req.assigned_user.last_name || ''}`.trim() || 'Unassigned' : 'Unassigned',
             location: req.location,
             created_at: new Date(req.created_at).toLocaleDateString(),
             updated_at: new Date(req.updated_at).toLocaleDateString()
@@ -107,8 +107,8 @@ const UnifiedDataExportTools: React.FC = () => {
 
           data = users?.map(user => ({
             id: user.id,
-            full_name: user.full_name || 'Unknown',
-            email: user.email || 'Unknown',
+            full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown',
+            email: 'Unknown', // Email is not available in profiles table
             role: user.role,
             department: user.department,
             status: user.approval_status,
@@ -122,15 +122,14 @@ const UnifiedDataExportTools: React.FC = () => {
             .from('maintenance_request_feedback')
             .select(`
               *,
-              maintenance_requests(title, status),
-              profiles(full_name)
+              maintenance_requests(title, status)
             `)
             .order('created_at', { ascending: false });
 
           data = feedback?.map(fb => ({
             id: fb.id,
             request_title: fb.maintenance_requests?.title || 'Unknown',
-            user_name: fb.profiles?.full_name || 'Unknown',
+            user_name: 'Unknown', // User name not available from feedback table
             satisfaction_rating: fb.satisfaction_rating,
             feedback_text: fb.feedback_text || '',
             created_at: new Date(fb.created_at).toLocaleDateString()
