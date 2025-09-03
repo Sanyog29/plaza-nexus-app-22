@@ -8,6 +8,7 @@ import { ThemeToggle } from './theme/ThemeToggle';
 import { Button } from './ui/button';
 import { useAuth } from './AuthProvider';
 import AvailabilityToggle from './availability/AvailabilityToggle';
+import { HeaderCreditsBadge } from './header/HeaderCreditsBadge';
 
 const Header: React.FC = () => {
   const { signOut, user } = useAuth();
@@ -33,6 +34,7 @@ const Header: React.FC = () => {
           {user && (
             <AvailabilityToggle />
           )}
+          <HeaderCreditsBadge />
           <Link 
             to="/manual" 
             className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
