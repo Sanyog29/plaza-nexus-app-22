@@ -8408,6 +8408,20 @@ export type Database = {
             }
         Returns: Json
       }
+      admin_create_user_with_validation: {
+        Args: {
+          p_department?: string
+          p_email: string
+          p_emp_id?: string
+          p_first_name: string
+          p_last_name: string
+          p_mobile_number: string
+          p_password?: string
+          p_role: string
+          p_specialization?: string
+        }
+        Returns: Json
+      }
       admin_delete_user: {
         Args: { target_user_id: string }
         Returns: Json
