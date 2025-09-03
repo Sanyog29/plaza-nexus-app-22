@@ -8717,6 +8717,15 @@ export type Database = {
           | { new_role: string; user_id: string }
         Returns: boolean
       }
+      update_user_role_and_department: {
+        Args: {
+          department: string
+          role_text: string
+          specialization?: string
+          target_user_id: string
+        }
+        Returns: Json
+      }
       update_user_role_safe: {
         Args: { new_role_text: string; target_user_id: string }
         Returns: boolean

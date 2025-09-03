@@ -36,6 +36,8 @@ interface UserData {
   last_name: string;
   role: string;
   assigned_role_title: string;
+  department: string;
+  specialization: string;
   approval_status: string;
   created_at: string;
   confirmed_at: string;
@@ -345,6 +347,13 @@ export const EnhancedUserManagement: React.FC = () => {
   const handleStartRoleEdit = (userId: string, currentRole: string) => {
     setEditingRoleUserId(userId);
     setNewRole(currentRole);
+    
+    // Initialize department selection with user's current values
+    const user = users.find(u => u.id === userId);
+    setDepartmentSelection({
+      department: user?.department || '',
+      specialization: user?.specialization || ''
+    });
   };
 
   const handleCancelRoleEdit = () => {
@@ -353,32 +362,43 @@ export const EnhancedUserManagement: React.FC = () => {
   };
 
   const handleSaveRoleChange = async (userId: string) => {
-    if (!newRole || newRole === users.find(u => u.id === userId)?.role) {
+    const currentUser = users.find(u => u.id === userId);
+    if (!newRole || (newRole === currentUser?.assigned_role_title && 
+        departmentSelection.department === (currentUser?.department || '') &&
+        departmentSelection.specialization === (currentUser?.specialization || ''))) {
       handleCancelRoleEdit();
       return;
     }
 
     setIsUpdatingRole(true);
     try {
-      const { error } = await supabase.rpc('update_user_role_safe', {
+      const { data, error } = await supabase.rpc('update_user_role_and_department', {
         target_user_id: userId,
-        new_role_text: newRole
+        role_text: newRole,
+        department: departmentSelection.department || null,
+        specialization: departmentSelection.specialization || null
       });
 
       if (error) throw error;
 
+      // Check if the RPC returned an error in the data
+      if (data && typeof data === 'object' && 'success' in data && !data.success) {
+        throw new Error((data as any).error);
+      }
+
       toast({
         title: "Success",
-        description: "User role updated successfully",
+        description: "User updated successfully",
       });
 
       setEditingRoleUserId(null);
       setNewRole('');
+      setDepartmentSelection({ department: '', specialization: '' });
       fetchUsers();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to update user role",
+        description: error.message || "Failed to update user",
         variant: "destructive",
       });
     } finally {
