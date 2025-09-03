@@ -37,7 +37,7 @@ const SystemHealthCheck = () => {
 
       // Check RLS policies
       const { data: policies, error: policyError } = await supabase
-        .rpc('get_user_management_data', { caller_id: user?.id });
+        .rpc('get_user_management_data');
       
       healthChecks.push({
         name: 'RLS Policies',
@@ -57,7 +57,7 @@ const SystemHealthCheck = () => {
 
       // Check user approval system
       const { data: userMgmtData, error: userMgmtError } = await supabase
-        .rpc('get_user_management_data', { caller_id: user?.id });
+        .rpc('get_user_management_data');
       
       let orphanedCount = 0;
       if (userMgmtData) {
@@ -99,7 +99,7 @@ const SystemHealthCheck = () => {
 
       // Check enum types
       const { data: enumData, error: enumError } = await supabase
-        .rpc('get_user_management_data', { caller_id: user?.id });
+        .rpc('get_user_management_data');
       
       healthChecks.push({
         name: 'Database Schema',

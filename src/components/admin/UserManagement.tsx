@@ -52,12 +52,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser.user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase.rpc('get_user_management_data', {
-        caller_id: currentUser.user.id
-      });
+      const { data, error } = await supabase.rpc('get_user_management_data');
       
       if (error) throw error;
       
