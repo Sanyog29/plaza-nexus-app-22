@@ -99,7 +99,7 @@ export const EnhancedUserManagement: React.FC = () => {
   // Set default role when roles are loaded
   useEffect(() => {
     if (roles.length > 0 && !newUser.role) {
-      setNewUser(prev => ({ ...prev, role: roles[0].app_role }));
+      setNewUser(prev => ({ ...prev, role: roles[0].title }));
     }
   }, [roles, newUser.role]);
 
@@ -121,8 +121,8 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   }, [newUser.role, requiresSpecialization, getRoleDefaults]);
 
-  // Get role display name for current selection
-  const currentRoleDisplay = roles.find(r => r.app_role === newUser.role)?.title || newUser.role;
+  // Get role object for current selection
+  const currentRoleObject = roles.find(r => r.title === newUser.role);
 
   const fetchUsers = async () => {
     try {
@@ -187,13 +187,13 @@ export const EnhancedUserManagement: React.FC = () => {
 
     try {
       if (sendInvitation) {
-        // Use RPC for invitation - send the title instead of app_role
+        // Use RPC for invitation - send the title directly
         const { data, error } = await supabase.rpc('admin_create_user_invitation', {
           invitation_email: newUser.email || null,
           invitation_phone_number: newUser.mobileNumber || null,
           invitation_first_name: newUser.firstName,
           invitation_last_name: newUser.lastName,
-          invitation_role: roles.find(r => r.app_role === newUser.role)?.title || newUser.role, // Send the title
+          invitation_role: newUser.role, // Already contains the title
           invitation_department: newUser.department || null,
           invitation_specialization: newUser.specialization || null,
           invitation_password: newUser.password || null,
@@ -216,14 +216,14 @@ export const EnhancedUserManagement: React.FC = () => {
           description: "User invitation sent successfully",
         });
       } else {
-      // Use the title directly instead of role for user creation
+      // Use the title directly for user creation
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
         body: {
           email: newUser.email || undefined,
           mobile_number: newUser.mobileNumber || undefined,
           first_name: newUser.firstName,
           last_name: newUser.lastName,
-          role: roles.find(r => r.app_role === newUser.role)?.title || newUser.role, // Send the title, not app_role
+          role: newUser.role, // Already contains the title
           department: newUser.department || undefined,
           specialization: newUser.specialization || undefined,
           password: newUser.password,
@@ -254,7 +254,7 @@ export const EnhancedUserManagement: React.FC = () => {
         mobileNumber: '',
         firstName: '',
         lastName: '',
-        role: roles.length > 0 ? roles[0].app_role : '',
+        role: roles.length > 0 ? roles[0].title : '',
         department: '',
         specialization: '',
         password: '',
@@ -458,7 +458,7 @@ export const EnhancedUserManagement: React.FC = () => {
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === 'all' || user.role === selectedRole;
+    const matchesRole = selectedRole === 'all' || user.assigned_role_title === selectedRole || user.role === selectedRole;
     const matchesStatus = selectedStatus === 'all' || user.approval_status === selectedStatus;
     
     return matchesSearch && matchesRole && matchesStatus;
@@ -574,13 +574,11 @@ export const EnhancedUserManagement: React.FC = () => {
               <Label htmlFor="role">Role *</Label>
               <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a role">
-                    {currentRoleDisplay}
-                  </SelectValue>
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map(role => (
-                    <SelectItem key={role.id} value={role.app_role}>{role.title}</SelectItem>
+                    <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -631,7 +629,7 @@ export const EnhancedUserManagement: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
                 {roles.map(role => (
-                  <SelectItem key={role.id} value={role.app_role}>{role.title}</SelectItem>
+                  <SelectItem key={role.id} value={role.title}>{role.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -671,9 +669,9 @@ export const EnhancedUserManagement: React.FC = () => {
                                   <SelectTrigger className="w-48">
                                     <SelectValue />
                                   </SelectTrigger>
-                                    <SelectContent>
+                                     <SelectContent>
                                      {roles.map(role => (
-                                       <SelectItem key={role.id} value={role.app_role}>
+                                       <SelectItem key={role.id} value={role.title}>
                                          {role.title}
                                        </SelectItem>
                                      ))}
