@@ -70,7 +70,7 @@ const RequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories (
+          main_categories!maintenance_requests_category_id_fkey (
             name,
             icon
           )

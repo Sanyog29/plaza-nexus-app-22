@@ -58,7 +58,7 @@ const TenantSatisfactionScoring: React.FC = () => {
             created_at,
             completed_at,
             sla_breach_at,
-            main_categories(name)
+            main_categories!maintenance_requests_category_id_fkey(name)
           )
         `)
         .eq('user_id', user.id)

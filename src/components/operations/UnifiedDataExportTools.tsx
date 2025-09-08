@@ -73,7 +73,7 @@ const UnifiedDataExportTools: React.FC = () => {
             .from('maintenance_requests')
             .select(`
               *,
-              main_categories(name),
+              main_categories!maintenance_requests_category_id_fkey(name),
               assigned_user:profiles!maintenance_requests_assigned_to_fkey(
                 first_name, last_name
               ),

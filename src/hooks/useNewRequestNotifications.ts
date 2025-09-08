@@ -44,7 +44,7 @@ export const useNewRequestNotifications = () => {
               priority,
               location,
               created_at,
-              category:main_categories(name)
+              category:main_categories!maintenance_requests_category_id_fkey(name)
             `)
             .eq('id', newRequestData.id)
             .single();

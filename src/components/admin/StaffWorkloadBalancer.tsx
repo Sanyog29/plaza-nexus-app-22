@@ -91,7 +91,7 @@ const StaffWorkloadBalancer: React.FC = () => {
               .from('maintenance_requests')
               .select(`
                 *,
-                main_categories(name)
+                main_categories!maintenance_requests_category_id_fkey(name)
               `)
               .eq('assigned_to', profile.id)
               .in('status', ['assigned', 'in_progress']);
@@ -147,7 +147,7 @@ const StaffWorkloadBalancer: React.FC = () => {
               .from('maintenance_requests')
               .select(`
                 priority,
-                main_categories(name)
+                main_categories!maintenance_requests_category_id_fkey(name)
               `)
               .eq('assigned_to', profile.id)
               .in('status', ['assigned', 'in_progress']);

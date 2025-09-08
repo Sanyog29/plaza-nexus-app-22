@@ -94,7 +94,7 @@ export const TaskAnalyticsDashboard: React.FC = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories(name)
+          main_categories!maintenance_requests_category_id_fkey(name)
         `)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());

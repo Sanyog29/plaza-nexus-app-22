@@ -54,7 +54,7 @@ export const useRequestOffers = () => {
             title,
             priority,
             location,
-            category:main_categories(name)
+            category:main_categories!maintenance_requests_category_id_fkey(name)
           )
         `)
         .in('id', offerIds)
