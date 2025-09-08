@@ -4058,6 +4058,7 @@ export type Database = {
           created_at: string
           department: string | null
           designation: string | null
+          email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relationship: string | null
@@ -4096,6 +4097,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           designation?: string | null
+          email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
@@ -4134,6 +4136,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           designation?: string | null
+          email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null

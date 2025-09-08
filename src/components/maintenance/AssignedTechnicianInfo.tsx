@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Phone, Mail, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 import { format } from 'date-fns';
 
 interface AssignedTechnicianInfoProps {
@@ -44,37 +45,28 @@ const AssignedTechnicianInfo: React.FC<AssignedTechnicianInfoProps> = ({
     try {
       setLoading(true);
       
-      // Get profile info
+      // Get profile info including email
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, first_name, last_name, phone_number, email, role, specialization')
         .eq('id', assignedToUserId)
         .single();
 
       if (profileError) throw profileError;
 
-      // Get email from auth.users (this requires RLS policy or service role)
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(assignedToUserId);
-      
-      setTechnician({
-        ...profile,
-        email: authUser.user?.email || 'Not available'
-      });
+      setTechnician(profile);
 
     } catch (error: any) {
       console.error('Error fetching technician info:', error);
-      // Fallback to just profile data without email
+      // Fallback to just profile data
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, first_name, last_name, phone_number, email, role, specialization')
         .eq('id', assignedToUserId)
         .single();
       
       if (profile) {
-        setTechnician({
-          ...profile,
-          email: 'Not available'
-        });
+        setTechnician(profile);
       }
     } finally {
       setLoading(false);
@@ -136,7 +128,7 @@ const AssignedTechnicianInfo: React.FC<AssignedTechnicianInfoProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-white text-lg">
-              {technician.first_name} {technician.last_name}
+              {formatUserNameFromProfile(technician)}
             </h3>
             <p className="text-gray-400 text-sm capitalize">{technician.role.replace('_', ' ')}</p>
             {technician.specialization && (

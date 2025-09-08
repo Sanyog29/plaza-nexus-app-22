@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 import { format } from 'date-fns';
 
 interface TicketManagementProps {
@@ -14,10 +15,7 @@ interface TicketManagementProps {
 
 const formatAssigneeName = (assignee: any): string => {
   if (!assignee) return 'Unassigned';
-  if (assignee.first_name && assignee.last_name) {
-    return `${assignee.first_name} ${assignee.last_name}`;
-  }
-  return assignee.first_name || assignee.last_name || 'Unknown';
+  return formatUserNameFromProfile(assignee);
 };
 
 const TicketManagement = ({ tickets, getStatusBadge, getPriorityBadge }: TicketManagementProps) => {
