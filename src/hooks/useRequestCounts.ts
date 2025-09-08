@@ -32,8 +32,10 @@ export const useRequestCounts = () => {
       const totalRequests = requests?.length || 0;
       const pendingRequests = requests?.filter(r => r.status === 'pending').length || 0;
       const inProgressRequests = requests?.filter(r => r.status === 'in_progress').length || 0;
+      const assignedRequests = requests?.filter(r => r.status === 'assigned').length || 0;
+      const enRouteRequests = requests?.filter(r => r.status === 'en_route').length || 0;
       const completedRequests = requests?.filter(r => r.status === 'completed').length || 0;
-      const activeRequests = pendingRequests + inProgressRequests;
+      const activeRequests = pendingRequests + inProgressRequests + assignedRequests + enRouteRequests;
 
       setCounts({
         totalRequests,
