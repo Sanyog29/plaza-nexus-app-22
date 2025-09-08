@@ -82,7 +82,7 @@ const StaffRequestsPage = () => {
     const urlStatus = searchParams.get('status');
     if (urlStatus && ['completed', 'in_progress', 'pending'].includes(urlStatus)) {
       setStatusFilter(urlStatus);
-      setActiveTab(urlStatus === 'completed' ? 'done' : urlStatus === 'in_progress' ? 'in_progress' : 'pending');
+      setActiveTab(urlStatus); // Use the exact status, not mapping to 'done'
     }
 
     return () => {

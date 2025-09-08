@@ -16,7 +16,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
-import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useRequestCounts } from '@/hooks/useRequestCounts';
 
 interface DashboardWidget {
   id: string;
@@ -33,7 +33,7 @@ interface CustomizableDashboardProps {
 
 export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) {
   const { user } = useAuth();
-  const { metrics } = useDashboardMetrics();
+  const { counts } = useRequestCounts();
   const navigate = useNavigate();
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
@@ -47,9 +47,9 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
         size: 'medium',
         visible: true,
         data: {
-          total: metrics.totalRequests,
-          active: metrics.activeRequests,
-          completed: metrics.totalRequests - metrics.activeRequests
+          total: counts.totalRequests,
+          active: counts.activeRequests,
+          completed: counts.completedRequests
         }
       },
       {
@@ -68,7 +68,7 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
         data: {
           status: 'healthy',
           uptime: '99.9%',
-          alerts: metrics.activeAlerts
+          alerts: 0
         }
       }
     ];
@@ -218,21 +218,21 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
 
       return (
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
-               onClick={() => navigate(getRouteForStatus('all'))}>
-            <div className="text-2xl font-bold text-white">{metrics.totalRequests}</div>
-            <div className="text-xs text-muted-foreground">Total</div>
-          </div>
-          <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
-               onClick={() => navigate(getRouteForStatus('in_progress'))}>
-            <div className="text-2xl font-bold text-blue-400">{metrics.activeRequests}</div>
-            <div className="text-xs text-muted-foreground">Active</div>
-          </div>
-          <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
-               onClick={() => navigate(getRouteForStatus('completed'))}>
-            <div className="text-2xl font-bold text-green-400">{metrics.completedRequests}</div>
-            <div className="text-xs text-muted-foreground">Completed</div>
-          </div>
+           <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
+                onClick={() => navigate(getRouteForStatus('all'))}>
+             <div className="text-2xl font-bold text-white">{counts.totalRequests}</div>
+             <div className="text-xs text-muted-foreground">Total</div>
+           </div>
+           <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
+                onClick={() => navigate(getRouteForStatus('in_progress'))}>
+             <div className="text-2xl font-bold text-blue-400">{counts.activeRequests}</div>
+             <div className="text-xs text-muted-foreground">Active</div>
+           </div>
+           <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
+                onClick={() => navigate(getRouteForStatus('completed'))}>
+             <div className="text-2xl font-bold text-green-400">{counts.completedRequests}</div>
+             <div className="text-xs text-muted-foreground">Completed</div>
+           </div>
         </div>
       );
     }

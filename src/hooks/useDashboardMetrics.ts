@@ -42,57 +42,76 @@ export const useDashboardMetrics = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Fetch maintenance requests
-      const { data: requests } = await supabase
-        .from('maintenance_requests')
-        .select('status');
+      // Use Promise.allSettled to make queries resilient to individual failures
+      const results = await Promise.allSettled([
+        // Core maintenance requests (critical)
+        supabase
+          .from('maintenance_requests')
+          .select('status'),
+        
+        // Optional room data
+        supabase
+          .from('rooms')
+          .select('id'),
+        
+        // Optional booking data
+        supabase
+          .from('room_bookings')
+          .select('room_id')
+          .gte('start_time', `${today}T00:00:00`)
+          .lt('start_time', `${today}T23:59:59`),
+        
+        // Optional alerts data
+        supabase
+          .from('alerts')
+          .select('severity, is_active')
+          .eq('is_active', true),
+        
+        // Optional visitors data
+        supabase
+          .from('visitors')
+          .select('status')
+          .eq('visit_date', today)
+      ]);
+
+      // Extract request data (always available)
+      const requestsResult = results[0];
+      const requests = requestsResult.status === 'fulfilled' ? requestsResult.value.data : [];
 
       const activeRequests = requests?.filter(r => r.status === 'pending' || r.status === 'in_progress').length || 0;
       const totalRequests = requests?.length || 0;
       const completedRequests = requests?.filter(r => r.status === 'completed').length || 0;
+      const pendingMaintenance = requests?.filter(r => r.status === 'pending').length || 0;
 
-      // Fetch room availability (rooms not booked today)
-      const { data: rooms } = await supabase
-        .from('rooms')
-        .select('id');
-
-      const { data: bookings } = await supabase
-        .from('room_bookings')
-        .select('room_id')
-        .gte('start_time', `${today}T00:00:00`)
-        .lt('start_time', `${today}T23:59:59`);
-
+      // Extract optional data with fallbacks
+      const roomsResult = results[1];
+      const rooms = roomsResult.status === 'fulfilled' ? roomsResult.value.data : [];
+      
+      const bookingsResult = results[2];
+      const bookings = bookingsResult.status === 'fulfilled' ? bookingsResult.value.data : [];
+      
       const bookedRoomIds = new Set(bookings?.map(b => b.room_id) || []);
       const totalRooms = rooms?.length || 0;
       const availableRooms = totalRooms - bookedRoomIds.size;
 
-      // Fetch alerts
-      const { data: alerts } = await supabase
-        .from('alerts')
-        .select('severity, is_active')
-        .eq('is_active', true);
-
+      const alertsResult = results[3];
+      const alerts = alertsResult.status === 'fulfilled' ? alertsResult.value.data : [];
+      
       const activeAlerts = alerts?.length || 0;
       const criticalAlerts = alerts?.filter(a => a.severity === 'critical').length || 0;
 
-      // Fetch visitors
-      const { data: visitors } = await supabase
-        .from('visitors')
-        .select('status')
-        .eq('visit_date', today);
-
+      const visitorsResult = results[4];
+      const visitors = visitorsResult.status === 'fulfilled' ? visitorsResult.value.data : [];
+      
       const pendingVisitors = visitors?.filter(v => v.status === 'scheduled' || v.status === 'pending').length || 0;
       const totalVisitors = visitors?.length || 0;
 
-      // Calculate maintenance status
-      const pendingMaintenance = requests?.filter(r => r.status === 'pending').length || 0;
+      // Calculate derived metrics
       const operationalSystems = activeAlerts === 0 && pendingMaintenance === 0;
 
-      // Empty system - no occupancy or temperature data
+      // Default values for missing systems
       const occupancyRate = 0;
       const totalOccupants = 0;
-
-      // Empty system - no temperature data
       const currentTemperature = 0;
 
       setMetrics({
