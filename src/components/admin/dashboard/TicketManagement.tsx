@@ -12,6 +12,14 @@ interface TicketManagementProps {
   getPriorityBadge: (priority: string) => JSX.Element;
 }
 
+const formatAssigneeName = (assignee: any): string => {
+  if (!assignee) return 'Unassigned';
+  if (assignee.first_name && assignee.last_name) {
+    return `${assignee.first_name} ${assignee.last_name}`;
+  }
+  return assignee.first_name || assignee.last_name || 'Unknown';
+};
+
 const TicketManagement = ({ tickets, getStatusBadge, getPriorityBadge }: TicketManagementProps) => {
   return (
     <Card className="bg-card/50 backdrop-blur">
@@ -44,7 +52,7 @@ const TicketManagement = ({ tickets, getStatusBadge, getPriorityBadge }: TicketM
                   {getStatusBadge(ticket.status)}
                 </TableCell>
                 <TableCell className="text-gray-400">
-                  {ticket.assignedTo}
+                  {formatAssigneeName(ticket.assignee)}
                 </TableCell>
                 <TableCell className="text-gray-400">
                   {format(new Date(ticket.createdAt), 'PP')}

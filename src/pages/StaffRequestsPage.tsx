@@ -101,10 +101,8 @@ const StaffRequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          reporter:profiles!reported_by (
-            first_name,
-            last_name
-          )
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -115,7 +113,10 @@ const StaffRequestsPage = () => {
         ...req,
         reporterName: req.reporter?.first_name && req.reporter?.last_name 
           ? `${req.reporter.first_name} ${req.reporter.last_name}`
-          : 'Unknown User'
+          : 'Unknown User',
+        assigneeName: req.assignee?.first_name && req.assignee?.last_name
+          ? `${req.assignee.first_name} ${req.assignee.last_name}`
+          : null
       }));
       
       setRequests(transformedData);
@@ -423,9 +424,10 @@ const StaffRequestsPage = () => {
                         <p className="text-gray-400 text-sm mb-2">{request.description}</p>
                         <div className="flex items-center gap-4 text-sm text-gray-400">
                           <span>📍 {request.location}</span>
-                          <span>
-                            👤 {request.reporterName || 'Unknown User'}
-                          </span>
+                          <span>👤 Reported by: {request.reporterName || 'Unknown User'}</span>
+                          {request.assigneeName && (
+                            <span>👨‍🔧 Assigned to: {request.assigneeName}</span>
+                          )}
                           <span>🕒 {format(new Date(request.created_at), 'MMM d, yyyy')}</span>
                         </div>
                       </div>

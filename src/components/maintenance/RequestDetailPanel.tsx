@@ -51,9 +51,9 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         .from('maintenance_requests')
         .select(`
           *,
-          category:category_id(name),
-          reporter:reported_by(first_name, last_name),
-          assignee:assigned_to(first_name, last_name)
+          main_categories!maintenance_requests_category_id_fkey(name),
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -250,7 +250,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Category</p>
-                  <p className="font-medium text-white">{request.category?.name || 'Uncategorized'}</p>
+                  <p className="font-medium text-white">{request.main_categories?.name || 'Uncategorized'}</p>
                 </div>
                 
                 <div>

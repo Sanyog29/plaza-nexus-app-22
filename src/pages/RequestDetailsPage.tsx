@@ -57,9 +57,9 @@ const RequestDetailsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          category:category_id(name),
-          reporter:reported_by(first_name, last_name),
-          assignee:assigned_to(first_name, last_name)
+          main_categories!maintenance_requests_category_id_fkey(name),
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -79,7 +79,13 @@ const RequestDetailsPage = () => {
             filter: `id=eq.${requestId}`
           },
           (payload) => {
-            setRequest((prev: any) => ({ ...prev, ...payload.new }));
+            console.log('Request updated via realtime:', payload.new);
+            // If assignment changed, refetch to get updated assignee profile
+            if (payload.old?.assigned_to !== payload.new?.assigned_to) {
+              fetchRequestDetails();
+            } else {
+              setRequest((prev: any) => ({ ...prev, ...payload.new }));
+            }
           }
         )
         .subscribe();
@@ -193,7 +199,7 @@ const RequestDetailsPage = () => {
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-white mb-3">{request.title}</h1>
                 <div className="flex items-center gap-3 mb-4">
-                  <Badge variant="outline">{request.category?.name || 'Uncategorized'}</Badge>
+                  <Badge variant="outline">{request.main_categories?.name || 'Uncategorized'}</Badge>
                   <Badge 
                     variant={request.priority === 'high' ? 'destructive' : 'default'}
                     className="capitalize"
