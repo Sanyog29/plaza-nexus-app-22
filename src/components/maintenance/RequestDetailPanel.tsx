@@ -14,6 +14,7 @@ import AssignedTechnicianInfo from './AssignedTechnicianInfo';
 import { format } from 'date-fns';
 import { useAuth } from '@/components/AuthProvider';
 import { Database } from '@/integrations/supabase/types';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 
 type RequestPriority = Database['public']['Enums']['request_priority'];
 type RequestStatus = Database['public']['Enums']['request_status'];
@@ -52,8 +53,8 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         .select(`
           *,
           main_categories!maintenance_requests_category_id_fkey(name),
-          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -268,7 +269,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                   <div className="flex items-center gap-2">
                     <User size={16} className="text-plaza-blue" />
                     <p className="font-medium text-white">
-                      {request.reporter?.first_name ? `${request.reporter.first_name} ${request.reporter.last_name}` : 'Unknown'}
+                      {formatUserNameFromProfile(request.reporter)}
                     </p>
                   </div>
                 </div>

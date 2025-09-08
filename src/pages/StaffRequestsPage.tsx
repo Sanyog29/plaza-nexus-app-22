@@ -17,6 +17,7 @@ import { TaskCompletionNotifier } from '@/components/realtime/TaskCompletionNoti
 import { LoadingState } from '@/components/ui/loading-state';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { handleSupabaseError } from '@/utils/errorHandler';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 
 interface MaintenanceRequest {
   id: string;
@@ -101,8 +102,8 @@ const StaffRequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
         `)
         .order('created_at', { ascending: false });
 
@@ -111,12 +112,8 @@ const StaffRequestsPage = () => {
       // Transform data to handle join results
       const transformedData = (data || []).map(req => ({
         ...req,
-        reporterName: req.reporter?.first_name && req.reporter?.last_name 
-          ? `${req.reporter.first_name} ${req.reporter.last_name}`
-          : 'Unknown User',
-        assigneeName: req.assignee?.first_name && req.assignee?.last_name
-          ? `${req.assignee.first_name} ${req.assignee.last_name}`
-          : null
+        reporterName: formatUserNameFromProfile(req.reporter),
+        assigneeName: req.assignee ? formatUserNameFromProfile(req.assignee) : null
       }));
       
       setRequests(transformedData);

@@ -17,6 +17,7 @@ import TicketProgressBar from '@/components/maintenance/TicketProgressBar';
 import { AssignToMeButton } from '@/components/maintenance/AssignToMeButton';
 import { TimeExtensionModal } from '@/components/maintenance/TimeExtensionModal';
 import { useTimeExtensions } from '@/hooks/useTimeExtensions';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
@@ -58,8 +59,8 @@ const RequestDetailsPage = () => {
         .select(`
           *,
           main_categories!maintenance_requests_category_id_fkey(name),
-          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -227,12 +228,12 @@ const RequestDetailsPage = () => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-400">
                   <MessageSquare className="h-4 w-4" />
-                  <span>Reported by: {request.reporter ? `${request.reporter.first_name} ${request.reporter.last_name}` : 'Unknown'}</span>
+                  <span>Reported by: {formatUserNameFromProfile(request.reporter)}</span>
                 </div>
                 {request.assignee && (
                   <div className="flex items-center gap-2 text-gray-400">
                     <User className="h-4 w-4" />
-                    <span>Assigned to: {request.assignee.first_name} {request.assignee.last_name}</span>
+                    <span>Assigned to: {formatUserNameFromProfile(request.assignee)}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-gray-400">
