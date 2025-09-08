@@ -101,7 +101,14 @@ export const QRCodeGenerator: React.FC<QRGeneratorProps> = ({
           query = supabase.from('visitors').select('id, name, company, visit_date');
           break;
         case 'maintenance':
-          query = supabase.from('maintenance_requests').select('id, title, location, status');
+          query = supabase.from('maintenance_requests').select(`
+            id, 
+            title, 
+            location, 
+            status,
+            reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
+            assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
+          `);
           break;
         case 'delivery':
           // Use existing assets table for delivery points

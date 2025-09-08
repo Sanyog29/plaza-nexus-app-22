@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BroadcastTaskButton } from '@/components/admin/BroadcastTaskButton';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 
 interface MaintenanceRequest {
   id: string;
@@ -26,6 +27,10 @@ interface MaintenanceRequest {
   assigned_to?: string;
   sla_breach_at?: string;
   reporter?: {
+    first_name?: string;
+    last_name?: string;
+  };
+  assignee?: {
     first_name?: string;
     last_name?: string;
   };
@@ -53,6 +58,26 @@ const AdminRequestsPage = () => {
     if (urlStatus && ['completed', 'in_progress', 'pending'].includes(urlStatus)) {
       setStatusFilter(urlStatus);
     }
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('admin-requests-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'maintenance_requests'
+        },
+        () => {
+          fetchRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -65,10 +90,8 @@ const AdminRequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          reporter:profiles!reported_by (
-            first_name,
-            last_name
-          )
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
         .order('created_at', { ascending: false });
 
@@ -464,9 +487,12 @@ const RequestsList: React.FC<RequestsListProps> = ({
                 </div>
                 
                 <div className="flex items-center justify-between text-sm text-gray-400">
-                  <span>
-                    Reported by: {request.reporter?.first_name} {request.reporter?.last_name}
-                  </span>
+                  <div className="space-y-1">
+                    <div>Reported by: {formatUserNameFromProfile(request.reporter)}</div>
+                    {request.assignee && (
+                      <div>Assigned to: {formatUserNameFromProfile(request.assignee)}</div>
+                    )}
+                  </div>
                   <span>{format(new Date(request.created_at), 'MMM d, yyyy HH:mm')}</span>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
+import { formatUserNameFromProfile } from '@/utils/formatters';
 
 interface MaintenanceRequest {
   id: string;
@@ -27,6 +28,14 @@ interface MaintenanceRequest {
   main_categories?: {
     name: string;
     icon: string;
+  };
+  reporter?: {
+    first_name?: string;
+    last_name?: string;
+  };
+  assignee?: {
+    first_name?: string;
+    last_name?: string;
   };
 }
 
@@ -59,6 +68,27 @@ const RequestsPage = () => {
     if (urlStatus && ['completed', 'in_progress', 'pending', 'all'].includes(urlStatus)) {
       setStatusFilter(urlStatus);
     }
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('requests-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'maintenance_requests',
+          filter: `reported_by=eq.${user?.id}`
+        },
+        () => {
+          fetchRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchRequests = async () => {
@@ -73,7 +103,9 @@ const RequestsPage = () => {
           main_categories!maintenance_requests_category_id_fkey (
             name,
             icon
-          )
+          ),
+          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
         .eq('reported_by', user.id)
         .order('created_at', { ascending: false });
@@ -319,9 +351,12 @@ const RequestsPage = () => {
                         <p className="text-xs text-gray-500">
                           Updated: {new Date(request.updated_at).toLocaleString()}
                         </p>
-                        {request.assigned_to && (
+                        <p className="text-xs text-gray-500">
+                          Reported by: You
+                        </p>
+                        {request.assignee && (
                           <p className="text-xs text-gray-500">
-                            Assigned to staff member
+                            Assigned to: {formatUserNameFromProfile(request.assignee)}
                           </p>
                         )}
                       </div>
