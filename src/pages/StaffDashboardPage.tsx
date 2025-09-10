@@ -11,7 +11,7 @@ import { useRequestOffers } from '@/hooks/useRequestOffers';
 import { useProfile } from '@/hooks/useProfile';
 import { useRealtimeMaintenanceRequests } from '@/hooks/useRealtimeMaintenanceRequests';
 import { TaskCompletionNotifier } from '@/components/realtime/TaskCompletionNotifier';
-import { ClipboardList, Clock, CheckCircle, AlertTriangle, TrendingUp, Users, Wrench, Shield, Activity, GraduationCap, Brain, BarChart3, FileSpreadsheet, Database, User } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle, AlertTriangle, TrendingUp, Users, Wrench, Shield, Activity, GraduationCap, Brain, BarChart3, FileSpreadsheet, Database, User, Plus } from 'lucide-react';
 import { SystemHealthWidget } from '@/components/common/SystemHealthWidget';
 import { FeatureGuard } from '@/components/common/FeatureGuard';
 import { FeatureNotificationSystem } from '@/components/common/FeatureNotificationSystem';
@@ -208,6 +208,11 @@ const StaffDashboardPage = () => {
         
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button onClick={() => navigate('/requests/new')} className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30">
+              <Plus className="h-6 w-6 text-green-400 mb-2" />
+              <span className="text-sm">Raise Request</span>
+            </Button>
+            
             <Button onClick={() => navigate('/staff/requests')} className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30">
               <ClipboardList className="h-6 w-6 text-primary mb-2" />
               <span className="text-sm">My Requests</span>

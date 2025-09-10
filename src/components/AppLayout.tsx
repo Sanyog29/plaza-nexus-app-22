@@ -49,7 +49,6 @@ const AppLayout: React.FC = () => {
         '/advanced-features': '/admin/advanced-features',
         '/unified-dashboard': '/admin/unified-dashboard',
         '/security-guard': '/admin/security-guard',
-        '/requests': '/admin/requests',
         '/alerts': '/admin/alerts',
         '/visitors': '/admin/visitors',
         '/assets': '/admin/assets',
@@ -63,6 +62,12 @@ const AppLayout: React.FC = () => {
       const targetPath = redirects[location.pathname as keyof typeof redirects];
       if (targetPath) {
         navigate(targetPath, { replace: true });
+        return;
+      }
+
+      // Allow staff to access /requests/new for raising requests, but redirect /requests to admin area
+      if (location.pathname === '/requests') {
+        navigate('/admin/requests', { replace: true });
         return;
       }
 
