@@ -1,6 +1,7 @@
 
 import { EnhancedUserManagement } from '@/components/admin/EnhancedUserManagement';
 import { BulkUserUpload } from '@/components/admin/BulkUserUpload';
+import { VendorStaffManagement } from '@/components/admin/VendorStaffManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const UserManagementPage = () => {
@@ -17,11 +18,16 @@ const UserManagementPage = () => {
         <Tabs defaultValue="users" className="space-y-6">
           <TabsList>
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="vendor-staff">Vendor Staff</TabsTrigger>
             <TabsTrigger value="bulk-upload">Bulk Upload</TabsTrigger>
           </TabsList>
           
           <TabsContent value="users">
             <EnhancedUserManagement />
+          </TabsContent>
+          
+          <TabsContent value="vendor-staff">
+            <VendorStaffManagement />
           </TabsContent>
           
           <TabsContent value="bulk-upload">

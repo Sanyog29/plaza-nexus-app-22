@@ -28,6 +28,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { DepartmentSelector } from './DepartmentSelector';
 import { useInvitationRoles } from '@/hooks/useInvitationRoles';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
+import { VendorStaffAssignmentDialog } from './VendorStaffAssignmentDialog';
 
 interface UserData {
   id: string;
@@ -65,6 +66,10 @@ export const EnhancedUserManagement: React.FC = () => {
   const [newRole, setNewRole] = useState<string>('');
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [departmentSelection, setDepartmentSelection] = useState({ department: '', specialization: '' });
+  
+  // Vendor staff assignment state
+  const [showVendorStaffDialog, setShowVendorStaffDialog] = useState(false);
+  const [selectedUserForVendor, setSelectedUserForVendor] = useState<string>('');
   
   // Categories for department specialization
   const categories = [
