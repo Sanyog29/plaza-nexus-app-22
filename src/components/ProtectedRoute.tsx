@@ -6,7 +6,7 @@ import { useAuth } from './AuthProvider';
 import { PageLoader } from './LoadingSpinner';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading, approvalStatus, isAdmin, userRole } = useAuth();
+  const { user, isLoading, approvalStatus, isAdmin, userRole, userCategory, isFoodVendor } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -27,8 +27,22 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Vendor access control - restrict vendors to only their portal
-  if (userRole === 'vendor') {
+  // Food vendor access control - STRICT RESTRICTIONS
+  if (isFoodVendor || userCategory === 'food_vendor') {
+    const allowedFoodVendorPaths = ['/pos', '/profile', '/auth'];
+    const isAllowedPath = allowedFoodVendorPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      // Log unauthorized access attempt
+      console.warn(`Food vendor attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/pos" replace />;
+    }
+  }
+
+  // Regular vendor access control - restrict vendors to only their portal
+  if (userRole === 'vendor' && !isFoodVendor) {
     const allowedVendorPaths = ['/vendor-portal', '/profile', '/auth'];
     const isAllowedPath = allowedVendorPaths.some(path => 
       location.pathname === path || location.pathname.startsWith(path + '/')

@@ -60,6 +60,8 @@ import StaffServicesPage from "./pages/StaffServicesPage";
 import VendorPortalPage from "./pages/VendorPortalPage";
 import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
 import DeliveryPage from "./pages/DeliveryPage";
+import POSPage from "./pages/POSPage";
+import AccessDeniedPage from "./components/auth/AccessDeniedPage";
 
 // New simplified pages
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
@@ -124,6 +126,8 @@ const App = () => (
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cafeteria" element={<CafeteriaPage />} />
               <Route path="/vendor-portal" element={<VendorPortalPage />} />
+              <Route path="/pos" element={<POSPage />} />
+              <Route path="/access-denied" element={<AccessDeniedPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/maintenance" element={<MaintenancePage />} />

@@ -863,21 +863,29 @@ export type Database = {
       }
       cafeteria_orders: {
         Row: {
+          bill_number: string | null
           commission_amount: number | null
           created_at: string
+          created_by: string | null
           customer_instructions: string | null
           discount_applied: number | null
           feedback_submitted_at: string | null
           feedback_text: string | null
           id: string
           is_scheduled: boolean | null
+          kot_sent_at: string | null
           offer_code_used: string | null
+          order_channel: string | null
           order_type: string | null
+          paid_at: string | null
+          payment_status: string | null
           pickup_time: string
           preparation_time_minutes: number | null
           rating: number | null
           scheduled_pickup_time: string | null
+          service_type: string | null
           status: string
+          table_number: string | null
           total_amount: number
           updated_at: string
           user_id: string
@@ -885,21 +893,29 @@ export type Database = {
           vendor_payout_amount: number | null
         }
         Insert: {
+          bill_number?: string | null
           commission_amount?: number | null
           created_at?: string
+          created_by?: string | null
           customer_instructions?: string | null
           discount_applied?: number | null
           feedback_submitted_at?: string | null
           feedback_text?: string | null
           id?: string
           is_scheduled?: boolean | null
+          kot_sent_at?: string | null
           offer_code_used?: string | null
+          order_channel?: string | null
           order_type?: string | null
+          paid_at?: string | null
+          payment_status?: string | null
           pickup_time: string
           preparation_time_minutes?: number | null
           rating?: number | null
           scheduled_pickup_time?: string | null
+          service_type?: string | null
           status?: string
+          table_number?: string | null
           total_amount: number
           updated_at?: string
           user_id: string
@@ -907,21 +923,29 @@ export type Database = {
           vendor_payout_amount?: number | null
         }
         Update: {
+          bill_number?: string | null
           commission_amount?: number | null
           created_at?: string
+          created_by?: string | null
           customer_instructions?: string | null
           discount_applied?: number | null
           feedback_submitted_at?: string | null
           feedback_text?: string | null
           id?: string
           is_scheduled?: boolean | null
+          kot_sent_at?: string | null
           offer_code_used?: string | null
+          order_channel?: string | null
           order_type?: string | null
+          paid_at?: string | null
+          payment_status?: string | null
           pickup_time?: string
           preparation_time_minutes?: number | null
           rating?: number | null
           scheduled_pickup_time?: string | null
+          service_type?: string | null
           status?: string
+          table_number?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string
@@ -3535,6 +3559,47 @@ export type Database = {
         }
         Relationships: []
       }
+      order_discounts: {
+        Row: {
+          applied_by: string
+          created_at: string | null
+          discount_reason: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          manager_approval_pin: string | null
+          order_id: string | null
+        }
+        Insert: {
+          applied_by: string
+          created_at?: string | null
+          discount_reason?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          manager_approval_pin?: string | null
+          order_id?: string | null
+        }
+        Update: {
+          applied_by?: string
+          created_at?: string | null
+          discount_reason?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          manager_approval_pin?: string | null
+          order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_discounts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_feedback: {
         Row: {
           created_at: string
@@ -3648,6 +3713,89 @@ export type Database = {
             columns: ["vendor_item_id"]
             isOneToOne: false
             referencedRelation: "vendor_menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          order_id: string | null
+          payment_method: string
+          processed_by: string
+          shift_id: string | null
+          transaction_ref: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          payment_method: string
+          processed_by: string
+          shift_id?: string | null
+          transaction_ref?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          payment_method?: string
+          processed_by?: string
+          shift_id?: string | null
+          transaction_ref?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "pos_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_taxes: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string | null
+          tax_amount: number
+          tax_name: string
+          tax_rate: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          tax_amount: number
+          tax_name: string
+          tax_rate: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          tax_amount?: number
+          tax_name?: string
+          tax_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_taxes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "cafeteria_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -3941,6 +4089,98 @@ export type Database = {
           },
         ]
       }
+      pos_shifts: {
+        Row: {
+          card_collected: number | null
+          cash_collected: number | null
+          cashier_id: string
+          closing_cash: number | null
+          created_at: string | null
+          id: string
+          opening_cash: number | null
+          shift_end: string | null
+          shift_start: string | null
+          status: string | null
+          terminal_id: string | null
+          total_sales: number | null
+          updated_at: string | null
+          upi_collected: number | null
+        }
+        Insert: {
+          card_collected?: number | null
+          cash_collected?: number | null
+          cashier_id: string
+          closing_cash?: number | null
+          created_at?: string | null
+          id?: string
+          opening_cash?: number | null
+          shift_end?: string | null
+          shift_start?: string | null
+          status?: string | null
+          terminal_id?: string | null
+          total_sales?: number | null
+          updated_at?: string | null
+          upi_collected?: number | null
+        }
+        Update: {
+          card_collected?: number | null
+          cash_collected?: number | null
+          cashier_id?: string
+          closing_cash?: number | null
+          created_at?: string | null
+          id?: string
+          opening_cash?: number | null
+          shift_end?: string | null
+          shift_start?: string | null
+          status?: string | null
+          terminal_id?: string | null
+          total_sales?: number | null
+          updated_at?: string | null
+          upi_collected?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_shifts_terminal_id_fkey"
+            columns: ["terminal_id"]
+            isOneToOne: false
+            referencedRelation: "pos_terminals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_terminals: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          terminal_code: string
+          terminal_name: string
+          updated_at: string | null
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          terminal_code: string
+          terminal_name: string
+          updated_at?: string | null
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          terminal_code?: string
+          terminal_name?: string
+          updated_at?: string | null
+          vendor_id?: string
+        }
+        Relationships: []
+      }
       predictive_insights: {
         Row: {
           confidence_score: number
@@ -4085,6 +4325,9 @@ export type Database = {
           specialization: string | null
           supervisor_id: string | null
           updated_at: string
+          user_category:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
           zone: string | null
         }
         Insert: {
@@ -4124,6 +4367,9 @@ export type Database = {
           specialization?: string | null
           supervisor_id?: string | null
           updated_at?: string
+          user_category?:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
           zone?: string | null
         }
         Update: {
@@ -4163,6 +4409,9 @@ export type Database = {
           specialization?: string | null
           supervisor_id?: string | null
           updated_at?: string
+          user_category?:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
           zone?: string | null
         }
         Relationships: [
@@ -8610,6 +8859,14 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_food_vendor: {
+        Args: { uid: string }
+        Returns: boolean
+      }
+      is_food_vendor_staff_for_vendor: {
+        Args: { target_vendor_id: string; user_id: string }
+        Returns: boolean
+      }
       is_l1: {
         Args: { uid: string }
         Returns: boolean
@@ -8651,6 +8908,14 @@ export type Database = {
           resource_type: string
         }
         Returns: string
+      }
+      log_unauthorized_access_attempt: {
+        Args: {
+          attempted_action: string
+          attempted_table: string
+          user_category?: string
+        }
+        Returns: undefined
       }
       log_workflow_execution: {
         Args: { context: Json; log_entry: Json; rule_id: string }
@@ -8780,6 +9045,7 @@ export type Database = {
         | "en_route"
       sla_priority_type: "critical" | "high" | "medium" | "low"
       staff_group_type: "mst_field" | "housekeeping" | "security"
+      user_category_type: "tenant" | "food_vendor" | "staff" | "admin"
       utility_type:
         | "electricity"
         | "water"
@@ -8947,6 +9213,7 @@ export const Constants = {
       ],
       sla_priority_type: ["critical", "high", "medium", "low"],
       staff_group_type: ["mst_field", "housekeeping", "security"],
+      user_category_type: ["tenant", "food_vendor", "staff", "admin"],
       utility_type: [
         "electricity",
         "water",

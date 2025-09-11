@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   userRole: string | null;
+  userCategory: string | null;
   userDepartment: string | null;
   departmentSpecialization: string | null;
   approvalStatus: 'pending' | 'approved' | 'rejected' | null;
@@ -14,6 +15,7 @@ interface AuthContextType {
   isStaff: boolean;
   isTenant: boolean;
   isVendor: boolean;
+  isFoodVendor: boolean;
   // Internal role level checks (not exposed in UI)
   isL1: boolean;
   isL2: boolean;
@@ -29,6 +31,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   userRole: null,
+  userCategory: null,
   userDepartment: null,
   departmentSpecialization: null,
   approvalStatus: null,
@@ -36,6 +39,7 @@ const AuthContext = createContext<AuthContextType>({
   isStaff: false,
   isTenant: false,
   isVendor: false,
+  isFoodVendor: false,
   isL1: false,
   isL2: false,
   isL3: false,
@@ -58,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userCategory, setUserCategory] = useState<string | null>(null);
   const [userDepartment, setUserDepartment] = useState<string | null>(null);
   const [departmentSpecialization, setDepartmentSpecialization] = useState<string | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
@@ -65,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isStaff, setIsStaff] = useState(false);
   const [isTenant, setIsTenant] = useState(false);
   const [isVendor, setIsVendor] = useState(false);
+  const [isFoodVendor, setIsFoodVendor] = useState(false);
   const [isL1, setIsL1] = useState(false);
   const [isL2, setIsL2] = useState(false);
   const [isL3, setIsL3] = useState(false);
@@ -73,12 +79,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const updateRoleStates = React.useCallback((role: string, specialization?: string) => {
+  const updateRoleStates = React.useCallback((role: string, category: string, specialization?: string) => {
     setUserRole(role);
+    setUserCategory(category);
     setDepartmentSpecialization(specialization || null);
     setIsAdmin(role === 'admin');
     setIsTenant(role === 'tenant');
     setIsVendor(role === 'vendor');
+    setIsFoodVendor(category === 'food_vendor');
     
     // Set internal level flags (not exposed in UI)
     const l1Roles = ['mst', 'fe', 'hk', 'se'];
@@ -270,29 +278,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_use_qr_instant_ticket: false,
         can_configure_auto_assign: false,
       },
+      // Food vendor role - MINIMAL permissions for POS only
+      food_vendor: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+        // POS-specific permissions
+        can_access_pos: true,
+        can_process_payments: true,
+        can_view_own_orders: true,
+        can_print_receipts: true,
+      },
     };
 
-    setPermissions(rolePermissions[role as keyof typeof rolePermissions] || {});
+    // For food vendors, use food_vendor permissions regardless of their role
+    const permissionKey = category === 'food_vendor' ? 'food_vendor' : role;
+    setPermissions(rolePermissions[permissionKey as keyof typeof rolePermissions] || {});
   }, []);
 
   const checkUserRole = React.useCallback(async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role, department, approval_status')
+        .select('role, user_category, department, approval_status')
         .eq('id', userId)
         .maybeSingle();
       
       if (error) {
         console.error('Error fetching profile:', error);
-        updateRoleStates('tenant');
+        updateRoleStates('tenant', 'tenant');
         setUserDepartment(null);
         setApprovalStatus('pending');
         return;
       }
       
       if (profile) {
-        updateRoleStates(profile.role, null);
+        updateRoleStates(profile.role, profile.user_category || 'tenant', null);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
       } else {
@@ -311,19 +339,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.error('Profile creation failed:', insertError);
           }
           
-          updateRoleStates('tenant');
+          updateRoleStates('tenant', 'tenant');
           setUserDepartment(null);
           setApprovalStatus('pending');
         } catch (createError) {
           console.error('Profile creation exception:', createError);
-          updateRoleStates('tenant');
+          updateRoleStates('tenant', 'tenant');
           setUserDepartment(null);
           setApprovalStatus('pending');
         }
       }
     } catch (error) {
       console.error('Critical error in checkUserRole:', error);
-      updateRoleStates('tenant');
+      updateRoleStates('tenant', 'tenant');
       setUserDepartment(null);
       setApprovalStatus('pending');
     }
@@ -331,6 +359,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetRoleStates = () => {
     setUserRole(null);
+    setUserCategory(null);
     setUserDepartment(null);
     setDepartmentSpecialization(null);
     setApprovalStatus(null);
@@ -338,6 +367,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsStaff(false);
     setIsTenant(false);
     setIsVendor(false);
+    setIsFoodVendor(false);
     setIsL1(false);
     setIsL2(false);
     setIsL3(false);
@@ -421,6 +451,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       session, 
       user, 
       userRole, 
+      userCategory,
       userDepartment,
       departmentSpecialization,
       approvalStatus,
@@ -428,6 +459,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isStaff, 
       isTenant,
       isVendor,
+      isFoodVendor,
       isL1,
       isL2,
       isL3,

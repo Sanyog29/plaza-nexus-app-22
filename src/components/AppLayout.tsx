@@ -15,7 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 const AppLayout: React.FC = () => {
-  const { user, isAdmin, isStaff, isLoading, userRole } = useAuth(); // Use role states from AuthProvider
+  const { user, isAdmin, isStaff, isLoading, userRole, isFoodVendor } = useAuth(); // Use role states from AuthProvider
   const location = useLocation();
   const navigate = useNavigate();
   const { requestNotificationPermission } = usePWA();
@@ -93,9 +93,17 @@ const AppLayout: React.FC = () => {
   }, [location.pathname, isAdmin, isStaff, isLoading, user, navigate, userRole]);
 
   if (isLoading) {
+    return <div className="h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  // Food vendor layout - MINIMAL interface
+  if (isFoodVendor) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-background">
+        <ErrorBoundary>
+          <Outlet />
+          <HelpSystem />
+        </ErrorBoundary>
       </div>
     );
   }
