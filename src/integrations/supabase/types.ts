@@ -8627,6 +8627,10 @@ export type Database = {
         Args: { hours_to_add: number; start_time: string }
         Returns: string
       }
+      admin_add_vendor_staff: {
+        Args: { p_is_active?: boolean; p_user_id: string; p_vendor_id: string }
+        Returns: Json
+      }
       admin_bulk_create_users: {
         Args: { users_data: Json }
         Returns: Json
@@ -8686,6 +8690,18 @@ export type Database = {
       admin_delete_user: {
         Args: { target_user_id: string }
         Returns: Json
+      }
+      admin_get_vendor_staff_assignments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          assigned_at: string
+          is_active: boolean
+          user_email: string
+          user_id: string
+          user_name: string
+          vendor_id: string
+          vendor_name: string
+        }[]
       }
       approve_user: {
         Args: { approver_id: string; target_user_id: string }
