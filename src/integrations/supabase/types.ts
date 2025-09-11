@@ -2455,6 +2455,9 @@ export type Database = {
           sort_order: number | null
           title: string
           updated_at: string
+          user_category:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
         }
         Insert: {
           app_role: Database["public"]["Enums"]["app_role"]
@@ -2469,6 +2472,9 @@ export type Database = {
           sort_order?: number | null
           title: string
           updated_at?: string
+          user_category?:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
         }
         Update: {
           app_role?: Database["public"]["Enums"]["app_role"]
@@ -2483,6 +2489,9 @@ export type Database = {
           sort_order?: number | null
           title?: string
           updated_at?: string
+          user_category?:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
         }
         Relationships: []
       }
