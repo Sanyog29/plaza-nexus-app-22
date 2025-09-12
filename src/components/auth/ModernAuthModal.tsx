@@ -141,7 +141,13 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Background overlay with gradient */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-800 to-blue-900"
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'url(/lovable-uploads/3fc54cd4-a201-4a56-ab08-3b0150bb663a.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
         onClick={onClose}
       />
       
