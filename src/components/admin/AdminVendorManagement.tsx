@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import VendorForm from './VendorForm';
+import VendorFinancialDialog from './VendorFinancialDialog';
+import { VendorStaffAssignmentDialog } from './VendorStaffAssignmentDialog';
 import { 
   Plus, 
   Edit, 
@@ -16,12 +19,19 @@ import {
   MapPin,
   Phone,
   Mail,
-  DollarSign
+  DollarSign,
+  Users,
+  CheckCircle,
+  XCircle,
+  Clock
 } from 'lucide-react';
 
 const AdminVendorManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [financialDialogVendor, setFinancialDialogVendor] = useState<any>(null);
+  const [assignStaffVendor, setAssignStaffVendor] = useState<any>(null);
+  const [approvalActionVendor, setApprovalActionVendor] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -67,6 +77,57 @@ const AdminVendorManagement = () => {
     },
   });
 
+  const approveVendor = useMutation({
+    mutationFn: async (vendorId: string) => {
+      const { data, error } = await supabase.rpc('admin_approve_vendor', {
+        target_vendor_id: vendorId
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+      toast({
+        title: "Vendor Approved",
+        description: "Vendor has been approved and activated.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to approve vendor.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const rejectVendor = useMutation({
+    mutationFn: async ({ vendorId, reason }: { vendorId: string; reason: string }) => {
+      const { data, error } = await supabase.rpc('admin_reject_vendor', {
+        target_vendor_id: vendorId,
+        reason: reason
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+      toast({
+        title: "Vendor Rejected",
+        description: "Vendor has been rejected.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reject vendor.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const filteredVendors = vendors.filter(vendor =>
     vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     vendor.cuisine_type?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -104,18 +165,19 @@ const AdminVendorManagement = () => {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="btn-primary">
               <Plus className="h-4 w-4 mr-2" />
               Add Vendor
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Vendor</DialogTitle>
             </DialogHeader>
-            <div className="p-4">
-              <p className="text-muted-foreground">Vendor onboarding form coming soon...</p>
-            </div>
+            <VendorForm 
+              onSuccess={() => setIsAddDialogOpen(false)}
+              onCancel={() => setIsAddDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -164,6 +226,18 @@ const AdminVendorManagement = () => {
                 <div className="flex items-center gap-2">
                   <Badge variant={vendor.is_active ? 'default' : 'secondary'}>
                     {vendor.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                  <Badge 
+                    variant={
+                      vendor.approval_status === 'approved' ? 'default' :
+                      vendor.approval_status === 'rejected' ? 'destructive' : 'secondary'
+                    }
+                    className="flex items-center gap-1"
+                  >
+                    {vendor.approval_status === 'approved' && <CheckCircle className="h-3 w-3" />}
+                    {vendor.approval_status === 'rejected' && <XCircle className="h-3 w-3" />}
+                    {vendor.approval_status === 'pending' && <Clock className="h-3 w-3" />}
+                    {vendor.approval_status || 'pending'}
                   </Badge>
                   {vendor.average_rating > 0 && (
                     <Badge variant="outline" className="flex items-center gap-1">
@@ -214,15 +288,46 @@ const AdminVendorManagement = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Details
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setAssignStaffVendor(vendor)}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Assign Staff
                 </Button>
                 
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setFinancialDialogVendor(vendor)}
+                >
                   <DollarSign className="h-4 w-4 mr-2" />
                   View Financials
                 </Button>
+
+                {vendor.approval_status === 'pending' && (
+                  <>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => approveVendor.mutate(vendor.id)}
+                      disabled={approveVendor.isPending}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => rejectVendor.mutate({ vendorId: vendor.id, reason: 'Admin rejection' })}
+                      disabled={rejectVendor.isPending}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </>
+                )}
                 
                 <Button
                   variant={vendor.is_active ? "destructive" : "default"}
@@ -259,12 +364,32 @@ const AdminVendorManagement = () => {
             <p className="text-muted-foreground text-center mb-4">
               {searchTerm ? 'No vendors match your search criteria.' : 'Get started by adding your first vendor.'}
             </p>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="btn-primary">
               <Plus className="h-4 w-4 mr-2" />
               Add First Vendor
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Financial Dialog */}
+      <VendorFinancialDialog
+        isOpen={!!financialDialogVendor}
+        onClose={() => setFinancialDialogVendor(null)}
+        vendor={financialDialogVendor}
+      />
+
+      {/* Staff Assignment Dialog */}
+      {assignStaffVendor && (
+        <VendorStaffAssignmentDialog
+          isOpen={!!assignStaffVendor}
+          onClose={() => setAssignStaffVendor(null)}
+          onSuccess={() => {
+            setAssignStaffVendor(null);
+            queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
+          }}
+          initialUserId={undefined}
+        />
       )}
     </div>
   );

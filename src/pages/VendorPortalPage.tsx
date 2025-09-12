@@ -21,6 +21,7 @@ import VendorMenuManagement from '@/components/vendor/VendorMenuManagement';
 import VendorAnalytics from '@/components/vendor/VendorAnalytics';
 import VendorHeader from '@/components/vendor/VendorHeader';
 import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
+import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 
 const VendorPortalPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -131,10 +132,11 @@ const VendorPortalPage = () => {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="menu">Menu</TabsTrigger>
+            <TabsTrigger value="store">Store Setup</TabsTrigger>
             <TabsTrigger value="sales">Sales</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
@@ -224,6 +226,10 @@ const VendorPortalPage = () => {
 
           <TabsContent value="menu">
             <VendorMenuManagement vendorId={vendor.id} />
+          </TabsContent>
+
+          <TabsContent value="store">
+            <VendorStoreSetup vendorId={vendor.id} />
           </TabsContent>
 
           <TabsContent value="sales">

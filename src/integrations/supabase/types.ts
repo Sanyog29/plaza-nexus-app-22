@@ -7638,6 +7638,59 @@ export type Database = {
           },
         ]
       }
+      vendor_financial_reports: {
+        Row: {
+          commission_amount: number | null
+          created_at: string | null
+          id: string
+          net_amount: number | null
+          report_data: Json | null
+          report_date: string
+          tax_amount: number | null
+          total_orders: number | null
+          total_sales: number | null
+          updated_at: string | null
+          vendor_id: string
+          vendor_payout: number | null
+        }
+        Insert: {
+          commission_amount?: number | null
+          created_at?: string | null
+          id?: string
+          net_amount?: number | null
+          report_data?: Json | null
+          report_date: string
+          tax_amount?: number | null
+          total_orders?: number | null
+          total_sales?: number | null
+          updated_at?: string | null
+          vendor_id: string
+          vendor_payout?: number | null
+        }
+        Update: {
+          commission_amount?: number | null
+          created_at?: string | null
+          id?: string
+          net_amount?: number | null
+          report_data?: Json | null
+          report_date?: string
+          tax_amount?: number | null
+          total_orders?: number | null
+          total_sales?: number | null
+          updated_at?: string | null
+          vendor_id?: string
+          vendor_payout?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_financial_reports_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_menu_item_images: {
         Row: {
           created_at: string | null
@@ -8042,57 +8095,102 @@ export type Database = {
       }
       vendors: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
           average_rating: number | null
+          bank_account_holder_name: string | null
+          bank_account_number: string | null
+          bank_ifsc_code: string | null
           commission_rate: number | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
           cuisine_type: string | null
           description: string | null
+          gst_number: string | null
           id: string
           is_active: boolean | null
           logo_url: string | null
           name: string
           operating_hours: Json | null
+          pan_number: string | null
+          rejection_reason: string | null
           stall_location: string | null
+          store_config: Json | null
           total_orders: number | null
           updated_at: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           average_rating?: number | null
+          bank_account_holder_name?: string | null
+          bank_account_number?: string | null
+          bank_ifsc_code?: string | null
           commission_rate?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           cuisine_type?: string | null
           description?: string | null
+          gst_number?: string | null
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
           name: string
           operating_hours?: Json | null
+          pan_number?: string | null
+          rejection_reason?: string | null
           stall_location?: string | null
+          store_config?: Json | null
           total_orders?: number | null
           updated_at?: string
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           average_rating?: number | null
+          bank_account_holder_name?: string | null
+          bank_account_number?: string | null
+          bank_ifsc_code?: string | null
           commission_rate?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
           cuisine_type?: string | null
           description?: string | null
+          gst_number?: string | null
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
           operating_hours?: Json | null
+          pan_number?: string | null
+          rejection_reason?: string | null
           stall_location?: string | null
+          store_config?: Json | null
           total_orders?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendors_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendors_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       visitor_approval_requests: {
         Row: {
@@ -8631,6 +8729,10 @@ export type Database = {
         Args: { p_is_active?: boolean; p_user_id: string; p_vendor_id: string }
         Returns: Json
       }
+      admin_approve_vendor: {
+        Args: { target_vendor_id: string }
+        Returns: Json
+      }
       admin_bulk_create_users: {
         Args: { users_data: Json }
         Returns: Json
@@ -8687,6 +8789,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_create_vendor: {
+        Args: { vendor_data: Json }
+        Returns: Json
+      }
       admin_delete_user: {
         Args: { target_user_id: string }
         Returns: Json
@@ -8702,6 +8808,10 @@ export type Database = {
           vendor_id: string
           vendor_name: string
         }[]
+      }
+      admin_reject_vendor: {
+        Args: { reason: string; target_vendor_id: string }
+        Returns: Json
       }
       approve_user: {
         Args: { approver_id: string; target_user_id: string }
