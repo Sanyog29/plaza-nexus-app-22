@@ -138,49 +138,47 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Background overlay with gradient */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{
+      backgroundImage: 'linear-gradient(to bottom, #0e122d 0%, #1a33a3 100%)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
+      {/* Background overlay */}
       <div 
         className="absolute inset-0"
-        style={{
-          backgroundImage: 'url(/lovable-uploads/3fc54cd4-a201-4a56-ab08-3b0150bb663a.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-gray-900 rounded-3xl shadow-2xl animate-scale-in">
+      <div className="relative w-full max-w-lg bg-white bg-opacity-10 backdrop-filter backdrop-blur-3xl rounded-3xl shadow-xl transition-all duration-500 ease-in-out">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 z-10 text-white text-opacity-80 hover:text-opacity-100 transition-colors"
           aria-label="Close modal"
         >
-          <X size={20} />
+          <X size={24} />
         </button>
 
         <div className="p-8">
           {/* Tab switcher */}
-          <div className="flex bg-gray-800 rounded-full p-1 mb-8">
+          <div className="flex bg-white bg-opacity-5 p-1 rounded-full w-fit mx-auto mb-8 relative">
             <button
               onClick={() => setActiveTab('signup')}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
+              className={`py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 ${
                 activeTab === 'signup'
-                  ? 'bg-gray-700 text-white'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-gray-400'
               }`}
             >
               Sign up
             </button>
             <button
               onClick={() => setActiveTab('signin')}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
+              className={`py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 ${
                 activeTab === 'signin'
-                  ? 'bg-gray-700 text-white'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-gray-400'
               }`}
             >
               Sign in
@@ -188,8 +186,8 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-semibold text-white mb-8 text-center">
-            {activeTab === 'signup' ? 'Create an account' : 'Welcome back'}
+          <h2 className="text-xl font-semibold text-white text-center mb-6">
+            {activeTab === 'signup' ? 'Create an account' : 'Sign in to your account'}
           </h2>
 
           {/* Error message */}
@@ -199,24 +197,24 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name fields - only for signup */}
             {activeTab === 'signup' && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex gap-4">
                 <Input
                   type="text"
-                  placeholder="First name"
+                  placeholder="John"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
+                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
                 <Input
                   type="text"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
+                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
               </div>
             )}
@@ -230,35 +228,44 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500 pl-10"
+                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               />
             </div>
 
             {/* Phone field - only for signup */}
             {activeTab === 'signup' && (
-              <PhoneInput
-                value={phone}
-                onChange={setPhone}
-                placeholder="(775) 351-6501"
-                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
-              />
+              <div className="relative">
+                <div className="flex items-center absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400">
+                  <span className="mr-1">🇺🇸</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <Input
+                  type="tel"
+                  placeholder="(775) 351-6501"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full p-3 pl-16 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                />
+              </div>
             )}
 
             {/* Password field */}
             <Input
               type="password"
-              placeholder={activeTab === 'signup' ? 'Create password' : 'Enter password'}
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
+              className="w-full p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             />
 
             {/* Submit button */}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors"
+              className="w-full p-3 font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors border-0"
             >
               {isLoading ? (
                 <>
@@ -272,45 +279,36 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           </form>
 
           {/* Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-1 h-px bg-gray-700" />
-            <span className="px-3 text-sm text-gray-400 uppercase">Or sign in with</span>
-            <div className="flex-1 h-px bg-gray-700" />
-          </div>
-
+          <div className="text-center text-sm text-gray-400 mt-4">OR SIGN IN WITH</div>
+          
           {/* Social login buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex gap-4 mt-2">
             <Button
               type="button"
               onClick={handleGoogleAuth}
               disabled={isLoading}
-              variant="outline"
-              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 py-3"
+              className="flex items-center justify-center w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white font-semibold transition-colors hover:bg-opacity-10"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png" alt="Google" className="h-5 w-5 mr-2" />
+              Google
             </Button>
             <Button
               type="button"
               onClick={handleAppleAuth}
               disabled={isLoading}
-              variant="outline"
-              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 py-3"
+              className="flex items-center justify-center w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white font-semibold transition-colors hover:bg-opacity-10"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.44 3.676-2.906 1.156-1.690 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09z"/>
                 <path d="M15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
               </svg>
+              Apple
             </Button>
           </div>
 
           {/* Terms */}
-          <p className="text-xs text-gray-400 text-center mt-6">
-            By creating an account, you agree to our Terms & Service
+          <p className="text-center text-xs text-gray-500 mt-4">
+            By creating an account, you agree to our <a href="#" className="underline text-gray-400">Terms & Service</a>
           </p>
         </div>
       </div>
