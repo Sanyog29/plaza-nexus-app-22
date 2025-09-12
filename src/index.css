@@ -1,5 +1,4 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 @import "./styles/accessibility.css";
 
 @tailwind base;
@@ -8,52 +7,55 @@
 
 @layer base {
   :root {
-    /* Light theme - Pastel colors */
-    --background: 240 15% 98%;
-    --foreground: 240 25% 15%;
+    /* Apple System Font */
+    --apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    
+    /* Light theme - Apple Style */
+    --background: 0 0% 100%;
+    --foreground: 210 11% 15%;
 
     /* Card and surface colors */
-    --card: 240 15% 96%;
-    --card-foreground: 240 25% 15%;
-    --card-glass: 240 15% 96% / 0.8;
+    --card: 0 0% 100%;
+    --card-foreground: 210 11% 15%;
+    --card-glass: 0 0% 100% / 0.8;
 
-    --popover: 240 15% 96%;
-    --popover-foreground: 240 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 15%;
 
-    /* Primary brand colors - Soft blue pastel */
-    --primary: 200 80% 70%;
-    --primary-foreground: 240 25% 15%;
-    --primary-glow: 200 85% 75%;
+    /* Primary brand colors - Apple Blue */
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 213 94% 78%;
     
-    /* Secondary colors - Soft lavender */
-    --secondary: 270 50% 85%;
-    --secondary-foreground: 240 25% 15%;
+    /* Secondary colors - Apple Light Gray */
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 11% 15%;
 
-    /* Muted colors - Light gray-blue */
-    --muted: 220 15% 92%;
-    --muted-foreground: 240 10% 45%;
+    /* Muted colors - Apple Gray */
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Accent colors - Soft teal */
-    --accent: 180 60% 75%;
-    --accent-foreground: 240 25% 15%;
+    /* Accent colors - Apple System Blue */
+    --accent: 213 94% 68%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Status colors - Soft pastels */
-    --destructive: 350 60% 75%;
-    --destructive-foreground: 240 25% 15%;
-    --success: 140 50% 70%;
-    --success-foreground: 240 25% 15%;
-    --warning: 35 80% 70%;
-    --warning-foreground: 240 25% 15%;
+    /* Status colors - Apple System Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 100%;
     
     /* Enhanced UI colors */
-    --success-subtle: 140 50% 70% / 0.2;
-    --error-subtle: 350 60% 75% / 0.2;
-    --info-subtle: 200 80% 70% / 0.2;
+    --success-subtle: 142 76% 36% / 0.1;
+    --error-subtle: 0 84% 60% / 0.1;
+    --info-subtle: 213 94% 68% / 0.1;
 
     /* UI elements */
-    --border: 220 15% 88%;
-    --input: 240 15% 96%;
-    --ring: 200 80% 70%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 213 94% 68%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -61,69 +63,69 @@
 
     /* Shadows */
     --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.25);
-    --shadow-glass: 0 8px 32px 0 hsl(240 20% 50% / 0.15);
+    --shadow-glass: 0 8px 32px 0 hsl(210 20% 50% / 0.15);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    /* Dark theme - Deep pastels */
-    --background: 240 15% 8%;
-    --foreground: 240 15% 92%;
+    /* Dark theme - Apple Style */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
 
     /* Card and surface colors */
-    --card: 240 15% 12%;
-    --card-foreground: 240 15% 92%;
-    --card-glass: 240 15% 12% / 0.8;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --card-glass: 0 0% 0% / 0.8;
 
-    --popover: 240 15% 12%;
-    --popover-foreground: 240 15% 92%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Primary brand colors - Vibrant but soft blue */
-    --primary: 200 90% 65%;
-    --primary-foreground: 240 15% 8%;
-    --primary-glow: 200 95% 70%;
+    /* Primary brand colors - Apple Blue (adjusted for dark) */
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 0%;
+    --primary-glow: 213 94% 78%;
     
-    /* Secondary colors - Deep lavender */
-    --secondary: 270 40% 30%;
-    --secondary-foreground: 240 15% 92%;
+    /* Secondary colors - Apple Dark Gray */
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted colors */
-    --muted: 240 10% 20%;
-    --muted-foreground: 240 8% 65%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 215 20% 65%;
 
-    /* Accent colors - Vibrant teal */
-    --accent: 180 70% 60%;
-    --accent-foreground: 240 15% 8%;
+    /* Accent colors - Apple System Blue */
+    --accent: 213 94% 68%;
+    --accent-foreground: 0 0% 0%;
 
-    /* Status colors - Vibrant but balanced */
-    --destructive: 350 75% 65%;
-    --destructive-foreground: 240 15% 92%;
-    --success: 140 65% 55%;
-    --success-foreground: 240 15% 8%;
-    --warning: 35 85% 60%;
-    --warning-foreground: 240 15% 8%;
+    /* Status colors - Apple System Colors (dark mode) */
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 0 0% 0%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 100%;
     
     /* Enhanced UI colors */
-    --success-subtle: 140 65% 55% / 0.2;
-    --error-subtle: 350 75% 65% / 0.2;
-    --info-subtle: 200 90% 65% / 0.2;
+    --success-subtle: 142 76% 36% / 0.2;
+    --error-subtle: 0 91% 71% / 0.2;
+    --info-subtle: 213 94% 68% / 0.2;
 
     /* UI elements */
-    --border: 240 10% 25%;
-    --input: 240 15% 12%;
-    --ring: 200 90% 65%;
+    --border: 0 0% 10%;
+    --input: 0 0% 10%;
+    --ring: 213 94% 68%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-glass: linear-gradient(135deg, hsl(var(--card-glass)), hsl(var(--muted) / 0.3));
 
     /* Shadows */
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
-    --shadow-glass: 0 8px 32px 0 hsl(240 20% 6% / 0.37);
+    --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
+    --shadow-glass: 0 8px 32px 0 hsl(0 0% 0% / 0.3);
   }
 }
 
@@ -133,7 +135,8 @@
   }
 
   body {
-    @apply bg-background font-inter text-foreground antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--apple-font);
     transition: var(--transition-smooth);
   }
 
@@ -155,7 +158,8 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-montserrat font-semibold;
+    font-family: var(--apple-font);
+    font-weight: 600;
   }
 }
 
