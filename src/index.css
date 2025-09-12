@@ -136,6 +136,23 @@
     @apply bg-background font-inter text-foreground antialiased;
     transition: var(--transition-smooth);
   }
+
+  /* Enhanced theme transitions for all interactive elements */
+  *,
+  *::before,
+  *::after {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Prevent transitions during theme switching to avoid flashing */
+  .theme-switching *,
+  .theme-switching *::before,
+  .theme-switching *::after {
+    transition: none !important;
+  }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-semibold;

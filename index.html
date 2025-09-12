@@ -27,6 +27,32 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <!-- Theme initialization script to prevent flash -->
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('theme');
+          var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          
+          if (theme === 'dark' || (!theme && systemTheme === 'dark')) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          
+          // Set theme-color meta tag dynamically
+          var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+          if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', 
+              document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#0066FF'
+            );
+          }
+        } catch (e) {
+          console.warn('Theme initialization failed:', e);
+        }
+      })();
+    </script>
   </head>
 
   <body>
