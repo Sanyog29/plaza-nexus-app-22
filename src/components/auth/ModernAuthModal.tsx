@@ -139,11 +139,11 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Background overlay with new gradient */}
+      {/* Background overlay with gradient */}
       <div 
         className="absolute inset-0"
         style={{
-          backgroundImage: 'url(/lovable-uploads/3774e87a-1d7d-47fc-ab3f-24c7b28b4204.png)',
+          backgroundImage: 'url(/lovable-uploads/3fc54cd4-a201-4a56-ab08-3b0150bb663a.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
@@ -151,22 +151,12 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
         onClick={onClose}
       />
       
-      {/* Glassmorphic Modal */}
-      <div 
-        className="relative w-full max-w-md rounded-3xl animate-scale-in overflow-hidden"
-        style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)', // Safari support
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 0 100px rgba(255, 255, 255, 0.1)'
-        }}
-      >
+      {/* Modal */}
+      <div className="relative w-full max-w-md bg-gray-900 rounded-3xl shadow-2xl animate-scale-in">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white transition-colors rounded-full"
-          style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+          className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-white transition-colors"
           aria-label="Close modal"
         >
           <X size={20} />
@@ -174,27 +164,14 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
 
         <div className="p-8">
           {/* Tab switcher */}
-          <div 
-            className="flex rounded-full p-1 mb-8" 
-            style={{ 
-              background: 'rgba(255, 255, 255, 0.15)', 
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)'
-            }}
-          >
+          <div className="flex bg-gray-800 rounded-full p-1 mb-8">
             <button
               onClick={() => setActiveTab('signup')}
               className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
                 activeTab === 'signup'
-                  ? 'text-white shadow-md'
-                  : 'text-white/70 hover:text-white'
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-400 hover:text-white'
               }`}
-              style={activeTab === 'signup' ? { 
-                background: 'rgba(255, 255, 255, 0.25)',
-                backdropFilter: 'blur(5px)',
-                WebkitBackdropFilter: 'blur(5px)'
-              } : {}}
             >
               Sign up
             </button>
@@ -202,14 +179,9 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               onClick={() => setActiveTab('signin')}
               className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
                 activeTab === 'signin'
-                  ? 'text-white shadow-md'
-                  : 'text-white/70 hover:text-white'
+                  ? 'bg-gray-700 text-white'
+                  : 'text-gray-400 hover:text-white'
               }`}
-              style={activeTab === 'signin' ? { 
-                background: 'rgba(255, 255, 255, 0.25)',
-                backdropFilter: 'blur(5px)',
-                WebkitBackdropFilter: 'blur(5px)'
-              } : {}}
             >
               Sign in
             </button>
@@ -222,8 +194,8 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
 
           {/* Error message */}
           {error && (
-            <div className="mb-6 p-3 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
-              <p className="text-red-200 text-sm">{error}</p>
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
 
@@ -237,64 +209,39 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="text-white placeholder:text-white/60 focus:border-white/50 border-white/30 focus:ring-white/30"
-                  style={{ 
-                    background: 'rgba(255, 255, 255, 0.15)', 
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)'
-                  }}
+                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
                 />
                 <Input
                   type="text"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="text-white placeholder:text-white/60 focus:border-white/50 border-white/30 focus:ring-white/30"
-                  style={{ 
-                    background: 'rgba(255, 255, 255, 0.15)', 
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)'
-                  }}
+                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
                 />
               </div>
             )}
 
             {/* Email field */}
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70" size={18} />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <Input
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="text-white placeholder:text-white/60 focus:border-white/50 border-white/30 pl-10 focus:ring-white/30"
-                style={{ 
-                  background: 'rgba(255, 255, 255, 0.15)', 
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)'
-                }}
+                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500 pl-10"
               />
             </div>
 
             {/* Phone field - only for signup */}
             {activeTab === 'signup' && (
-              <div 
-                style={{ 
-                  background: 'rgba(255, 255, 255, 0.15)', 
-                  backdropFilter: 'blur(10px)', 
-                  WebkitBackdropFilter: 'blur(10px)',
-                  borderRadius: '0.375rem', 
-                  border: '1px solid rgba(255, 255, 255, 0.3)' 
-                }}
-              >
-                <PhoneInput
-                  value={phone}
-                  onChange={setPhone}
-                  placeholder="(775) 351-6501"
-                  className="text-white placeholder:text-white/60 focus:border-white/50 border-transparent bg-transparent"
-                />
-              </div>
+              <PhoneInput
+                value={phone}
+                onChange={setPhone}
+                placeholder="(775) 351-6501"
+                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
+              />
             )}
 
             {/* Password field */}
@@ -304,26 +251,15 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="text-white placeholder:text-white/60 focus:border-white/50 border-white/30 focus:ring-white/30"
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.15)', 
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}
+              className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500"
             />
 
-          {/* Submit button */}
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full text-white font-medium py-3 rounded-xl transition-all hover:shadow-lg"
-            style={{ 
-              background: 'rgba(255, 255, 255, 0.25)', 
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.4)'
-            }}
-          >
+            {/* Submit button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -337,9 +273,9 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
 
           {/* Divider */}
           <div className="flex items-center my-6">
-            <div className="flex-1 h-px" style={{ background: 'rgba(255, 255, 255, 0.2)' }} />
-            <span className="px-3 text-sm text-white/70 uppercase">Or sign in with</span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(255, 255, 255, 0.2)' }} />
+            <div className="flex-1 h-px bg-gray-700" />
+            <span className="px-3 text-sm text-gray-400 uppercase">Or sign in with</span>
+            <div className="flex-1 h-px bg-gray-700" />
           </div>
 
           {/* Social login buttons */}
@@ -349,12 +285,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               onClick={handleGoogleAuth}
               disabled={isLoading}
               variant="outline"
-              className="text-white hover:bg-white/10 py-3 border-white/30 transition-all hover:border-white/50"
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.15)', 
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 py-3"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -368,12 +299,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               onClick={handleAppleAuth}
               disabled={isLoading}
               variant="outline"
-              className="text-white hover:bg-white/10 py-3 border-white/30 transition-all hover:border-white/50"
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.15)', 
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)'
-              }}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 py-3"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.44 3.676-2.906 1.156-1.690 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09z"/>
@@ -383,7 +309,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           </div>
 
           {/* Terms */}
-          <p className="text-xs text-white/60 text-center mt-6">
+          <p className="text-xs text-gray-400 text-center mt-6">
             By creating an account, you agree to our Terms & Service
           </p>
         </div>
