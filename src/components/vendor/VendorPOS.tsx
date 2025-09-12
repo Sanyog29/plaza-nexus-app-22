@@ -207,6 +207,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
             <CardContent className="p-0">
               <MenuGrid 
                 onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
                 cartItems={cartItems}
               />
             </CardContent>

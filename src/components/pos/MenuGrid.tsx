@@ -31,10 +31,11 @@ interface CartItem {
 
 interface MenuGridProps {
   onAddToCart: (item: CartItem) => void;
+  onUpdateQuantity?: (itemId: string, newQuantity: number) => void;
   cartItems: CartItem[];
 }
 
-export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) => {
+export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantity, cartItems }) => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -107,6 +108,13 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) =>
     });
   };
 
+  const handleRemoveFromCart = (itemId: string) => {
+    const currentQuantity = getItemQuantityInCart(itemId);
+    if (currentQuantity > 0 && onUpdateQuantity) {
+      onUpdateQuantity(itemId, Math.max(0, currentQuantity - 1));
+    }
+  };
+
   const getCategoryItemCount = (categoryId: string) => {
     if (categoryId === 'all') return menuItems.length;
     return menuItems.filter(item => item.category_id === categoryId).length;
@@ -119,13 +127,13 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) =>
   return (
     <div className="p-6">
       {/* Category Tabs */}
-      <div className="flex space-x-1 mb-6 border-b">
+      <div className="flex space-x-1 mb-6 border-b border-border">
         <button
           onClick={() => setSelectedCategory('all')}
           className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
             selectedCategory === 'all'
-              ? 'bg-gray-900 text-white'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
           All <span className="ml-1 text-sm">({getCategoryItemCount('all')})</span>
@@ -137,8 +145,8 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) =>
             onClick={() => setSelectedCategory(category.id)}
             className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
               selectedCategory === category.id
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
             }`}
           >
             {category.name} <span className="ml-1 text-sm">({getCategoryItemCount(category.id)})</span>
@@ -160,11 +168,8 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) =>
                   className="w-full h-32 object-cover"
                 />
                 <Badge 
-                  className={`absolute top-2 right-2 ${
-                    item.is_available 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-red-500 text-white'
-                  }`}
+                  variant={item.is_available ? 'secondary' : 'destructive'}
+                  className="absolute top-2 right-2"
                 >
                   {item.is_available ? 'Available' : 'Not Available'}
                 </Badge>
@@ -179,14 +184,13 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) =>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        // Remove one from cart (you'll need to implement this)
-                      }}
+                      onClick={() => handleRemoveFromCart(item.id)}
+                      disabled={quantityInCart <= 0}
                     >
                       <Minus className="w-4 h-4" />
                     </Button>
                     
-                    <span className="font-medium">Add More ({quantityInCart})</span>
+                    <span className="font-medium">Qty: {quantityInCart}</span>
                     
                     <Button
                       variant="outline"
@@ -199,7 +203,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, cartItems }) =>
                   </div>
                 ) : (
                   <Button
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+                    className="w-full"
                     onClick={() => handleAddToCart(item)}
                     disabled={!item.is_available}
                   >
