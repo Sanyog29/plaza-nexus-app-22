@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthForm from "@/components/auth/AuthForm";
 import WelcomeCard from "@/components/auth/WelcomeCard";
 import InvitationAcceptance from "@/components/auth/InvitationAcceptance";
+import { ModernAuthModal } from "@/components/auth/ModernAuthModal";
 import { createNetworkAwareRequest } from "@/utils/networkUtils";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { normalizeToE164, validateAndFormatPhone } from "@/utils/phoneUtils";
@@ -13,12 +14,7 @@ import { normalizeToE164, validateAndFormatPhone } from "@/utils/phoneUtils";
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const invitation = searchParams.get('invitation');
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isSignUpMode, setIsSignUpMode] = React.useState(false);
-  const [emailSent, setEmailSent] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [identifier, setIdentifier] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [showModal, setShowModal] = React.useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -30,92 +26,14 @@ const AuthPage = () => {
     return <InvitationAcceptance />;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!identifier || !password) return;
-    
-    try {
-      setIsLoading(true);
-      setError(null);
+  const handleModalClose = () => {
+    setShowModal(false);
+    navigate('/');
+  };
 
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-      
-      // Try to normalize phone number if not email
-      let normalizedPhone = null;
-      if (!isEmail) {
-        const phoneValidation = validateAndFormatPhone(identifier);
-        if (phoneValidation.isValid) {
-          normalizedPhone = phoneValidation.formatted;
-        }
-      }
-      
-      if (isSignUpMode) {
-        if (isEmail) {
-          const { error } = await supabase.auth.signUp({
-            email: identifier,
-            password,
-            options: {
-              emailRedirectTo: `${window.location.origin}/`
-            }
-          });
-          if (error) throw error;
-        } else if (normalizedPhone) {
-          const { error } = await supabase.auth.signUp({
-            phone: normalizedPhone,
-            password,
-          });
-          if (error) throw error;
-        } else {
-          throw new Error('Please enter a valid email address or mobile number with country code (e.g., +91 9876543210)');
-        }
-        setEmailSent(true);
-        toast({
-          title: "Account Created!",
-          description: isEmail ? "Please check your email to verify your account." : "Please check your messages to verify your account.",
-        });
-      } else {
-        // For sign in, we need to determine if it's email or phone
-        if (isEmail) {
-          const { error } = await supabase.auth.signInWithPassword({
-            email: identifier,
-            password,
-          });
-          if (error) throw error;
-        } else if (normalizedPhone) {
-          const { error } = await supabase.auth.signInWithPassword({
-            phone: normalizedPhone,
-            password,
-          });
-          if (error) throw error;
-        } else {
-          throw new Error('Please enter a valid email address or mobile number with country code (e.g., +91 9876543210)');
-        }
-        
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
-        });
-        navigate(from);
-      }
-    } catch (error: any) {
-      console.error('Auth error:', error);
-      
-      if (error.message?.includes('Invalid login credentials')) {
-        setError('Invalid email/mobile number or password. Please try again.');
-      } else if (error.message?.includes('User already registered')) {
-        setError('An account with this email/mobile number already exists. Please sign in instead.');
-      } else if (error.message?.includes('Email not confirmed')) {
-        setError('Please check your email and click the confirmation link before signing in.');
-      } else if (error.message?.includes('Phone not confirmed')) {
-        setError('Please check your messages and confirm your phone number before signing in.');
-      } else if (error.message?.includes('No account found')) {
-        setError('No account found. Please check your details or sign up.');
-      } else {
-        setError(error.message || 'Authentication failed. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAuthSuccess = () => {
+    setShowModal(false);
+    navigate(from);
   };
 
   return (
@@ -126,43 +44,53 @@ const AuthPage = () => {
         url={`${window.location.origin}/auth`}
         type="website"
       />
-      {/* Header with branding to match main app */}
-      <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="container max-w-7xl mx-auto px-6 h-16 flex items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">SP</span>
+      
+      {/* Modern Auth Modal */}
+      <ModernAuthModal
+        isOpen={showModal}
+        onClose={handleModalClose}
+        onSuccess={handleAuthSuccess}
+      />
+      
+      {/* Fallback content when modal is closed */}
+      {!showModal && (
+        <>
+          {/* Header with branding to match main app */}
+          <header className="border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+            <div className="container max-w-7xl mx-auto px-6 h-16 flex items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">SP</span>
+                </div>
+                <div>
+                  <h1 className="font-semibold text-foreground">SS Plaza</h1>
+                  <p className="text-xs text-muted-foreground">Building Management System</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="font-semibold text-foreground">SS Plaza</h1>
-              <p className="text-xs text-muted-foreground">Building Management System</p>
-            </div>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Main content */}
-      <main className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center animate-fade-in-up">
-          <div className="hidden lg:block">
-            <WelcomeCard />
-          </div>
-          <div className="w-full max-w-md mx-auto lg:max-w-none">
-            <AuthForm
-              identifier={identifier}
-              setIdentifier={setIdentifier}
-              password={password}
-              setPassword={setPassword}
-              isLoading={isLoading}
-              isSignUp={isSignUpMode}
-              setIsSignUp={setIsSignUpMode}
-              showEmailSentMessage={emailSent}
-              setShowEmailSentMessage={setEmailSent}
-              onSubmit={handleSubmit}
-            />
-          </div>
-        </div>
-      </main>
+          {/* Main content */}
+          <main className="flex-1 flex items-center justify-center px-4">
+            <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-6 lg:gap-8 items-center animate-fade-in-up">
+              <div className="hidden lg:block">
+                <WelcomeCard />
+              </div>
+              <div className="w-full max-w-md mx-auto lg:max-w-none">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold mb-4">Welcome to SS Plaza</h2>
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Sign In / Sign Up
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </>
+      )}
     </div>
   );
 };
