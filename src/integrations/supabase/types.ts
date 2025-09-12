@@ -8062,6 +8062,7 @@ export type Database = {
           is_active: boolean | null
           permissions: Json | null
           role: string
+          updated_at: string | null
           user_id: string
           vendor_id: string
         }
@@ -8071,6 +8072,7 @@ export type Database = {
           is_active?: boolean | null
           permissions?: Json | null
           role?: string
+          updated_at?: string | null
           user_id: string
           vendor_id: string
         }
@@ -8080,6 +8082,7 @@ export type Database = {
           is_active?: boolean | null
           permissions?: Json | null
           role?: string
+          updated_at?: string | null
           user_id?: string
           vendor_id?: string
         }

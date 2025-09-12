@@ -55,7 +55,8 @@ const VendorPortalPage = () => {
         `)
         .eq('user_id', user.id)
         .eq('is_active', true)
-        .maybeSingle();
+        .limit(1)
+        .single();
 
       if (error) throw error;
       return data;
