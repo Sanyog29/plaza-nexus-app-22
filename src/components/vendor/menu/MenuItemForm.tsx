@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,41 +35,33 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
     spice_level: initialData?.spice_level || '0',
     is_available: initialData?.is_available ?? true,
     is_featured: initialData?.is_featured || false,
-    dietary_tags: initialData?.dietary_tags || [],
-    allergens: initialData?.allergens || [],
-    ingredients: initialData?.ingredients || [],
-    nutritional_info: initialData?.nutritional_info || {
-      calories: '',
-      protein: '',
-      carbs: '',
-      fat: ''
-    }
+    category_id: initialData?.category_id || ''
   });
 
-  const [newTag, setNewTag] = useState('');
-  const [newAllergen, setNewAllergen] = useState('');
-  const [newIngredient, setNewIngredient] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const commonDietaryTags = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Keto', 'Low-Carb', 'High-Protein'];
-  const commonAllergens = ['Nuts', 'Dairy', 'Eggs', 'Soy', 'Wheat', 'Shellfish', 'Fish'];
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('cafeteria_menu_categories')
+        .select('*')
+        .eq('vendor_id', vendorId)
+        .order('display_order');
+      
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return;
+      }
+      
+      setCategories(data || []);
+    };
+    
+    fetchCategories();
+  }, [vendorId]);
 
-  const addTag = (type: 'dietary_tags' | 'allergens' | 'ingredients', value: string) => {
-    if (value && !formData[type].includes(value)) {
-      setFormData(prev => ({
-        ...prev,
-        [type]: [...prev[type], value]
-      }));
-    }
-  };
-
-  const removeTag = (type: 'dietary_tags' | 'allergens' | 'ingredients', value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [type]: prev[type].filter((item: string) => item !== value)
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,16 +101,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
         spice_level: parseInt(formData.spice_level) || 0,
         is_available: formData.is_available,
         is_featured: formData.is_featured,
-        dietary_tags: formData.dietary_tags,
-        allergens: formData.allergens,
-        ingredients: formData.ingredients,
-        image_url: imageUrl,
-        nutritional_info: {
-          calories: formData.nutritional_info.calories ? parseInt(formData.nutritional_info.calories) : null,
-          protein: formData.nutritional_info.protein ? parseFloat(formData.nutritional_info.protein) : null,
-          carbs: formData.nutritional_info.carbs ? parseFloat(formData.nutritional_info.carbs) : null,
-          fat: formData.nutritional_info.fat ? parseFloat(formData.nutritional_info.fat) : null
-        }
+        category_id: formData.category_id || null,
+        image_url: imageUrl
       };
 
       if (initialData?.id) {
@@ -293,217 +277,34 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
           </CardContent>
         </Card>
 
-        {/* Dietary Information */}
+        {/* Category Selection */}
         <Card>
           <CardHeader>
-            <CardTitle>Dietary Information</CardTitle>
+            <CardTitle>Category</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Dietary Tags</Label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.dietary_tags.map((tag: string) => (
-                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeTag('dietary_tags', tag)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add dietary tag"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addTag('dietary_tags', newTag);
-                      setNewTag('');
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    addTag('dietary_tags', newTag);
-                    setNewTag('');
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {commonDietaryTags.map(tag => (
-                  <Button
-                    key={tag}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addTag('dietary_tags', tag)}
-                    disabled={formData.dietary_tags.includes(tag)}
-                  >
-                    {tag}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label>Allergens</Label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.allergens.map((allergen: string) => (
-                  <Badge key={allergen} variant="destructive" className="flex items-center gap-1">
-                    {allergen}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeTag('allergens', allergen)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add allergen"
-                  value={newAllergen}
-                  onChange={(e) => setNewAllergen(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addTag('allergens', newAllergen);
-                      setNewAllergen('');
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    addTag('allergens', newAllergen);
-                    setNewAllergen('');
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {commonAllergens.map(allergen => (
-                  <Button
-                    key={allergen}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addTag('allergens', allergen)}
-                    disabled={formData.allergens.includes(allergen)}
-                  >
-                    {allergen}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Nutritional Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Nutritional Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="calories">Calories</Label>
-                <Input
-                  id="calories"
-                  type="number"
-                  value={formData.nutritional_info.calories}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    nutritional_info: { ...prev.nutritional_info, calories: e.target.value }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="protein">Protein (g)</Label>
-                <Input
-                  id="protein"
-                  type="number"
-                  step="0.1"
-                  value={formData.nutritional_info.protein}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    nutritional_info: { ...prev.nutritional_info, protein: e.target.value }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="carbs">Carbs (g)</Label>
-                <Input
-                  id="carbs"
-                  type="number"
-                  step="0.1"
-                  value={formData.nutritional_info.carbs}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    nutritional_info: { ...prev.nutritional_info, carbs: e.target.value }
-                  }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="fat">Fat (g)</Label>
-                <Input
-                  id="fat"
-                  type="number"
-                  step="0.1"
-                  value={formData.nutritional_info.fat}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    nutritional_info: { ...prev.nutritional_info, fat: e.target.value }
-                  }))}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label>Ingredients</Label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {formData.ingredients.map((ingredient: string) => (
-                  <Badge key={ingredient} variant="outline" className="flex items-center gap-1">
-                    {ingredient}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => removeTag('ingredients', ingredient)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add ingredient"
-                  value={newIngredient}
-                  onChange={(e) => setNewIngredient(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addTag('ingredients', newIngredient);
-                      setNewIngredient('');
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => {
-                    addTag('ingredients', newIngredient);
-                    setNewIngredient('');
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+              <Label htmlFor="category">Menu Category *</Label>
+              <Select
+                value={formData.category_id}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id} className="hover:bg-muted">
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {categories.length === 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  No categories found. Please create categories first.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

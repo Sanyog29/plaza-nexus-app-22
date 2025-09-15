@@ -46,7 +46,10 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
       setLoading(true);
       const { data, error } = await supabase
         .from('vendor_menu_items')
-        .select('*')
+        .select(`
+          *,
+          category:cafeteria_menu_categories(name)
+        `)
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false });
 
@@ -126,6 +129,16 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
     return matchesSearch && matchesAvailable && matchesFeatured;
   });
 
+  // Group items by category
+  const groupedItems = filteredItems.reduce((groups: any, item) => {
+    const categoryName = item.category?.name || 'Uncategorized';
+    if (!groups[categoryName]) {
+      groups[categoryName] = [];
+    }
+    groups[categoryName].push(item);
+    return groups;
+  }, {});
+
   const getStockStatus = (item: any) => {
     if (item.stock_quantity === 0) return { status: 'out-of-stock', color: 'destructive' };
     if (item.stock_quantity <= item.low_stock_threshold) return { status: 'low-stock', color: 'secondary' };
@@ -199,171 +212,164 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
         </CardContent>
       </Card>
 
-      {/* Menu Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredItems.map((item) => {
-          const stockStatus = getStockStatus(item);
-          const profitInfo = calculateProfit(item.price, item.cost_price);
+      {/* Menu Items by Category */}
+      {Object.keys(groupedItems).length > 0 ? (
+        Object.entries(groupedItems).map(([categoryName, items]: [string, any]) => (
+          <div key={categoryName} className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">{categoryName}</h2>
+              <Badge variant="outline">{items.length} items</Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {items.map((item: any) => {
+                const stockStatus = getStockStatus(item);
+                const profitInfo = calculateProfit(item.price, item.cost_price);
 
-          return (
-            <Card key={item.id} className="relative overflow-hidden">
-              {item.is_featured && (
-                <Badge className="absolute top-2 left-2 z-10" variant="secondary">
-                  Featured
-                </Badge>
-              )}
-              
-              <div className="aspect-video relative bg-muted">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Image className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                )}
-                
-                <div className="absolute top-2 right-2 flex gap-2">
-                  {stockStatus.status === 'low-stock' && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      Low Stock
-                    </Badge>
-                  )}
-                  {stockStatus.status === 'out-of-stock' && (
-                    <Badge variant="destructive">Out of Stock</Badge>
-                  )}
-                </div>
-              </div>
-
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-lg truncate">{item.name}</h3>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={item.is_available}
-                      onCheckedChange={() => toggleAvailability(item.id, item.is_available)}
-                    />
-                  </div>
-                </div>
-
-                {item.description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {item.description}
-                  </p>
-                )}
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Price:</span>
-                    <span className="font-semibold">${item.price}</span>
-                  </div>
-                  
-                  {item.cost_price && profitInfo && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Profit:</span>
-                      <span className="text-sm">
-                        ${profitInfo.profit.toFixed(2)} ({profitInfo.margin.toFixed(1)}%)
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Stock:</span>
-                    <Badge variant={stockStatus.color as any}>
-                      {item.stock_quantity} units
-                    </Badge>
-                  </div>
-
-                  {item.preparation_time_minutes && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Prep Time:</span>
-                      <span className="text-sm">{item.preparation_time_minutes} min</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Dietary Tags */}
-                {item.dietary_tags && item.dietary_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {item.dietary_tags.slice(0, 3).map((tag: string) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {item.dietary_tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{item.dietary_tags.length - 3} more
+                return (
+                  <Card key={item.id} className="relative overflow-hidden">
+                    {item.is_featured && (
+                      <Badge className="absolute top-2 left-2 z-10" variant="secondary">
+                        Featured
                       </Badge>
                     )}
-                  </div>
-                )}
-
-                {/* Spice Level */}
-                {item.spice_level > 0 && (
-                  <div className="flex items-center gap-1 mb-3">
-                    <span className="text-sm">Spice:</span>
-                    <div className="flex">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={`text-xs ${
-                            i < item.spice_level ? 'text-red-500' : 'text-gray-300'
-                          }`}
-                        >
-                          🌶️
-                        </span>
-                      ))}
+                    
+                    <div className="aspect-video relative bg-muted">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Image className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                      )}
+                      
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        {stockStatus.status === 'low-stock' && (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            Low Stock
+                          </Badge>
+                        )}
+                        {stockStatus.status === 'out-of-stock' && (
+                          <Badge variant="destructive">Out of Stock</Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => onEditItem(item)}
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Menu Item</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete "{item.name}"? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteItem(item.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-semibold text-lg truncate">{item.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={item.is_available}
+                            onCheckedChange={() => toggleAvailability(item.id, item.is_available)}
+                          />
+                        </div>
+                      </div>
+
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
+                      )}
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Price:</span>
+                          <span className="font-semibold">₹{item.price}</span>
+                        </div>
+                        
+                        {item.cost_price && profitInfo && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium">Profit:</span>
+                            <span className="text-sm">
+                              ₹{profitInfo.profit.toFixed(2)} ({profitInfo.margin.toFixed(1)}%)
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Stock:</span>
+                          <Badge variant={stockStatus.color as any}>
+                            {item.stock_quantity} units
+                          </Badge>
+                        </div>
+
+                        {item.preparation_time_minutes && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium">Prep Time:</span>
+                            <span className="text-sm">{item.preparation_time_minutes} min</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Spice Level */}
+                      {item.spice_level > 0 && (
+                        <div className="flex items-center gap-1 mb-3">
+                          <span className="text-sm">Spice:</span>
+                          <div className="flex">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span
+                                key={i}
+                                className={`text-xs ${
+                                  i < item.spice_level ? 'text-red-500' : 'text-gray-300'
+                                }`}
+                              >
+                                🌶️
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => onEditItem(item)}
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {filteredItems.length === 0 && (
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Menu Item</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{item.name}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteItem(item.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        ))
+      ) : (
         <Card>
           <CardContent className="p-12 text-center">
             <Image className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -376,7 +382,7 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
             </p>
           </CardContent>
         </Card>
-      )}
+       )}
     </div>
   );
 };
