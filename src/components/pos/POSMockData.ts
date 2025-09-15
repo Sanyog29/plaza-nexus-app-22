@@ -13,7 +13,7 @@ export const mockMenuItems = [
   {
     id: '1',
     name: 'Continental Breakfast',
-    price: 8.50,
+    price: 680.00,
     image_url: null,
     is_available: true,
     category_id: 'breakfast'
@@ -21,7 +21,7 @@ export const mockMenuItems = [
   {
     id: '2',
     name: 'Eggs Benedict',
-    price: 12.00,
+    price: 960.00,
     image_url: null,
     is_available: true,
     category_id: 'breakfast'
@@ -29,7 +29,7 @@ export const mockMenuItems = [
   {
     id: '3',
     name: 'Grilled Chicken Salad',
-    price: 11.50,
+    price: 920.00,
     image_url: null,
     is_available: true,
     category_id: 'lunch-specials'
@@ -37,7 +37,7 @@ export const mockMenuItems = [
   {
     id: '4',
     name: 'Vegetarian Pasta',
-    price: 10.00,
+    price: 800.00,
     image_url: null,
     is_available: true,
     category_id: 'lunch-specials'
@@ -45,7 +45,7 @@ export const mockMenuItems = [
   {
     id: '5',
     name: 'Sandwich Combo',
-    price: 9.75,
+    price: 780.00,
     image_url: null,
     is_available: true,
     category_id: 'lunch-specials'

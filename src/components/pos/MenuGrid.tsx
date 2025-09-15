@@ -177,7 +177,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
               
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-                <p className="text-xl font-bold mb-3">${item.price.toFixed(2)}</p>
+                <p className="text-xl font-bold mb-3">₹{item.price.toFixed(2)}</p>
                 
                 {quantityInCart > 0 ? (
                   <div className="flex items-center justify-between">

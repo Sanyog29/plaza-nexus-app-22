@@ -11,7 +11,7 @@ export const mockMenuItems = [
   {
     id: '1',
     name: 'Butter Chicken',
-    price: 12.64,
+    price: 1012.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -19,7 +19,7 @@ export const mockMenuItems = [
   {
     id: '2',
     name: 'French Fries',
-    price: 7.50,
+    price: 600.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -27,7 +27,7 @@ export const mockMenuItems = [
   {
     id: '3',
     name: 'Roast Beef',
-    price: 29.00,
+    price: 2320.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -35,7 +35,7 @@ export const mockMenuItems = [
   {
     id: '4',
     name: 'Sauerkraut',
-    price: 11.55,
+    price: 924.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -43,7 +43,7 @@ export const mockMenuItems = [
   {
     id: '5',
     name: 'Beef Kebab',
-    price: 14.95,
+    price: 1196.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: false,
     category_id: '2'
@@ -51,7 +51,7 @@ export const mockMenuItems = [
   {
     id: '6',
     name: 'Fish and Chips',
-    price: 23.05,
+    price: 1844.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -59,7 +59,7 @@ export const mockMenuItems = [
   {
     id: '7',
     name: 'Wagyu Steak',
-    price: 31.17,
+    price: 2494.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -67,7 +67,7 @@ export const mockMenuItems = [
   {
     id: '8',
     name: 'Chicken Ramen',
-    price: 17.70,
+    price: 1416.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -75,7 +75,7 @@ export const mockMenuItems = [
   {
     id: '9',
     name: 'Pasta Bolognese',
-    price: 23.50,
+    price: 1880.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'
@@ -83,7 +83,7 @@ export const mockMenuItems = [
   {
     id: '10',
     name: 'Vegetable Salad',
-    price: 15.41,
+    price: 1233.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '4'
@@ -91,7 +91,7 @@ export const mockMenuItems = [
   {
     id: '11',
     name: 'Grilled Skewers',
-    price: 17.25,
+    price: 1380.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: false,
     category_id: '4'
@@ -99,7 +99,7 @@ export const mockMenuItems = [
   {
     id: '12',
     name: 'Fried Rice',
-    price: 19.50,
+    price: 1560.00,
     image_url: '/lovable-uploads/a8643d64-0d23-44d1-89a1-8dcb97e8f718.png',
     is_available: true,
     category_id: '2'

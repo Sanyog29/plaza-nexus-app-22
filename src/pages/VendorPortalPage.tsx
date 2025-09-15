@@ -28,13 +28,28 @@ const VendorPortalPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Handle URL-based tab navigation
+  // Handle URL-based tab navigation and clear cart
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['dashboard', 'orders', 'menu', 'analytics'].includes(tabFromUrl)) {
+    const clearCart = searchParams.get('clearCart');
+    
+    if (tabFromUrl && ['dashboard', 'pos', 'orders', 'menu', 'store', 'sales', 'analytics'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
-  }, [searchParams]);
+    
+    // If clearCart parameter is present, switch to POS tab and clear URL params after a delay
+    if (clearCart === 'true') {
+      setActiveTab('pos');
+      // Clear the clearCart parameter from URL after processing
+      setTimeout(() => {
+        setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          newParams.delete('clearCart');
+          return newParams;
+        });
+      }, 100);
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
