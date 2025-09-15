@@ -160,12 +160,9 @@ Thank you for your business!
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label htmlFor="customerName" className="text-xs">Customer Name</Label>
-            <Input id="customerName" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Walk-in Customer" className="h-8 text-xs" />
+            <Input id="customerName" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Walk-in Customer" className="h-8 text-xs mx-[3px] my-[5px] px-[5px] py-[5px] bg-slate-50" />
           </div>
-          <div>
-            <Label htmlFor="customerPhone" className="text-xs">Phone (Optional)</Label>
-            <Input id="customerPhone" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="Phone number" className="h-8 text-xs" />
-          </div>
+          
         </div>
 
         {/* Order Type */}
