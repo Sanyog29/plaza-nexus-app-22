@@ -214,10 +214,7 @@ Thank you for your business!
             <span>Subtotal</span>
             <span>₹{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Tax ({(taxRate * 100).toFixed(1)}%)</span>
-            <span>₹{taxes.toFixed(2)}</span>
-          </div>
+          
           {serviceChargeAmount > 0 && <div className="flex justify-between">
               <span>Service Charge</span>
               <span>₹{serviceChargeAmount.toFixed(2)}</span>
