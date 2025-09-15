@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, Moon, Sun, RefreshCw, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import qrcode from "qrcode";
 
 interface OrderItem {
@@ -54,6 +53,7 @@ export default function VendorInvoicePageNew() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     if (orderId) {
@@ -201,157 +201,185 @@ export default function VendorInvoicePageNew() {
     }
   };
 
-  const handleHomeClick = () => {
-    navigate('/vendor-portal?tab=pos&clearCart=true');
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS format
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800">
-        <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading invoice...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-gray-800 text-xl">Loading invoice...</div>
       </div>
     );
   }
 
   if (!order || !vendor) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800">
-        <div className="text-center text-white">
-          <p className="mb-4">Order not found</p>
-          <Button onClick={handleHomeClick} variant="outline">
-            <Home className="h-4 w-4 mr-2" />
-            Go to POS
-          </Button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-gray-800 text-xl">Invoice not found</div>
       </div>
     );
   }
 
-  const billNumbers = order.bill_number ? order.bill_number.split('') : [order.id.slice(0, 1), order.id.slice(1, 2)];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 relative overflow-hidden">
-      {/* Header */}
-      <div className="flex justify-between items-center p-6 text-white">
+    <div 
+      className={`min-h-screen flex flex-col transition-colors duration-500 ${
+        darkMode
+          ? "bg-gradient-to-b from-black to-blue-900 text-white"
+          : "bg-gradient-to-b from-gray-50 to-white text-gray-800"
+      }`}
+    >
+      {/* Navigation Bar */}
+      <div
+        className={`w-full flex justify-between items-center p-4 mx-6 my-6 rounded-xl ${
+          darkMode ? "bg-black" : "bg-gray-100"
+        }`}
+      >
         <div className="flex items-center gap-3">
-          {vendor.logo_url ? (
-            <img
-              src={vendor.logo_url}
-              alt={vendor.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">
-              {vendor.name.charAt(0)}
-            </div>
-          )}
+          <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+            {vendor.name.charAt(0)}
+          </div>
           <div>
             <p className="font-bold">{vendor.name}</p>
-            <p className="text-xs text-white/80">Fast Food</p>
+            <p className="text-xs text-gray-500">Food Service</p>
           </div>
-          <span className="ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">Active</span>
+          <span className="ml-2 bg-green-500 text-xs px-2 py-1 rounded-full text-white">Active</span>
+        </div>
+
+        <div className="flex items-center gap-6 text-sm">
+          <a href="#" className="hover:text-blue-500">Dashboard</a>
+          <a href="#" className="hover:text-blue-500">Orders</a>
+          <a href="#" className="hover:text-blue-500">Menu</a>
+          <a href="#" className="hover:text-blue-500">Analytics</a>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="text-white hover:bg-white/10">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <ThemeToggle />
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="text-gray-400 hover:text-gray-600"
+            title="Toggle Light/Dark Mode"
+          >
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <button className="text-gray-400 hover:text-gray-600">
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <button className="text-gray-400 hover:text-gray-600">
+            <Bell className="w-5 h-5" />
+          </button>
+          <div className="bg-gray-700 w-8 h-8 rounded-full flex items-center justify-center text-white">
+            G
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="px-6 pb-6">
-        {/* Bill Number */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <span className="text-white text-lg">Bill No</span>
-          {billNumbers.map((digit, index) => (
-            <div key={index} className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">{digit}</span>
+      {/* Invoice Content */}
+      <div className="flex-1 flex flex-col items-center px-6">
+        <div className="w-full max-w-4xl">
+          {/* Invoice Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-light italic mb-6">Invoice</h1>
+            
+            <div className="grid grid-cols-2 gap-8 text-sm mb-8">
+              <div className="text-left space-y-1">
+                <p><span className="font-medium">Order ID:</span> {order.bill_number || `INV${orderId?.slice(-8)}`}</p>
+                <p><span className="font-medium">Date:</span> {formatDate(order.created_at)}</p>
+              </div>
+              <div className="text-right space-y-1">
+                <p><span className="font-medium">Time:</span> {formatTime(order.created_at)}</p>
+                <p><span className="font-medium">Table:</span> {order.table_number || 'A-12B'}</p>
+                <p><span className="font-medium">Service:</span> {order.service_type || 'dine-in'}</p>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Invoice Section */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 mb-8">
-          <div className="flex justify-between items-start">
-            {/* Left Side - Invoice */}
+          {/* Invoice Table and QR Code */}
+          <div className="flex flex-col lg:flex-row gap-12 mb-8">
+            {/* Items Table */}
             <div className="flex-1">
-              <h1 className="text-4xl font-light text-white mb-8 italic">Invoice</h1>
-              
-              {/* Items */}
-              <div className="space-y-3">
+              <div className="space-y-4">
+                {/* Table Header */}
+                <div className="grid grid-cols-3 gap-4 pb-3 border-b-2 border-gray-200 font-semibold">
+                  <span>Item</span>
+                  <span className="text-center">Qty</span>
+                  <span className="text-right">Amount</span>
+                </div>
+                
+                {/* Table Rows */}
                 {orderItems.map((item, index) => (
-                  <div key={item.id} className="flex justify-between text-white">
-                    <span className="text-lg">{item.item_id}</span>
-                    <span className="text-lg">{(item.unit_price * item.quantity).toFixed(2)}</span>
+                  <div key={index} className="grid grid-cols-3 gap-4 py-2">
+                    <span>{item.item_id}</span>
+                    <span className="text-center">{item.quantity}</span>
+                    <span className="text-right">₹{(item.unit_price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
+                
+                {/* Total */}
+                <div className="border-t-2 border-gray-200 pt-4 mt-6">
+                  <div className="grid grid-cols-3 gap-4 font-bold text-lg">
+                    <span>Total</span>
+                    <span></span>
+                    <span className="text-right">₹{order.total_amount.toFixed(2)}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Right Side - Amount & QR */}
-            <div className="flex flex-col items-end min-w-[300px]">
-              <div className="text-right mb-6">
-                <div className="text-white text-lg mb-2">Amount</div>
-                <div className="text-white text-3xl font-bold border-b-2 border-white/30 pb-2 mb-4">
-                  {order.total_amount.toFixed(2)}
-                </div>
-              </div>
-
-              {/* QR Code */}
+            {/* QR Code Section */}
+            <div className="flex flex-col items-center justify-start lg:w-1/3">
               {qrCodeUrl && (
-                <div className="bg-white p-4 rounded-2xl shadow-lg">
-                  <img
-                    src={qrCodeUrl}
-                    alt="Payment QR Code"
-                    className="w-32 h-32 mx-auto"
+                <div className="text-center">
+                  <img 
+                    src={qrCodeUrl} 
+                    alt="Payment QR Code" 
+                    className="w-48 h-48 rounded-xl mb-3"
                   />
-                  <div className="text-center mt-2">
-                    <p className="text-xs text-gray-600">UPI NAME: {(vendor.store_config as any)?.business_name || vendor.name}</p>
-                  </div>
+                  <p className="text-xs text-gray-500">
+                    UPI ID: {(vendor.store_config as any)?.upi_id || vendor.contact_phone + '@upi'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {(vendor.store_config as any)?.business_name || vendor.name}
+                  </p>
                 </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Payment Actions */}
-        {order.payment_status === 'completed' ? (
-          <div className="text-center">
-            <div className="bg-green-500 text-white px-6 py-3 rounded-full mb-6 inline-block">
-              ✓ Payment Completed Successfully
+          {/* Payment Status */}
+          {order.payment_status === 'completed' ? (
+            <div className="text-center mb-8">
+              <div className="bg-green-50 text-green-700 p-4 rounded-lg border border-green-200">
+                ✅ Payment Completed
+              </div>
             </div>
-            <Button onClick={handleHomeClick} className="bg-white text-purple-700 hover:bg-gray-100">
-              <Home className="h-5 w-5 mr-2" />
-              Return to POS
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-end justify-between">
-            {/* Pay Now Button */}
-            <Button 
-              className="bg-gradient-to-r from-teal-400 to-blue-500 hover:from-teal-500 hover:to-blue-600 text-white px-16 py-6 rounded-full text-xl font-medium shadow-lg"
-              onClick={handlePayNow}
-              disabled={paymentProcessing}
-            >
-              {paymentProcessing ? "Processing..." : "Pay Now"}
-            </Button>
+          ) : (
+            <div className="text-center mb-8">
+              <Button
+                onClick={handlePayNow}
+                disabled={paymentProcessing}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-12 py-6 rounded-full text-lg font-medium"
+              >
+                {paymentProcessing ? 'Processing...' : 'Pay Now'}
+              </Button>
+            </div>
+          )}
 
-            {/* Home Icon */}
-            <Button 
-              variant="ghost" 
-              size="lg"
-              onClick={handleHomeClick}
-              className="text-white hover:bg-white/10"
+          {/* Home Icon */}
+          <div className="text-center">
+            <button 
+              onClick={() => navigate('/vendor-portal?tab=pos&clearCart=true')}
+              className="text-gray-400 hover:text-gray-600"
             >
-              <Home className="w-8 h-8" />
-            </Button>
+              <Home className="w-6 h-6" />
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
