@@ -203,27 +203,57 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search menu items and categories..."
+                  placeholder="Search items by name, description, or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
+              {searchTerm && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Searching in: Item names, descriptions, and categories
+                </div>
+              )}
             </div>
             
             <div className="flex flex-col md:flex-row gap-4">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Category" />
+                <SelectTrigger className="w-full md:w-[200px] bg-background">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <SelectValue placeholder="Filter by Category" />
+                  </div>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="bg-background border z-50">
+                  <SelectItem value="all" className="hover:bg-muted">
+                    <div className="flex items-center gap-2">
+                      <span>All Categories</span>
+                      <Badge variant="outline" className="ml-auto">
+                        {menuItems.length}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="uncategorized" className="hover:bg-muted">
+                    <div className="flex items-center gap-2">
+                      <span>Uncategorized</span>
+                      <Badge variant="outline" className="ml-auto">
+                        {menuItems.filter(item => !item.category_id).length}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                  {categories.map((category) => {
+                    const itemCount = menuItems.filter(item => item.category_id === category.id).length;
+                    return (
+                      <SelectItem key={category.id} value={category.id} className="hover:bg-muted">
+                        <div className="flex items-center gap-2">
+                          <span>{category.name}</span>
+                          <Badge variant="outline" className="ml-auto">
+                            {itemCount}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
 
@@ -253,13 +283,57 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
         </CardContent>
       </Card>
 
+      {/* Results Summary */}
+      {filteredItems.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {filteredItems.length} of {menuItems.length} items
+            {filterCategory !== 'all' && (
+              <span className="ml-1">
+                in {filterCategory === 'uncategorized' ? 'Uncategorized' : 
+                     categories.find(c => c.id === filterCategory)?.name}
+              </span>
+            )}
+            {searchTerm && (
+              <span className="ml-1">matching "{searchTerm}"</span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchTerm('');
+              setFilterCategory('all');
+              setFilterAvailable('all');
+              setFilterFeatured('all');
+            }}
+          >
+            Clear Filters
+          </Button>
+        </div>
+      )}
+
       {/* Menu Items by Category */}
       {Object.keys(groupedItems).length > 0 ? (
         Object.entries(groupedItems).map(([categoryName, items]: [string, any]) => (
           <div key={categoryName} className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{categoryName}</h2>
-              <Badge variant="outline">{items.length} items</Badge>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                {categoryName}
+                <Badge variant="secondary">{items.length}</Badge>
+              </h2>
+              {filterCategory === 'all' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFilterCategory(
+                    categoryName === 'Uncategorized' ? 'uncategorized' : 
+                    categories.find(c => c.name === categoryName)?.id || 'all'
+                  )}
+                >
+                  View only {categoryName}
+                </Button>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

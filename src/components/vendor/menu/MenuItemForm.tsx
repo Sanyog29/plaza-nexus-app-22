@@ -48,6 +48,30 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
     description: ''
   });
 
+  // Predefined category suggestions
+  const predefinedCategories = [
+    { name: 'Main Course', description: 'Primary dishes and meals' },
+    { name: 'Appetizers', description: 'Starters and small plates' },
+    { name: 'Beverages', description: 'Drinks, juices, and refreshments' },
+    { name: 'Desserts', description: 'Sweet treats and desserts' },
+    { name: 'Snacks', description: 'Light bites and finger foods' },
+    { name: 'Breakfast', description: 'Morning meals and breakfast items' },
+    { name: 'Lunch', description: 'Midday meals and lunch specials' },
+    { name: 'Dinner', description: 'Evening meals and dinner options' },
+    { name: 'Salads', description: 'Fresh salads and healthy options' },
+    { name: 'Soups', description: 'Hot and cold soups' },
+    { name: 'Sandwiches', description: 'Sandwiches and wraps' },
+    { name: 'Pizza', description: 'Pizzas and Italian specialties' },
+    { name: 'Chinese', description: 'Chinese cuisine dishes' },
+    { name: 'Indian', description: 'Traditional Indian dishes' },
+    { name: 'Continental', description: 'Continental and western dishes' },
+    { name: 'South Indian', description: 'South Indian specialties' },
+    { name: 'Street Food', description: 'Popular street food items' },
+    { name: 'Healthy Options', description: 'Low-calorie and healthy choices' },
+    { name: 'Combos', description: 'Meal combinations and combo offers' },
+    { name: 'Specials', description: 'Chef specials and seasonal items' }
+  ];
+
   // Fetch categories on mount
   useEffect(() => {
     const fetchCategories = async () => {
@@ -386,13 +410,60 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
             <DialogTitle>Add New Category</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Quick Select Predefined Categories */}
+            <div>
+              <Label>Quick Select Popular Categories</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {predefinedCategories.slice(0, 8).map((category, index) => (
+                  <Button
+                    key={index}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setNewCategoryForm({
+                      name: category.name,
+                      description: category.description
+                    })}
+                    className="h-auto p-2 text-left justify-start"
+                  >
+                    <div>
+                      <div className="font-medium text-xs">{category.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {category.description}
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // Show all categories in a Select dropdown
+                }}
+                className="w-full mt-2 text-muted-foreground"
+              >
+                View all {predefinedCategories.length} category suggestions
+              </Button>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or create custom</span>
+              </div>
+            </div>
+            
             <div>
               <Label htmlFor="new-category-name">Category Name *</Label>
               <Input
                 id="new-category-name"
                 value={newCategoryForm.name}
                 onChange={(e) => setNewCategoryForm(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., Main Course, Beverages, Desserts"
+                placeholder="Enter custom category name"
               />
             </div>
             
