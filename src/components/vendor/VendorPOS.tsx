@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MenuGrid } from '@/components/pos/MenuGrid';
 import { VendorOrderSummary } from '@/components/vendor/VendorOrderSummary';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +7,8 @@ import { useAuth } from '@/components/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, ShoppingBag, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { useVendorRealtime } from '@/hooks/useVendorRealtime';
 
 interface CartItem {
   id: string;
@@ -29,6 +31,66 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   });
   const { toast } = useToast();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Clear cart when returning from invoice page or when specified
+  useEffect(() => {
+    const shouldClear = searchParams.get('clearCart');
+    if (shouldClear === 'true') {
+      setCartItems([]);
+      // Remove the clearCart parameter from URL
+      setSearchParams({});
+      toast({
+        title: "New Transaction",
+        description: "Cart cleared. Ready for new order.",
+      });
+    }
+  }, [searchParams, setSearchParams, toast]);
+
+  // Fetch today's stats on mount
+  useEffect(() => {
+    fetchTodayStats();
+  }, [vendorId]);
+
+  const fetchTodayStats = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: orders, error } = await supabase
+        .from('cafeteria_orders')
+        .select('total_amount, status')
+        .eq('vendor_id', vendorId)
+        .gte('created_at', `${today}T00:00:00`)
+        .lt('created_at', `${today}T23:59:59`)
+        .eq('status', 'completed');
+
+      if (error) throw error;
+
+      const totalSales = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+      const ordersCount = orders?.length || 0;
+      const avgOrderValue = ordersCount > 0 ? totalSales / ordersCount : 0;
+
+      setDailyStats({
+        totalSales,
+        ordersCount,
+        avgOrderValue
+      });
+    } catch (error) {
+      console.error('Error fetching today stats:', error);
+    }
+  };
+
+  // Set up real-time updates for vendor orders
+  useVendorRealtime({
+    vendorId,
+    onOrderUpdate: fetchTodayStats,
+    onOrderCompleted: (order) => {
+      toast({
+        title: "Order Completed",
+        description: `Order #${order.bill_number || order.id.slice(0, 8)} has been paid!`,
+      });
+    }
+  });
 
   const handleAddToCart = (newItem: CartItem) => {
     setCartItems(prev => {
@@ -132,7 +194,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
         // Continue anyway since main order was created
       }
 
-      // Update daily stats
+      // Update daily stats immediately
       setDailyStats(prev => ({
         totalSales: prev.totalSales + total,
         ordersCount: prev.ordersCount + 1,

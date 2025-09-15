@@ -8125,11 +8125,13 @@ export type Database = {
           name: string
           operating_hours: Json | null
           pan_number: string | null
+          payment_gateway_config: Json | null
           rejection_reason: string | null
           stall_location: string | null
           store_config: Json | null
           total_orders: number | null
           updated_at: string
+          upi_id: string | null
         }
         Insert: {
           approval_status?: string | null
@@ -8152,11 +8154,13 @@ export type Database = {
           name: string
           operating_hours?: Json | null
           pan_number?: string | null
+          payment_gateway_config?: Json | null
           rejection_reason?: string | null
           stall_location?: string | null
           store_config?: Json | null
           total_orders?: number | null
           updated_at?: string
+          upi_id?: string | null
         }
         Update: {
           approval_status?: string | null
@@ -8179,11 +8183,13 @@ export type Database = {
           name?: string
           operating_hours?: Json | null
           pan_number?: string | null
+          payment_gateway_config?: Json | null
           rejection_reason?: string | null
           stall_location?: string | null
           store_config?: Json | null
           total_orders?: number | null
           updated_at?: string
+          upi_id?: string | null
         }
         Relationships: [
           {

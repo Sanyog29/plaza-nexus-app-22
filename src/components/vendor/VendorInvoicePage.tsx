@@ -180,7 +180,7 @@ export default function VendorInvoicePage() {
 
       // Auto-redirect to POS after 2 seconds
       setTimeout(() => {
-        navigate('/vendor-portal?tab=pos');
+        navigate('/vendor-portal?tab=pos&clearCart=true');
       }, 2000);
 
     } catch (error) {
@@ -196,7 +196,7 @@ export default function VendorInvoicePage() {
   };
 
   const handleHomeClick = () => {
-    navigate('/vendor-portal?tab=pos');
+    navigate('/vendor-portal?tab=pos&clearCart=true');
   };
 
   if (loading) {
@@ -330,7 +330,7 @@ export default function VendorInvoicePage() {
             <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 px-6 py-3 rounded-full mb-6">
               ✓ Payment Completed Successfully
             </div>
-            <Button onClick={handleHomeClick} size="lg">
+          <Button onClick={handleHomeClick} size="lg">
               <Home className="h-5 w-5 mr-2" />
               Return to POS
             </Button>
