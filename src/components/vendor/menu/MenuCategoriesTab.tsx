@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, TrendingUp, Eye, EyeOff } from 'lucide-react';
+import { Package, TrendingUp, Eye, EyeOff, Plus, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MenuCategoriesTabProps {
@@ -27,6 +33,15 @@ interface CategoryStats {
 const MenuCategoriesTab: React.FC<MenuCategoriesTabProps> = ({ vendorId, refreshTrigger }) => {
   const [categories, setCategories] = useState<CategoryStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryStats | null>(null);
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    description: '',
+    is_featured: false,
+    display_order: 0
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchCategoryStats = async () => {
     try {
@@ -92,6 +107,91 @@ const MenuCategoriesTab: React.FC<MenuCategoriesTabProps> = ({ vendorId, refresh
     }
   };
 
+  const handleAddCategory = () => {
+    setCategoryForm({
+      name: '',
+      description: '',
+      is_featured: false,
+      display_order: categories.length
+    });
+    setEditingCategory(null);
+    setShowAddDialog(true);
+  };
+
+  const handleEditCategory = (category: CategoryStats) => {
+    setCategoryForm({
+      name: category.name,
+      description: category.description || '',
+      is_featured: category.is_featured,
+      display_order: category.display_order
+    });
+    setEditingCategory(category);
+    setShowAddDialog(true);
+  };
+
+  const handleSubmitCategory = async () => {
+    if (!categoryForm.name.trim()) {
+      toast.error('Category name is required');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const categoryData = {
+        vendor_id: vendorId,
+        name: categoryForm.name.trim(),
+        description: categoryForm.description.trim() || null,
+        is_featured: categoryForm.is_featured,
+        display_order: categoryForm.display_order
+      };
+
+      if (editingCategory) {
+        const { error } = await supabase
+          .from('cafeteria_menu_categories')
+          .update(categoryData)
+          .eq('id', editingCategory.id);
+        
+        if (error) throw error;
+        toast.success('Category updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('cafeteria_menu_categories')
+          .insert([categoryData]);
+        
+        if (error) throw error;
+        toast.success('Category created successfully');
+      }
+
+      setShowAddDialog(false);
+      fetchCategoryStats();
+    } catch (error: any) {
+      console.error('Error saving category:', error);
+      toast.error('Failed to save category');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    if (!confirm(`Are you sure you want to delete "${categoryName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('cafeteria_menu_categories')
+        .delete()
+        .eq('id', categoryId);
+      
+      if (error) throw error;
+      toast.success('Category deleted successfully');
+      fetchCategoryStats();
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
+    }
+  };
+
   useEffect(() => {
     if (vendorId) {
       fetchCategoryStats();
@@ -139,10 +239,16 @@ const MenuCategoriesTab: React.FC<MenuCategoriesTabProps> = ({ vendorId, refresh
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Category Overview</h3>
-        <div className="text-sm text-muted-foreground">
-          {categories.length} {categories.length === 1 ? 'category' : 'categories'}
+        <div>
+          <h3 className="text-lg font-semibold">Category Management</h3>
+          <p className="text-sm text-muted-foreground">
+            {categories.length} {categories.length === 1 ? 'category' : 'categories'}
+          </p>
         </div>
+        <Button onClick={handleAddCategory}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Category
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -165,13 +271,24 @@ const MenuCategoriesTab: React.FC<MenuCategoriesTabProps> = ({ vendorId, refresh
                     </p>
                   )}
                 </div>
-                {category.image_url && (
-                  <img
-                    src={category.image_url}
-                    alt={category.name}
-                    className="w-12 h-12 rounded-lg object-cover ml-3"
-                  />
-                )}
+                <div className="flex items-center gap-2 ml-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditCategory(category)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteCategory(category.id, category.name)}
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -244,6 +361,76 @@ const MenuCategoriesTab: React.FC<MenuCategoriesTabProps> = ({ vendorId, refresh
           </Card>
         ))}
       </div>
+
+      {/* Add/Edit Category Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={(open) => {
+        if (!open) {
+          setShowAddDialog(false);
+          setEditingCategory(null);
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingCategory ? 'Edit Category' : 'Add New Category'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="category-name">Category Name *</Label>
+              <Input
+                id="category-name"
+                value={categoryForm.name}
+                onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Main Course, Beverages, Desserts"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="category-description">Description</Label>
+              <Textarea
+                id="category-description"
+                value={categoryForm.description}
+                onChange={(e) => setCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of this category"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="category-featured">Featured Category</Label>
+              <Switch
+                id="category-featured"
+                checked={categoryForm.is_featured}
+                onCheckedChange={(checked) => setCategoryForm(prev => ({ ...prev, is_featured: checked }))}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="display-order">Display Order</Label>
+              <Input
+                id="display-order"
+                type="number"
+                value={categoryForm.display_order}
+                onChange={(e) => setCategoryForm(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowAddDialog(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitCategory} disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

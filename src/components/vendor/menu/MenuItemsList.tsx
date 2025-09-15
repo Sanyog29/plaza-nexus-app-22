@@ -32,14 +32,32 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
   refreshTrigger
 }) => {
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAvailable, setFilterAvailable] = useState<string>('all');
   const [filterFeatured, setFilterFeatured] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
 
   useEffect(() => {
     fetchMenuItems();
+    fetchCategories();
   }, [vendorId, refreshTrigger]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('cafeteria_menu_categories')
+        .select('id, name')
+        .eq('vendor_id', vendorId)
+        .order('display_order');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const fetchMenuItems = async () => {
     try {
@@ -115,8 +133,10 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
   };
 
   const filteredItems = menuItems.filter(item => {
+    const categoryName = item.category?.name || '';
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (item.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+                         (item.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         categoryName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesAvailable = filterAvailable === 'all' || 
                            (filterAvailable === 'available' && item.is_available) ||
@@ -126,7 +146,11 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
                           (filterFeatured === 'featured' && item.is_featured) ||
                           (filterFeatured === 'regular' && !item.is_featured);
 
-    return matchesSearch && matchesAvailable && matchesFeatured;
+    const matchesCategory = filterCategory === 'all' ||
+                          (filterCategory === 'uncategorized' && !item.category_id) ||
+                          (item.category_id === filterCategory);
+
+    return matchesSearch && matchesAvailable && matchesFeatured && matchesCategory;
   });
 
   // Group items by category
@@ -174,12 +198,12 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search menu items..."
+                  placeholder="Search menu items and categories..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -187,27 +211,44 @@ const MenuItemsList: React.FC<MenuItemsListProps> = ({
               </div>
             </div>
             
-            <Select value={filterAvailable} onValueChange={setFilterAvailable}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Availability" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Items</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="unavailable">Unavailable</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={filterFeatured} onValueChange={setFilterFeatured}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Featured" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Items</SelectItem>
-                <SelectItem value="featured">Featured Only</SelectItem>
-                <SelectItem value="regular">Regular Only</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={filterAvailable} onValueChange={setFilterAvailable}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Availability" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Items</SelectItem>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="unavailable">Unavailable</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterFeatured} onValueChange={setFilterFeatured}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Featured" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Items</SelectItem>
+                  <SelectItem value="featured">Featured Only</SelectItem>
+                  <SelectItem value="regular">Regular Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -41,6 +42,11 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
   const [categories, setCategories] = useState<any[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
+  const [newCategoryForm, setNewCategoryForm] = useState({
+    name: '',
+    description: ''
+  });
 
   // Fetch categories on mount
   useEffect(() => {
@@ -61,6 +67,49 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
     
     fetchCategories();
   }, [vendorId]);
+
+  const handleAddNewCategory = async () => {
+    if (!newCategoryForm.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Category name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('cafeteria_menu_categories')
+        .insert([{
+          vendor_id: vendorId,
+          name: newCategoryForm.name.trim(),
+          description: newCategoryForm.description.trim() || null,
+          display_order: categories.length
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCategories(prev => [...prev, data]);
+      setFormData(prev => ({ ...prev, category_id: data.id }));
+      setShowAddCategoryDialog(false);
+      setNewCategoryForm({ name: '', description: '' });
+      
+      toast({
+        title: "Success",
+        description: "Category created successfully"
+      });
+    } catch (error: any) {
+      console.error('Error creating category:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create category",
+        variant: "destructive"
+      });
+    }
+  };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -285,24 +334,35 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="category">Menu Category *</Label>
-              <Select
-                value={formData.category_id}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border z-50">
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id} className="hover:bg-muted">
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select
+                  value={formData.category_id}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border z-50">
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id} className="hover:bg-muted">
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddCategoryDialog(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add New
+                </Button>
+              </div>
               {categories.length === 0 && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  No categories found. Please create categories first.
+                  No categories found. Create your first category using the "Add New" button.
                 </p>
               )}
             </div>
@@ -318,6 +378,52 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
           {isSubmitting ? 'Saving...' : initialData ? 'Update Item' : 'Create Item'}
         </Button>
       </div>
+
+      {/* Add New Category Dialog */}
+      <Dialog open={showAddCategoryDialog} onOpenChange={setShowAddCategoryDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-category-name">Category Name *</Label>
+              <Input
+                id="new-category-name"
+                value={newCategoryForm.name}
+                onChange={(e) => setNewCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Main Course, Beverages, Desserts"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="new-category-description">Description</Label>
+              <Textarea
+                id="new-category-description"
+                value={newCategoryForm.description}
+                onChange={(e) => setNewCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of this category"
+                rows={2}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddCategoryDialog(false);
+                setNewCategoryForm({ name: '', description: '' });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddNewCategory}>
+              Create Category
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
