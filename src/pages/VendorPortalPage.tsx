@@ -23,6 +23,7 @@ import VendorHeader from '@/components/vendor/VendorHeader';
 import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 import VendorPOS from '@/components/vendor/VendorPOS';
+import VendorQRUpload from '@/components/vendor/VendorQRUpload';
 
 const VendorPortalPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -251,7 +252,17 @@ const VendorPortalPage = () => {
           </TabsContent>
 
           <TabsContent value="store">
-            <VendorStoreSetup vendorId={vendor.id} />
+            <div className="space-y-6">
+              <VendorStoreSetup vendorId={vendor.id} />
+              <VendorQRUpload 
+                vendorId={vendor.id}
+                currentQRUrl={(vendor.store_config as any)?.custom_qr_url}
+                onUploadSuccess={() => {
+                  // Refresh vendor data to get updated QR URL
+                  window.location.reload();
+                }}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="sales">

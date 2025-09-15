@@ -63,7 +63,7 @@ import DeliveryPage from "./pages/DeliveryPage";
 import POSPage from "./pages/POSPage";
 import AccessDeniedPage from "./components/auth/AccessDeniedPage";
 import { POSLayout } from "./components/pos";
-import VendorInvoicePage from "./components/vendor/VendorInvoicePage";
+import VendorInvoicePageNew from "./components/vendor/VendorInvoicePageNew";
 
 // New simplified pages
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
@@ -130,7 +130,7 @@ const App = () => (
               <Route path="/vendor-portal" element={<VendorPortalPage />} />
               <Route path="/vendor-portal/invoice/:orderId" element={
                 <ProtectedRoute>
-                  <VendorInvoicePage />
+                  <VendorInvoicePageNew />
                 </ProtectedRoute>
               } />
               
