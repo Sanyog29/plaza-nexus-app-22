@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface CartItem {
   id: string;
@@ -43,6 +44,7 @@ export const VendorOrderSummary: React.FC<VendorOrderSummaryProps> = ({
   const [customerPhone, setCustomerPhone] = useState('');
   const [lastOrder, setLastOrder] = useState<any>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const taxes = subtotal * taxRate;
@@ -73,6 +75,9 @@ export const VendorOrderSummary: React.FC<VendorOrderSummaryProps> = ({
           items: [...cartItems],
           paymentData
         });
+
+        // Redirect to invoice page
+        navigate(`/vendor-portal/invoice/${order.id}`);
       }
     } catch (error) {
       console.error('Payment confirmation failed:', error);

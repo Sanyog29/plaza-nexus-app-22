@@ -86,9 +86,13 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const taxes = subtotal * (paymentData.taxRate || 0.1);
       const discount = paymentData.discount || 0;
-      const total = subtotal + taxes - discount;
+      const serviceCharge = paymentData.serviceCharge || 0;
+      const total = subtotal + taxes + serviceCharge - discount;
 
-      // Create order in database
+      // Generate bill number
+      const billNumber = `INV${Date.now().toString().slice(-8)}`;
+
+      // Create order in database with pending payment status
       const { data: order, error: orderError } = await supabase
         .from('cafeteria_orders')
         .insert({
@@ -96,11 +100,13 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
           vendor_id: vendorId,
           total_amount: total,
           discount_applied: discount,
-          status: 'confirmed',
-          payment_status: 'completed',
+          status: 'pending',
+          payment_status: 'pending',
           service_type: paymentData.orderType || 'dine-in',
           order_type: 'instant',
           table_number: paymentData.tableNumber,
+          customer_instructions: paymentData.customerName !== 'Walk-in Customer' ? `Customer: ${paymentData.customerName}${paymentData.customerPhone ? `, Phone: ${paymentData.customerPhone}` : ''}` : null,
+          bill_number: billNumber,
           pickup_time: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         })
         .select()
@@ -111,10 +117,10 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
       // Add order items
       const orderItems = cartItems.map(item => ({
         order_id: order.id,
-        item_id: item.id,
+        item_id: item.name, // Using name as item_id since we don't have a proper item catalog
         quantity: item.quantity,
         unit_price: item.price,
-        total_price: item.price * item.quantity,
+        notes: item.notes || null,
       }));
 
       const { error: itemsError } = await supabase
@@ -133,20 +139,17 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
         avgOrderValue: (prev.totalSales + total) / (prev.ordersCount + 1)
       }));
 
-      // Clear cart
-      setCartItems([]);
-
       toast({
-        title: "Payment Confirmed",
-        description: `Order #${order.id.slice(0, 8)} has been processed successfully`,
+        title: "Order Created",
+        description: `Order #${billNumber} created successfully. Redirecting to payment...`,
       });
 
       return order;
     } catch (error) {
       console.error('Error processing payment:', error);
       toast({
-        title: "Payment Failed",
-        description: "There was an error processing your payment. Please try again.",
+        title: "Order Creation Failed",
+        description: "There was an error creating your order. Please try again.",
         variant: "destructive",
       });
     }
