@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MenuItemForm from './menu/MenuItemForm';
 import MenuItemsList from './menu/MenuItemsList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import MenuCategoriesTab from './menu/MenuCategoriesTab';
 
 interface VendorMenuManagementProps {
   vendorId: string;
@@ -72,14 +73,10 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
         </TabsContent>
 
         <TabsContent value="categories">
-          <Card>
-            <CardHeader>
-              <CardTitle>Menu Categories</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Category management coming soon...</p>
-            </CardContent>
-          </Card>
+          <MenuCategoriesTab
+            vendorId={vendorId}
+            refreshTrigger={refreshTrigger}
+          />
         </TabsContent>
 
         <TabsContent value="analytics">
