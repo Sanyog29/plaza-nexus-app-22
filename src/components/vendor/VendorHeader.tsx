@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface VendorHeaderProps {
   vendor: any;
@@ -92,6 +93,14 @@ const VendorHeader: React.FC<VendorHeaderProps> = ({ vendor, pendingOrdersCount 
 
           {/* Right: Actions & Profile */}
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
+            {/* Standalone Logout */}
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+            
             {/* Notifications */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
