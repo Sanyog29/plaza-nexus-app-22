@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, NavLink, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +14,29 @@ import {
   TrendingUp,
   Users,
   Bell,
-  Settings
+  Settings,
+  LayoutDashboard,
+  ShoppingCart,
+  BarChart3,
+  CreditCard,
+  Table2,
+  ChefHat,
+  LogOut
 } from 'lucide-react';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from '@/components/ui/sidebar';
 import VendorOrderQueue from '@/components/vendor/VendorOrderQueue';
 import VendorMenuManagement from '@/components/vendor/VendorMenuManagement';
 import VendorAnalytics from '@/components/vendor/VendorAnalytics';
@@ -24,6 +45,53 @@ import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 import VendorPOS from '@/components/vendor/VendorPOS';
 import VendorQRUpload from '@/components/vendor/VendorQRUpload';
+
+const navigation = [
+  { name: 'Dashboard', value: 'dashboard', icon: LayoutDashboard },
+  { name: 'POS', value: 'pos', icon: ShoppingCart },
+  { name: 'Orders', value: 'orders', icon: ShoppingBag },
+  { name: 'Menu', value: 'menu', icon: ChefHat },
+  { name: 'Store Setup', value: 'store', icon: Settings },
+  { name: 'Sales', value: 'sales', icon: TrendingUp },
+  { name: 'Analytics', value: 'analytics', icon: BarChart3 },
+];
+
+function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
+  const { state } = useSidebar();
+  const collapsed = state === 'collapsed';
+
+  return (
+    <Sidebar className={`${collapsed ? 'w-16' : 'w-64'} border-r bg-background`} collapsible="icon">
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel className="px-4 py-2 text-lg font-semibold">
+            {!collapsed && 'Vendor Portal'}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navigation.map((item) => (
+                <SidebarMenuItem key={item.name}>
+                  <SidebarMenuButton 
+                    asChild 
+                    className={activeTab === item.value ? 'bg-accent text-accent-foreground' : ''}
+                  >
+                    <button 
+                      onClick={() => onTabChange(item.value)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-left"
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      {!collapsed && <span className="text-sm font-medium">{item.name}</span>}
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
 
 const VendorPortalPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -142,25 +210,31 @@ const VendorPortalPage = () => {
   const vendor = vendorInfo.vendor;
 
   return (
-    <div className="min-h-screen bg-background">
-      <VendorHeader 
-        vendor={vendor} 
-        pendingOrdersCount={todayMetrics?.pendingOrders || 0} 
-      />
+    <SidebarProvider>
+      <div className="h-screen flex w-full bg-background">
+        <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        
+        <div className="flex-1 flex flex-col">
+          <header className="h-16 border-b bg-background flex items-center justify-between px-6">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-lg font-semibold">{vendor.name}</h1>
+              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                Active
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {todayMetrics?.pendingOrders || 0} pending orders
+              </Badge>
+            </div>
+          </header>
+          
+          <main className="flex-1 overflow-hidden">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
+              <div className="h-full">{/* Remove TabsList since navigation is in sidebar */}
 
-      <div className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="pos">POS</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="menu">Menu</TabsTrigger>
-            <TabsTrigger value="store">Store Setup</TabsTrigger>
-            <TabsTrigger value="sales">Sales</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dashboard" className="space-y-6">
+          <TabsContent value="dashboard" className="p-6 space-y-6 h-full overflow-auto">
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
@@ -239,19 +313,19 @@ const VendorPortalPage = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="pos">
+          <TabsContent value="pos" className="h-full p-0">
             <VendorPOS vendorId={vendor.id} />
           </TabsContent>
 
-          <TabsContent value="orders">
+          <TabsContent value="orders" className="p-6 h-full overflow-auto">
             <VendorOrderQueue vendorId={vendor.id} />
           </TabsContent>
 
-          <TabsContent value="menu">
+          <TabsContent value="menu" className="p-6 h-full overflow-auto">
             <VendorMenuManagement vendorId={vendor.id} />
           </TabsContent>
 
-          <TabsContent value="store">
+          <TabsContent value="store" className="p-6 h-full overflow-auto">
             <div className="space-y-6">
               <VendorStoreSetup vendorId={vendor.id} />
               <VendorQRUpload 
@@ -265,16 +339,19 @@ const VendorPortalPage = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="sales">
+          <TabsContent value="sales" className="p-6 h-full overflow-auto">
             <VendorSalesTracker vendorId={vendor.id} />
           </TabsContent>
 
-          <TabsContent value="analytics">
+          <TabsContent value="analytics" className="p-6 h-full overflow-auto">
             <VendorAnalytics vendorId={vendor.id} />
           </TabsContent>
-        </Tabs>
+              </div>
+            </Tabs>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

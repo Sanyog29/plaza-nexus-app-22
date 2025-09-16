@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { MenuGrid } from '@/components/pos/MenuGrid';
 import { EnhancedOrderSummary } from '@/components/pos/EnhancedOrderSummary';
 import { CategoryTabs } from '@/components/pos/CategoryTabs';
-import { UnifiedPOSLayout } from '@/components/pos/UnifiedPOSLayout';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -217,29 +216,27 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   };
 
   return (
-    <UnifiedPOSLayout>
-      <div className="flex h-full">
-        {/* Menu Grid - Takes up most of the space */}
-        <div className="flex-1 border-r">
-          <MenuGrid 
-            onAddToCart={handleAddToCart}
-            onUpdateQuantity={handleUpdateQuantity}
-            cartItems={cartItems}
-            vendorId={vendorId}
-          />
-        </div>
-        
-        {/* Order Summary - Fixed width on the right */}
-        <div className="w-80 lg:w-96 flex-shrink-0">
-          <EnhancedOrderSummary
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemoveItem={handleRemoveItem}
-            onConfirmPayment={handleConfirmPayment}
-          />
-        </div>
+    <div className="flex h-full">
+      {/* Menu Grid - Takes up most of the space */}
+      <div className="flex-1 border-r">
+        <MenuGrid 
+          onAddToCart={handleAddToCart}
+          onUpdateQuantity={handleUpdateQuantity}
+          cartItems={cartItems}
+          vendorId={vendorId}
+        />
       </div>
-    </UnifiedPOSLayout>
+      
+      {/* Order Summary - Fixed width on the right */}
+      <div className="w-80 lg:w-96 flex-shrink-0">
+        <EnhancedOrderSummary
+          cartItems={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onConfirmPayment={handleConfirmPayment}
+        />
+      </div>
+    </div>
   );
 };
 
