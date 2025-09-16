@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Download, Upload, BarChart3, Package } from 'lucide-react';
+import { Plus, Download, Upload, BarChart3, Package, FileSpreadsheet } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MenuItemForm from './menu/MenuItemForm';
 import MenuItemsList from './menu/MenuItemsList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import MenuCategoriesTab from './menu/MenuCategoriesTab';
+import MenuExcelImport from './menu/MenuExcelImport';
 
 interface VendorMenuManagementProps {
   vendorId: string;
@@ -16,11 +17,17 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeTab, setActiveTab] = useState('items');
 
   const handleSuccess = () => {
     setShowAddForm(false);
     setEditingItem(null);
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleImportComplete = () => {
+    setRefreshTrigger(prev => prev + 1);
+    setActiveTab('items'); // Switch back to items tab after successful import
   };
 
   const handleEditItem = (item: any) => {
@@ -37,7 +44,7 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setActiveTab('import')}>
             <Upload className="h-4 w-4 mr-2" />
             Import
           </Button>
@@ -48,8 +55,8 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
         </div>
       </div>
 
-      <Tabs defaultValue="items" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="items" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Menu Items
@@ -57,6 +64,10 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
           <TabsTrigger value="categories" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Categories
+          </TabsTrigger>
+          <TabsTrigger value="import" className="flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            Import Menu
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -76,6 +87,13 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
           <MenuCategoriesTab
             vendorId={vendorId}
             refreshTrigger={refreshTrigger}
+          />
+        </TabsContent>
+
+        <TabsContent value="import">
+          <MenuExcelImport 
+            vendorId={vendorId}
+            onImportComplete={handleImportComplete}
           />
         </TabsContent>
 

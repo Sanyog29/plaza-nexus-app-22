@@ -2343,6 +2343,51 @@ export type Database = {
         }
         Relationships: []
       }
+      import_batches: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          error_summary: Json | null
+          failed_items: number
+          filename: string
+          id: string
+          status: string
+          success_summary: Json | null
+          successful_items: number
+          total_items: number
+          vendor_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_summary?: Json | null
+          failed_items?: number
+          filename: string
+          id?: string
+          status?: string
+          success_summary?: Json | null
+          successful_items?: number
+          total_items?: number
+          vendor_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_summary?: Json | null
+          failed_items?: number
+          filename?: string
+          id?: string
+          status?: string
+          success_summary?: Json | null
+          successful_items?: number
+          total_items?: number
+          vendor_id?: string
+        }
+        Relationships: []
+      }
       info_categories: {
         Row: {
           created_at: string
@@ -7745,6 +7790,7 @@ export type Database = {
           dietary_tags: string[] | null
           id: string
           image_url: string | null
+          import_batch_id: string | null
           ingredients: Json | null
           is_available: boolean | null
           is_featured: boolean | null
@@ -7771,6 +7817,7 @@ export type Database = {
           dietary_tags?: string[] | null
           id?: string
           image_url?: string | null
+          import_batch_id?: string | null
           ingredients?: Json | null
           is_available?: boolean | null
           is_featured?: boolean | null
@@ -7797,6 +7844,7 @@ export type Database = {
           dietary_tags?: string[] | null
           id?: string
           image_url?: string | null
+          import_batch_id?: string | null
           ingredients?: Json | null
           is_available?: boolean | null
           is_featured?: boolean | null
@@ -7825,6 +7873,56 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_menu_schedules: {
+        Row: {
+          availability_date: string
+          created_at: string
+          day_of_week: number | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          menu_item_id: string
+          schedule_type: string
+          start_date: string | null
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          availability_date: string
+          created_at?: string
+          day_of_week?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          menu_item_id: string
+          schedule_type?: string
+          start_date?: string | null
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          availability_date?: string
+          created_at?: string
+          day_of_week?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          menu_item_id?: string
+          schedule_type?: string
+          start_date?: string | null
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_menu_schedules_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_menu_items"
             referencedColumns: ["id"]
           },
         ]
