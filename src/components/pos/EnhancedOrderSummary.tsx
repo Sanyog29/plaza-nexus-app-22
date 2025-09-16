@@ -65,70 +65,70 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
   };
 
   return (
-    <Card className="h-full flex flex-col m-2 md:m-3">
-      <CardHeader className="border-b border-border pb-4">
+    <Card className="h-full flex flex-col m-lg bg-card">
+      <CardHeader className="border-b border-border p-xl">
         <CardTitle className="flex items-center justify-between">
-          <span>Order Summary</span>
-          <Badge variant="outline" className="text-xs">{orderNumber}</Badge>
+          <span className="text-2xl">Order Summary</span>
+          <Badge variant="outline" className="text-sm">{orderNumber}</Badge>
         </CardTitle>
       </CardHeader>
 
       <CardContent className="flex-1 p-0 flex flex-col">
         {/* Cart Items */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-3 py-4">
+        <ScrollArea className="flex-1 p-lg">
+          <div className="spacing-md">
             {cartItems.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No items in cart</p>
-                <p className="text-sm">Add items from the menu</p>
+              <div className="text-center p-2xl text-muted-foreground">
+                <p className="text-xl">No items in cart</p>
+                <p className="text-base">Add items from the menu</p>
               </div>
             ) : (
               cartItems.map((item) => (
-                <div key={item.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                <div key={item.id} className="flex items-start gap-3 p-lg bg-muted/30 rounded-lg">
                   <img
                     src={item.image_url || "/placeholder.svg"}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/placeholder.svg"; }}
                     alt={`${item.name} photo`}
-                    className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+                    className="w-16 h-16 rounded-md object-cover flex-shrink-0"
                   />
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm leading-tight">{item.name}</h4>
-                        <p className="text-sm text-muted-foreground">₹{item.price}</p>
+                        <h4 className="font-medium text-base leading-tight">{item.name}</h4>
+                        <p className="text-base text-muted-foreground">₹{item.price}</p>
                       </div>
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => onRemoveItem(item.id)}
-                        className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                     
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleQuantityChange(item.id, -1)}
-                          className="h-6 w-6 p-0"
+                          className="h-8 w-8 p-0"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-4 h-4" />
                         </Button>
-                        <span className="text-sm font-medium w-8 text-center">{item.quantity}</span>
+                        <span className="text-base font-medium w-10 text-center">{item.quantity}</span>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleQuantityChange(item.id, 1)}
-                          className="h-6 w-6 p-0"
+                          className="h-8 w-8 p-0"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-4 h-4" />
                         </Button>
                       </div>
-                      <span className="font-semibold text-sm">₹{(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-semibold text-base">₹{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -140,14 +140,14 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
         <Separator />
 
         {/* Order Totals */}
-        <div className="px-4 py-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+        <div className="p-lg">
+          <div className="spacing-sm">
+            <div className="flex justify-between text-base">
               <span>Subtotal</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
             <Separator />
-            <div className="flex justify-between font-semibold">
+            <div className="flex justify-between font-semibold text-lg">
               <span>Total Payment</span>
               <span>₹{total.toFixed(2)}</span>
             </div>
@@ -157,12 +157,12 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
         <Separator />
 
         {/* Order Controls */}
-        <div className="px-4 py-4 space-y-4">
+        <div className="p-lg spacing-lg">
           {/* Order Type */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Order Type</Label>
+          <div className="spacing-sm">
+            <Label className="text-base font-medium">Order Type</Label>
             <Select value={orderType} onValueChange={setOrderType}>
-              <SelectTrigger className="h-9">
+              <SelectTrigger className="h-12">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -174,10 +174,10 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
 
           {/* Table Selection */}
           {orderType === 'dine-in' && (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Select Table</Label>
+            <div className="spacing-sm">
+              <Label className="text-base font-medium">Select Table</Label>
               <Select value={selectedTable} onValueChange={setSelectedTable}>
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-12">
                   <SelectValue placeholder="Choose table" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,19 +192,19 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
           )}
 
           {/* Customer Name */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Customer Name</Label>
+          <div className="spacing-sm">
+            <Label className="text-base font-medium">Customer Name</Label>
             <Input
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Enter customer name"
-              className="h-9"
+              className="h-12 text-base"
             />
           </div>
 
           {/* Confirm Payment Button */}
           <Button 
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+            className="w-full h-16 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-lg"
             onClick={handleConfirmPayment}
             disabled={cartItems.length === 0 || (orderType === 'dine-in' && !selectedTable)}
           >

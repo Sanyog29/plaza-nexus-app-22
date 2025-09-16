@@ -99,7 +99,7 @@ const AppLayout: React.FC = () => {
   // Food vendor layout - MINIMAL interface
   if (isFoodVendor) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen w-full bg-background">
         <ErrorBoundary>
           <Outlet />
           <HelpSystem />
@@ -112,9 +112,9 @@ const AppLayout: React.FC = () => {
   if (userRole === 'vendor') {
     return (
       <ErrorBoundary>
-        <div className="min-h-screen bg-background pb-16">
+        <div className="min-h-screen w-full bg-background mobile-safe">
           <MobileHeader />
-          <main className="pt-4">
+          <main className="flex-1 p-lg">
             <Outlet />
           </main>
           <MobileBottomNav />
@@ -138,10 +138,10 @@ const AppLayout: React.FC = () => {
   if (isMobile) {
     return (
       <ErrorBoundary>
-        <div className="min-h-screen bg-background pb-16">
+        <div className="min-h-screen w-full bg-background mobile-safe">
           <MobileHeader />
           <MobileSystemStatus />
-          <main className="pt-4">
+          <main className="flex-1 p-lg">
             <Outlet />
           </main>
           <MobileBottomNav />
@@ -154,9 +154,9 @@ const AppLayout: React.FC = () => {
   // Default layout for tenant users
   return (
     <ErrorBoundary>
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col min-h-screen w-full bg-background">
         <Header />
-        <main className="flex-1 pb-16">
+        <main className="flex-1 p-0 mobile-safe">
           <Outlet />
         </main>
         <BottomNavigation />

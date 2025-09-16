@@ -57,14 +57,14 @@ const navigation = [
 
 function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
   return (
-    <Sidebar className="w-64 h-full border-r bg-background" collapsible="none">
-      <SidebarContent>
+    <Sidebar className="w-80 min-w-[20rem] h-full border-r bg-background" collapsible="none">
+      <SidebarContent className="p-lg">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 py-2 text-lg font-semibold">
+          <SidebarGroupLabel className="p-md text-xl font-semibold">
             Vendor Portal
           </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
+          <SidebarGroupContent className="mt-lg">
+            <SidebarMenu className="spacing-sm">
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton 
@@ -73,10 +73,10 @@ function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabCha
                   >
                     <button 
                       onClick={() => onTabChange(item.value)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-left"
+                      className="flex items-center gap-3 p-md rounded-md transition-colors w-full text-left hover:bg-accent/10"
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
-                      <span className="text-sm font-medium">{item.name}</span>
+                      <span className="text-base font-medium">{item.name}</span>
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -211,16 +211,16 @@ const VendorPortalPage = () => {
         <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
         
         <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b bg-background flex items-center justify-between px-6">
-            <div className="flex items-center gap-4">
-              <h1 className="text-lg font-semibold">{vendor.name}</h1>
+          <header className="h-20 min-h-[5rem] border-b bg-background flex items-center justify-between p-lg">
+            <div className="flex items-center spacing-md">
+              <h1 className="text-2xl font-semibold">{vendor.name}</h1>
               <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
                 Active
               </Badge>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center spacing-md">
               <ThemeToggle />
-              <Badge variant="outline">
+              <Badge variant="outline" className="text-sm">
                 {todayMetrics?.pendingOrders || 0} pending orders
               </Badge>
             </div>
@@ -228,49 +228,65 @@ const VendorPortalPage = () => {
             
             <main className="flex-1 overflow-hidden">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
-                <div className="h-full">{/* Remove TabsList since navigation is in sidebar */}
+                <div className="h-full flex flex-col">
 
-            <TabsContent value="dashboard" className="p-6 space-y-6 h-full overflow-auto">
-              {/* Sales Tracker */}
-              <VendorSalesTracker vendorId={vendor.id} />
+            <TabsContent value="dashboard" className="flex-1 p-xl spacing-lg overflow-auto">
+              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+                {/* Sales Tracker */}
+                <VendorSalesTracker vendorId={vendor.id} />
 
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                  <CardDescription>
-                    Manage your restaurant operations efficiently
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex gap-4">
-                  <Button onClick={() => handleTabChange('orders')}>
-                    <Clock className="h-4 w-4 mr-2" />
-                    View Orders ({todayMetrics?.pendingOrders || 0})
-                  </Button>
-                  <Button variant="outline" onClick={() => handleTabChange('menu')}>
-                    Update Menu
-                  </Button>
-                  <Button variant="outline">
-                    Create Offer
-                  </Button>
-                </CardContent>
-              </Card>
+                {/* Quick Actions */}
+                <Card className="mt-lg">
+                  <CardHeader className="p-xl">
+                    <CardTitle className="text-2xl">Quick Actions</CardTitle>
+                    <CardDescription className="text-base">
+                      Manage your restaurant operations efficiently
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-wrap gap-4 p-xl pt-0">
+                    <Button 
+                      onClick={() => handleTabChange('orders')}
+                      className="h-12 px-6 text-base"
+                    >
+                      <Clock className="h-5 w-5 mr-2" />
+                      View Orders ({todayMetrics?.pendingOrders || 0})
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleTabChange('menu')}
+                      className="h-12 px-6 text-base"
+                    >
+                      Update Menu
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="h-12 px-6 text-base"
+                    >
+                      Create Offer
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
-            <TabsContent value="pos" className="h-full p-0">
+            <TabsContent value="pos" className="flex-1 h-full p-0">
               <VendorPOS vendorId={vendor.id} />
             </TabsContent>
 
-            <TabsContent value="orders" className="p-6 h-full overflow-auto">
-              <VendorOrderQueue vendorId={vendor.id} />
+            <TabsContent value="orders" className="flex-1 p-xl overflow-auto">
+              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+                <VendorOrderQueue vendorId={vendor.id} />
+              </div>
             </TabsContent>
 
-            <TabsContent value="menu" className="p-6 h-full overflow-auto">
-              <VendorMenuManagement vendorId={vendor.id} />
+            <TabsContent value="menu" className="flex-1 p-xl overflow-auto">
+              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+                <VendorMenuManagement vendorId={vendor.id} />
+              </div>
             </TabsContent>
 
-            <TabsContent value="store" className="p-6 h-full overflow-auto">
-              <div className="space-y-6">
+            <TabsContent value="store" className="flex-1 p-xl overflow-auto">
+              <div className="container-flex flex-col h-full max-w-7xl mx-auto spacing-xl">
                 <VendorStoreSetup vendorId={vendor.id} />
                 <VendorQRUpload 
                   vendorId={vendor.id}
@@ -283,12 +299,16 @@ const VendorPortalPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="sales" className="p-6 h-full overflow-auto">
-              <VendorSalesTracker vendorId={vendor.id} />
+            <TabsContent value="sales" className="flex-1 p-xl overflow-auto">
+              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+                <VendorSalesTracker vendorId={vendor.id} />
+              </div>
             </TabsContent>
 
-            <TabsContent value="analytics" className="p-6 h-full overflow-auto">
-              <VendorAnalytics vendorId={vendor.id} />
+            <TabsContent value="analytics" className="flex-1 p-xl overflow-auto">
+              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+                <VendorAnalytics vendorId={vendor.id} />
+              </div>
             </TabsContent>
                 </div>
               </Tabs>
