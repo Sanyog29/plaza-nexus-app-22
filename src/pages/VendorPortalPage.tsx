@@ -32,10 +32,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarSeparator,
-  SidebarTrigger,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import VendorOrderQueue from '@/components/vendor/VendorOrderQueue';
 import VendorMenuManagement from '@/components/vendor/VendorMenuManagement';
@@ -57,15 +54,12 @@ const navigation = [
 ];
 
 function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
-  const { state } = useSidebar();
-  const collapsed = state === 'collapsed';
-
   return (
-    <Sidebar className={`${collapsed ? 'w-16' : 'w-64'} border-r bg-background`} collapsible="icon">
+    <Sidebar className="w-64 h-full border-r bg-background">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="px-4 py-2 text-lg font-semibold">
-            {!collapsed && 'Vendor Portal'}
+            Vendor Portal
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -80,7 +74,7 @@ function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabCha
                       className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-left"
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span className="text-sm font-medium">{item.name}</span>}
+                      <span className="text-sm font-medium">{item.name}</span>
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -210,25 +204,23 @@ const VendorPortalPage = () => {
   const vendor = vendorInfo.vendor;
 
   return (
-    <SidebarProvider>
-      <div className="h-screen flex w-full bg-background">
-        <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-        
-        <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b bg-background flex items-center justify-between px-6">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-              <h1 className="text-lg font-semibold">{vendor.name}</h1>
-              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {todayMetrics?.pendingOrders || 0} pending orders
-              </Badge>
-            </div>
-          </header>
+    <div className="h-screen w-screen flex bg-background">
+      <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+      
+      <div className="flex-1 flex flex-col">
+        <header className="h-16 border-b bg-background flex items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-semibold">{vendor.name}</h1>
+            <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+              Active
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {todayMetrics?.pendingOrders || 0} pending orders
+            </Badge>
+          </div>
+        </header>
           
           <main className="flex-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
@@ -351,8 +343,7 @@ const VendorPortalPage = () => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
-  );
-};
+    );
+  };
 
 export default VendorPortalPage;

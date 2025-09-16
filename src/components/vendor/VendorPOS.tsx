@@ -218,7 +218,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   return (
     <div className="flex h-full">
       {/* Menu Grid - Takes up most of the space */}
-      <div className="flex-1 border-r">
+      <div className="flex-1 border-r overflow-y-auto">
         <MenuGrid 
           onAddToCart={handleAddToCart}
           onUpdateQuantity={handleUpdateQuantity}
@@ -228,7 +228,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
       </div>
       
       {/* Order Summary - Fixed width on the right */}
-      <div className="w-80 lg:w-96 flex-shrink-0">
+      <div className="w-[400px] h-full border-l overflow-y-auto">
         <EnhancedOrderSummary
           cartItems={cartItems}
           onUpdateQuantity={handleUpdateQuantity}
