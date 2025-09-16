@@ -43,16 +43,16 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
       }
     ];
 
-    // Sample menu items data
+    // Sample menu items data with user-preferred column order
     const menuItemsData = [
       {
-        'Category Name': 'Breakfast',
-        'Item Name': 'Masala Dosa',
-        'Description': 'Crispy crepe with spiced potato filling',
-        'Full Plate Price': 80,
-        'Half Plate Price': 50,
-        'Availability': true,
         'Date': '2025-09-16',
+        'Meal Type': 'Breakfast',
+        'Category': 'Breakfast',
+        'Item Name': 'Masala Dosa',
+        'Price': 80,
+        'Half Plate Price': 50,
+        'Description': 'Crispy crepe with spiced potato filling',
         'Preparation Time (minutes)': 15,
         'Spice Level': 'Medium',
         'Dietary Tags': 'Vegetarian,Gluten-Free',
@@ -60,13 +60,13 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Image URL': 'https://example.com/masala-dosa.jpg'
       },
       {
-        'Category Name': 'Breakfast',
-        'Item Name': 'Idli Sambar',
-        'Description': 'Steamed rice cakes with lentil curry',
-        'Full Plate Price': 60,
-        'Half Plate Price': 40,
-        'Availability': true,
         'Date': '2025-09-16',
+        'Meal Type': 'Breakfast',
+        'Category': 'Breakfast',
+        'Item Name': 'Idli Sambar',
+        'Price': 60,
+        'Half Plate Price': 40,
+        'Description': 'Steamed rice cakes with lentil curry',
         'Preparation Time (minutes)': 10,
         'Spice Level': 'Mild',
         'Dietary Tags': 'Vegetarian,Vegan',
@@ -74,13 +74,13 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Image URL': 'https://example.com/idli-sambar.jpg'
       },
       {
-        'Category Name': 'Lunch',
-        'Item Name': 'Paneer Butter Masala',
-        'Description': 'Rich cottage cheese curry with butter naan',
-        'Full Plate Price': 180,
-        'Half Plate Price': 120,
-        'Availability': true,
         'Date': '2025-09-16',
+        'Meal Type': 'Lunch',
+        'Category': 'Main Course',
+        'Item Name': 'Paneer Butter Masala',
+        'Price': 180,
+        'Half Plate Price': 120,
+        'Description': 'Rich cottage cheese curry with butter naan',
         'Preparation Time (minutes)': 20,
         'Spice Level': 'Medium',
         'Dietary Tags': 'Vegetarian',
@@ -88,13 +88,13 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Image URL': 'https://example.com/paneer-butter-masala.jpg'
       },
       {
-        'Category Name': 'Lunch',
-        'Item Name': 'Chicken Biryani',
-        'Description': 'Aromatic basmati rice with tender chicken',
-        'Full Plate Price': 220,
-        'Half Plate Price': 150,
-        'Availability': true,
         'Date': '2025-09-17',
+        'Meal Type': 'Lunch',
+        'Category': 'Main Course',
+        'Item Name': 'Chicken Biryani',
+        'Price': 220,
+        'Half Plate Price': 150,
+        'Description': 'Aromatic basmati rice with tender chicken',
         'Preparation Time (minutes)': 25,
         'Spice Level': 'Hot',
         'Dietary Tags': 'Non-Vegetarian',
@@ -102,13 +102,13 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Image URL': 'https://example.com/chicken-biryani.jpg'
       },
       {
-        'Category Name': 'Beverages',
-        'Item Name': 'Masala Chai',
-        'Description': 'Traditional spiced tea',
-        'Full Plate Price': 25,
-        'Half Plate Price': '',
-        'Availability': true,
         'Date': 'Daily',
+        'Meal Type': 'Anytime',
+        'Category': 'Beverages',
+        'Item Name': 'Masala Chai',
+        'Price': 25,
+        'Half Plate Price': '',
+        'Description': 'Traditional spiced tea',
         'Preparation Time (minutes)': 5,
         'Spice Level': 'Mild',
         'Dietary Tags': 'Vegetarian',
@@ -116,13 +116,13 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Image URL': 'https://example.com/masala-chai.jpg'
       },
       {
-        'Category Name': 'Snacks',
-        'Item Name': 'Samosa',
-        'Description': 'Crispy triangular pastry with savory filling',
-        'Full Plate Price': 15,
-        'Half Plate Price': '',
-        'Availability': true,
         'Date': 'Weekly-Monday,Weekly-Wednesday,Weekly-Friday',
+        'Meal Type': 'Snacks',
+        'Category': 'Snacks',
+        'Item Name': 'Samosa',
+        'Price': 15,
+        'Half Plate Price': '',
+        'Description': 'Crispy triangular pastry with savory filling',
         'Preparation Time (minutes)': 8,
         'Spice Level': 'Medium',
         'Dietary Tags': 'Vegetarian',
@@ -131,14 +131,28 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
       }
     ];
 
-    // Instructions data
+    // Instructions data with supported column name variations
     const instructionsData = [
       {
-        'Field': 'Category Name',
+        'Field': 'Date',
+        'Required': 'No',
+        'Format': 'Various',
+        'Example': '2025-09-16, Daily, Weekly-Monday',
+        'Notes': 'Specific date (YYYY-MM-DD), Daily for all days, Weekly-[Day] for weekly recurring'
+      },
+      {
+        'Field': 'Meal Type',
+        'Required': 'No',
+        'Format': 'Text',
+        'Example': 'Breakfast, Lunch, Dinner, Snacks, Anytime',
+        'Notes': 'Type of meal - used for categorization (currently stored but not processed)'
+      },
+      {
+        'Field': 'Category',
         'Required': 'Yes',
         'Format': 'Text',
-        'Example': 'Breakfast, Lunch, Dinner',
-        'Notes': 'Categories will be auto-created if they don\'t exist'
+        'Example': 'Main Course, Beverages, Snacks',
+        'Notes': 'Also accepts "Category Name". Categories will be auto-created if they don\'t exist'
       },
       {
         'Field': 'Item Name',
@@ -148,11 +162,11 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Notes': 'Must be unique within the same category'
       },
       {
-        'Field': 'Full Plate Price',
+        'Field': 'Price',
         'Required': 'Yes',
         'Format': 'Number',
         'Example': '80, 150, 220',
-        'Notes': 'Price for full portion in rupees, must be greater than 0'
+        'Notes': 'Also accepts "Full Plate Price". Price for full portion in rupees, must be greater than 0'
       },
       {
         'Field': 'Half Plate Price',
@@ -162,18 +176,18 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Notes': 'Price for half portion in rupees (optional), should be less than full plate price'
       },
       {
-        'Field': 'Availability',
-        'Required': 'Yes',
-        'Format': 'Boolean',
-        'Example': 'true, false, TRUE, FALSE',
-        'Notes': 'Whether the item is currently available'
+        'Field': 'Description',
+        'Required': 'No',
+        'Format': 'Text',
+        'Example': 'Crispy crepe with spiced potato filling',
+        'Notes': 'Detailed description of the menu item'
       },
       {
-        'Field': 'Date',
+        'Field': 'Availability',
         'Required': 'No',
-        'Format': 'Various',
-        'Example': '2025-09-16, Daily, Weekly-Monday',
-        'Notes': 'Specific date (YYYY-MM-DD), Daily for all days, Weekly-[Day] for weekly recurring'
+        'Format': 'Boolean',
+        'Example': 'true, false, TRUE, FALSE',
+        'Notes': 'Whether the item is currently available. Defaults to true if not provided'
       },
       {
         'Field': 'Dietary Tags',

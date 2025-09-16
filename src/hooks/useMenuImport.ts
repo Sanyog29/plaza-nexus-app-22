@@ -25,6 +25,7 @@ interface MenuItemData {
   half_plate_price?: number;
   is_available: boolean;
   date?: string;
+  meal_type?: string;
   preparation_time_minutes?: number;
   spice_level?: string;
   dietary_tags?: string[];
@@ -153,6 +154,15 @@ export const useMenuImport = (vendorId: string) => {
     return errors;
   };
 
+  const normalizeColumnName = (row: any, possibleNames: string[]): any => {
+    for (const name of possibleNames) {
+      if (row[name] !== undefined) {
+        return row[name];
+      }
+    }
+    return undefined;
+  };
+
   const parseExcelFile = async (file: File): Promise<void> => {
     setIsProcessing(true);
     setValidationErrors([]);
@@ -165,20 +175,27 @@ export const useMenuImport = (vendorId: string) => {
       
       setUploadProgress(30);
 
-      // Parse Categories sheet
+      // Parse Categories sheet (if exists)
       let categories: CategoryData[] = [];
       if (workbook.SheetNames.includes('Categories')) {
         const categoriesSheet = workbook.Sheets['Categories'];
         const categoriesRaw = XLSX.utils.sheet_to_json(categoriesSheet);
         
         categories = categoriesRaw.map((row: any, index) => {
-          const errors = validateRequiredFields(row, ['Category Name'], index);
+          const categoryName = normalizeColumnName(row, ['Category Name', 'Category']);
+          const errors = categoryName ? [] : [{
+            row: index + 2,
+            field: 'Category Name',
+            message: 'Category Name or Category is required',
+            value: undefined
+          }];
+          
           if (errors.length > 0) {
             setValidationErrors(prev => [...prev, ...errors]);
           }
           
           return {
-            name: row['Category Name'],
+            name: categoryName || '',
             description: row['Description'] || '',
             display_order: row['Display Order'] ? Number(row['Display Order']) : index + 1,
             image_url: row['Image URL'] || null
@@ -188,24 +205,127 @@ export const useMenuImport = (vendorId: string) => {
 
       setUploadProgress(50);
 
-      // Parse Menu Items sheet
+      // Parse Menu Items sheet (try both 'Menu Items' and the main sheet)
       let menuItems: MenuItemData[] = [];
-      if (workbook.SheetNames.includes('Menu Items')) {
-        const menuItemsSheet = workbook.Sheets['Menu Items'];
+      let sheetName = 'Menu Items';
+      
+      // If Menu Items sheet doesn't exist, use the first sheet
+      if (!workbook.SheetNames.includes('Menu Items')) {
+        sheetName = workbook.SheetNames[0];
+      }
+      
+      if (workbook.SheetNames.includes(sheetName)) {
+        const menuItemsSheet = workbook.Sheets[sheetName];
         const menuItemsRaw = XLSX.utils.sheet_to_json(menuItemsSheet);
         
         const allErrors: ImportError[] = [];
         
         menuItems = menuItemsRaw.map((row: any, index) => {
-          // Validate required fields
-          const requiredErrors = validateRequiredFields(row, [
-            'Category Name', 'Item Name', 'Full Plate Price', 'Availability'
-          ], index);
-          allErrors.push(...requiredErrors);
+          // Normalize column names with aliases
+          const categoryName = normalizeColumnName(row, ['Category', 'Category Name']);
+          const itemName = normalizeColumnName(row, ['Item Name', 'Name']);
+          const price = normalizeColumnName(row, ['Price', 'Full Plate Price']);
+          const availability = normalizeColumnName(row, ['Availability', 'Available']);
+          const mealType = normalizeColumnName(row, ['Meal Type', 'Meal']);
           
-          // Validate formats
-          const formatErrors = validateDataFormats(row, index);
-          allErrors.push(...formatErrors);
+          // Validate required fields with flexible column names
+          if (!categoryName) {
+            allErrors.push({
+              row: index + 2,
+              field: 'Category',
+              message: 'Category or Category Name is required',
+              value: undefined
+            });
+          }
+          
+          if (!itemName) {
+            allErrors.push({
+              row: index + 2,
+              field: 'Item Name',
+              message: 'Item Name is required',
+              value: undefined
+            });
+          }
+          
+          if (!price || price === '') {
+            allErrors.push({
+              row: index + 2,
+              field: 'Price',
+              message: 'Price or Full Plate Price is required',
+              value: price
+            });
+          }
+          
+          // Validate price format
+          if (price !== undefined && price !== null && price !== '') {
+            const priceNum = Number(price);
+            if (isNaN(priceNum) || priceNum <= 0) {
+              allErrors.push({
+                row: index + 2,
+                field: 'Price',
+                message: 'Price must be a number greater than 0',
+                value: price
+              });
+            }
+          }
+          
+          // Validate half plate price (optional)
+          const halfPlatePrice = row['Half Plate Price'];
+          if (halfPlatePrice !== undefined && halfPlatePrice !== null && halfPlatePrice !== '') {
+            const halfPrice = Number(halfPlatePrice);
+            if (isNaN(halfPrice) || halfPrice <= 0) {
+              allErrors.push({
+                row: index + 2,
+                field: 'Half Plate Price',
+                message: 'Half Plate Price must be a number greater than 0 if provided',
+                value: halfPlatePrice
+              });
+            }
+            
+            // Business rule: Half plate should be less than full plate
+            const fullPrice = Number(price);
+            if (!isNaN(fullPrice) && !isNaN(halfPrice) && halfPrice >= fullPrice) {
+              allErrors.push({
+                row: index + 2,
+                field: 'Half Plate Price',
+                message: 'Half Plate Price should be less than full plate price',
+                value: halfPlatePrice
+              });
+            }
+          }
+          
+          // Validate availability (now optional, defaults to true)
+          let isAvailable = true;
+          if (availability !== undefined && availability !== null && availability !== '') {
+            const availStr = String(availability).toLowerCase();
+            if (!['true', 'false', '1', '0', 'yes', 'no'].includes(availStr)) {
+              allErrors.push({
+                row: index + 2,
+                field: 'Availability',
+                message: 'Availability must be true/false, yes/no, or 1/0',
+                value: availability
+              });
+            } else {
+              isAvailable = ['true', '1', 'yes'].includes(availStr);
+            }
+          }
+          
+          // Validate date format
+          const dateValue = row['Date'];
+          if (dateValue && dateValue !== 'Daily' && !String(dateValue).startsWith('Weekly-')) {
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(dateValue)) {
+              const testDate = new Date(dateValue);
+              if (isNaN(testDate.getTime())) {
+                allErrors.push({
+                  row: index + 2,
+                  field: 'Date',
+                  message: 'Date must be YYYY-MM-DD format, "Daily", or "Weekly-[Day]"',
+                  value: dateValue
+                });
+              }
+            }
+          }
           
           // Parse dietary tags and allergens
           const dietaryTags = row['Dietary Tags'] ? 
@@ -213,21 +333,15 @@ export const useMenuImport = (vendorId: string) => {
           const allergens = row['Allergens'] ? 
             row['Allergens'].split(',').map((allergen: string) => allergen.trim()) : [];
           
-          // Parse availability
-          let isAvailable = true;
-          if (row.Availability !== undefined) {
-            const availStr = String(row.Availability).toLowerCase();
-            isAvailable = ['true', '1', 'yes'].includes(availStr);
-          }
-          
           return {
-            category_name: row['Category Name'],
-            name: row['Item Name'],
+            category_name: categoryName || '',
+            name: itemName || '',
             description: row['Description'] || '',
-            price: Number(row['Full Plate Price']) || 0,
-            half_plate_price: row['Half Plate Price'] && row['Half Plate Price'] !== '' ? Number(row['Half Plate Price']) : undefined,
+            price: Number(price) || 0,
+            half_plate_price: halfPlatePrice && halfPlatePrice !== '' ? Number(halfPlatePrice) : undefined,
             is_available: isAvailable,
-            date: row['Date'] || null,
+            date: dateValue || null,
+            meal_type: mealType || null,
             preparation_time_minutes: row['Preparation Time (minutes)'] ? 
               Number(row['Preparation Time (minutes)']) : null,
             spice_level: row['Spice Level'] || null,
