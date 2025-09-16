@@ -5,15 +5,15 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { mockMenuCategories, mockMenuItems } from './POSMockData';
 
+// Minimal local MenuItem interface to avoid complex Supabase types
 interface MenuItem {
   id: string;
   name: string;
   price: number;
   image_url: string | null;
   is_available: boolean;
-  category_id: string | null;
+  category_id: string;
 }
 
 interface MenuCategory {
@@ -47,61 +47,116 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
     fetchMenuData();
   }, [vendorId]);
 
+  // Mapping functions to convert Supabase response to local minimal types
+  const mapMenuItem = (item: any): MenuItem => ({
+    id: item.id,
+    name: item.name,
+    price: Number(item.price),
+    image_url: item.image_url,
+    is_available: Boolean(item.is_available),
+    category_id: item.category_id
+  });
+
+  const mapMenuCategory = (category: any): MenuCategory => ({
+    id: category.id,
+    name: category.name
+  });
+
   const fetchMenuData = async () => {
     try {
       if (vendorId) {
-        // Fetch from vendor_menu_items for vendor-specific POS
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('cafeteria_menu_categories')
-          .select('*')
-          .eq('vendor_id', vendorId)
-          .order('display_order');
+        // Fetch vendor-specific menu with minimal columns only
+        const [categoriesResponse, itemsResponse] = await Promise.all([
+          supabase
+            .from('cafeteria_menu_categories')
+            .select('id, name')
+            .eq('vendor_id', vendorId),
+          supabase
+            .from('vendor_menu_items')
+            .select('id, name, price, image_url, is_available, category_id')
+            .eq('vendor_id', vendorId)
+        ]);
 
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('vendor_menu_items')
-          .select('*')
-          .eq('vendor_id', vendorId);
-
-        if (!categoriesError && categoriesData) {
-          setCategories(categoriesData);
+        if (!categoriesResponse.error && categoriesResponse.data) {
+          setCategories(categoriesResponse.data.map(mapMenuCategory));
         } else {
-          setCategories(mockMenuCategories);
+          setCategories([
+            { id: 'breakfast', name: 'Breakfast' },
+            { id: 'lunch-specials', name: 'Lunch Specials' },
+            { id: 'snacks', name: 'Snacks' },
+            { id: 'beverages', name: 'Beverages' }
+          ]);
         }
 
-        if (!itemsError && itemsData) {
-          setMenuItems(itemsData);
+        if (!itemsResponse.error && itemsResponse.data) {
+          setMenuItems(itemsResponse.data.map(mapMenuItem));
         } else {
-          setMenuItems(mockMenuItems);
+          setMenuItems([
+            {
+              id: '1',
+              name: 'Continental Breakfast',
+              price: 680.00,
+              image_url: null,
+              is_available: true,
+              category_id: 'breakfast'
+            }
+          ]);
         }
       } else {
-        // Fallback to all available items from all vendors
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('cafeteria_menu_categories')
-          .select('*')
-          .order('display_order');
+        // Fetch all available items with minimal columns only
+        const [categoriesResponse, itemsResponse] = await Promise.all([
+          supabase
+            .from('cafeteria_menu_categories')
+            .select('id, name'),
+          supabase
+            .from('vendor_menu_items')
+            .select('id, name, price, image_url, is_available, category_id')
+            .eq('is_available', true)
+        ]);
 
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('vendor_menu_items')
-          .select('*')
-          .eq('is_available', true);
-
-        if (!categoriesError && categoriesData && categoriesData.length > 0) {
-          setCategories(categoriesData);
+        if (!categoriesResponse.error && categoriesResponse.data?.length) {
+          setCategories(categoriesResponse.data.map(mapMenuCategory));
         } else {
-          setCategories(mockMenuCategories);
+          setCategories([
+            { id: 'breakfast', name: 'Breakfast' },
+            { id: 'lunch-specials', name: 'Lunch Specials' },
+            { id: 'snacks', name: 'Snacks' },
+            { id: 'beverages', name: 'Beverages' }
+          ]);
         }
 
-        if (!itemsError && itemsData && itemsData.length > 0) {
-          setMenuItems(itemsData);
+        if (!itemsResponse.error && itemsResponse.data?.length) {
+          setMenuItems(itemsResponse.data.map(mapMenuItem));
         } else {
-          setMenuItems(mockMenuItems);
+          setMenuItems([
+            {
+              id: '1',
+              name: 'Continental Breakfast',
+              price: 680.00,
+              image_url: null,
+              is_available: true,
+              category_id: 'breakfast'
+            }
+          ]);
         }
       }
     } catch (error) {
       console.error('Error fetching menu data:', error);
-      // Fallback to mock data on error
-      setCategories(mockMenuCategories);
-      setMenuItems(mockMenuItems);
+      // Fallback to simple mock data on error
+      setCategories([
+        { id: 'breakfast', name: 'Breakfast' },
+        { id: 'lunch-specials', name: 'Lunch Specials' }
+      ]);
+      setMenuItems([
+        {
+          id: '1',
+          name: 'Sample Item',
+          price: 500.00,
+          image_url: null,
+          is_available: true,
+          category_id: 'breakfast'
+        }
+      ]);
     } finally {
       setLoading(false);
     }
