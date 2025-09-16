@@ -32,6 +32,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
 import VendorOrderQueue from '@/components/vendor/VendorOrderQueue';
@@ -55,7 +56,7 @@ const navigation = [
 
 function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
   return (
-    <Sidebar className="w-64 h-full border-r bg-background">
+    <Sidebar className="w-64 h-full border-r bg-background" collapsible="none">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="px-4 py-2 text-lg font-semibold">
@@ -204,146 +205,148 @@ const VendorPortalPage = () => {
   const vendor = vendorInfo.vendor;
 
   return (
-    <div className="h-screen w-screen flex bg-background">
-      <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-      
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 border-b bg-background flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold">{vendor.name}</h1>
-            <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-              Active
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">
-              {todayMetrics?.pendingOrders || 0} pending orders
-            </Badge>
-          </div>
-        </header>
-          
-          <main className="flex-1 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
-              <div className="h-full">{/* Remove TabsList since navigation is in sidebar */}
-
-          <TabsContent value="dashboard" className="p-6 space-y-6 h-full overflow-auto">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹{todayMetrics?.totalRevenue?.toFixed(2) || '0.00'}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +20.1% from yesterday
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Orders Today</CardTitle>
-                  <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{todayMetrics?.totalOrders || 0}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {todayMetrics?.pendingOrders || 0} pending
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">₹{todayMetrics?.averageOrderValue?.toFixed(2) || '0.00'}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +5% from last week
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Rating</CardTitle>
-                  <Star className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{vendor.average_rating?.toFixed(1) || '0.0'}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {vendor.total_orders || 0} total orders
-                  </p>
-                </CardContent>
-              </Card>
+    <SidebarProvider defaultOpen>
+      <div className="min-h-screen flex w-full bg-background">
+        <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        
+        <div className="flex-1 flex flex-col">
+          <header className="h-16 border-b bg-background flex items-center justify-between px-6">
+            <div className="flex items-center gap-4">
+              <h1 className="text-lg font-semibold">{vendor.name}</h1>
+              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                Active
+              </Badge>
             </div>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>
-                  Manage your restaurant operations efficiently
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex gap-4">
-                <Button onClick={() => handleTabChange('orders')}>
-                  <Clock className="h-4 w-4 mr-2" />
-                  View Orders ({todayMetrics?.pendingOrders || 0})
-                </Button>
-                <Button variant="outline" onClick={() => handleTabChange('menu')}>
-                  Update Menu
-                </Button>
-                <Button variant="outline">
-                  Create Offer
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="pos" className="h-full p-0">
-            <VendorPOS vendorId={vendor.id} />
-          </TabsContent>
-
-          <TabsContent value="orders" className="p-6 h-full overflow-auto">
-            <VendorOrderQueue vendorId={vendor.id} />
-          </TabsContent>
-
-          <TabsContent value="menu" className="p-6 h-full overflow-auto">
-            <VendorMenuManagement vendorId={vendor.id} />
-          </TabsContent>
-
-          <TabsContent value="store" className="p-6 h-full overflow-auto">
-            <div className="space-y-6">
-              <VendorStoreSetup vendorId={vendor.id} />
-              <VendorQRUpload 
-                vendorId={vendor.id}
-                currentQRUrl={(vendor.store_config as any)?.custom_qr_url}
-                onUploadSuccess={() => {
-                  // Refresh vendor data to get updated QR URL
-                  window.location.reload();
-                }}
-              />
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {todayMetrics?.pendingOrders || 0} pending orders
+              </Badge>
             </div>
-          </TabsContent>
+          </header>
+            
+            <main className="flex-1 overflow-hidden">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
+                <div className="h-full">{/* Remove TabsList since navigation is in sidebar */}
 
-          <TabsContent value="sales" className="p-6 h-full overflow-auto">
-            <VendorSalesTracker vendorId={vendor.id} />
-          </TabsContent>
+            <TabsContent value="dashboard" className="p-6 space-y-6 h-full overflow-auto">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">₹{todayMetrics?.totalRevenue?.toFixed(2) || '0.00'}</div>
+                    <p className="text-xs text-muted-foreground">
+                      +20.1% from yesterday
+                    </p>
+                  </CardContent>
+                </Card>
 
-          <TabsContent value="analytics" className="p-6 h-full overflow-auto">
-            <VendorAnalytics vendorId={vendor.id} />
-          </TabsContent>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Orders Today</CardTitle>
+                    <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{todayMetrics?.totalOrders || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {todayMetrics?.pendingOrders || 0} pending
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">₹{todayMetrics?.averageOrderValue?.toFixed(2) || '0.00'}</div>
+                    <p className="text-xs text-muted-foreground">
+                      +5% from last week
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Rating</CardTitle>
+                    <Star className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{vendor.average_rating?.toFixed(1) || '0.0'}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {vendor.total_orders || 0} total orders
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
-            </Tabs>
-          </main>
+
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>
+                    Manage your restaurant operations efficiently
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex gap-4">
+                  <Button onClick={() => handleTabChange('orders')}>
+                    <Clock className="h-4 w-4 mr-2" />
+                    View Orders ({todayMetrics?.pendingOrders || 0})
+                  </Button>
+                  <Button variant="outline" onClick={() => handleTabChange('menu')}>
+                    Update Menu
+                  </Button>
+                  <Button variant="outline">
+                    Create Offer
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="pos" className="h-full p-0">
+              <VendorPOS vendorId={vendor.id} />
+            </TabsContent>
+
+            <TabsContent value="orders" className="p-6 h-full overflow-auto">
+              <VendorOrderQueue vendorId={vendor.id} />
+            </TabsContent>
+
+            <TabsContent value="menu" className="p-6 h-full overflow-auto">
+              <VendorMenuManagement vendorId={vendor.id} />
+            </TabsContent>
+
+            <TabsContent value="store" className="p-6 h-full overflow-auto">
+              <div className="space-y-6">
+                <VendorStoreSetup vendorId={vendor.id} />
+                <VendorQRUpload 
+                  vendorId={vendor.id}
+                  currentQRUrl={(vendor.store_config as any)?.custom_qr_url}
+                  onUploadSuccess={() => {
+                    // Refresh vendor data to get updated QR URL
+                    window.location.reload();
+                  }}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="sales" className="p-6 h-full overflow-auto">
+              <VendorSalesTracker vendorId={vendor.id} />
+            </TabsContent>
+
+            <TabsContent value="analytics" className="p-6 h-full overflow-auto">
+              <VendorAnalytics vendorId={vendor.id} />
+            </TabsContent>
+                </div>
+              </Tabs>
+            </main>
+          </div>
         </div>
-      </div>
-    );
+    </SidebarProvider>
+  );
   };
 
 export default VendorPortalPage;
