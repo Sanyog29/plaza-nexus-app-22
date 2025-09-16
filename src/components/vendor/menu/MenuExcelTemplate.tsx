@@ -49,7 +49,8 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category Name': 'Breakfast',
         'Item Name': 'Masala Dosa',
         'Description': 'Crispy crepe with spiced potato filling',
-        'Price': 80,
+        'Full Plate Price': 80,
+        'Half Plate Price': 50,
         'Availability': true,
         'Date': '2025-09-16',
         'Preparation Time (minutes)': 15,
@@ -62,7 +63,8 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category Name': 'Breakfast',
         'Item Name': 'Idli Sambar',
         'Description': 'Steamed rice cakes with lentil curry',
-        'Price': 60,
+        'Full Plate Price': 60,
+        'Half Plate Price': 40,
         'Availability': true,
         'Date': '2025-09-16',
         'Preparation Time (minutes)': 10,
@@ -75,7 +77,8 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category Name': 'Lunch',
         'Item Name': 'Paneer Butter Masala',
         'Description': 'Rich cottage cheese curry with butter naan',
-        'Price': 180,
+        'Full Plate Price': 180,
+        'Half Plate Price': 120,
         'Availability': true,
         'Date': '2025-09-16',
         'Preparation Time (minutes)': 20,
@@ -88,7 +91,8 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category Name': 'Lunch',
         'Item Name': 'Chicken Biryani',
         'Description': 'Aromatic basmati rice with tender chicken',
-        'Price': 220,
+        'Full Plate Price': 220,
+        'Half Plate Price': 150,
         'Availability': true,
         'Date': '2025-09-17',
         'Preparation Time (minutes)': 25,
@@ -101,7 +105,8 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category Name': 'Beverages',
         'Item Name': 'Masala Chai',
         'Description': 'Traditional spiced tea',
-        'Price': 25,
+        'Full Plate Price': 25,
+        'Half Plate Price': '',
         'Availability': true,
         'Date': 'Daily',
         'Preparation Time (minutes)': 5,
@@ -114,7 +119,8 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category Name': 'Snacks',
         'Item Name': 'Samosa',
         'Description': 'Crispy triangular pastry with savory filling',
-        'Price': 15,
+        'Full Plate Price': 15,
+        'Half Plate Price': '',
         'Availability': true,
         'Date': 'Weekly-Monday,Weekly-Wednesday,Weekly-Friday',
         'Preparation Time (minutes)': 8,
@@ -142,11 +148,18 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Notes': 'Must be unique within the same category'
       },
       {
-        'Field': 'Price',
+        'Field': 'Full Plate Price',
         'Required': 'Yes',
         'Format': 'Number',
         'Example': '80, 150, 220',
-        'Notes': 'Price in rupees, must be greater than 0'
+        'Notes': 'Price for full portion in rupees, must be greater than 0'
+      },
+      {
+        'Field': 'Half Plate Price',
+        'Required': 'No',
+        'Format': 'Number',
+        'Example': '50, 100, 150',
+        'Notes': 'Price for half portion in rupees (optional), should be less than full plate price'
       },
       {
         'Field': 'Availability',
@@ -212,10 +225,11 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         <h4 className="font-medium mb-2">Template Features:</h4>
         <ul className="text-sm space-y-1 text-muted-foreground">
           <li>• Sample categories (Breakfast, Lunch, Dinner, Beverages, Snacks)</li>
-          <li>• Example menu items with proper formatting</li>
+          <li>• Example menu items with both full and half plate pricing</li>
           <li>• Date format examples (specific dates, daily, weekly recurring)</li>
           <li>• Dietary tags and allergen information</li>
           <li>• Detailed instructions sheet with field descriptions</li>
+          <li>• Support for optional half plate pricing</li>
         </ul>
       </div>
 

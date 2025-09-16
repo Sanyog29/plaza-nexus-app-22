@@ -7788,6 +7788,7 @@ export type Database = {
           created_at: string
           description: string | null
           dietary_tags: string[] | null
+          half_plate_price: number | null
           id: string
           image_url: string | null
           import_batch_id: string | null
@@ -7815,6 +7816,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dietary_tags?: string[] | null
+          half_plate_price?: number | null
           id?: string
           image_url?: string | null
           import_batch_id?: string | null
@@ -7842,6 +7844,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dietary_tags?: string[] | null
+          half_plate_price?: number | null
           id?: string
           image_url?: string | null
           import_batch_id?: string | null

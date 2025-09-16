@@ -22,6 +22,7 @@ interface MenuItemData {
   name: string;
   description?: string;
   price: number;
+  half_plate_price?: number;
   is_available: boolean;
   date?: string;
   preparation_time_minutes?: number;
@@ -70,15 +71,39 @@ export const useMenuImport = (vendorId: string) => {
   const validateDataFormats = (data: any, rowIndex: number): ImportError[] => {
     const errors: ImportError[] = [];
     
-    // Validate price
-    if (data.Price !== undefined && data.Price !== null && data.Price !== '') {
-      const price = Number(data.Price);
+    // Validate full plate price
+    if (data['Full Plate Price'] !== undefined && data['Full Plate Price'] !== null && data['Full Plate Price'] !== '') {
+      const price = Number(data['Full Plate Price']);
       if (isNaN(price) || price <= 0) {
         errors.push({
           row: rowIndex + 2,
-          field: 'Price',
-          message: 'Price must be a number greater than 0',
-          value: data.Price
+          field: 'Full Plate Price',
+          message: 'Full Plate Price must be a number greater than 0',
+          value: data['Full Plate Price']
+        });
+      }
+    }
+    
+    // Validate half plate price (optional)
+    if (data['Half Plate Price'] !== undefined && data['Half Plate Price'] !== null && data['Half Plate Price'] !== '') {
+      const halfPrice = Number(data['Half Plate Price']);
+      if (isNaN(halfPrice) || halfPrice <= 0) {
+        errors.push({
+          row: rowIndex + 2,
+          field: 'Half Plate Price',
+          message: 'Half Plate Price must be a number greater than 0 if provided',
+          value: data['Half Plate Price']
+        });
+      }
+      
+      // Business rule: Half plate should be less than full plate
+      const fullPrice = Number(data['Full Plate Price']);
+      if (!isNaN(fullPrice) && !isNaN(halfPrice) && halfPrice >= fullPrice) {
+        errors.push({
+          row: rowIndex + 2,
+          field: 'Half Plate Price',
+          message: 'Half Plate Price should be less than Full Plate Price',
+          value: data['Half Plate Price']
         });
       }
     }
@@ -174,7 +199,7 @@ export const useMenuImport = (vendorId: string) => {
         menuItems = menuItemsRaw.map((row: any, index) => {
           // Validate required fields
           const requiredErrors = validateRequiredFields(row, [
-            'Category Name', 'Item Name', 'Price', 'Availability'
+            'Category Name', 'Item Name', 'Full Plate Price', 'Availability'
           ], index);
           allErrors.push(...requiredErrors);
           
@@ -199,7 +224,8 @@ export const useMenuImport = (vendorId: string) => {
             category_name: row['Category Name'],
             name: row['Item Name'],
             description: row['Description'] || '',
-            price: Number(row.Price) || 0,
+            price: Number(row['Full Plate Price']) || 0,
+            half_plate_price: row['Half Plate Price'] && row['Half Plate Price'] !== '' ? Number(row['Half Plate Price']) : undefined,
             is_available: isAvailable,
             date: row['Date'] || null,
             preparation_time_minutes: row['Preparation Time (minutes)'] ? 
@@ -333,6 +359,7 @@ export const useMenuImport = (vendorId: string) => {
             name: item.name,
             description: item.description,
             price: item.price,
+            half_plate_price: item.half_plate_price || null,
             is_available: item.is_available,
             dietary_tags: item.dietary_tags,
             allergens: item.allergens,
