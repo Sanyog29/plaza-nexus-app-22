@@ -22,7 +22,7 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        throw new Error('Please upload an image file');
+        throw new Error('Please upload an image file (JPG, PNG, etc.)');
       }
 
       // Validate file size (max 5MB)
@@ -30,45 +30,49 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
         throw new Error('File size must be less than 5MB');
       }
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${vendorId}/qr-code.${fileExt}`;
+      // Create unique filename with timestamp to avoid caching issues
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const timestamp = Date.now();
+      const fileName = `${vendorId}/qr-code-${timestamp}.${fileExt}`;
 
-      // Delete existing file if any
-      if (currentQRUrl) {
-        const existingPath = currentQRUrl.split('/').pop();
-        if (existingPath) {
-          await supabase.storage
-            .from('vendor-qr-codes')
-            .remove([`${vendorId}/${existingPath}`]);
-        }
-      }
-
-      // Upload new file
+      // Upload new file with upsert to replace any existing
       const { data, error } = await supabase.storage
         .from('vendor-qr-codes')
         .upload(fileName, file, { 
-          cacheControl: '3600',
+          cacheControl: '300', // Shorter cache time for faster updates
           upsert: true 
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw new Error(`Upload failed: ${error.message || 'Unknown storage error'}`);
+      }
 
-      // Get public URL
+      if (!data?.path) {
+        throw new Error('Upload succeeded but no file path returned');
+      }
+
+      // Get public URL with cache-busting parameter
       const { data: { publicUrl } } = supabase.storage
         .from('vendor-qr-codes')
         .getPublicUrl(data.path);
+
+      const cacheBustUrl = `${publicUrl}?t=${timestamp}`;
 
       // Update vendor store_config using secure RPC
       const { error: updateError } = await supabase
         .rpc('set_vendor_qr', {
           p_vendor_id: vendorId,
-          p_custom_qr_url: publicUrl,
+          p_custom_qr_url: cacheBustUrl,
           p_use_custom: true
         });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('RPC update error:', updateError);
+        throw new Error(`Failed to save QR settings: ${updateError.message || 'Database error'}`);
+      }
 
-      onUploadSuccess(publicUrl);
+      onUploadSuccess(cacheBustUrl);
       
       toast({
         title: "QR Code Updated",
@@ -79,7 +83,7 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
       console.error('Error uploading QR code:', error);
       toast({
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Failed to upload QR code",
+        description: error instanceof Error ? error.message : "Failed to upload QR code. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,17 +112,7 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
     try {
       setUploading(true);
 
-      // Remove from storage
-      if (currentQRUrl) {
-        const path = currentQRUrl.split('/vendor-qr-codes/').pop();
-        if (path) {
-          await supabase.storage
-            .from('vendor-qr-codes')
-            .remove([path]);
-        }
-      }
-
-      // Update vendor config using secure RPC
+      // Update vendor config first to remove the QR reference
       const { error } = await supabase
         .rpc('set_vendor_qr', {
           p_vendor_id: vendorId,
@@ -126,7 +120,32 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
           p_use_custom: false
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC remove error:', error);
+        throw new Error(`Failed to remove QR settings: ${error.message || 'Database error'}`);
+      }
+
+      // Optionally clean up storage files (not critical if it fails)
+      if (currentQRUrl) {
+        try {
+          // Extract path more robustly
+          const urlParts = currentQRUrl.split('/vendor-qr-codes/');
+          if (urlParts.length > 1) {
+            // Remove query parameters for cleanup
+            const pathWithQuery = urlParts[1];
+            const path = pathWithQuery.split('?')[0];
+            
+            if (path) {
+              await supabase.storage
+                .from('vendor-qr-codes')
+                .remove([path]);
+            }
+          }
+        } catch (cleanupError) {
+          // Log but don't fail the operation
+          console.warn('Storage cleanup failed:', cleanupError);
+        }
+      }
 
       onUploadSuccess('');
       
@@ -139,7 +158,7 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
       console.error('Error removing QR code:', error);
       toast({
         title: "Error",
-        description: "Failed to remove QR code",
+        description: error instanceof Error ? error.message : "Failed to remove QR code. Please try again.",
         variant: "destructive",
       });
     } finally {

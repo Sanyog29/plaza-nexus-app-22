@@ -9219,7 +9219,7 @@ export type Database = {
       }
       set_vendor_qr: {
         Args: {
-          p_custom_qr_url: string
+          p_custom_qr_url?: string
           p_use_custom?: boolean
           p_vendor_id: string
         }
