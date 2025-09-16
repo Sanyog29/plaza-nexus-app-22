@@ -531,7 +531,8 @@ export const useMenuImport = (vendorId: string) => {
             dietary_tags: item.dietary_tags,
             allergens: item.allergens,
             image_url: item.image_url,
-            import_batch_id: batchId
+            import_batch_id: batchId,
+            stock_quantity: 1
           };
 
           // Add optional fields with proper type conversion
