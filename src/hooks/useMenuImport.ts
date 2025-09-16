@@ -163,6 +163,65 @@ export const useMenuImport = (vendorId: string) => {
     return undefined;
   };
 
+  const sanitizePrice = (priceValue: any): number | null => {
+    if (!priceValue || priceValue === '') return null;
+    
+    // Convert to string and clean currency symbols and text
+    let cleanPrice = String(priceValue)
+      .replace(/[₹rs\s]/gi, '') // Remove ₹, rs, and spaces
+      .replace(/[^\d.]/g, ''); // Keep only digits and decimal points
+    
+    const price = parseFloat(cleanPrice);
+    return isNaN(price) ? null : price;
+  };
+
+  const normalizeDateFormat = (dateValue: any): string | null => {
+    if (!dateValue) return null;
+    
+    const dateStr = String(dateValue).trim();
+    
+    // Handle special formats
+    if (dateStr === 'Daily' || dateStr.startsWith('Weekly-')) {
+      return dateStr;
+    }
+    
+    // Handle human-friendly dates like "16th Sep"
+    const humanDateRegex = /^(\d{1,2})(st|nd|rd|th)?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i;
+    const match = dateStr.match(humanDateRegex);
+    
+    if (match) {
+      const day = match[1];
+      const month = match[3];
+      const currentYear = new Date().getFullYear();
+      
+      const monthMap = {
+        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+      };
+      
+      const monthNum = monthMap[month];
+      if (monthNum) {
+        const formattedDate = `${currentYear}-${monthNum}-${day.padStart(2, '0')}`;
+        return formattedDate;
+      }
+    }
+    
+    // Handle standard YYYY-MM-DD format
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (isoDateRegex.test(dateStr)) {
+      return dateStr;
+    }
+    
+    // Try to parse as regular date
+    const parsedDate = new Date(dateStr);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate.toISOString().split('T')[0];
+    }
+    
+    return null;
+  };
+
   const parseExcelFile = async (file: File): Promise<void> => {
     setIsProcessing(true);
     setValidationErrors([]);
@@ -175,33 +234,8 @@ export const useMenuImport = (vendorId: string) => {
       
       setUploadProgress(30);
 
-      // Parse Categories sheet (if exists)
+      // Categories will be auto-created from menu items, no separate Categories sheet needed
       let categories: CategoryData[] = [];
-      if (workbook.SheetNames.includes('Categories')) {
-        const categoriesSheet = workbook.Sheets['Categories'];
-        const categoriesRaw = XLSX.utils.sheet_to_json(categoriesSheet);
-        
-        categories = categoriesRaw.map((row: any, index) => {
-          const categoryName = normalizeColumnName(row, ['Category Name', 'Category']);
-          const errors = categoryName ? [] : [{
-            row: index + 2,
-            field: 'Category Name',
-            message: 'Category Name or Category is required',
-            value: undefined
-          }];
-          
-          if (errors.length > 0) {
-            setValidationErrors(prev => [...prev, ...errors]);
-          }
-          
-          return {
-            name: categoryName || '',
-            description: row['Description'] || '',
-            display_order: row['Display Order'] ? Number(row['Display Order']) : index + 1,
-            image_url: row['Image URL'] || null
-          };
-        }).filter(cat => cat.name); // Filter out invalid categories
-      }
 
       setUploadProgress(50);
 
@@ -224,9 +258,16 @@ export const useMenuImport = (vendorId: string) => {
           // Normalize column names with aliases
           const categoryName = normalizeColumnName(row, ['Category', 'Category Name']);
           const itemName = normalizeColumnName(row, ['Item Name', 'Name']);
-          const price = normalizeColumnName(row, ['Price', 'Full Plate Price']);
+          const priceRaw = normalizeColumnName(row, ['Price', 'Full Plate Price']);
+          const halfPlateRaw = normalizeColumnName(row, ['Half Plate', 'Half Plate Price']);
           const availability = normalizeColumnName(row, ['Availability', 'Available']);
           const mealType = normalizeColumnName(row, ['Meal Type', 'Meal']);
+          const dateRaw = normalizeColumnName(row, ['Date']);
+
+          // Sanitize prices and normalize date
+          const price = sanitizePrice(priceRaw);
+          const halfPlatePrice = sanitizePrice(halfPlateRaw);
+          const normalizedDate = normalizeDateFormat(dateRaw);
           
           // Validate required fields with flexible column names
           if (!categoryName) {
@@ -247,51 +288,33 @@ export const useMenuImport = (vendorId: string) => {
             });
           }
           
-          if (!price || price === '') {
+          if (!price || price <= 0) {
             allErrors.push({
               row: index + 2,
               field: 'Price',
-              message: 'Price or Full Plate Price is required',
-              value: price
+              message: 'Valid price is required (supports formats like "80", "₹150", "45.00 rs")',
+              value: priceRaw
             });
           }
           
-          // Validate price format
-          if (price !== undefined && price !== null && price !== '') {
-            const priceNum = Number(price);
-            if (isNaN(priceNum) || priceNum <= 0) {
-              allErrors.push({
-                row: index + 2,
-                field: 'Price',
-                message: 'Price must be a number greater than 0',
-                value: price
-              });
-            }
+          // Validate half plate price (optional)
+          if (halfPlateRaw && halfPlatePrice && halfPlatePrice <= 0) {
+            allErrors.push({
+              row: index + 2,
+              field: 'Half Plate',
+              message: 'Half plate price must be a valid number greater than 0',
+              value: halfPlateRaw
+            });
           }
           
-          // Validate half plate price (optional)
-          const halfPlatePrice = row['Half Plate Price'];
-          if (halfPlatePrice !== undefined && halfPlatePrice !== null && halfPlatePrice !== '') {
-            const halfPrice = Number(halfPlatePrice);
-            if (isNaN(halfPrice) || halfPrice <= 0) {
-              allErrors.push({
-                row: index + 2,
-                field: 'Half Plate Price',
-                message: 'Half Plate Price must be a number greater than 0 if provided',
-                value: halfPlatePrice
-              });
-            }
-            
-            // Business rule: Half plate should be less than full plate
-            const fullPrice = Number(price);
-            if (!isNaN(fullPrice) && !isNaN(halfPrice) && halfPrice >= fullPrice) {
-              allErrors.push({
-                row: index + 2,
-                field: 'Half Plate Price',
-                message: 'Half Plate Price should be less than full plate price',
-                value: halfPlatePrice
-              });
-            }
+          // Business rule: Half plate should be less than full plate
+          if (price && halfPlatePrice && halfPlatePrice >= price) {
+            allErrors.push({
+              row: index + 2,
+              field: 'Half Plate',
+              message: 'Half plate price should be less than full plate price',
+              value: halfPlateRaw
+            });
           }
           
           // Validate availability (now optional, defaults to true)
@@ -310,21 +333,14 @@ export const useMenuImport = (vendorId: string) => {
             }
           }
           
-          // Validate date format
-          const dateValue = row['Date'];
-          if (dateValue && dateValue !== 'Daily' && !String(dateValue).startsWith('Weekly-')) {
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!dateRegex.test(dateValue)) {
-              const testDate = new Date(dateValue);
-              if (isNaN(testDate.getTime())) {
-                allErrors.push({
-                  row: index + 2,
-                  field: 'Date',
-                  message: 'Date must be YYYY-MM-DD format, "Daily", or "Weekly-[Day]"',
-                  value: dateValue
-                });
-              }
-            }
+          // Validate date format (now more flexible)
+          if (dateRaw && !normalizedDate) {
+            allErrors.push({
+              row: index + 2,
+              field: 'Date',
+              message: 'Date format not recognized. Use formats like "16th Sep", "2025-09-16", "Daily", or "Weekly-Monday"',
+              value: dateRaw
+            });
           }
           
           // Parse dietary tags and allergens
@@ -337,16 +353,16 @@ export const useMenuImport = (vendorId: string) => {
             category_name: categoryName || '',
             name: itemName || '',
             description: row['Description'] || '',
-            price: Number(price) || 0,
-            half_plate_price: halfPlatePrice && halfPlatePrice !== '' ? Number(halfPlatePrice) : undefined,
+            price: price || 0,
+            half_plate_price: halfPlatePrice || undefined,
             is_available: isAvailable,
-            date: dateValue || null,
+            date: normalizedDate || null,
             meal_type: mealType || null,
             preparation_time_minutes: row['Preparation Time (minutes)'] ? 
               Number(row['Preparation Time (minutes)']) : null,
             spice_level: row['Spice Level'] || null,
             dietary_tags: dietaryTags,
-            allergens: allergens,
+            allergens: [],
             image_url: row['Image URL'] || null
           };
         }).filter(item => item.name && item.category_name); // Filter out invalid items
@@ -418,36 +434,38 @@ export const useMenuImport = (vendorId: string) => {
       if (batchError) throw batchError;
       const batchId = batchData.id;
 
-      // Process categories first
+      // Auto-create categories from menu items
       const categoryMap = new Map<string, string>();
+      const uniqueCategories = [...new Set(parsedData.menuItems.map(item => item.category_name))];
       
-      for (const category of parsedData.categories) {
+      for (let i = 0; i < uniqueCategories.length; i++) {
+        const categoryName = uniqueCategories[i];
+        
         // Check if category exists
         const { data: existingCategory } = await supabase
           .from('cafeteria_menu_categories')
           .select('id')
-          .eq('name', category.name)
+          .eq('name', categoryName)
           .eq('vendor_id', vendorId)
-          .single();
+          .maybeSingle();
 
         if (existingCategory) {
-          categoryMap.set(category.name, existingCategory.id);
+          categoryMap.set(categoryName, existingCategory.id);
         } else {
-          // Create new category
+          // Create new category with auto-generated display order
           const { data: newCategory, error: categoryError } = await supabase
             .from('cafeteria_menu_categories')
             .insert({
-              name: category.name,
-              description: category.description,
-              display_order: category.display_order,
-              image_url: category.image_url,
+              name: categoryName,
+              description: `Auto-created category for ${categoryName}`,
+              display_order: i + 1,
               vendor_id: vendorId
             })
             .select()
             .single();
 
           if (categoryError) throw categoryError;
-          categoryMap.set(category.name, newCategory.id);
+          categoryMap.set(categoryName, newCategory.id);
         }
       }
 
