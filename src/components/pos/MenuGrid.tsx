@@ -60,8 +60,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
         const { data: itemsData, error: itemsError } = await supabase
           .from('vendor_menu_items')
           .select('*')
-          .eq('vendor_id', vendorId)
-          .eq('is_active', true);
+          .eq('vendor_id', vendorId);
 
         if (!categoriesError && categoriesData) {
           setCategories(categoriesData);
@@ -84,7 +83,6 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
         const { data: itemsData, error: itemsError } = await supabase
           .from('vendor_menu_items')
           .select('*')
-          .eq('is_active', true)
           .eq('is_available', true);
 
         if (!categoriesError && categoriesData && categoriesData.length > 0) {
@@ -211,32 +209,15 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
                   {item.is_available ? 'Available' : 'Unavailable'}
                 </Badge>
                 
-                {item.is_featured && (
-                  <Badge 
-                    variant="default" 
-                    className="absolute top-3 left-3 bg-orange-500 hover:bg-orange-600"
-                  >
-                    Featured
-                  </Badge>
-                )}
               </div>
               
               <div className="p-4 space-y-3">
                 <div>
                   <h3 className="font-semibold text-lg leading-tight line-clamp-2">{item.name}</h3>
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
-                  )}
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold text-primary">₹{item.price.toFixed(2)}</div>
-                  {item.preparation_time_minutes && (
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <span>🕒</span>
-                      {item.preparation_time_minutes}m
-                    </div>
-                  )}
                 </div>
                 
                 {quantityInCart > 0 ? (

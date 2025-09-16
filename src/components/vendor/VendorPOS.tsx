@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, ShoppingBag, Clock } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { useVendorRealtime } from '@/hooks/useVendorRealtime';
+// import { useVendorRealtime } from '@/hooks/useVendorRealtime';
 
 interface CartItem {
   id: string;
@@ -81,16 +81,16 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   };
 
   // Set up real-time updates for vendor orders
-  useVendorRealtime({
-    vendorId,
-    onOrderUpdate: fetchTodayStats,
-    onOrderCompleted: (order) => {
-      toast({
-        title: "Order Completed",
-        description: `Order #${order.bill_number || order.id.slice(0, 8)} has been paid!`,
-      });
-    }
-  });
+  // useVendorRealtime({
+  //   vendorId,
+  //   onOrderUpdate: fetchTodayStats,
+  //   onOrderCompleted: (order) => {
+  //     toast({
+  //       title: "Order Completed",
+  //       description: `Order #${order.bill_number || order.id.slice(0, 8)} has been paid!`,
+  //     });
+  //   }
+  // });
 
   const handleAddToCart = (newItem: CartItem) => {
     setCartItems(prev => {
