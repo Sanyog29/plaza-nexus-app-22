@@ -231,60 +231,8 @@ const VendorPortalPage = () => {
                 <div className="h-full">{/* Remove TabsList since navigation is in sidebar */}
 
             <TabsContent value="dashboard" className="p-6 space-y-6 h-full overflow-auto">
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Today's Revenue</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">₹{todayMetrics?.totalRevenue?.toFixed(2) || '0.00'}</div>
-                    <p className="text-xs text-muted-foreground">
-                      +20.1% from yesterday
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Orders Today</CardTitle>
-                    <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{todayMetrics?.totalOrders || 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {todayMetrics?.pendingOrders || 0} pending
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">₹{todayMetrics?.averageOrderValue?.toFixed(2) || '0.00'}</div>
-                    <p className="text-xs text-muted-foreground">
-                      +5% from last week
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Rating</CardTitle>
-                    <Star className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{vendor.average_rating?.toFixed(1) || '0.0'}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {vendor.total_orders || 0} total orders
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Sales Tracker */}
+              <VendorSalesTracker vendorId={vendor.id} />
 
               {/* Quick Actions */}
               <Card>

@@ -58,17 +58,13 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
         .from('vendor-qr-codes')
         .getPublicUrl(data.path);
 
-      // Update vendor store_config
+      // Update vendor store_config using secure RPC
       const { error: updateError } = await supabase
-        .from('vendors')
-        .update({
-          store_config: {
-            ...currentQRUrl ? {} : {},
-            custom_qr_url: publicUrl,
-            use_custom_qr: true
-          }
-        })
-        .eq('id', vendorId);
+        .rpc('set_vendor_qr', {
+          p_vendor_id: vendorId,
+          p_custom_qr_url: publicUrl,
+          p_use_custom: true
+        });
 
       if (updateError) throw updateError;
 
@@ -122,16 +118,13 @@ export default function VendorQRUpload({ vendorId, currentQRUrl, onUploadSuccess
         }
       }
 
-      // Update vendor config
+      // Update vendor config using secure RPC
       const { error } = await supabase
-        .from('vendors')
-        .update({
-          store_config: {
-            custom_qr_url: null,
-            use_custom_qr: false
-          }
-        })
-        .eq('id', vendorId);
+        .rpc('set_vendor_qr', {
+          p_vendor_id: vendorId,
+          p_custom_qr_url: null,
+          p_use_custom: false
+        });
 
       if (error) throw error;
 

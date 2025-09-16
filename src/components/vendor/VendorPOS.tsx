@@ -65,7 +65,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
         .eq('vendor_id', vendorId)
         .gte('created_at', `${today}T00:00:00`)
         .lt('created_at', `${today}T23:59:59`)
-        .eq('status', 'completed');
+        .in('status', ['completed', 'paid']);
 
       if (error) throw error;
 
@@ -84,16 +84,38 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   };
 
   // Set up real-time updates for vendor orders
-  // useVendorRealtime({
-  //   vendorId,
-  //   onOrderUpdate: fetchTodayStats,
-  //   onOrderCompleted: (order) => {
-  //     toast({
-  //       title: "Order Completed",
-  //       description: `Order #${order.bill_number || order.id.slice(0, 8)} has been paid!`,
-  //     });
-  //   }
-  // });
+  useEffect(() => {
+    const channel = supabase
+      .channel(`vendor-orders-${vendorId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cafeteria_orders',
+          filter: `vendor_id=eq.${vendorId}`
+        },
+        (payload) => {
+          console.log('Order update received:', payload);
+          fetchTodayStats(); // Refresh stats on any order change
+          
+          // Handle completed orders specifically
+          if (payload.eventType === 'UPDATE' && 
+              (payload.new?.status === 'completed' || payload.new?.payment_status === 'paid') && 
+              payload.old?.status !== 'completed') {
+            toast({
+              title: "Order Completed",
+              description: `Order #${payload.new?.bill_number || payload.new?.id.slice(0, 8)} has been paid!`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [vendorId, toast]);
 
   const handleAddToCart = (newItem: CartItem) => {
     setCartItems(prev => {
@@ -228,15 +250,11 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
     if (!currentOrder) return;
 
     try {
-      // Update order status to completed
+      // Mark order as paid and completed using secure RPC
       const { error } = await supabase
-        .from('cafeteria_orders')
-        .update({ 
-          status: 'completed',
-          payment_status: 'completed',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', currentOrder.id);
+        .rpc('mark_order_paid_and_complete', {
+          p_order_id: currentOrder.id
+        });
 
       if (error) throw error;
 

@@ -9174,6 +9174,10 @@ export type Database = {
         Args: { context: Json; log_entry: Json; rule_id: string }
         Returns: string
       }
+      mark_order_paid_and_complete: {
+        Args: { p_order_id: string }
+        Returns: boolean
+      }
       reject_user: {
         Args: { approver_id: string; reason: string; target_user_id: string }
         Returns: boolean
@@ -9210,6 +9214,14 @@ export type Database = {
           setting_key: string
           setting_type?: string
           setting_value: Json
+        }
+        Returns: boolean
+      }
+      set_vendor_qr: {
+        Args: {
+          p_custom_qr_url: string
+          p_use_custom?: boolean
+          p_vendor_id: string
         }
         Returns: boolean
       }

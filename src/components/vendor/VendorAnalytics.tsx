@@ -25,6 +25,30 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
     fetchAnalytics();
   }, [vendorId, period]);
 
+  // Set up real-time updates for analytics data
+  useEffect(() => {
+    const channel = supabase
+      .channel(`vendor-analytics-${vendorId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public', 
+          table: 'cafeteria_orders',
+          filter: `vendor_id=eq.${vendorId}`
+        },
+        () => {
+          console.log('Analytics: Order update received, refreshing data');
+          fetchAnalytics(); // Refresh analytics when orders change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [vendorId]);
+
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
@@ -66,6 +90,7 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
           id,
           total_amount,
           status,
+          payment_status,
           created_at,
           order_feedback (
             overall_rating,
@@ -74,7 +99,8 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
         `)
         .eq('vendor_id', vendorId)
         .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .lte('created_at', endDate.toISOString())
+        .in('status', ['completed', 'paid']);
 
       if (ordersError) throw ordersError;
 
