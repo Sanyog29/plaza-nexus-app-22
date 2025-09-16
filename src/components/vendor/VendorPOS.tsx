@@ -265,7 +265,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
 
   return (
     <>
-      <div className="flex h-screen">
+      <div className="flex h-full">
         {/* Menu Grid - Takes up most of the space */}
         <div className="flex-1 border-r overflow-y-auto">
           <MenuGrid 
@@ -277,7 +277,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
         </div>
         
         {/* Order Summary - Fixed width on the right */}
-        <div className="w-[420px] h-full border-l overflow-y-auto">
+        <div className="w-[340px] md:w-[380px] xl:w-[420px] h-full border-l overflow-y-auto">
           <EnhancedOrderSummary
             cartItems={cartItems}
             onUpdateQuantity={handleUpdateQuantity}
@@ -290,11 +290,12 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
       {/* UPI Payment Modal */}
       {showPaymentModal && currentOrder && (
         <UPIPaymentModal
+          key={currentOrder.id}
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           orderId={currentOrder.bill_number}
           amount={currentOrder.total_amount}
-          items={cartItems}
+          items={cartItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price }))}
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}

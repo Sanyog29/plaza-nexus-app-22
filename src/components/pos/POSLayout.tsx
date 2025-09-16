@@ -5,7 +5,7 @@ import { POSHeader } from './POSHeader';
 
 const POSLayout = () => {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       <POSSidebar />
       <div className="flex-1 flex flex-col">
         <POSHeader />

@@ -65,7 +65,7 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
   };
 
   return (
-    <Card className="h-full flex flex-col m-2">
+    <Card className="h-full flex flex-col m-2 md:m-3">
       <CardHeader className="border-b border-border pb-4">
         <CardTitle className="flex items-center justify-between">
           <span>Order Summary</span>
@@ -87,7 +87,8 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
                 <div key={item.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                   <img
                     src={item.image_url || "/placeholder.svg"}
-                    alt={item.name}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/placeholder.svg"; }}
+                    alt={`${item.name} photo`}
                     className="w-12 h-12 rounded-md object-cover flex-shrink-0"
                   />
                   

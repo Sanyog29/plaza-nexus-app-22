@@ -43,6 +43,7 @@ import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 import VendorPOS from '@/components/vendor/VendorPOS';
 import VendorQRUpload from '@/components/vendor/VendorQRUpload';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const navigation = [
   { name: 'Dashboard', value: 'dashboard', icon: LayoutDashboard },
@@ -217,7 +218,8 @@ const VendorPortalPage = () => {
                 Active
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
               <Badge variant="outline">
                 {todayMetrics?.pendingOrders || 0} pending orders
               </Badge>

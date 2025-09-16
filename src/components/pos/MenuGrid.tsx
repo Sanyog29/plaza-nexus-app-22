@@ -270,6 +270,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
                   <div className="relative h-48">
                     <img
                       src={item.image_url || '/placeholder.svg'}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                       alt={item.name}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
