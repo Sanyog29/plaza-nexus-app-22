@@ -3,6 +3,7 @@ import { Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -212,37 +213,41 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
     <div className="h-full flex flex-col bg-background">
       {/* Category Tabs */}
       <div className="p-lg border-b border-border bg-card">
-        <div className="flex flex-wrap gap-2 p-sm bg-muted rounded-lg">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`flex items-center gap-2 p-md rounded-md font-medium transition-all ${
-              selectedCategory === 'all'
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-background'
-            }`}
-          >
-            All Items
-            <Badge variant="secondary" className="text-sm">
-              {getCategoryItemCount('all')}
-            </Badge>
-          </button>
-          
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex items-center gap-2 p-md rounded-md font-medium transition-all ${
-                selectedCategory === category.id
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background'
-              }`}
-            >
-              {category.name}
-              <Badge variant="secondary" className="text-sm">
-                {getCategoryItemCount(category.id)}
-              </Badge>
-            </button>
-          ))}
+        <div className="bg-muted rounded-lg p-sm">
+          <ScrollArea className="w-full">
+            <div className="flex gap-2 min-w-max pb-1">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`flex items-center gap-2 p-md rounded-md font-medium transition-all whitespace-nowrap ${
+                  selectedCategory === 'all'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-background'
+                }`}
+              >
+                All Items
+                <Badge variant="secondary" className="text-sm">
+                  {getCategoryItemCount('all')}
+                </Badge>
+              </button>
+              
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center gap-2 p-md rounded-md font-medium transition-all whitespace-nowrap ${
+                    selectedCategory === category.id
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-background'
+                  }`}
+                >
+                  {category.name}
+                  <Badge variant="secondary" className="text-sm">
+                    {getCategoryItemCount(category.id)}
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
       </div>
 
