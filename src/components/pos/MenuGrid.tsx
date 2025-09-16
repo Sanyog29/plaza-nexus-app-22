@@ -207,131 +207,136 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
   }
 
   return (
-    <div className="p-6">
-      {/* Category Tabs - Enhanced Pospay Style */}
-      <div className="flex flex-wrap gap-2 mb-6 p-1 bg-muted rounded-lg">
-        <button
-          onClick={() => setSelectedCategory('all')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
-            selectedCategory === 'all'
-              ? 'bg-primary text-primary-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-background'
-          }`}
-        >
-          All Items
-          <Badge variant="secondary" className="text-xs">
-            {getCategoryItemCount('all')}
-          </Badge>
-        </button>
-        
-        {categories.map((category) => (
+    <div className="h-full flex flex-col">
+      {/* Category Tabs */}
+      <div className="p-4 border-b">
+        <div className="flex flex-wrap gap-2 p-1 bg-muted rounded-lg">
           <button
-            key={category.id}
-            onClick={() => setSelectedCategory(category.id)}
+            onClick={() => setSelectedCategory('all')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
-              selectedCategory === category.id
+              selectedCategory === 'all'
                 ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background'
             }`}
           >
-            {category.name}
+            All Items
             <Badge variant="secondary" className="text-xs">
-              {getCategoryItemCount(category.id)}
+              {getCategoryItemCount('all')}
             </Badge>
           </button>
-        ))}
+          
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
+                selectedCategory === category.id
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background'
+              }`}
+            >
+              {category.name}
+              <Badge variant="secondary" className="text-xs">
+                {getCategoryItemCount(category.id)}
+              </Badge>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Menu Items Grid - Enhanced Pospay Style */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {getFilteredItems().map((item) => {
-          const quantityInCart = getItemQuantityInCart(item.id);
-          
-          return (
-            <Card key={item.id} className="group overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="relative h-48">
-                <img
-                  src={item.image_url || '/placeholder.svg'}
-                  alt={item.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                
-                <Badge 
-                  variant={item.is_available ? 'secondary' : 'destructive'}
-                  className="absolute top-3 right-3 shadow-sm"
-                >
-                  {item.is_available ? 'Available' : 'Unavailable'}
-                </Badge>
-                
-              </div>
+      {/* Menu Items Grid */}
+      <div className="flex-1 overflow-auto p-4">
+        {getFilteredItems().length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-muted-foreground text-lg">No items found</div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {selectedCategory === 'all' 
+                  ? 'No menu items are currently available' 
+                  : `No items found in ${categories.find(c => c.id === selectedCategory)?.name || 'this category'}`
+                }
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {getFilteredItems().map((item) => {
+              const quantityInCart = getItemQuantityInCart(item.id);
               
-              <div className="p-4 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-lg leading-tight line-clamp-2">{item.name}</h3>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-primary">₹{item.price.toFixed(2)}</div>
-                </div>
-                
-                {quantityInCart > 0 ? (
-                  <div className="flex items-center justify-between gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveFromCart(item.id)}
-                      disabled={quantityInCart <= 0}
-                      className="h-10 w-10 p-0"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
+              return (
+                <Card key={item.id} className="group overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="relative h-48">
+                    <img
+                      src={item.image_url || '/placeholder.svg'}
+                      alt={item.name}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     
-                    <div className="flex flex-col items-center">
-                      <span className="text-sm font-medium">In Cart</span>
-                      <Badge variant="secondary" className="text-lg font-bold">
-                        {quantityInCart}
-                      </Badge>
+                    <Badge 
+                      variant={item.is_available ? 'secondary' : 'destructive'}
+                      className="absolute top-3 right-3 shadow-sm"
+                    >
+                      {item.is_available ? 'Available' : 'Unavailable'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg leading-tight line-clamp-2">{item.name}</h3>
                     </div>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddToCart(item)}
-                      disabled={!item.is_available}
-                      className="h-10 w-10 p-0"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-primary">₹{item.price.toFixed(2)}</div>
+                    </div>
+                    
+                    {quantityInCart > 0 ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveFromCart(item.id)}
+                          disabled={quantityInCart <= 0}
+                          className="h-10 w-10 p-0"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        
+                        <div className="flex flex-col items-center">
+                          <span className="text-sm font-medium">In Cart</span>
+                          <Badge variant="secondary" className="text-lg font-bold">
+                            {quantityInCart}
+                          </Badge>
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddToCart(item)}
+                          disabled={!item.is_available}
+                          className="h-10 w-10 p-0"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        className="w-full h-11"
+                        onClick={() => handleAddToCart(item)}
+                        disabled={!item.is_available}
+                        variant={item.is_available ? "default" : "secondary"}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        {item.is_available ? 'Add to Cart' : 'Not Available'}
+                      </Button>
+                    )}
                   </div>
-                ) : (
-                  <Button
-                    className="w-full h-11"
-                    onClick={() => handleAddToCart(item)}
-                    disabled={!item.is_available}
-                    variant={item.is_available ? "default" : "secondary"}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {item.is_available ? 'Add to Cart' : 'Not Available'}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
-      
-      {getFilteredItems().length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-muted-foreground text-lg">No items found</div>
-          <p className="text-sm text-muted-foreground mt-2">
-            {selectedCategory === 'all' 
-              ? 'No menu items are currently available' 
-              : `No items found in ${categories.find(c => c.id === selectedCategory)?.name || 'this category'}`
-            }
-          </p>
-        </div>
-      )}
     </div>
   );
 };

@@ -64,7 +64,7 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
   };
 
   return (
-    <Card className="w-[400px] h-full flex flex-col border-l border-border">
+    <Card className="h-full flex flex-col m-4">
       <CardHeader className="border-b border-border pb-4">
         <CardTitle className="flex items-center justify-between">
           <span>Order Summary</span>

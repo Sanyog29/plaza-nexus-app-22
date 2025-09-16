@@ -201,7 +201,7 @@ function POSTopbar() {
 export const UnifiedPOSLayout: React.FC<UnifiedPOSLayoutProps> = ({ children }) => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="h-screen flex w-full bg-background">
         <POSSidebar />
         <div className="flex-1 flex flex-col">
           <POSTopbar />
