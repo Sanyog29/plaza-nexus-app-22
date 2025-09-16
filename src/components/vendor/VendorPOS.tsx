@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { MenuGrid } from '@/components/pos/MenuGrid';
-import { VendorOrderSummary } from '@/components/vendor/VendorOrderSummary';
+import { EnhancedOrderSummary } from '@/components/pos/EnhancedOrderSummary';
+import { CategoryTabs } from '@/components/pos/CategoryTabs';
+import { UnifiedPOSLayout } from '@/components/pos/UnifiedPOSLayout';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DollarSign, ShoppingBag, Clock } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 // import { useVendorRealtime } from '@/hooks/useVendorRealtime';
 
@@ -218,78 +217,27 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Daily Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{dailyStats.totalSales.toFixed(2)}</div>
-            <Badge variant="secondary" className="text-xs">
-              Live POS Data
-            </Badge>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Orders Processed</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dailyStats.ordersCount}</div>
-            <p className="text-xs text-muted-foreground">
-              Avg: ₹{dailyStats.avgOrderValue.toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Cart</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cartItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Items in cart
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* POS Interface */}
-      <div className="flex gap-6">
+    <UnifiedPOSLayout>
+      <div className="h-full flex">
         {/* Main Content - Menu Grid */}
         <div className="flex-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Menu Items</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <MenuGrid 
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-                cartItems={cartItems}
-                vendorId={vendorId}
-              />
-            </CardContent>
-          </Card>
+          <MenuGrid 
+            onAddToCart={handleAddToCart}
+            onUpdateQuantity={handleUpdateQuantity}
+            cartItems={cartItems}
+            vendorId={vendorId}
+          />
         </div>
 
         {/* Right Sidebar - Enhanced Order Summary */}
-        <VendorOrderSummary
+        <EnhancedOrderSummary
           cartItems={cartItems}
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
           onConfirmPayment={handleConfirmPayment}
-          vendorId={vendorId}
         />
       </div>
-    </div>
+    </UnifiedPOSLayout>
   );
 };
 
