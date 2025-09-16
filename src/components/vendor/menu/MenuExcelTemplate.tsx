@@ -9,7 +9,7 @@ interface MenuExcelTemplateProps {
 
 const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
   const generateTemplate = () => {
-    // Sample menu items data in user's preferred format
+    // Sample menu items data with exactly 6 columns
     const menuItemsData = [
       {
         'Date': '16th Sep',
@@ -17,10 +17,7 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category': 'South Indian',
         'Item Name': 'Masala Dosa',
         'Price': 80,
-        'Half Plate': 50,
-        'Description': 'Crispy crepe with spiced potato filling',
-        'Spice Level': 'Medium',
-        'Dietary Tags': 'Vegetarian,Gluten-Free'
+        'Half Plate': 50
       },
       {
         'Date': '16th Sep',
@@ -28,10 +25,7 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category': 'South Indian',
         'Item Name': 'Idli Sambar',
         'Price': 60,
-        'Half Plate': 40,
-        'Description': 'Steamed rice cakes with lentil curry',
-        'Spice Level': 'Mild',
-        'Dietary Tags': 'Vegetarian,Vegan'
+        'Half Plate': 40
       },
       {
         'Date': '17th Sep',
@@ -39,10 +33,7 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category': 'North Indian',
         'Item Name': 'Paneer Butter Masala',
         'Price': 180,
-        'Half Plate': 120,
-        'Description': 'Rich cottage cheese curry',
-        'Spice Level': 'Medium',
-        'Dietary Tags': 'Vegetarian'
+        'Half Plate': 120
       },
       {
         'Date': 'Daily',
@@ -50,10 +41,7 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category': 'Beverages',
         'Item Name': 'Masala Chai',
         'Price': 25,
-        'Half Plate': '',
-        'Description': 'Traditional spiced tea',
-        'Spice Level': 'Mild',
-        'Dietary Tags': 'Vegetarian'
+        'Half Plate': ''
       },
       {
         'Date': 'Weekly-Monday,Weekly-Friday',
@@ -61,10 +49,7 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Category': 'Street Food',
         'Item Name': 'Samosa',
         'Price': 15,
-        'Half Plate': '',
-        'Description': 'Crispy triangular pastry',
-        'Spice Level': 'Medium',
-        'Dietary Tags': 'Vegetarian'
+        'Half Plate': ''
       }
     ];
 
@@ -75,63 +60,42 @@ const MenuExcelTemplate: React.FC<MenuExcelTemplateProps> = ({ vendorId }) => {
         'Required': 'No',
         'Format': 'Flexible',
         'Example': '16th Sep, 2025-09-16, Daily, Weekly-Monday',
-        'Notes': 'Human-friendly dates like "16th Sep" will be converted to current year. Also accepts YYYY-MM-DD, Daily, or Weekly-[Day]'
+        'Notes': 'Human-friendly dates like "16th Sep" will be converted to current year. Also accepts YYYY-MM-DD, Daily, or Weekly-[Day]. Multiple weekly days: Weekly-Monday,Weekly-Friday'
       },
       {
         'Field': 'Meal Type',
         'Required': 'No',
         'Format': 'Text',
         'Example': 'Breakfast, Lunch, Dinner, Snacks, Anytime',
-        'Notes': 'Type of meal for categorization'
+        'Notes': 'Type of meal for categorization. Aliases: Meal Type, Meal'
       },
       {
         'Field': 'Category',
         'Required': 'Yes',
         'Format': 'Text',
         'Example': 'South Indian, North Indian, Beverages, Street Food',
-        'Notes': 'Categories will be auto-created if they don\'t exist. No separate Categories sheet needed'
+        'Notes': 'Categories will be auto-created if they don\'t exist. Aliases: Category, Category Name'
       },
       {
         'Field': 'Item Name',
         'Required': 'Yes',
         'Format': 'Text',
         'Example': 'Masala Dosa, Chicken Biryani',
-        'Notes': 'Must be unique within the same category'
+        'Notes': 'Must be unique within the same category. Aliases: Item Name, Name'
       },
       {
         'Field': 'Price',
         'Required': 'Yes',
         'Format': 'Number/Text',
         'Example': '80, ₹150, 45.00 rs',
-        'Notes': 'Accepts numbers or text with currency symbols (₹, rs) which will be automatically cleaned'
+        'Notes': 'Accepts numbers or text with currency symbols (₹, rs) which will be automatically cleaned. Aliases: Price, Full Plate, Full Plate Price'
       },
       {
         'Field': 'Half Plate',
         'Required': 'No',
         'Format': 'Number/Text',
         'Example': '50, ₹75, 25.00 rs',
-        'Notes': 'Price for half portion. Also accepts currency symbols. Leave blank if not applicable'
-      },
-      {
-        'Field': 'Description',
-        'Required': 'No',
-        'Format': 'Text',
-        'Example': 'Crispy crepe with spiced potato filling',
-        'Notes': 'Detailed description of the menu item'
-      },
-      {
-        'Field': 'Spice Level',
-        'Required': 'No',
-        'Format': 'Text',
-        'Example': 'Mild, Medium, Hot, Very Hot',
-        'Notes': 'Spice level indicator for customers'
-      },
-      {
-        'Field': 'Dietary Tags',
-        'Required': 'No',
-        'Format': 'Comma-separated',
-        'Example': 'Vegetarian,Vegan,Gluten-Free',
-        'Notes': 'Multiple dietary tags separated by commas'
+        'Notes': 'Price for half portion. Also accepts currency symbols. Leave blank if not applicable. Aliases: Half Plate, Half Plate Price'
       }
     ];
 

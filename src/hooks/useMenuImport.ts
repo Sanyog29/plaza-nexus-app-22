@@ -178,6 +178,21 @@ export const useMenuImport = (vendorId: string) => {
   const normalizeDateFormat = (dateValue: any): string | null => {
     if (!dateValue) return null;
     
+    // Handle Excel numeric dates (serial numbers)
+    if (typeof dateValue === 'number') {
+      try {
+        // Excel date serial number to JavaScript Date
+        // Excel epoch starts at January 1, 1900 but has a leap year bug (treats 1900 as leap year)
+        // So we use the standard conversion: (serial - 25569) * 86400 * 1000
+        const excelDate = new Date((dateValue - 25569) * 86400 * 1000);
+        if (!isNaN(excelDate.getTime())) {
+          return excelDate.toISOString().split('T')[0];
+        }
+      } catch (e) {
+        // Fall through to string parsing
+      }
+    }
+    
     const dateStr = String(dateValue).trim();
     
     // Handle special formats
@@ -239,30 +254,42 @@ export const useMenuImport = (vendorId: string) => {
 
       setUploadProgress(50);
 
-      // Parse Menu Items sheet (try both 'Menu Items' and the main sheet)
+      // Parse Menu Items sheet (prefer 'Menu Items', fallback to first sheet with proper headers)
       let menuItems: MenuItemData[] = [];
       let sheetName = 'Menu Items';
+      const allErrors: ImportError[] = [];
       
-      // If Menu Items sheet doesn't exist, use the first sheet
+      // If Menu Items sheet doesn't exist, find the first sheet with menu headers
       if (!workbook.SheetNames.includes('Menu Items')) {
-        sheetName = workbook.SheetNames[0];
+        for (const name of workbook.SheetNames) {
+          if (name.toLowerCase() === 'instructions') continue; // Skip instructions sheet
+          const sheet = workbook.Sheets[name];
+          const headers = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0] as string[];
+          if (headers && headers.some(h => h && (h.toLowerCase().includes('item') || h.toLowerCase().includes('category')))) {
+            sheetName = name;
+            break;
+          }
+        }
       }
       
       if (workbook.SheetNames.includes(sheetName)) {
         const menuItemsSheet = workbook.Sheets[sheetName];
         const menuItemsRaw = XLSX.utils.sheet_to_json(menuItemsSheet);
         
-        const allErrors: ImportError[] = [];
-        
         menuItems = menuItemsRaw.map((row: any, index) => {
           // Normalize column names with aliases
           const categoryName = normalizeColumnName(row, ['Category', 'Category Name']);
           const itemName = normalizeColumnName(row, ['Item Name', 'Name']);
-          const priceRaw = normalizeColumnName(row, ['Price', 'Full Plate Price']);
+          const priceRaw = normalizeColumnName(row, ['Price', 'Full Plate', 'Full Plate Price']);
           const halfPlateRaw = normalizeColumnName(row, ['Half Plate', 'Half Plate Price']);
           const availability = normalizeColumnName(row, ['Availability', 'Available']);
           const mealType = normalizeColumnName(row, ['Meal Type', 'Meal']);
           const dateRaw = normalizeColumnName(row, ['Date']);
+
+          // Skip completely blank rows (all key fields empty)
+          if (!categoryName && !itemName && !priceRaw) {
+            return null; // Will be filtered out
+          }
 
           // Sanitize prices and normalize date
           const price = sanitizePrice(priceRaw);
@@ -365,17 +392,25 @@ export const useMenuImport = (vendorId: string) => {
             allergens: [],
             image_url: row['Image URL'] || null
           };
-        }).filter(item => item.name && item.category_name); // Filter out invalid items
+        }).filter(item => item !== null && item.name && item.category_name); // Filter out null/invalid items
 
-        setValidationErrors(prev => [...prev, ...allErrors]);
+        setValidationErrors(allErrors);
       }
 
       setUploadProgress(80);
 
+      // Auto-create categories from menu items for preview
+      const uniqueCategories = [...new Set(menuItems.map(item => item.category_name))];
+      categories = uniqueCategories.map((name, index) => ({
+        name,
+        description: `Auto-created category for ${name}`,
+        display_order: index + 1
+      }));
+
       setParsedData({ categories, menuItems });
       setUploadProgress(100);
 
-      if (validationErrors.length === 0) {
+      if (allErrors.length === 0) {
         toast({
           title: "File parsed successfully",
           description: `Found ${categories.length} categories and ${menuItems.length} menu items`,
@@ -383,7 +418,7 @@ export const useMenuImport = (vendorId: string) => {
       } else {
         toast({
           title: "Validation errors found",
-          description: `Found ${validationErrors.length} errors that need to be fixed`,
+          description: `Found ${allErrors.length} errors that need to be fixed`,
           variant: "destructive",
         });
       }
