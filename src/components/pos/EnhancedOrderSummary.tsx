@@ -15,6 +15,7 @@ interface CartItem {
   price: number;
   quantity: number;
   notes?: string;
+  image_url?: string;
 }
 
 interface EnhancedOrderSummaryProps {
@@ -64,7 +65,7 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
   };
 
   return (
-    <Card className="h-full flex flex-col m-4">
+    <Card className="h-full flex flex-col m-2">
       <CardHeader className="border-b border-border pb-4">
         <CardTitle className="flex items-center justify-between">
           <span>Order Summary</span>
@@ -85,7 +86,7 @@ export const EnhancedOrderSummary: React.FC<EnhancedOrderSummaryProps> = ({
               cartItems.map((item) => (
                 <div key={item.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                   <img
-                    src="/placeholder.svg"
+                    src={item.image_url || "/placeholder.svg"}
                     alt={item.name}
                     className="w-12 h-12 rounded-md object-cover flex-shrink-0"
                   />

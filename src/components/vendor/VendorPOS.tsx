@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { MenuGrid } from '@/components/pos/MenuGrid';
 import { EnhancedOrderSummary } from '@/components/pos/EnhancedOrderSummary';
 import { CategoryTabs } from '@/components/pos/CategoryTabs';
+import { UPIPaymentModal } from '@/components/cafeteria/UPIPaymentModal';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 // import { useVendorRealtime } from '@/hooks/useVendorRealtime';
 
 interface CartItem {
@@ -14,6 +15,7 @@ interface CartItem {
   price: number;
   quantity: number;
   notes?: string;
+  image_url?: string;
 }
 
 interface VendorPOSProps {
@@ -22,6 +24,8 @@ interface VendorPOSProps {
 
 const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [dailyStats, setDailyStats] = useState({
     totalSales: 0,
     ordersCount: 0,
@@ -30,6 +34,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Clear cart when returning from invoice page or when specified
   useEffect(() => {
@@ -201,8 +206,12 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
 
       toast({
         title: "Order Created",
-        description: `Order #${billNumber} created successfully. Redirecting to payment...`,
+        description: `Order #${billNumber} created successfully. Proceeding to payment...`,
       });
+
+      // Show payment modal for UPI payment
+      setCurrentOrder(order);
+      setShowPaymentModal(true);
 
       return order;
     } catch (error) {
@@ -215,28 +224,81 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    if (!currentOrder) return;
+
+    try {
+      // Update order status to completed
+      const { error } = await supabase
+        .from('cafeteria_orders')
+        .update({ 
+          status: 'completed',
+          payment_status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentOrder.id);
+
+      if (error) throw error;
+
+      // Clear cart and close modal
+      setCartItems([]);
+      setShowPaymentModal(false);
+      setCurrentOrder(null);
+
+      toast({
+        title: "Payment Successful",
+        description: `Order #${currentOrder.bill_number} has been completed successfully!`,
+      });
+
+      // Navigate to invoice page
+      navigate(`/vendor-portal/invoice/${currentOrder.id}`);
+
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast({
+        title: "Error",
+        description: "Payment successful but failed to update order status",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="flex h-full">
-      {/* Menu Grid - Takes up most of the space */}
-      <div className="flex-1 border-r overflow-y-auto">
-        <MenuGrid 
-          onAddToCart={handleAddToCart}
-          onUpdateQuantity={handleUpdateQuantity}
-          cartItems={cartItems}
-          vendorId={vendorId}
-        />
+    <>
+      <div className="flex h-screen">
+        {/* Menu Grid - Takes up most of the space */}
+        <div className="flex-1 border-r overflow-y-auto">
+          <MenuGrid 
+            onAddToCart={handleAddToCart}
+            onUpdateQuantity={handleUpdateQuantity}
+            cartItems={cartItems}
+            vendorId={vendorId}
+          />
+        </div>
+        
+        {/* Order Summary - Fixed width on the right */}
+        <div className="w-[420px] h-full border-l overflow-y-auto">
+          <EnhancedOrderSummary
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            onConfirmPayment={handleConfirmPayment}
+          />
+        </div>
       </div>
-      
-      {/* Order Summary - Fixed width on the right */}
-      <div className="w-[400px] h-full border-l overflow-y-auto">
-        <EnhancedOrderSummary
-          cartItems={cartItems}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          onConfirmPayment={handleConfirmPayment}
+
+      {/* UPI Payment Modal */}
+      {showPaymentModal && currentOrder && (
+        <UPIPaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          orderId={currentOrder.bill_number}
+          amount={currentOrder.total_amount}
+          items={cartItems}
+          onPaymentSuccess={handlePaymentSuccess}
         />
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

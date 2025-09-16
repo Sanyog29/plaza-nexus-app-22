@@ -27,6 +27,7 @@ interface CartItem {
   price: number;
   quantity: number;
   notes?: string;
+  image_url?: string;
 }
 
 interface MenuGridProps {
@@ -187,6 +188,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
       name: item.name,
       price: item.price,
       quantity: 1,
+      image_url: item.image_url,
     });
   };
 
