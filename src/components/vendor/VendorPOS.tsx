@@ -274,6 +274,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
                 onAddToCart={handleAddToCart}
                 onUpdateQuantity={handleUpdateQuantity}
                 cartItems={cartItems}
+                vendorId={vendorId}
               />
             </CardContent>
           </Card>
