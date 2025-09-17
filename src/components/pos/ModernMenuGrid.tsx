@@ -169,7 +169,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
         </div>
       </div>;
   }
-  return <div className="flex-1 min-w-0 min-h-0 overflow-y-auto bg-background">
+  return <div className="min-w-[880px] flex-shrink-0 min-h-0 overflow-y-auto bg-background">
       {/* Search Bar */}
       <div className="p-4 border-b border-border px-[16px] py-[16px] mx-[5px]">
         <div className="relative max-w-md">
