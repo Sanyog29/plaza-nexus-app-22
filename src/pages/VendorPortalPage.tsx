@@ -55,14 +55,14 @@ const navigation = [
 
 function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
   return (
-    <Sidebar className="w-80 min-w-[20rem] h-full border-r bg-background" collapsible="none">
-      <SidebarContent className="p-lg">
+    <Sidebar className="h-full border-r bg-background" collapsible="icon">
+      <SidebarContent className="p-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="p-md text-xl font-semibold">
+          <SidebarGroupLabel className="px-3 py-2 text-lg font-semibold">
             Vendor Portal
           </SidebarGroupLabel>
-          <SidebarGroupContent className="mt-lg">
-            <SidebarMenu className="spacing-sm">
+          <SidebarGroupContent className="mt-4">
+            <SidebarMenu className="space-y-1">
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton 
@@ -71,10 +71,10 @@ function VendorSidebar({ activeTab, onTabChange }: { activeTab: string; onTabCha
                   >
                     <button 
                       onClick={() => onTabChange(item.value)}
-                      className="flex items-center gap-3 p-md rounded-md transition-colors w-full text-left hover:bg-accent/10"
+                      className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-left hover:bg-accent/10"
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
-                      <span className="text-base font-medium">{item.name}</span>
+                      <span className="text-sm font-medium">{item.name}</span>
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -192,60 +192,60 @@ const VendorPortalPage = () => {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
         <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
         
-        <div className="flex-1 flex flex-col">
-          <header className="h-20 min-h-[5rem] border-b bg-background flex items-center justify-between p-lg">
-            <div className="flex items-center spacing-md">
-              <h1 className="text-2xl font-semibold">{vendor.name}</h1>
-              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-16 border-b bg-background flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl md:text-2xl font-semibold truncate">{vendor.name}</h1>
+              <Badge variant="secondary" className="bg-success/10 text-success border-success/20 hidden sm:inline-flex">
                 Active
               </Badge>
             </div>
-            <div className="flex items-center spacing-md">
+            <div className="flex items-center gap-2 md:gap-4">
               <ThemeToggle />
-              <Badge variant="outline" className="text-sm">
-                {todayMetrics?.pendingOrders || 0} pending orders
+              <Badge variant="outline" className="text-xs md:text-sm">
+                {todayMetrics?.pendingOrders || 0} pending
               </Badge>
             </div>
           </header>
             
-          <main className="flex-1 overflow-hidden">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
                 <div className="h-full flex flex-col">
 
-            <TabsContent value="dashboard" className="flex-1 p-xl spacing-lg overflow-auto">
-              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+            <TabsContent value="dashboard" className="flex-1 overflow-auto">
+              <div className="p-4 md:p-6 space-y-6 max-w-screen-2xl mx-auto">
                 {/* Sales Tracker */}
                 <VendorSalesTracker vendorId={vendor.id} />
 
                 {/* Quick Actions */}
-                <Card className="mt-lg">
-                  <CardHeader className="p-xl">
-                    <CardTitle className="text-2xl">Quick Actions</CardTitle>
-                    <CardDescription className="text-base">
+                <Card>
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="text-xl md:text-2xl">Quick Actions</CardTitle>
+                    <CardDescription className="text-sm md:text-base">
                       Manage your restaurant operations efficiently
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-wrap gap-4 p-xl pt-0">
+                  <CardContent className="flex flex-wrap gap-3 p-4 md:p-6 pt-0">
                     <Button 
                       onClick={() => handleTabChange('orders')}
-                      className="h-12 px-6 text-base"
+                      className="h-10 md:h-12 px-4 md:px-6 text-sm md:text-base"
                     >
-                      <Clock className="h-5 w-5 mr-2" />
+                      <Clock className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                       View Orders ({todayMetrics?.pendingOrders || 0})
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleTabChange('menu')}
-                      className="h-12 px-6 text-base"
+                      className="h-10 md:h-12 px-4 md:px-6 text-sm md:text-base"
                     >
                       Update Menu
                     </Button>
                     <Button 
                       variant="outline"
-                      className="h-12 px-6 text-base"
+                      className="h-10 md:h-12 px-4 md:px-6 text-sm md:text-base"
                     >
                       Create Offer
                     </Button>
@@ -254,20 +254,20 @@ const VendorPortalPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="orders" className="flex-1 p-xl overflow-auto">
-              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+            <TabsContent value="orders" className="flex-1 overflow-auto">
+              <div className="p-4 md:p-6 max-w-screen-2xl mx-auto">
                 <VendorOrderQueue vendorId={vendor.id} />
               </div>
             </TabsContent>
 
-            <TabsContent value="menu" className="flex-1 p-xl overflow-auto">
-              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+            <TabsContent value="menu" className="flex-1 overflow-auto">
+              <div className="p-4 md:p-6 max-w-screen-2xl mx-auto">
                 <VendorMenuManagement vendorId={vendor.id} />
               </div>
             </TabsContent>
 
-            <TabsContent value="store" className="flex-1 p-xl overflow-auto">
-              <div className="container-flex flex-col h-full max-w-7xl mx-auto spacing-xl">
+            <TabsContent value="store" className="flex-1 overflow-auto">
+              <div className="p-4 md:p-6 space-y-6 max-w-screen-2xl mx-auto">
                 <VendorStoreSetup vendorId={vendor.id} />
                 <VendorQRUpload 
                   vendorId={vendor.id}
@@ -280,14 +280,14 @@ const VendorPortalPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="sales" className="flex-1 p-xl overflow-auto">
-              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+            <TabsContent value="sales" className="flex-1 overflow-auto">
+              <div className="p-4 md:p-6 max-w-screen-2xl mx-auto">
                 <VendorSalesTracker vendorId={vendor.id} />
               </div>
             </TabsContent>
 
-            <TabsContent value="analytics" className="flex-1 p-xl overflow-auto">
-              <div className="container-flex flex-col h-full max-w-7xl mx-auto">
+            <TabsContent value="analytics" className="flex-1 overflow-auto">
+              <div className="p-4 md:p-6 max-w-screen-2xl mx-auto">
                 <VendorAnalytics vendorId={vendor.id} />
               </div>
             </TabsContent>

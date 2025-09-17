@@ -49,18 +49,18 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
   return (
     <NavigationErrorBoundary>
       <SidebarProvider defaultOpen={!isMobile}>
-        <div className="min-h-screen flex w-full bg-background">
+        <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
           <NavigationErrorBoundary>
             <AdminSidebar userRole={authUserRole || userRole} userDepartment={userDepartment} />
           </NavigationErrorBoundary>
           
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col min-w-0">
             {/* Header */}
             <NavigationErrorBoundary>
-              <header className="h-16 border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+              <header className="h-16 border-b border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/60 flex-shrink-0">
                 <div className="flex items-center justify-between h-full px-4">
-                  <div className="flex items-center gap-4">
-                    <SidebarTrigger className="lg:hidden" />
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <SidebarTrigger className="lg:hidden flex-shrink-0" />
                     
                     {/* Smart Breadcrumb Navigation */}
                     <div className="flex-1 min-w-0">
@@ -72,10 +72,10 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
                     {!isMobile && (
                       <NavigationErrorBoundary>
-                        <GlobalSearch className="w-64" />
+                        <GlobalSearch className="w-48 md:w-64" />
                       </NavigationErrorBoundary>
                     )}
 
@@ -103,7 +103,7 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
                           <User className="h-4 w-4" />
                         </div>
                         {!isMobile && (
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium truncate max-w-24">
                             {user?.email?.split('@')[0] || 'User'}
                           </span>
                         )}
@@ -116,7 +116,7 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
 
             {/* Main content */}
             <main className="flex-1 overflow-auto">
-              <div className="container max-w-7xl mx-auto p-6">
+              <div className="max-w-screen-2xl mx-auto p-4 md:p-6">
                 <ErrorBoundary>
                   <Outlet />
                 </ErrorBoundary>
