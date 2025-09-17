@@ -335,7 +335,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId, onBackToPortal }) => {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-background pos-container pos-layout pos-emergency-stack pos-no-overflow">
+    <div className="flex flex-col h-full min-h-0 bg-background">
       {/* Modern Header */}
       <ModernPOSHeader 
         customerName="Walk-in Customer"
@@ -359,7 +359,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId, onBackToPortal }) => {
       />
       
       {/* Main Content */}
-      <div className="flex flex-1 min-h-0 overflow-hidden pos-content">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Menu Area */}
         <ModernMenuGrid
           onAddToCart={handleAddToCart}

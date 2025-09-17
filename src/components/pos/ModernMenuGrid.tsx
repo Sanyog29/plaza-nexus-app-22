@@ -184,7 +184,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
 
   if (loading) {
     return (
-      <div className="flex-1 bg-background flex items-center justify-center pos-menu-area">
+      <div className="flex-1 bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="text-muted-foreground">Loading menu items...</p>
@@ -194,7 +194,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto bg-background pos-menu-area touch-action-pan">
+    <div className="flex-1 min-h-0 overflow-y-auto bg-background">
       {/* Search Bar */}
       <div className="p-6 border-b border-border">
         <div className="relative max-w-md">
@@ -219,7 +219,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pos-item-grid pos-item-grid-dense">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredItems.map((item) => {
               const quantityInCart = getItemQuantityInCart(item.id);
               
