@@ -169,9 +169,9 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
         </div>
       </div>;
   }
-  return <div className="flex-1 min-w-0 min-h-0 overflow-y-auto bg-background">
+  return <div className="min-w-[880px] flex-shrink-0 min-h-0 overflow-y-auto bg-background">
       {/* Search Bar */}
-      <div className="p-4 border-b border-border px-[16px] py-[16px] mx-[5px]">
+      <div className="p-4 border-b border-border">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input type="text" placeholder="Search menu items..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
@@ -185,7 +185,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
             <p className="text-muted-foreground mt-2">
               {searchTerm ? "Try adjusting your search" : "No items available in this category"}
             </p>
-          </div> : <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          </div> : <div className="grid grid-cols-4 gap-4">
             {filteredItems.map(item => {
           const quantityInCart = getItemQuantityInCart(item.id);
           return <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-all duration-200">
