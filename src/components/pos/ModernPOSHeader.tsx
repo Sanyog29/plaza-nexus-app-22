@@ -36,5 +36,39 @@ export const ModernPOSHeader: React.FC<ModernPOSHeaderProps> = ({
       day: 'numeric'
     });
   };
-  return;
+  return (
+    <header className="flex items-center justify-between p-4 bg-background border-b border-border">
+      <div className="flex items-center gap-4">
+        <div className="flex flex-col">
+          <h1 className="text-lg font-semibold text-foreground">Order #{orderNumber}</h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <User className="w-4 h-4" />
+            <span>{customerName}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex flex-col items-end text-sm">
+          <div className="flex items-center gap-2 text-foreground">
+            <Clock className="w-4 h-4" />
+            <span className="font-mono">{formatTime(currentTime)}</span>
+          </div>
+          <span className="text-muted-foreground">{formatDate(currentTime)}</span>
+        </div>
+
+        {onBackToPortal && (
+          <Button variant="outline" size="sm" onClick={onBackToPortal}>
+            Back to Portal
+          </Button>
+        )}
+
+        {onCloseOrder && (
+          <Button variant="outline" size="sm" onClick={onCloseOrder}>
+            <X className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+    </header>
+  );
 };
