@@ -24,7 +24,7 @@ export const useVendorMenuItems = (vendorId: string, categoryId?: string) =>
     `,
     filters: categoryId 
       ? { category_id: categoryId }
-      : {},
+      : { 'cafeteria_menu_categories.vendor_id': vendorId },
     orderBy: { column: 'name', ascending: true },
     cacheTime: CACHE_TIMES.DYNAMIC,
     enabled: !!vendorId,

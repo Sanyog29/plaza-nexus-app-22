@@ -18,6 +18,7 @@ import {
 import { useVendorMenuCategories, useVendorMenuItems } from '@/hooks/useVendorMenu';
 import { useCreateOrder } from '@/hooks/useVendorOrders';
 import { Database } from '@/integrations/supabase/types';
+import { EnhancedPaymentModal } from './EnhancedPaymentModal';
 
 type MenuCategory = Database['public']['Tables']['cafeteria_menu_categories']['Row'];
 type MenuItem = Database['public']['Tables']['cafeteria_menu_items']['Row'];
@@ -39,6 +40,7 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [orderType, setOrderType] = useState<'dine-in' | 'takeaway' | 'delivery'>('dine-in');
   const [tableNumber, setTableNumber] = useState('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Fetch vendor data
   const { data: categories = [], isLoading: categoriesLoading } = useVendorMenuCategories(vendorId);
@@ -99,7 +101,10 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
 
   const handleConfirmPayment = () => {
     if (cart.length === 0) return;
+    setShowPaymentModal(true);
+  };
 
+  const handlePaymentSuccess = () => {
     const orderItems = cart.map(item => ({
       item_id: item.id,
       quantity: item.quantity,
@@ -117,6 +122,7 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
       onSuccess: () => {
         clearCart();
         setTableNumber('');
+        setShowPaymentModal(false);
       }
     });
   };
@@ -379,7 +385,7 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
                   Clear Cart
                 </Button>
                 <Button 
-                  className="w-full h-8 text-xs" 
+                  className="w-full h-8 text-xs bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200" 
                   onClick={handleConfirmPayment}
                   disabled={isCreatingOrder}
                 >
@@ -388,13 +394,32 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
                   ) : (
                     <Clock className="w-3 h-3 mr-1" />
                   )}
-                  {isCreatingOrder ? 'Processing...' : 'Confirm Payment'}
+                  {isCreatingOrder ? 'Processing...' : 'Proceed to Payment'}
                 </Button>
               </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Enhanced Payment Modal */}
+      <EnhancedPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        cartItems={cart.map(item => ({
+          id: item.id,
+          name: item.name || 'Item',
+          price: item.price || 0,
+          quantity: item.quantity
+        }))}
+        subtotal={subtotal}
+        tax={tax}
+        discount={discount}
+        total={total}
+        onPaymentSuccess={handlePaymentSuccess}
+        orderType={orderType}
+        tableNumber={tableNumber}
+      />
     </div>
   );
 }
