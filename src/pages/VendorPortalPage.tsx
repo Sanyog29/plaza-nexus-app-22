@@ -275,7 +275,7 @@ const VendorPortalPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="pos" className="flex-1 min-h-0 p-0 h-full w-full">
+            <TabsContent value="pos" className="flex-1 min-h-0 p-0 h-[100dvh] w-full pos-no-overflow">
               <div className="h-full w-full">
                 <VendorPOS vendorId={vendor.id} onBackToPortal={() => handleTabChange('dashboard')} />
               </div>
