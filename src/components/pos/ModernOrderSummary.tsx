@@ -152,9 +152,9 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
                     <h4 className="text-sm font-medium text-foreground truncate">
                       {item.name}
                     </h4>
-                    <p className="text-xs text-muted-foreground">
-                      ${item.price.toFixed(2)} each
-                    </p>
+                     <p className="text-xs text-muted-foreground">
+                       ₹{item.price.toFixed(0)} each
+                     </p>
                     {item.notes && (
                       <p className="text-xs text-muted-foreground italic">
                         {item.notes}
@@ -223,22 +223,22 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
           <div className="p-6 space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground">${subtotal.toFixed(2)}</span>
+              <span className="text-foreground">₹{subtotal.toFixed(0)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Tax (10%)</span>
-              <span className="text-foreground">${tax.toFixed(2)}</span>
+              <span className="text-foreground">₹{tax.toFixed(0)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-success">Discount (5%)</span>
-                <span className="text-success">-${discount.toFixed(2)}</span>
+                <span className="text-success">-₹{discount.toFixed(0)}</span>
               </div>
             )}
             <Separator />
             <div className="flex justify-between font-semibold">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>₹{total.toFixed(0)}</span>
             </div>
           </div>
 
@@ -273,7 +273,7 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
               size="lg"
             >
               Place Order
-              <span className="ml-2">${total.toFixed(2)}</span>
+              <span className="ml-2">₹{total.toFixed(0)}</span>
             </Button>
           </div>
         </div>

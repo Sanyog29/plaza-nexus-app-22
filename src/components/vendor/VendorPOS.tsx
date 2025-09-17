@@ -136,29 +136,33 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId, onBackToPortal }) => {
 
   const fetchCategories = async () => {
     try {
-      // Mock categories data
-      const mockCategories: MenuCategory[] = [
-        { id: "beverages", name: "Beverages", display_order: 1 },
-        { id: "main-course", name: "Main Course", display_order: 2 },
-        { id: "desserts", name: "Desserts", display_order: 3 },
-        { id: "snacks", name: "Snacks", display_order: 4 }
-      ];
+      // Fetch real categories from database
+      const { data: categoriesData, error } = await supabase
+        .from('cafeteria_menu_categories')
+        .select('id, name, display_order')
+        .eq('vendor_id', vendorId)
+        .order('display_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching categories:', error);
+        return;
+      }
+
+      const transformedCategories: MenuCategory[] = (categoriesData || []).map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        display_order: cat.display_order
+      }));
       
-      setCategories(mockCategories);
+      setCategories(transformedCategories);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
   };
 
   const getCategoryItemCount = (categoryId: string): number => {
-    // Mock item counts based on category
-    const itemCounts: { [key: string]: number } = {
-      "beverages": 5,
-      "main-course": 8,
-      "desserts": 4,
-      "snacks": 6
-    };
-    return itemCounts[categoryId] || 0;
+    // This will be calculated dynamically based on actual menu items
+    return 0;
   };
 
   const handleAddToCart = (newItem: CartItem) => {

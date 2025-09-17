@@ -62,73 +62,51 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
     try {
       setLoading(true);
       
-      // Mock data for categories and menu items
-      const mockCategories: MenuCategory[] = [
-        { id: "beverages", name: "Beverages", display_order: 1 },
-        { id: "main-course", name: "Main Course", display_order: 2 },
-        { id: "desserts", name: "Desserts", display_order: 3 },
-        { id: "snacks", name: "Snacks", display_order: 4 }
-      ];
+      // Fetch real categories from database
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('cafeteria_menu_categories')
+        .select('id, name, display_order')
+        .eq('vendor_id', vendorId)
+        .order('display_order', { ascending: true });
 
-      const mockMenuItems: MenuItem[] = [
-        {
-          id: "coffee-latte",
-          name: "Caffe Latte",
-          price: 4.50,
-          available: true,
-          category_id: "beverages",
-          description: "Rich espresso with steamed milk",
-          rating: 4.5
-        },
-        {
-          id: "margherita-pizza",
-          name: "Margherita Pizza",
-          price: 12.99,
-          available: true,
-          category_id: "main-course",
-          description: "Classic pizza with tomato, mozzarella, and basil",
-          rating: 4.8
-        },
-        {
-          id: "chocolate-cake",
-          name: "Chocolate Cake",
-          price: 6.99,
-          available: true,
-          category_id: "desserts",
-          description: "Decadent chocolate cake with rich frosting",
-          rating: 4.7
-        },
-        {
-          id: "french-fries",
-          name: "French Fries",
-          price: 3.99,
-          available: true,
-          category_id: "snacks",
-          description: "Crispy golden potato fries",
-          rating: 4.2
-        },
-        {
-          id: "cappuccino",
-          name: "Cappuccino",
-          price: 4.25,
-          available: true,
-          category_id: "beverages",
-          description: "Espresso with steamed milk foam",
-          rating: 4.6
-        },
-        {
-          id: "burger-deluxe",
-          name: "Deluxe Burger",
-          price: 15.99,
-          available: true,
-          category_id: "main-course",
-          description: "Premium beef burger with all fixings",
-          rating: 4.9
-        }
-      ];
+      if (categoriesError) {
+        console.error('Error fetching categories:', categoriesError);
+        throw categoriesError;
+      }
 
-      setCategories(mockCategories);
-      setMenuItems(mockMenuItems);
+      // Fetch real menu items from database
+      const { data: menuItemsData, error: menuItemsError } = await supabase
+        .from('vendor_menu_items')
+        .select('id, name, price, description, image_url, is_available, category_id, average_rating')
+        .eq('vendor_id', vendorId)
+        .eq('is_available', true)
+        .order('name', { ascending: true });
+
+      if (menuItemsError) {
+        console.error('Error fetching menu items:', menuItemsError);
+        throw menuItemsError;
+      }
+
+      // Transform the data to match our interface
+      const transformedCategories: MenuCategory[] = (categoriesData || []).map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        display_order: cat.display_order
+      }));
+
+      const transformedMenuItems: MenuItem[] = (menuItemsData || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price),
+        available: item.is_available ?? true,
+        category_id: item.category_id,
+        description: item.description,
+        image_url: item.image_url,
+        rating: item.average_rating ? Number(item.average_rating) : undefined
+      }));
+
+      setCategories(transformedCategories);
+      setMenuItems(transformedMenuItems);
     } catch (error) {
       console.error('Error fetching menu data:', error);
       toast({
@@ -206,10 +184,10 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground mt-2">Loading menu items...</p>
+      <div className="flex-1 bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading menu items...</p>
         </div>
       </div>
     );
@@ -241,7 +219,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
             </p>
           </div>
         ) : (
-          <div className="pos-item-grid">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredItems.map((item) => {
               const quantityInCart = getItemQuantityInCart(item.id);
               
@@ -261,7 +239,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
                     )}
                     
                     {/* Rating Badge */}
-                    {item.rating && (
+                    {item.rating && item.rating > 0 && (
                       <Badge className="absolute top-2 left-2 bg-card text-card-foreground">
                         <Star className="h-3 w-3 mr-1 fill-current" />
                         {item.rating.toFixed(1)}
@@ -291,7 +269,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
                       
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-primary">
-                          ${item.price.toFixed(2)}
+                          ₹{item.price.toFixed(0)}
                         </span>
                       </div>
                       
