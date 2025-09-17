@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,106 +12,22 @@ import {
   X, 
   RefreshCw, 
   Search,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
+import { useVendorMenuCategories, useVendorMenuItems } from '@/hooks/useVendorMenu';
+import { useCreateOrder } from '@/hooks/useVendorOrders';
+import { Database } from '@/integrations/supabase/types';
 
-interface MenuItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-  available: boolean;
-  description?: string;
-}
+type MenuCategory = Database['public']['Tables']['cafeteria_menu_categories']['Row'];
+type MenuItem = Database['public']['Tables']['cafeteria_menu_items']['Row'];
 
 interface CartItem extends MenuItem {
   quantity: number;
   notes?: string;
 }
 
-const mockMenuItems: MenuItem[] = [
-  {
-    id: '1',
-    name: 'Butter Chicken',
-    price: 12.64,
-    image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=300&h=200&fit=crop',
-    category: 'main-course',
-    available: true,
-    description: 'Creamy tomato-based curry with tender chicken'
-  },
-  {
-    id: '2',
-    name: 'French Fries',
-    price: 7.50,
-    image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=300&h=200&fit=crop',
-    category: 'appetizer',
-    available: true,
-    description: 'Crispy golden fries with seasoning'
-  },
-  {
-    id: '3',
-    name: 'Roast Beef',
-    price: 29.00,
-    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=200&fit=crop',
-    category: 'main-course',
-    available: true,
-    description: 'Slow-roasted beef with herbs'
-  },
-  {
-    id: '4',
-    name: 'Sauerkraut',
-    price: 11.55,
-    image: 'https://images.unsplash.com/photo-1505253213348-cd54c92b37e3?w=300&h=200&fit=crop',
-    category: 'appetizer',
-    available: true,
-    description: 'Traditional fermented cabbage'
-  },
-  {
-    id: '5',
-    name: 'Beef Kebab',
-    price: 14.95,
-    image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?w=300&h=200&fit=crop',
-    category: 'main-course',
-    available: false,
-    description: 'Grilled beef skewers with spices'
-  },
-  {
-    id: '6',
-    name: 'Fish and Chips',
-    price: 23.05,
-    image: 'https://images.unsplash.com/photo-1544982503-9f984c14501a?w=300&h=200&fit=crop',
-    category: 'main-course',
-    available: true,
-    description: 'Crispy battered fish with chips'
-  },
-  {
-    id: '7',
-    name: 'Chocolate Cake',
-    price: 8.99,
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=200&fit=crop',
-    category: 'dessert',
-    available: true,
-    description: 'Rich chocolate layer cake'
-  },
-  {
-    id: '8',
-    name: 'Mango Smoothie',
-    price: 5.50,
-    image: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=300&h=200&fit=crop',
-    category: 'beverages',
-    available: true,
-    description: 'Fresh mango blended smoothie'
-  }
-];
-
-const categories = [
-  { id: 'all', name: 'All', count: mockMenuItems.length },
-  { id: 'main-course', name: 'Main Course', count: mockMenuItems.filter(item => item.category === 'main-course').length },
-  { id: 'appetizer', name: 'Appetizer', count: mockMenuItems.filter(item => item.category === 'appetizer').length },
-  { id: 'dessert', name: 'Dessert', count: mockMenuItems.filter(item => item.category === 'dessert').length },
-  { id: 'beverages', name: 'Beverages', count: mockMenuItems.filter(item => item.category === 'beverages').length },
-];
+// Remove mock data - using real database data now
 
 interface VendorPOSSystemProps {
   vendorId: string;
@@ -121,15 +37,38 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [orderType, setOrderType] = useState<'dine-in' | 'takeaway' | 'delivery'>('dine-in');
+  const [tableNumber, setTableNumber] = useState('');
 
-  const filteredItems = mockMenuItems.filter(item => {
-    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Fetch vendor data
+  const { data: categories = [], isLoading: categoriesLoading } = useVendorMenuCategories(vendorId);
+  const { data: menuItems = [], isLoading: itemsLoading } = useVendorMenuItems(vendorId);
+  const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
+
+  // Process categories with counts
+  const categoriesWithCounts = useMemo(() => {
+    const allCategory = { id: 'all', name: 'All', count: menuItems.length };
+    const categoryList = categories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      count: menuItems.filter(item => item.category_id === cat.id).length
+    }));
+    return [allCategory, ...categoryList];
+  }, [categories, menuItems]);
+
+  // Filter items
+  const filteredItems = useMemo(() => {
+    return menuItems.filter(item => {
+      const matchesCategory = activeCategory === 'all' || item.category_id === activeCategory;
+      const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [menuItems, activeCategory, searchQuery]);
+
+  const isLoading = categoriesLoading || itemsLoading;
 
   const addToCart = (menuItem: MenuItem) => {
-    if (!menuItem.available) return;
+    if (!menuItem.is_available) return;
     
     setCart(prev => {
       const existingItem = prev.find(item => item.id === menuItem.id);
@@ -158,9 +97,33 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
 
   const clearCart = () => setCart([]);
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.1;
-  const discount = subtotal > 50 ? subtotal * 0.05 : 0;
+  const handleConfirmPayment = () => {
+    if (cart.length === 0) return;
+
+    const orderItems = cart.map(item => ({
+      item_id: item.id,
+      quantity: item.quantity,
+      unit_price: item.price || 0,
+      special_instructions: item.notes
+    }));
+
+    createOrder({
+      vendor_id: vendorId,
+      total_amount: total,
+      service_type: orderType,
+      table_number: orderType === 'dine-in' ? tableNumber : undefined,
+      items: orderItems,
+    }, {
+      onSuccess: () => {
+        clearCart();
+        setTableNumber('');
+      }
+    });
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
+  const tax = subtotal * 0.18; // GST 18%
+  const discount = subtotal > 500 ? subtotal * 0.05 : 0; // 5% discount on orders above ₹500
   const total = subtotal + tax - discount;
 
   return (
@@ -200,76 +163,99 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
 
         {/* Category Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors",
-                activeCategory === category.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted hover:bg-muted/80"
-              )}
-            >
-              <span>{category.name}</span>
-              <Badge variant="secondary" className="text-xs">
-                {category.count}
-              </Badge>
-            </button>
-          ))}
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm text-muted-foreground">Loading categories...</span>
+            </div>
+          ) : (
+            categoriesWithCounts.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors",
+                  activeCategory === category.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted hover:bg-muted/80"
+                )}
+              >
+                <span>{category.name}</span>
+                <Badge variant="secondary" className="text-xs">
+                  {category.count}
+                </Badge>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex min-w-0 overflow-hidden">
         <div className="flex-1 p-4 overflow-y-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredItems.map((item) => (
-              <Card key={item.id} className="overflow-hidden group hover:shadow-md transition-shadow">
-                <div className="relative">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-32 object-cover"
-                  />
-                  <Badge 
-                    className={cn(
-                      "absolute top-2 right-2 text-xs",
-                      item.available 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-red-100 text-red-800"
-                    )}
-                  >
-                    {item.available ? 'Available' : 'Not Available'}
-                  </Badge>
-                </div>
-                
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-sm mb-1">{item.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{item.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-lg text-primary">${item.price.toFixed(2)}</span>
-                    <Button
-                      size="sm"
-                      onClick={() => addToCart(item)}
-                      disabled={!item.available}
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                <p className="text-muted-foreground">Loading menu items...</p>
+              </div>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-muted-foreground">No items found</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredItems.map((item) => (
+                <Card key={item.id} className="overflow-hidden group hover:shadow-md transition-shadow">
+                  <div className="relative">
+                    <img
+                      src={item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop'}
+                      alt={item.name || 'Menu item'}
+                      className="w-full h-32 object-cover"
+                    />
+                    <Badge 
                       className={cn(
-                        "h-8 px-3 text-xs",
-                        !item.available && "opacity-50 cursor-not-allowed"
+                        "absolute top-2 right-2 text-xs",
+                        item.is_available 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
                       )}
                     >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Add to Cart
-                    </Button>
+                      {item.is_available ? 'Available' : 'Not Available'}
+                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  
+                  <CardContent className="p-3">
+                    <h3 className="font-semibold text-sm mb-1">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{item.description}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-sm text-primary">₹{(item.price || 0).toFixed(2)}</span>
+                      <Button
+                        size="sm"
+                        onClick={() => addToCart(item)}
+                        disabled={!item.is_available}
+                        className={cn(
+                          "h-7 px-2 text-xs flex-shrink-0",
+                          !item.is_available && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Order Summary */}
-        <div className="w-80 bg-card border-l flex flex-col flex-shrink-0">
+        <div className="w-64 bg-card border-l flex flex-col flex-shrink-0">
           <div className="p-4 border-b">
             <div className="flex items-center justify-between mb-2">
               <h2 className="font-semibold text-lg">Order Summary</h2>
@@ -286,42 +272,41 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
             ) : (
               <div className="space-y-3">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex gap-3 p-3 bg-muted/30 rounded-lg">
+                  <div key={item.id} className="flex gap-2 p-2 bg-muted/30 rounded-lg">
                     <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-12 h-12 object-cover rounded"
+                      src={item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop'}
+                      alt={item.name || 'Menu item'}
+                      className="w-10 h-10 object-cover rounded"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm">{item.name}</h4>
-                      <p className="text-xs text-muted-foreground">Notes: None • Size: Large</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
-                        <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-xs">{item.name}</h4>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="font-semibold text-xs">₹{((item.price || 0) * item.quantity).toFixed(2)}</span>
+                        <div className="flex items-center gap-1">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-6 w-6 p-0"
+                            className="h-5 w-5 p-0"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="w-2 h-2" />
                           </Button>
-                          <span className="text-sm w-8 text-center">({item.quantity})</span>
+                          <span className="text-xs w-6 text-center">{item.quantity}</span>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-6 w-6 p-0"
+                            className="h-5 w-5 p-0"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-2 h-2" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                            className="h-5 w-5 p-0 text-red-500 hover:text-red-600"
                             onClick={() => updateQuantity(item.id, 0)}
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-2 h-2" />
                           </Button>
                         </div>
                       </div>
@@ -334,59 +319,76 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
 
           {/* Order Totals */}
           {cart.length > 0 && (
-            <div className="p-4 border-t space-y-4">
-              <div className="space-y-2 text-sm">
+            <div className="p-3 border-t space-y-3">
+              <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Taxes</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>GST (18%)</span>
+                  <span>₹{tax.toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span>-${discount.toFixed(2)}</span>
+                    <span>Discount (5%)</span>
+                    <span>-₹{discount.toFixed(2)}</span>
                   </div>
                 )}
                 <Separator />
-                <div className="flex justify-between font-semibold text-lg">
+                <div className="flex justify-between font-semibold text-sm">
                   <span>Total Payment</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs">
                   <span>Order Type</span>
-                  <select className="text-right bg-transparent border-none text-sm">
-                    <option>Dine-in</option>
-                    <option>Takeaway</option>
-                    <option>Delivery</option>
+                  <select 
+                    value={orderType}
+                    onChange={(e) => setOrderType(e.target.value as any)}
+                    className="text-right bg-transparent border-none text-xs"
+                  >
+                    <option value="dine-in">Dine-in</option>
+                    <option value="takeaway">Takeaway</option>
+                    <option value="delivery">Delivery</option>
                   </select>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Select Table</span>
-                  <select className="text-right bg-transparent border-none text-sm">
-                    <option>A-12B</option>
-                    <option>A-13A</option>
-                    <option>B-01C</option>
-                  </select>
-                </div>
+                {orderType === 'dine-in' && (
+                  <div className="flex justify-between text-xs">
+                    <span>Table Number</span>
+                    <input 
+                      type="text"
+                      value={tableNumber}
+                      onChange={(e) => setTableNumber(e.target.value)}
+                      placeholder="A-12B"
+                      className="w-16 text-right bg-transparent border-none text-xs"
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full h-8 text-xs"
                   onClick={clearCart}
+                  disabled={isCreatingOrder}
                 >
                   Clear Cart
                 </Button>
-                <Button className="w-full">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Confirm Payment
+                <Button 
+                  className="w-full h-8 text-xs" 
+                  onClick={handleConfirmPayment}
+                  disabled={isCreatingOrder}
+                >
+                  {isCreatingOrder ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Clock className="w-3 h-3 mr-1" />
+                  )}
+                  {isCreatingOrder ? 'Processing...' : 'Confirm Payment'}
                 </Button>
               </div>
             </div>
