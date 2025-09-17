@@ -41,13 +41,11 @@ import VendorAnalytics from '@/components/vendor/VendorAnalytics';
 import VendorHeader from '@/components/vendor/VendorHeader';
 import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
-import VendorPOS from '@/components/vendor/VendorPOS';
 import VendorQRUpload from '@/components/vendor/VendorQRUpload';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const navigation = [
   { name: 'Dashboard', value: 'dashboard', icon: LayoutDashboard },
-  { name: 'POS', value: 'pos', icon: ShoppingCart },
   { name: 'Orders', value: 'orders', icon: ShoppingBag },
   { name: 'Menu', value: 'menu', icon: ChefHat },
   { name: 'Store Setup', value: 'store', icon: Settings },
@@ -98,21 +96,8 @@ const VendorPortalPage = () => {
     const tabFromUrl = searchParams.get('tab');
     const clearCart = searchParams.get('clearCart');
     
-    if (tabFromUrl && ['dashboard', 'pos', 'orders', 'menu', 'store', 'sales', 'analytics'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['dashboard', 'orders', 'menu', 'store', 'sales', 'analytics'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
-    }
-    
-    // If clearCart parameter is present, switch to POS tab and clear URL params after a delay
-    if (clearCart === 'true') {
-      setActiveTab('pos');
-      // Clear the clearCart parameter from URL after processing
-      setTimeout(() => {
-        setSearchParams(prev => {
-          const newParams = new URLSearchParams(prev);
-          newParams.delete('clearCart');
-          return newParams;
-        });
-      }, 100);
     }
   }, [searchParams, setSearchParams]);
 
@@ -208,31 +193,25 @@ const VendorPortalPage = () => {
   return (
     <SidebarProvider defaultOpen>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Conditionally render sidebar - hide when POS is active */}
-        {activeTab !== 'pos' && (
-          <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-        )}
+        <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
         
         <div className="flex-1 flex flex-col">
-          {/* Conditionally render header - hide when POS is active */}
-          {activeTab !== 'pos' && (
-            <header className="h-20 min-h-[5rem] border-b bg-background flex items-center justify-between p-lg">
-              <div className="flex items-center spacing-md">
-                <h1 className="text-2xl font-semibold">{vendor.name}</h1>
-                <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                  Active
-                </Badge>
-              </div>
-              <div className="flex items-center spacing-md">
-                <ThemeToggle />
-                <Badge variant="outline" className="text-sm">
-                  {todayMetrics?.pendingOrders || 0} pending orders
-                </Badge>
-              </div>
-            </header>
-          )}
+          <header className="h-20 min-h-[5rem] border-b bg-background flex items-center justify-between p-lg">
+            <div className="flex items-center spacing-md">
+              <h1 className="text-2xl font-semibold">{vendor.name}</h1>
+              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                Active
+              </Badge>
+            </div>
+            <div className="flex items-center spacing-md">
+              <ThemeToggle />
+              <Badge variant="outline" className="text-sm">
+                {todayMetrics?.pendingOrders || 0} pending orders
+              </Badge>
+            </div>
+          </header>
             
-            <main className="flex-1 overflow-hidden">
+          <main className="flex-1 overflow-hidden">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
                 <div className="h-full flex flex-col">
 
@@ -272,12 +251,6 @@ const VendorPortalPage = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pos" className="flex-1 min-h-0 p-0 h-full w-full">
-              <div className="h-full w-full">
-                <VendorPOS vendorId={vendor.id} onBackToPortal={() => handleTabChange('dashboard')} />
               </div>
             </TabsContent>
 

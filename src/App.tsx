@@ -60,9 +60,7 @@ import StaffServicesPage from "./pages/StaffServicesPage";
 import VendorPortalPage from "./pages/VendorPortalPage";
 import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
 import DeliveryPage from "./pages/DeliveryPage";
-import POSPage from "./pages/POSPage";
 import AccessDeniedPage from "./components/auth/AccessDeniedPage";
-import { POSLayout } from "./components/pos";
 import VendorInvoicePageNew from "./components/vendor/VendorInvoicePageNew";
 
 // New simplified pages
@@ -133,11 +131,6 @@ const App = () => (
                   <VendorInvoicePageNew />
                 </ProtectedRoute>
               } />
-              
-              {/* POS Routes with Special Layout */}
-              <Route path="/pos" element={<POSLayout />}>
-                <Route index element={<POSPage />} />
-              </Route>
               
               <Route path="/access-denied" element={<AccessDeniedPage />} />
               <Route path="/services" element={<ServicesPage />} />
