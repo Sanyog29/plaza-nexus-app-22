@@ -73,7 +73,7 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-md bg-card border-l border-border flex flex-col h-full">
+    <div className="w-full max-w-md bg-card border-l border-border flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <h2 className="text-lg font-semibold text-foreground">Current Order</h2>
@@ -265,7 +265,7 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
           </div>
 
           {/* Place Order Button */}
-          <div className="p-6">
+          <div className="p-6 sticky bottom-0 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border-t border-border mobile-safe">
             <Button
               onClick={handleConfirmPayment}
               disabled={cartItems.length === 0 || (orderType === "dine-in" && !selectedTable)}
