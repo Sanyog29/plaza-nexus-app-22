@@ -12,9 +12,7 @@ const POSLayout = () => {
         <POSHeader />
         <main className="flex-1 overflow-hidden">
           <ScrollArea className="h-full w-full">
-            <div className="min-w-max h-full">
-              <Outlet />
-            </div>
+            <Outlet />
           </ScrollArea>
         </main>
       </div>
