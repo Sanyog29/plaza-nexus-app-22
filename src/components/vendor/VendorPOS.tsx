@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { MenuGrid } from '@/components/pos/MenuGrid';
-import { EnhancedOrderSummary } from '@/components/pos/EnhancedOrderSummary';
-import { CategoryTabs } from '@/components/pos/CategoryTabs';
-import { UPIPaymentModal } from '@/components/cafeteria/UPIPaymentModal';
-import { useToast } from '@/hooks/use-toast';
+import { ModernMenuGrid } from '../pos/ModernMenuGrid';
+import { ModernOrderSummary } from '../pos/ModernOrderSummary';
+import { ModernPOSHeader } from '../pos/ModernPOSHeader';
+import { ModernCategoryTabs } from '../pos/ModernCategoryTabs';
+import { UPIPaymentModal } from '../cafeteria/UPIPaymentModal';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-// import { useVendorRealtime } from '@/hooks/useVendorRealtime';
 
 interface CartItem {
   id: string;
@@ -16,6 +16,12 @@ interface CartItem {
   quantity: number;
   notes?: string;
   image_url?: string;
+}
+
+interface MenuCategory {
+  id: string;
+  name: string;
+  display_order?: number;
 }
 
 interface VendorPOSProps {
@@ -28,20 +34,22 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [dailyStats, setDailyStats] = useState({
     totalSales: 0,
-    ordersCount: 0,
-    avgOrderValue: 0
+    orderCount: 0,
+    averageOrder: 0
   });
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Clear cart when returning from invoice page or when specified
+  // Clear cart when returning from invoice page
   useEffect(() => {
     const shouldClear = searchParams.get('clearCart');
     if (shouldClear === 'true') {
       setCartItems([]);
-      // Remove the clearCart parameter from URL
       setSearchParams({});
       toast({
         title: "New Transaction",
@@ -50,62 +58,41 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
     }
   }, [searchParams, setSearchParams, toast]);
 
-  // Fetch today's stats on mount
   useEffect(() => {
     fetchTodayStats();
-  }, [vendorId]);
+    fetchCategories();
+  }, []);
 
-  const fetchTodayStats = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { data: orders, error } = await supabase
-        .from('cafeteria_orders')
-        .select('total_amount, status')
-        .eq('vendor_id', vendorId)
-        .gte('created_at', `${today}T00:00:00`)
-        .lt('created_at', `${today}T23:59:59`)
-        .in('status', ['completed', 'paid']);
-
-      if (error) throw error;
-
-      const totalSales = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
-      const ordersCount = orders?.length || 0;
-      const avgOrderValue = ordersCount > 0 ? totalSales / ordersCount : 0;
-
-      setDailyStats({
-        totalSales,
-        ordersCount,
-        avgOrderValue
-      });
-    } catch (error) {
-      console.error('Error fetching today stats:', error);
-    }
-  };
-
-  // Set up real-time updates for vendor orders
+  // Real-time listener for order updates
   useEffect(() => {
     const channel = supabase
-      .channel(`vendor-orders-${vendorId}`)
+      .channel('order-updates')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'cafeteria_orders',
-          filter: `vendor_id=eq.${vendorId}`
+          table: 'cafeteria_orders'
         },
         (payload) => {
           console.log('Order update received:', payload);
-          fetchTodayStats(); // Refresh stats on any order change
+          fetchTodayStats(); // Refresh stats when orders change
           
-          // Handle completed orders specifically
-          if (payload.eventType === 'UPDATE' && 
-              (payload.new?.status === 'completed' || payload.new?.payment_status === 'paid') && 
-              payload.old?.status !== 'completed') {
+          // Show notifications for completed orders
+          if (payload.eventType === 'UPDATE' && payload.new?.status === 'completed') {
             toast({
               title: "Order Completed",
-              description: `Order #${payload.new?.bill_number || payload.new?.id.slice(0, 8)} has been paid!`,
+              description: `Order #${payload.new.id} has been completed.`,
+              variant: "default"
+            });
+          }
+          
+          // Show notifications for paid orders
+          if (payload.eventType === 'UPDATE' && payload.new?.payment_status === 'paid') {
+            toast({
+              title: "Payment Received",
+              description: `Payment received for Order #${payload.new.id}.`,
+              variant: "default"
             });
           }
         }
@@ -115,7 +102,63 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [vendorId, toast]);
+  }, [toast]);
+
+  const fetchTodayStats = async () => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const { data, error } = await supabase
+        .from('cafeteria_orders')
+        .select('total_amount')
+        .gte('created_at', today.toISOString())
+        .lt('created_at', tomorrow.toISOString());
+
+      if (error) throw error;
+
+      const totalSales = data?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+      const orderCount = data?.length || 0;
+      const averageOrder = orderCount > 0 ? totalSales / orderCount : 0;
+
+      setDailyStats({
+        totalSales,
+        orderCount,
+        averageOrder
+      });
+    } catch (error) {
+      console.error('Error fetching today stats:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      // Mock categories data
+      const mockCategories: MenuCategory[] = [
+        { id: "beverages", name: "Beverages", display_order: 1 },
+        { id: "main-course", name: "Main Course", display_order: 2 },
+        { id: "desserts", name: "Desserts", display_order: 3 },
+        { id: "snacks", name: "Snacks", display_order: 4 }
+      ];
+      
+      setCategories(mockCategories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const getCategoryItemCount = (categoryId: string): number => {
+    // Mock item counts based on category
+    const itemCounts: { [key: string]: number } = {
+      "beverages": 5,
+      "main-course": 8,
+      "desserts": 4,
+      "snacks": 6
+    };
+    return itemCounts[categoryId] || 0;
+  };
 
   const handleAddToCart = (newItem: CartItem) => {
     setCartItems(prev => {
@@ -159,7 +202,12 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
     });
   };
 
-  const handleConfirmPayment = async (paymentData: any) => {
+  const handleConfirmPayment = async (orderDetails: {
+    orderType: string;
+    selectedTable?: string;
+    customerName: string;
+    paymentMethod: string;
+  }) => {
     if (cartItems.length === 0) {
       toast({
         title: "Empty Cart",
@@ -171,9 +219,9 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
 
     try {
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const taxes = subtotal * (paymentData.taxRate || 0.1);
-      const discount = paymentData.discount || 0;
-      const serviceCharge = paymentData.serviceCharge || 0;
+      const taxes = subtotal * 0.1; // 10% tax
+      const discount = 0; // No discount for now
+      const serviceCharge = 0; // No service charge for now
       const total = subtotal + taxes + serviceCharge - discount;
 
       // Generate bill number
@@ -189,10 +237,10 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
           discount_applied: discount,
           status: 'pending',
           payment_status: 'pending',
-          service_type: paymentData.orderType || 'dine-in',
+          service_type: orderDetails.orderType || 'dine-in',
           order_type: 'instant',
-          table_number: paymentData.tableNumber,
-          customer_instructions: paymentData.customerName !== 'Walk-in Customer' ? `Customer: ${paymentData.customerName}${paymentData.customerPhone ? `, Phone: ${paymentData.customerPhone}` : ''}` : null,
+          table_number: orderDetails.selectedTable,
+          customer_instructions: orderDetails.customerName !== 'Walk-in Customer' ? `Customer: ${orderDetails.customerName}` : null,
           bill_number: billNumber,
           pickup_time: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         })
@@ -222,8 +270,8 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
       // Update daily stats immediately
       setDailyStats(prev => ({
         totalSales: prev.totalSales + total,
-        ordersCount: prev.ordersCount + 1,
-        avgOrderValue: (prev.totalSales + total) / (prev.ordersCount + 1)
+        orderCount: prev.orderCount + 1,
+        averageOrder: (prev.totalSales + total) / (prev.orderCount + 1)
       }));
 
       toast({
@@ -282,32 +330,49 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   };
 
   return (
-    <>
-      <div className="pos-layout">
-        <div className="pos-content bg-background">
-        {/* Menu Grid - Uses pos-menu-area for responsive layout */}
-        <div className="pos-menu-area">
-          <MenuGrid 
-            onAddToCart={handleAddToCart}
-            onUpdateQuantity={handleUpdateQuantity}
-            cartItems={cartItems}
-            vendorId={vendorId}
-          />
-        </div>
+    <div className="flex flex-col h-screen bg-background">
+      {/* Modern Header */}
+      <ModernPOSHeader 
+        customerName="Walk-in Customer"
+        orderNumber={dailyStats.orderCount.toString().padStart(3, '0')}
+        onCloseOrder={() => {
+          setCartItems([]);
+          toast({
+            title: "Order Closed",
+            description: "Current order has been cleared."
+          });
+        }}
+      />
+      
+      {/* Category Navigation */}
+      <ModernCategoryTabs
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        getCategoryItemCount={getCategoryItemCount}
+      />
+      
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Menu Area */}
+        <ModernMenuGrid
+          onAddToCart={handleAddToCart}
+          onUpdateQuantity={handleUpdateQuantity}
+          cartItems={cartItems}
+          vendorId={vendorId}
+          selectedCategory={selectedCategory}
+        />
         
-        {/* Order Summary - Uses pos-order-summary for responsive behavior */}
-        <div className="pos-order-summary">
-          <EnhancedOrderSummary
-            cartItems={cartItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemoveItem={handleRemoveItem}
-            onConfirmPayment={handleConfirmPayment}
-          />
-        </div>
-      </div>
+        {/* Order Summary */}
+        <ModernOrderSummary
+          cartItems={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onConfirmPayment={handleConfirmPayment}
+        />
       </div>
 
-      {/* UPI Payment Modal */}
+      {/* Payment Modal */}
       {showPaymentModal && currentOrder && (
         <UPIPaymentModal
           key={currentOrder.id}
@@ -319,7 +384,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
-    </>
+    </div>
   );
 };
 
