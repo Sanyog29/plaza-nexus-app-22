@@ -21,7 +21,7 @@ import { Database } from '@/integrations/supabase/types';
 import { EnhancedPaymentModal } from './EnhancedPaymentModal';
 
 type MenuCategory = Database['public']['Tables']['cafeteria_menu_categories']['Row'];
-type MenuItem = Database['public']['Tables']['cafeteria_menu_items']['Row'];
+type MenuItem = Database['public']['Tables']['vendor_menu_items']['Row'];
 
 interface CartItem extends MenuItem {
   quantity: number;

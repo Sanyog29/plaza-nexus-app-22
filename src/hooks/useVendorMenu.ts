@@ -2,7 +2,7 @@ import { useOptimizedQuery, CACHE_TIMES } from './useOptimizedQuery';
 import { Database } from '@/integrations/supabase/types';
 
 type MenuCategory = Database['public']['Tables']['cafeteria_menu_categories']['Row'];
-type MenuItem = Database['public']['Tables']['cafeteria_menu_items']['Row'];
+type MenuItem = Database['public']['Tables']['vendor_menu_items']['Row'];
 
 export const useVendorMenuCategories = (vendorId: string) => 
   useOptimizedQuery<MenuCategory[]>({
@@ -17,14 +17,10 @@ export const useVendorMenuCategories = (vendorId: string) =>
 export const useVendorMenuItems = (vendorId: string, categoryId?: string) => 
   useOptimizedQuery<MenuItem[]>({
     queryKey: ['vendor', 'menu-items', vendorId, categoryId || 'all'],
-    table: 'cafeteria_menu_items',
-    selectQuery: `
-      *,
-      cafeteria_menu_categories!inner(vendor_id)
-    `,
+    table: 'vendor_menu_items',
     filters: categoryId 
-      ? { category_id: categoryId }
-      : { 'cafeteria_menu_categories.vendor_id': vendorId },
+      ? { category_id: categoryId, vendor_id: vendorId }
+      : { vendor_id: vendorId },
     orderBy: { column: 'name', ascending: true },
     cacheTime: CACHE_TIMES.DYNAMIC,
     enabled: !!vendorId,
