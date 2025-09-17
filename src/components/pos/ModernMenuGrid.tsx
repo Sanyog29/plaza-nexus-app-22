@@ -185,7 +185,7 @@ export const ModernMenuGrid: React.FC<ModernMenuGridProps> = ({
             <p className="text-muted-foreground mt-2">
               {searchTerm ? "Try adjusting your search" : "No items available in this category"}
             </p>
-          </div> : <div className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          </div> : <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filteredItems.map(item => {
           const quantityInCart = getItemQuantityInCart(item.id);
           return <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-all duration-200">
