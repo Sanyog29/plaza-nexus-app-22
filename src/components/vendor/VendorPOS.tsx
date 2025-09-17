@@ -283,7 +283,8 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
 
   return (
     <>
-      <div className="pos-content bg-background">
+      <div className="pos-layout">
+        <div className="pos-content bg-background">
         {/* Menu Grid - Uses pos-menu-area for responsive layout */}
         <div className="pos-menu-area">
           <MenuGrid 
@@ -303,6 +304,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
             onConfirmPayment={handleConfirmPayment}
           />
         </div>
+      </div>
       </div>
 
       {/* UPI Payment Modal */}
