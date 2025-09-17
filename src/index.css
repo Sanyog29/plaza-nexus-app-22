@@ -391,3 +391,440 @@
     font-size: 18px; /* Slightly larger base on large screens */
   }
 }
+
+/* =============================================================================
+   COMPLETE POS RESPONSIVE UTILITIES
+   ============================================================================= */
+
+@layer utilities {
+  /* ==========================================================================
+     CONTAINER & LAYOUT UTILITIES
+     ========================================================================== */
+  
+  /* Modern container queries support */
+  .pos-container {
+    container-type: inline-size;
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Main POS layout system */
+  .pos-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  
+  @media (min-width: 1024px) {
+    .pos-layout {
+      flex-direction: row;
+    }
+  }
+  
+  /* Responsive sidebar */
+  .pos-sidebar {
+    width: 100%;
+    background: hsl(var(--card));
+    border-right: 1px solid hsl(var(--border));
+    flex-shrink: 0;
+    transition: var(--transition-smooth);
+  }
+  
+  @media (min-width: 1024px) {
+    .pos-sidebar {
+      width: 280px;
+      min-width: 240px;
+      max-width: 320px;
+    }
+  }
+  
+  /* Collapsible sidebar states */
+  .pos-sidebar-collapsed {
+    width: 80px;
+  }
+  
+  @media (max-width: 1023px) {
+    .pos-sidebar-collapsed {
+      width: 100%;
+    }
+  }
+  
+  /* Main content area */
+  .pos-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  @media (min-width: 768px) {
+    .pos-content {
+      flex-direction: row;
+    }
+  }
+  
+  /* ==========================================================================
+     MENU AREA UTILITIES
+     ========================================================================== */
+  
+  .pos-menu-area {
+    flex: 1;
+    padding: clamp(1rem, 2vw, 2rem);
+    overflow-y: auto;
+    min-width: 0;
+  }
+  
+  /* Responsive item grid */
+  .pos-item-grid {
+    display: grid;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  
+  /* Mobile-first grid adjustments */
+  @media (max-width: 480px) {
+    .pos-item-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .pos-item-grid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .pos-item-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+  }
+  
+  /* Dense grid for large screens */
+  .pos-item-grid-dense {
+    grid-auto-flow: dense;
+  }
+  
+  @media (min-width: 1400px) {
+    .pos-item-grid-dense {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+  }
+  
+  /* ==========================================================================
+     ORDER SUMMARY UTILITIES
+     ========================================================================== */
+  
+  .pos-order-summary {
+    width: 100%;
+    background: hsl(var(--card));
+    border-top: 1px solid hsl(var(--border));
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-smooth);
+  }
+  
+  @media (min-width: 768px) {
+    .pos-order-summary {
+      width: 380px;
+      min-width: 320px;
+      max-width: 420px;
+      border-top: none;
+      border-left: 1px solid hsl(var(--border));
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .pos-order-summary {
+      width: 400px;
+      min-width: 360px;
+      max-width: 440px;
+    }
+  }
+  
+  /* Mobile order summary optimization */
+  @media (max-width: 767px) {
+    .pos-order-summary {
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+    
+    .pos-order-summary-sticky {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      box-shadow: 0 -4px 20px hsl(var(--foreground) / 0.1);
+    }
+  }
+  
+  /* ==========================================================================
+     RESPONSIVE NAVIGATION UTILITIES
+     ========================================================================== */
+  
+  .pos-nav-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .pos-nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .pos-nav-tab {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: var(--transition-smooth);
+  }
+  
+  @media (min-width: 768px) {
+    .pos-nav-tabs {
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+  }
+  
+  /* ==========================================================================
+     BREAKPOINT-SPECIFIC UTILITIES
+     ========================================================================== */
+  
+  /* Mobile utilities */
+  .mobile-only {
+    display: block;
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-only {
+      display: none;
+    }
+  }
+  
+  .mobile-hidden {
+    display: none;
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-hidden {
+      display: block;
+    }
+  }
+  
+  /* Tablet utilities */
+  .tablet-only {
+    display: none;
+  }
+  
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .tablet-only {
+      display: block;
+    }
+  }
+  
+  /* Desktop utilities */
+  .desktop-only {
+    display: none;
+  }
+  
+  @media (min-width: 1024px) {
+    .desktop-only {
+      display: block;
+    }
+  }
+  
+  /* ==========================================================================
+     COMPONENT STATE UTILITIES
+     ========================================================================== */
+  
+  /* Loading states */
+  .pos-skeleton {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--radius);
+  }
+  
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  /* Interactive states */
+  .pos-card-interactive {
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+  
+  .pos-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -8px hsl(var(--foreground) / 0.15);
+  }
+  
+  .pos-card-interactive:active {
+    transform: translateY(0);
+  }
+  
+  /* Touch-friendly sizing */
+  .pos-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* ==========================================================================
+     PERFORMANCE OPTIMIZATIONS
+     ========================================================================== */
+  
+  /* GPU acceleration for smooth animations */
+  .pos-gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Contain layout for better performance */
+  .pos-contain-layout {
+    contain: layout;
+  }
+  
+  .pos-contain-paint {
+    contain: paint;
+  }
+  
+  /* ==========================================================================
+     ACCESSIBILITY UTILITIES
+     ========================================================================== */
+  
+  /* Focus management */
+  .pos-focus-ring {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  
+  .pos-focus-ring:focus-visible {
+    outline-color: hsl(var(--ring));
+  }
+  
+  /* Screen reader utilities */
+  .pos-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  /* ==========================================================================
+     EMERGENCY FIXES (Use when needed)
+     ========================================================================== */
+  
+  .pos-emergency-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+  }
+  
+  @media (min-width: 1024px) {
+    .pos-emergency-stack {
+      flex-direction: row !important;
+    }
+  }
+  
+  .pos-emergency-full-width {
+    width: 100% !important;
+    min-width: unset !important;
+    max-width: unset !important;
+  }
+  
+  @media (min-width: 768px) {
+    .pos-emergency-full-width {
+      width: 380px !important;
+      min-width: 320px !important;
+    }
+  }
+  
+  /* Force no overflow on containers */
+  .pos-no-overflow {
+    overflow: hidden !important;
+    max-width: 100vw !important;
+  }
+  
+  .pos-allow-scroll {
+    overflow-y: auto !important;
+  }
+}
+
+/* =============================================================================
+   CONTAINER QUERIES (Modern browsers)
+   ============================================================================= */
+
+@layer utilities {
+  @container (min-width: 600px) {
+    .pos-container-md\:grid-cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @container (min-width: 900px) {
+    .pos-container-lg\:grid-cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @container (min-width: 1200px) {
+    .pos-container-xl\:grid-cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
+/* =============================================================================
+   PRINT STYLES
+   ============================================================================= */
+
+@media print {
+  .pos-no-print {
+    display: none !important;
+  }
+  
+  .pos-print-only {
+    display: block !important;
+  }
+  
+  .pos-layout {
+    flex-direction: column !important;
+  }
+}
+
+/* =============================================================================
+   REDUCED MOTION SUPPORT
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .pos-layout,
+  .pos-sidebar,
+  .pos-order-summary,
+  .pos-card-interactive {
+    transition: none !important;
+    animation: none !important;
+  }
+}

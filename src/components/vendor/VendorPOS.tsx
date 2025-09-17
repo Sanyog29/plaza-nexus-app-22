@@ -283,9 +283,9 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row h-full min-h-0 w-full bg-background">
-        {/* Menu Grid - Responsive flex layout */}
-        <div className="flex-1 min-w-0 lg:border-r border-border overflow-y-auto">
+      <div className="pos-content bg-background">
+        {/* Menu Grid - Uses pos-menu-area for responsive layout */}
+        <div className="pos-menu-area">
           <MenuGrid 
             onAddToCart={handleAddToCart}
             onUpdateQuantity={handleUpdateQuantity}
@@ -294,8 +294,8 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
           />
         </div>
         
-        {/* Order Summary - Responsive width */}
-        <div className="w-full lg:w-96 lg:min-w-[24rem] lg:max-w-[30rem] xl:w-[28rem] 2xl:w-[32rem] h-full lg:border-l border-border overflow-y-auto bg-card">
+        {/* Order Summary - Uses pos-order-summary for responsive behavior */}
+        <div className="pos-order-summary">
           <EnhancedOrderSummary
             cartItems={cartItems}
             onUpdateQuantity={handleUpdateQuantity}

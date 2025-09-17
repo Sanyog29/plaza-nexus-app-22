@@ -266,7 +266,7 @@ export const MenuGrid: React.FC<MenuGridProps> = ({ onAddToCart, onUpdateQuantit
             </div>
           </div>
         ) : (
-          <div className="grid-responsive">
+          <div className="pos-item-grid">
             {getFilteredItems().map((item) => {
               const quantityInCart = getItemQuantityInCart(item.id);
               
