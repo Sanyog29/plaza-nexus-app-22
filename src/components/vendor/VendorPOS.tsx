@@ -359,23 +359,25 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId, onBackToPortal }) => {
       />
       
       {/* Main Content */}
-      <div className="flex flex-1 min-h-0 overflow-hidden items-stretch">
-        {/* Menu Area */}
-        <ModernMenuGrid
-          onAddToCart={handleAddToCart}
-          onUpdateQuantity={handleUpdateQuantity}
-          cartItems={cartItems}
-          vendorId={vendorId}
-          selectedCategory={selectedCategory}
-        />
-        
-        {/* Order Summary */}
-        <ModernOrderSummary
-          cartItems={cartItems}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          onConfirmPayment={handleConfirmPayment}
-        />
+      <div className="flex-1 min-h-0 overflow-x-auto">
+        <div className="flex items-stretch min-w-[1200px] h-full">
+          {/* Menu Area */}
+          <ModernMenuGrid
+            onAddToCart={handleAddToCart}
+            onUpdateQuantity={handleUpdateQuantity}
+            cartItems={cartItems}
+            vendorId={vendorId}
+            selectedCategory={selectedCategory}
+          />
+          
+          {/* Order Summary */}
+          <ModernOrderSummary
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            onConfirmPayment={handleConfirmPayment}
+          />
+        </div>
       </div>
 
       {/* Payment Modal */}
