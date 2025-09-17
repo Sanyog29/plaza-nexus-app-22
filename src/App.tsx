@@ -62,6 +62,7 @@ import AdminCafeteriaPage from "./pages/AdminCafeteriaPage";
 import DeliveryPage from "./pages/DeliveryPage";
 import AccessDeniedPage from "./components/auth/AccessDeniedPage";
 import VendorInvoicePageNew from "./components/vendor/VendorInvoicePageNew";
+import FoodPOSPage from "./pages/FoodPOSPage";
 
 // New simplified pages
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
@@ -125,6 +126,7 @@ const App = () => (
               <Route path="/bookings/new" element={<BookingNewPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/cafeteria" element={<CafeteriaPage />} />
+              <Route path="/food-pos" element={<FoodPOSPage />} />
               <Route path="/vendor-portal" element={<VendorPortalPage />} />
               <Route path="/vendor-portal/invoice/:orderId" element={
                 <ProtectedRoute>
