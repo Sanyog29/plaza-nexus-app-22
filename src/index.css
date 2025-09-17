@@ -135,8 +135,7 @@
   /* HTML root for proper rem scaling */
   html {
     font-size: 100%; /* Respects user's browser font size settings */
-    width: 100vw;
-    height: 100vh;
+    height: 100%;
     overflow-x: hidden;
   }
 
@@ -148,8 +147,8 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--apple-font);
     transition: var(--transition-smooth);
-    width: 100vw;
-    min-height: 100vh;
+    width: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -158,7 +157,7 @@
   /* Main container for full screen layouts */
   main,
   .full-screen {
-    width: 100vw;
+    width: 100%;
     min-height: 100vh;
   }
 
@@ -280,8 +279,8 @@
 
   /* Flexible container utilities */
   .container-full {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    min-height: 100vh;
     padding: 1rem;
   }
 
