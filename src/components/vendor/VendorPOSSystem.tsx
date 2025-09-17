@@ -34,7 +34,7 @@ interface VendorPOSSystemProps {
   vendorId: string;
 }
 
-export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
+export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -422,4 +422,4 @@ export default function VendorPOSSystem({ vendorId }: VendorPOSSystemProps) {
       />
     </div>
   );
-}
+};

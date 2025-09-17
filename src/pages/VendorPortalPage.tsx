@@ -42,7 +42,7 @@ import VendorHeader from '@/components/vendor/VendorHeader';
 import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 import VendorQRUpload from '@/components/vendor/VendorQRUpload';
-import VendorPOSSystem from '@/components/vendor/VendorPOSSystem';
+import { VendorPOSSystem } from '@/components/vendor/VendorPOSSystem';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const navigation = [
