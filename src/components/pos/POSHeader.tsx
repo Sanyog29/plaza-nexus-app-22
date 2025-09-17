@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronDown, Bell, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/AuthProvider';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export const POSHeader = () => {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export const POSHeader = () => {
   });
 
   return (
-    <header className="bg-white border-b border-gray-200 p-4">
+    <header className="bg-background border-b border-border p-4">
       <div className="flex items-center justify-between">
         {/* Left Section - Vendor Info */}
         <div className="flex items-center space-x-4">
@@ -44,6 +45,8 @@ export const POSHeader = () => {
           </div>
 
           <div className="flex items-center space-x-3">
+            <ThemeToggle />
+            
             <Button variant="ghost" size="sm">
               <Bell className="w-5 h-5" />
             </Button>
@@ -52,7 +55,7 @@ export const POSHeader = () => {
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-gray-600" />
               </div>
-              <span className="font-medium">Michael Olise</span>
+              <span className="font-medium">{user?.email?.split('@')[0] || 'User'}</span>
               <ChevronDown className="w-4 h-4" />
             </div>
           </div>

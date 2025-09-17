@@ -31,16 +31,16 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   const paddingClasses = {
     none: '',
-    sm: isMobile ? 'px-4 py-2' : 'px-6 py-3',
-    md: isMobile ? 'px-4 py-4' : 'px-6 py-6',
-    lg: isMobile ? 'px-6 py-6' : 'px-8 py-8'
+    sm: isMobile ? 'p-sm' : 'p-md',
+    md: isMobile ? 'p-md' : 'p-lg',
+    lg: isMobile ? 'p-lg' : 'p-xl'
   };
 
   const spacingClasses = {
     none: '',
-    sm: 'space-y-3',
-    md: 'space-y-4 lg:space-y-6',
-    lg: 'space-y-6 lg:space-y-8'
+    sm: 'spacing-sm',
+    md: 'spacing-md lg:spacing-lg',
+    lg: 'spacing-lg lg:spacing-xl'
   };
 
   return (

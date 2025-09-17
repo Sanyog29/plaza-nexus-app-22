@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MenuGrid } from '@/components/pos/MenuGrid';
-import { VendorOrderSummary } from '@/components/vendor/VendorOrderSummary';
+import { EnhancedOrderSummary } from '@/components/pos/EnhancedOrderSummary';
+import { CategoryTabs } from '@/components/pos/CategoryTabs';
+import { UPIPaymentModal } from '@/components/cafeteria/UPIPaymentModal';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { DollarSign, ShoppingBag, Clock } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
-import { useVendorRealtime } from '@/hooks/useVendorRealtime';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+// import { useVendorRealtime } from '@/hooks/useVendorRealtime';
 
 interface CartItem {
   id: string;
@@ -16,6 +15,7 @@ interface CartItem {
   price: number;
   quantity: number;
   notes?: string;
+  image_url?: string;
 }
 
 interface VendorPOSProps {
@@ -24,6 +24,8 @@ interface VendorPOSProps {
 
 const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [dailyStats, setDailyStats] = useState({
     totalSales: 0,
     ordersCount: 0,
@@ -32,6 +34,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Clear cart when returning from invoice page or when specified
   useEffect(() => {
@@ -62,7 +65,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
         .eq('vendor_id', vendorId)
         .gte('created_at', `${today}T00:00:00`)
         .lt('created_at', `${today}T23:59:59`)
-        .eq('status', 'completed');
+        .in('status', ['completed', 'paid']);
 
       if (error) throw error;
 
@@ -81,16 +84,38 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
   };
 
   // Set up real-time updates for vendor orders
-  useVendorRealtime({
-    vendorId,
-    onOrderUpdate: fetchTodayStats,
-    onOrderCompleted: (order) => {
-      toast({
-        title: "Order Completed",
-        description: `Order #${order.bill_number || order.id.slice(0, 8)} has been paid!`,
-      });
-    }
-  });
+  useEffect(() => {
+    const channel = supabase
+      .channel(`vendor-orders-${vendorId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cafeteria_orders',
+          filter: `vendor_id=eq.${vendorId}`
+        },
+        (payload) => {
+          console.log('Order update received:', payload);
+          fetchTodayStats(); // Refresh stats on any order change
+          
+          // Handle completed orders specifically
+          if (payload.eventType === 'UPDATE' && 
+              (payload.new?.status === 'completed' || payload.new?.payment_status === 'paid') && 
+              payload.old?.status !== 'completed') {
+            toast({
+              title: "Order Completed",
+              description: `Order #${payload.new?.bill_number || payload.new?.id.slice(0, 8)} has been paid!`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [vendorId, toast]);
 
   const handleAddToCart = (newItem: CartItem) => {
     setCartItems(prev => {
@@ -203,8 +228,12 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
 
       toast({
         title: "Order Created",
-        description: `Order #${billNumber} created successfully. Redirecting to payment...`,
+        description: `Order #${billNumber} created successfully. Proceeding to payment...`,
       });
+
+      // Show payment modal for UPI payment
+      setCurrentOrder(order);
+      setShowPaymentModal(true);
 
       return order;
     } catch (error) {
@@ -217,78 +246,80 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    if (!currentOrder) return;
+
+    try {
+      // Mark order as paid and completed using secure RPC
+      const { error } = await supabase
+        .rpc('mark_order_paid_and_complete', {
+          p_order_id: currentOrder.id
+        });
+
+      if (error) throw error;
+
+      // Clear cart and close modal
+      setCartItems([]);
+      setShowPaymentModal(false);
+      setCurrentOrder(null);
+
+      toast({
+        title: "Payment Successful",
+        description: `Order #${currentOrder.bill_number} has been completed successfully!`,
+      });
+
+      // Navigate to invoice page
+      navigate(`/vendor-portal/invoice/${currentOrder.id}`);
+
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast({
+        title: "Error",
+        description: "Payment successful but failed to update order status",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Daily Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹{dailyStats.totalSales.toFixed(2)}</div>
-            <Badge variant="secondary" className="text-xs">
-              Live POS Data
-            </Badge>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Orders Processed</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dailyStats.ordersCount}</div>
-            <p className="text-xs text-muted-foreground">
-              Avg: ₹{dailyStats.avgOrderValue.toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Cart</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{cartItems.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Items in cart
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* POS Interface */}
-      <div className="flex gap-6">
-        {/* Main Content - Menu Grid */}
-        <div className="flex-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Menu Items</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <MenuGrid 
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-                cartItems={cartItems}
-              />
-            </CardContent>
-          </Card>
+    <>
+      <div className="pos-layout">
+        <div className="pos-content bg-background">
+        {/* Menu Grid - Uses pos-menu-area for responsive layout */}
+        <div className="pos-menu-area">
+          <MenuGrid 
+            onAddToCart={handleAddToCart}
+            onUpdateQuantity={handleUpdateQuantity}
+            cartItems={cartItems}
+            vendorId={vendorId}
+          />
         </div>
-
-        {/* Right Sidebar - Enhanced Order Summary */}
-        <VendorOrderSummary
-          cartItems={cartItems}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveItem}
-          onConfirmPayment={handleConfirmPayment}
-          vendorId={vendorId}
-        />
+        
+        {/* Order Summary - Uses pos-order-summary for responsive behavior */}
+        <div className="pos-order-summary">
+          <EnhancedOrderSummary
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveItem}
+            onConfirmPayment={handleConfirmPayment}
+          />
+        </div>
       </div>
-    </div>
+      </div>
+
+      {/* UPI Payment Modal */}
+      {showPaymentModal && currentOrder && (
+        <UPIPaymentModal
+          key={currentOrder.id}
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          orderId={currentOrder.bill_number}
+          amount={currentOrder.total_amount}
+          items={cartItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price }))}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+    </>
   );
 };
 
