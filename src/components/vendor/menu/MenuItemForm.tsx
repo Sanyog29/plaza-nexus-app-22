@@ -30,7 +30,7 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({
     description: initialData?.description || '',
     price: initialData?.price || '',
     cost_price: initialData?.cost_price || '',
-    stock_quantity: initialData?.stock_quantity || '1',
+    stock_quantity: initialData?.stock_quantity || '',
     low_stock_threshold: initialData?.low_stock_threshold || '5',
     preparation_time_minutes: initialData?.preparation_time_minutes || '15',
     spice_level: initialData?.spice_level || '0',
