@@ -269,7 +269,7 @@ const VendorPortalPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="pos" className="flex-1 h-full p-0">
+            <TabsContent value="pos" className="flex-1 min-h-0 p-0">
               <VendorPOS vendorId={vendor.id} />
             </TabsContent>
 
