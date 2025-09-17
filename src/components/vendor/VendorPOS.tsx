@@ -359,7 +359,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId, onBackToPortal }) => {
       />
       
       {/* Main Content */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden items-stretch">
         {/* Menu Area */}
         <ModernMenuGrid
           onAddToCart={handleAddToCart}

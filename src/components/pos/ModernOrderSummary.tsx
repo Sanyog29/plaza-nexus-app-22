@@ -73,7 +73,7 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-md bg-card border-l border-border flex flex-col h-full min-h-0">
+    <div className="w-80 shrink-0 bg-card border-l border-border flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <h2 className="text-lg font-semibold text-foreground">Current Order</h2>

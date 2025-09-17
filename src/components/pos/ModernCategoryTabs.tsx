@@ -54,7 +54,7 @@ export const ModernCategoryTabs: React.FC<ModernCategoryTabsProps> = ({
   );
 
   return (
-    <div className="bg-card border-b border-border px-6 py-4">
+    <div className="bg-card border-b border-border px-4 py-4">
       <ScrollArea className="w-full">
         <div className="flex gap-2 pb-2">
           {/* All Menu Tab */}
