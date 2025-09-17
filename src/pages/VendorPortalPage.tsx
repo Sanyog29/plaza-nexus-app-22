@@ -42,12 +42,14 @@ import VendorHeader from '@/components/vendor/VendorHeader';
 import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 import VendorQRUpload from '@/components/vendor/VendorQRUpload';
+import VendorPOSSystem from '@/components/vendor/VendorPOSSystem';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const navigation = [
   { name: 'Dashboard', value: 'dashboard', icon: LayoutDashboard },
   { name: 'Orders', value: 'orders', icon: ShoppingBag },
   { name: 'Menu', value: 'menu', icon: ChefHat },
+  { name: 'POS System', value: 'pos', icon: CreditCard },
   { name: 'Store Setup', value: 'store', icon: Settings },
   { name: 'Sales', value: 'sales', icon: TrendingUp },
   { name: 'Analytics', value: 'analytics', icon: BarChart3 },
@@ -96,7 +98,7 @@ const VendorPortalPage = () => {
     const tabFromUrl = searchParams.get('tab');
     const clearCart = searchParams.get('clearCart');
     
-    if (tabFromUrl && ['dashboard', 'orders', 'menu', 'store', 'sales', 'analytics'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['dashboard', 'orders', 'menu', 'pos', 'store', 'sales', 'analytics'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
   }, [searchParams, setSearchParams]);
@@ -263,6 +265,12 @@ const VendorPortalPage = () => {
             <TabsContent value="menu" className="flex-1 overflow-auto">
               <div className="p-4 md:p-6 max-w-screen-2xl mx-auto">
                 <VendorMenuManagement vendorId={vendor.id} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="pos" className="flex-1 overflow-auto">
+              <div className="h-full">
+                <VendorPOSSystem vendorId={vendor.id} />
               </div>
             </TabsContent>
 
