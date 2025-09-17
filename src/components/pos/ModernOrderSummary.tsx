@@ -71,7 +71,9 @@ export const ModernOrderSummary: React.FC<ModernOrderSummaryProps> = ({
     label: "Cash",
     icon: Banknote
   }];
-  return <div className="w-80 shrink-0 bg-card border-l border-border flex flex-col h-full min-h-0">
+  return <div className="w-80 shrink-0 bg-card border-l border-border flex flex-col h-full min-h-0
+
+">
       {/* Header */}
       <div className="p-6 border-b border-border">
         <h2 className="text-lg font-semibold text-foreground">Current Order</h2>
