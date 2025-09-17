@@ -208,23 +208,29 @@ const VendorPortalPage = () => {
   return (
     <SidebarProvider defaultOpen>
       <div className="min-h-screen flex w-full bg-background">
-        <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        {/* Conditionally render sidebar - hide when POS is active */}
+        {activeTab !== 'pos' && (
+          <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        )}
         
         <div className="flex-1 flex flex-col">
-          <header className="h-20 min-h-[5rem] border-b bg-background flex items-center justify-between p-lg">
-            <div className="flex items-center spacing-md">
-              <h1 className="text-2xl font-semibold">{vendor.name}</h1>
-              <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center spacing-md">
-              <ThemeToggle />
-              <Badge variant="outline" className="text-sm">
-                {todayMetrics?.pendingOrders || 0} pending orders
-              </Badge>
-            </div>
-          </header>
+          {/* Conditionally render header - hide when POS is active */}
+          {activeTab !== 'pos' && (
+            <header className="h-20 min-h-[5rem] border-b bg-background flex items-center justify-between p-lg">
+              <div className="flex items-center spacing-md">
+                <h1 className="text-2xl font-semibold">{vendor.name}</h1>
+                <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
+                  Active
+                </Badge>
+              </div>
+              <div className="flex items-center spacing-md">
+                <ThemeToggle />
+                <Badge variant="outline" className="text-sm">
+                  {todayMetrics?.pendingOrders || 0} pending orders
+                </Badge>
+              </div>
+            </header>
+          )}
             
             <main className="flex-1 overflow-hidden">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
@@ -269,8 +275,8 @@ const VendorPortalPage = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="pos" className="flex-1 min-h-0 p-0">
-              <VendorPOS vendorId={vendor.id} />
+            <TabsContent value="pos" className="flex-1 min-h-0 p-0 h-screen">
+              <VendorPOS vendorId={vendor.id} onBackToPortal={() => handleTabChange('dashboard')} />
             </TabsContent>
 
             <TabsContent value="orders" className="flex-1 p-xl overflow-auto">

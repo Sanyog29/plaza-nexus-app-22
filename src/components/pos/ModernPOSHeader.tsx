@@ -6,12 +6,14 @@ interface ModernPOSHeaderProps {
   customerName?: string;
   orderNumber?: string;
   onCloseOrder?: () => void;
+  onBackToPortal?: () => void;
 }
 
 export const ModernPOSHeader: React.FC<ModernPOSHeaderProps> = ({
   customerName = "Walk-in Customer",
   orderNumber = "001",
-  onCloseOrder
+  onCloseOrder,
+  onBackToPortal
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -72,8 +74,18 @@ export const ModernPOSHeader: React.FC<ModernPOSHeaderProps> = ({
           </div>
         </div>
 
-        {/* Right section - Close Order */}
+        {/* Right section - Actions */}
         <div className="flex items-center gap-3">
+          {onBackToPortal && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onBackToPortal}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Back to Portal
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"

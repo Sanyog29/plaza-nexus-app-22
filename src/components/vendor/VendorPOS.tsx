@@ -26,9 +26,10 @@ interface MenuCategory {
 
 interface VendorPOSProps {
   vendorId: string;
+  onBackToPortal?: () => void;
 }
 
-const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
+const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId, onBackToPortal }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<any>(null);
@@ -342,6 +343,7 @@ const VendorPOS: React.FC<VendorPOSProps> = ({ vendorId }) => {
             description: "Current order has been cleared."
           });
         }}
+        onBackToPortal={onBackToPortal}
       />
       
       {/* Category Navigation */}
