@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { 
   Bell, 
   Settings, 
@@ -31,8 +32,14 @@ interface VendorHeaderProps {
 
 const VendorHeader: React.FC<VendorHeaderProps> = ({ vendor, pendingOrdersCount = 0 }) => {
   const { user } = useAuth();
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
-  const handleSignOut = async () => {
+  const handleSignOutClick = () => {
+    setShowLogoutConfirmation(true);
+  };
+
+  const handleConfirmSignOut = async () => {
+    setShowLogoutConfirmation(false);
     await supabase.auth.signOut();
   };
 
@@ -96,9 +103,15 @@ const VendorHeader: React.FC<VendorHeaderProps> = ({ vendor, pendingOrdersCount 
             {/* Theme Toggle */}
             <ThemeToggle />
             
-            {/* Standalone Logout */}
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
+            {/* Enhanced Logout Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSignOutClick}
+              className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
             
             {/* Notifications */}
@@ -174,7 +187,7 @@ const VendorHeader: React.FC<VendorHeaderProps> = ({ vendor, pendingOrdersCount 
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOutClick}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>
@@ -183,6 +196,18 @@ const VendorHeader: React.FC<VendorHeaderProps> = ({ vendor, pendingOrdersCount 
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showLogoutConfirmation}
+        onOpenChange={setShowLogoutConfirmation}
+        title="Confirm Logout"
+        description="Are you sure you want to sign out? You will need to log back in to access your vendor portal."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        onConfirm={handleConfirmSignOut}
+        variant="destructive"
+      />
     </header>
   );
 };
