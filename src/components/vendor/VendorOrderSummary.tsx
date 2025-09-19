@@ -33,7 +33,6 @@ export const VendorOrderSummary: React.FC<VendorOrderSummaryProps> = ({
 }) => {
   const [orderType, setOrderType] = useState('dine-in');
   const [selectedTable, setSelectedTable] = useState('A-12B');
-  const [taxRate, setTaxRate] = useState(0.1); // Configurable tax rate
   const [customDiscount, setCustomDiscount] = useState(0);
   const [serviceCharge, setServiceCharge] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -45,18 +44,16 @@ export const VendorOrderSummary: React.FC<VendorOrderSummaryProps> = ({
   } = useToast();
   const navigate = useNavigate();
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const taxes = subtotal * taxRate;
   const autoDiscount = subtotal >= 50 ? subtotal * 0.1 : 0; // Auto discount for orders $50+
   const totalDiscount = autoDiscount + customDiscount;
   const serviceChargeAmount = subtotal * (serviceCharge / 100);
-  const total = subtotal + taxes + serviceChargeAmount - totalDiscount;
+  const total = subtotal + serviceChargeAmount - totalDiscount;
   const orderNumber = `#POS${Date.now().toString().slice(-6)}`;
   const handleConfirmPayment = async () => {
     try {
       const paymentData = {
         orderType,
         tableNumber: orderType === 'dine-in' ? selectedTable : null,
-        taxRate,
         discount: totalDiscount,
         serviceCharge: serviceChargeAmount,
         paymentMethod,
@@ -96,7 +93,6 @@ ${cartItems.map(item => `${item.name} x${item.quantity} - ₹${(item.price * ite
 
 --------------------------------
 Subtotal: ₹${subtotal.toFixed(2)}
-Tax (${(taxRate * 100).toFixed(1)}%): ₹${taxes.toFixed(2)}
 ${serviceChargeAmount > 0 ? `Service Charge: ₹${serviceChargeAmount.toFixed(2)}` : ''}
 ${totalDiscount > 0 ? `Discount: -₹${totalDiscount.toFixed(2)}` : ''}
 --------------------------------
@@ -188,11 +184,7 @@ Thank you for your business!
         </div>
 
         {/* Billing Configuration */}
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <Label className="text-xs">Tax %</Label>
-            <Input type="number" value={taxRate * 100} onChange={e => setTaxRate(Number(e.target.value) / 100)} className="h-8 text-xs" step="0.1" />
-          </div>
+        <div className="grid grid-cols-2 gap-2">
           <div>
             <Label className="text-xs">Service %</Label>
             <Input type="number" value={serviceCharge} onChange={e => setServiceCharge(Number(e.target.value))} className="h-8 text-xs" step="0.1" />
@@ -260,9 +252,9 @@ Thank you for your business!
                   <DialogHeader>
                     <DialogTitle>Print Receipt</DialogTitle>
                   </DialogHeader>
-                  <div className="p-4 bg-muted rounded-lg font-mono text-xs whitespace-pre-line">
-                    {`RECEIPT - ${orderNumber}\n================================\nDate: ${new Date().toLocaleDateString()}\nTime: ${new Date().toLocaleTimeString()}\n\nCustomer: ${customerName || 'Walk-in Customer'}\n${customerPhone ? `Phone: ${customerPhone}` : ''}\nOrder Type: ${orderType}\n${orderType === 'dine-in' ? `Table: ${selectedTable}` : ''}\n\nITEMS:\n${cartItems.map(item => `${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`).join('\n')}\n\n--------------------------------\nSubtotal: ₹${subtotal.toFixed(2)}\nTax: ₹${taxes.toFixed(2)}\n${serviceChargeAmount > 0 ? `Service: ₹${serviceChargeAmount.toFixed(2)}` : ''}${totalDiscount > 0 ? `\nDiscount: -₹${totalDiscount.toFixed(2)}` : ''}\n--------------------------------\nTOTAL: ₹${total.toFixed(2)}\n\nPayment: ${paymentMethod.toUpperCase()}\n================================\nThank you!`}
-                  </div>
+                   <div className="p-4 bg-muted rounded-lg font-mono text-xs whitespace-pre-line">
+                     {`RECEIPT - ${orderNumber}\n================================\nDate: ${new Date().toLocaleDateString()}\nTime: ${new Date().toLocaleTimeString()}\n\nCustomer: ${customerName || 'Walk-in Customer'}\n${customerPhone ? `Phone: ${customerPhone}` : ''}\nOrder Type: ${orderType}\n${orderType === 'dine-in' ? `Table: ${selectedTable}` : ''}\n\nITEMS:\n${cartItems.map(item => `${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`).join('\n')}\n\n--------------------------------\nSubtotal: ₹${subtotal.toFixed(2)}\n${serviceChargeAmount > 0 ? `Service: ₹${serviceChargeAmount.toFixed(2)}` : ''}${totalDiscount > 0 ? `\nDiscount: -₹${totalDiscount.toFixed(2)}` : ''}\n--------------------------------\nTOTAL: ₹${total.toFixed(2)}\n\nPayment: ${paymentMethod.toUpperCase()}\n================================\nThank you!`}
+                   </div>
                   <Button onClick={() => window.print()} className="w-full">
                     Print Now
                   </Button>

@@ -16,7 +16,6 @@ interface EnhancedPaymentModalProps {
   onClose: () => void;
   cartItems: CartItem[];
   subtotal: number;
-  tax: number;
   discount: number;
   total: number;
   onPaymentSuccess: () => void;
@@ -29,7 +28,6 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
   onClose,
   cartItems,
   subtotal,
-  tax,
   discount,
   total,
   onPaymentSuccess,
@@ -120,14 +118,12 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                   <span>Subtotal:</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Tax (5%):</span>
-                  <span>{formatCurrency(tax)}</span>
-                </div>
-                <div className="flex justify-between text-green-600">
-                  <span>Discount:</span>
-                  <span>-{formatCurrency(discount)}</span>
-                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount:</span>
+                    <span>-{formatCurrency(discount)}</span>
+                  </div>
+                )}
                 <div className="border-t pt-2 flex justify-between font-bold text-lg">
                   <span>Total:</span>
                   <span className="text-blue-600">{formatCurrency(total)}</span>

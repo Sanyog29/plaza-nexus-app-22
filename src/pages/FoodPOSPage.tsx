@@ -168,9 +168,8 @@ export default function FoodPOSPage() {
   const clearCart = () => setCart([]);
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = subtotal * 0.1;
   const discount = subtotal > 50 ? subtotal * 0.05 : 0;
-  const total = subtotal + tax - discount;
+  const total = subtotal - discount;
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -395,10 +394,6 @@ export default function FoodPOSPage() {
                   <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Taxes</span>
-                    <span>${tax.toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
