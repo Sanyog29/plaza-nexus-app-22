@@ -198,20 +198,7 @@ const VendorPortalPage = () => {
         <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
         
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 border-b bg-background flex items-center justify-between px-4 md:px-6 flex-shrink-0">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl md:text-2xl font-semibold truncate">{vendor.name}</h1>
-              <Badge variant="secondary" className="bg-success/10 text-success border-success/20 hidden sm:inline-flex">
-                Active
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2 md:gap-4">
-              <ThemeToggle />
-              <Badge variant="outline" className="text-xs md:text-sm">
-                {todayMetrics?.pendingOrders || 0} pending
-              </Badge>
-            </div>
-          </header>
+          <VendorHeader vendor={vendor} pendingOrdersCount={todayMetrics?.pendingOrders || 0} />
             
           <main className="flex-1 overflow-x-hidden overflow-y-auto">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
