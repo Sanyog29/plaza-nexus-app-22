@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Wrench, Calendar, Bell, User, Shield, ChefHat } from 'lucide-react';
+import { Home, Wrench, Calendar, Bell, User, Shield, ChefHat, CreditCard } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -33,6 +33,12 @@ export const MobileBottomNav: React.FC = () => {
           icon: Calendar,
           label: 'Menu',
           active: location.pathname === '/vendor-portal' && location.search.includes('tab=menu')
+        },
+        {
+          href: '/vendor-portal?tab=pos',
+          icon: CreditCard,
+          label: 'POS',
+          active: location.pathname === '/vendor-portal' && location.search.includes('tab=pos')
         },
         {
           href: '/vendor-portal?tab=analytics',

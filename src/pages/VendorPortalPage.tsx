@@ -39,6 +39,7 @@ import VendorOrderQueue from '@/components/vendor/VendorOrderQueue';
 import VendorMenuManagement from '@/components/vendor/VendorMenuManagement';
 import VendorAnalytics from '@/components/vendor/VendorAnalytics';
 import VendorHeader from '@/components/vendor/VendorHeader';
+import { VendorMobileHeader } from '@/components/vendor/VendorMobileHeader';
 import VendorSalesTracker from '@/components/vendor/VendorSalesTracker';
 import VendorStoreSetup from '@/components/vendor/VendorStoreSetup';
 import VendorQRUpload from '@/components/vendor/VendorQRUpload';
@@ -195,12 +196,28 @@ const VendorPortalPage = () => {
   return (
     <SidebarProvider defaultOpen>
       <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
-        <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <VendorSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
         
         <div className="flex-1 flex flex-col min-w-0">
-          <VendorHeader vendor={vendor} pendingOrdersCount={todayMetrics?.pendingOrders || 0} />
+          {/* Mobile Header */}
+          <div className="lg:hidden">
+            <VendorMobileHeader 
+              vendor={vendor} 
+              activeTab={activeTab} 
+              onTabChange={handleTabChange}
+              pendingOrdersCount={todayMetrics?.pendingOrders || 0} 
+            />
+          </div>
+          
+          {/* Desktop Header */}
+          <div className="hidden lg:block">
+            <VendorHeader vendor={vendor} pendingOrdersCount={todayMetrics?.pendingOrders || 0} />
+          </div>
             
-          <main className="flex-1 overflow-x-hidden overflow-y-auto">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto pb-16 lg:pb-0">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full">
                 <div className="h-full flex flex-col">
 

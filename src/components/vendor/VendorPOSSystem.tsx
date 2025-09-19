@@ -135,13 +135,13 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
   return (
     <div className="flex flex-col h-full w-full bg-background overflow-hidden">
       {/* Header */}
-      <div className="bg-card border-b p-4 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
+      <div className="bg-card border-b p-2 md:p-4 flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 md:mb-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <div>
-              <h1 className="text-xl font-semibold">POS System</h1>
+              <h1 className="text-lg md:text-xl font-semibold">POS System</h1>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-1" />
                   Live
                 </Badge>
@@ -149,26 +149,26 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" className="flex-shrink-0">
+              <RefreshCw className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
-            <div className="relative">
+            <div className="relative flex-1 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search Menu"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-input rounded-lg bg-background text-sm w-64"
+                className="pl-10 pr-4 py-2 border border-input rounded-lg bg-background text-sm w-full sm:w-48 md:w-64"
               />
             </div>
           </div>
         </div>
 
         {/* Category Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-1 md:gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {isLoading ? (
             <div className="flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -180,14 +180,14 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
                 key={category.id}
                 onClick={() => setActiveCategory(category.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors",
+                  "flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-lg whitespace-nowrap transition-colors flex-shrink-0 text-sm",
                   activeCategory === category.id
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted hover:bg-muted/80"
                 )}
               >
-                <span>{category.name}</span>
-                <Badge variant="secondary" className="text-xs">
+                <span className="text-xs md:text-sm">{category.name}</span>
+                <Badge variant="secondary" className="text-xs h-4">
                   {category.count}
                 </Badge>
               </button>
@@ -197,8 +197,8 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex min-w-0 overflow-hidden">
-        <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col lg:flex-row min-w-0 overflow-hidden">
+        <div className="flex-1 p-2 md:p-4 overflow-y-auto order-2 lg:order-1">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
@@ -214,7 +214,7 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-4">
               {filteredItems.map((item) => (
                 <Card key={item.id} className="overflow-hidden group hover:shadow-md transition-shadow">
                   <div className="relative">
@@ -260,16 +260,16 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
           )}
         </div>
 
-        {/* Order Summary */}
-        <div className="w-64 bg-card border-l flex flex-col flex-shrink-0">
-          <div className="p-4 border-b">
+        {/* Order Summary - Mobile: Bottom sheet, Desktop: Right sidebar */}
+        <div className="w-full lg:w-80 bg-card border-t lg:border-t-0 lg:border-l flex flex-col flex-shrink-0 order-1 lg:order-2 max-h-64 lg:max-h-none">
+          <div className="p-2 md:p-4 border-b">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="font-semibold text-lg">Order Summary</h2>
-              <Badge variant="outline">#B{Math.floor(Math.random() * 99999)}</Badge>
+              <h2 className="font-semibold text-base md:text-lg">Order Summary</h2>
+              <Badge variant="outline" className="text-xs">#B{Math.floor(Math.random() * 99999)}</Badge>
             </div>
           </div>
 
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-2 md:p-4">
             {cart.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-50" />
@@ -325,7 +325,7 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
 
           {/* Order Totals */}
           {cart.length > 0 && (
-            <div className="p-3 border-t space-y-3">
+            <div className="p-2 md:p-3 border-t space-y-3">
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
@@ -378,14 +378,14 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({ vendorId }) =>
               <div className="space-y-1">
                 <Button
                   variant="outline"
-                  className="w-full h-8 text-xs"
+                  className="w-full h-8 md:h-10 text-xs touch-target"
                   onClick={clearCart}
                   disabled={isCreatingOrder}
                 >
                   Clear Cart
                 </Button>
                 <Button 
-                  className="w-full h-8 text-xs bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200" 
+                  className="w-full h-8 md:h-10 text-xs bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200 touch-target" 
                   onClick={handleConfirmPayment}
                   disabled={isCreatingOrder}
                 >
