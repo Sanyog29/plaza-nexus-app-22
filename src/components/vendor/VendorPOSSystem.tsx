@@ -312,11 +312,22 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({
       </div>
       
       {/* Enhanced Payment Modal */}
-      <EnhancedPaymentModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} cartItems={cart.map(item => ({
-      id: item.id,
-      name: item.name || 'Item',
-      price: item.price || 0,
-      quantity: item.quantity
-    }))} subtotal={subtotal} discount={discount} total={total} onPaymentSuccess={handlePaymentSuccess} orderType={orderType} tableNumber={tableNumber} />
+      <EnhancedPaymentModal 
+        isOpen={showPaymentModal} 
+        onClose={() => setShowPaymentModal(false)} 
+        cartItems={cart.map(item => ({
+          id: item.id,
+          name: item.name || 'Item',
+          price: item.price || 0,
+          quantity: item.quantity
+        }))} 
+        subtotal={subtotal} 
+        discount={discount} 
+        total={total} 
+        onPaymentSuccess={handlePaymentSuccess} 
+        orderType={orderType} 
+        tableNumber={tableNumber}
+        vendorId={vendorId}
+      />
     </div>;
 };

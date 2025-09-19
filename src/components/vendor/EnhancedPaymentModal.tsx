@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, CreditCard, Smartphone, QrCode, ArrowLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { supabase } from '@/integrations/supabase/client';
+import qrcode from 'qrcode';
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
+}
+
+interface Vendor {
+  id: string;
+  name: string;
+  contact_phone?: string;
+  store_config?: {
+    upi_id?: string;
+    business_name?: string;
+    custom_qr_url?: string;
+    use_custom_qr?: boolean;
+  } | null;
 }
 
 interface EnhancedPaymentModalProps {
@@ -21,6 +35,7 @@ interface EnhancedPaymentModalProps {
   onPaymentSuccess: () => void;
   orderType: string;
   tableNumber?: string;
+  vendorId: string;
 }
 
 export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
@@ -32,14 +47,69 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
   total,
   onPaymentSuccess,
   orderType,
-  tableNumber
+  tableNumber,
+  vendorId
 }) => {
   const [billNumber] = useState(() => Math.floor(Math.random() * 9999) + 1);
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  const upiId = 'vendor@paytm'; // This would come from vendor config
-  const upiString = `upi://pay?pa=${upiId}&pn=Delhi Food Hub&am=${total}&cu=INR&tn=Order ${billNumber}`;
+  const [vendor, setVendor] = useState<Vendor | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen && vendorId) {
+      fetchVendorData();
+    }
+  }, [isOpen, vendorId]);
+
+  const fetchVendorData = async () => {
+    try {
+      const { data: vendorData, error } = await supabase
+        .from('vendors')
+        .select('id, name, contact_phone, store_config')
+        .eq('id', vendorId)
+        .single();
+
+      if (error) throw error;
+      
+      setVendor(vendorData as Vendor);
+      await generateQRCode(vendorData as Vendor);
+    } catch (error) {
+      console.error('Error fetching vendor data:', error);
+    }
+  };
+
+  const generateQRCode = async (vendorData: Vendor) => {
+    try {
+      const storeConfig = vendorData.store_config;
+      
+      // Check if vendor has custom QR code
+      if (storeConfig?.use_custom_qr && storeConfig?.custom_qr_url) {
+        setQrCodeUrl(storeConfig.custom_qr_url);
+        return;
+      }
+
+      // Generate auto QR code
+      const upiId = storeConfig?.upi_id || vendorData.contact_phone + '@upi';
+      const businessName = storeConfig?.business_name || vendorData.name;
+      const orderRef = billNumber.toString().padStart(4, '0');
+      
+      const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessName)}&am=${total}&tn=${encodeURIComponent(`Order ${orderRef}`)}&cu=INR`;
+      
+      const qrUrl = await qrcode.toDataURL(upiUrl, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF',
+        },
+      });
+      
+      setQrCodeUrl(qrUrl);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  };
 
   const handlePayment = async (method: 'upi' | 'card') => {
     setIsProcessing(true);
@@ -173,11 +243,21 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                     </div>
                     
                     <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
-                      <QRCodeSVG value={upiString} size={180} />
+                      {qrCodeUrl ? (
+                        <img 
+                          src={qrCodeUrl} 
+                          alt="Payment QR Code" 
+                          className="w-45 h-45 rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-45 h-45 flex items-center justify-center bg-gray-100 rounded-lg">
+                          <span className="text-gray-500">Loading QR...</span>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="text-sm text-gray-600">
-                      <p>UPI ID: {upiId}</p>
+                      <p>UPI ID: {vendor?.store_config?.upi_id || vendor?.contact_phone + '@upi'}</p>
                       <p>Amount: {formatCurrency(total)}</p>
                     </div>
                     
