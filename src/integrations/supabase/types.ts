@@ -3826,41 +3826,6 @@ export type Database = {
           },
         ]
       }
-      order_taxes: {
-        Row: {
-          created_at: string | null
-          id: string
-          order_id: string | null
-          tax_amount: number
-          tax_name: string
-          tax_rate: number
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          order_id?: string | null
-          tax_amount: number
-          tax_name: string
-          tax_rate: number
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          order_id?: string | null
-          tax_amount?: number
-          tax_name?: string
-          tax_rate?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_taxes_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "cafeteria_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       order_timeline: {
         Row: {
           created_by: string | null
@@ -8219,7 +8184,6 @@ export type Database = {
           created_at: string
           cuisine_type: string | null
           description: string | null
-          gst_number: string | null
           id: string
           is_active: boolean | null
           logo_url: string | null
@@ -8248,7 +8212,6 @@ export type Database = {
           created_at?: string
           cuisine_type?: string | null
           description?: string | null
-          gst_number?: string | null
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
@@ -8277,7 +8240,6 @@ export type Database = {
           created_at?: string
           cuisine_type?: string | null
           description?: string | null
-          gst_number?: string | null
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
