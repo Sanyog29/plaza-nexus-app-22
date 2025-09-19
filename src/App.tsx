@@ -1,3 +1,4 @@
+import React from 'react';
 // Removed shadcn Toaster in favor of Sonner
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
