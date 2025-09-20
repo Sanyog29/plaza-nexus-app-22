@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUserName } from '@/utils/formatters';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User as UserIcon } from 'lucide-react';
 
 interface User {
   user_id: string;
@@ -15,12 +16,15 @@ interface User {
   last_name: string;
   email: string;
   role: string;
+  department?: string;
+  profile_picture_url?: string;
 }
 
 interface Vendor {
   id: string;
   name: string;
   description: string;
+  is_active?: boolean;
 }
 
 interface VendorStaffAssignmentDialogProps {
@@ -59,8 +63,8 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
   useEffect(() => {
     setSelectedUserId(initialUserId || '');
-    setSelectedVendorId(initialVendorId || '');
-  }, [initialUserId, initialVendorId]);
+    // Don't set selectedVendorId here - it will be set after vendors are fetched
+  }, [initialUserId]);
 
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -83,15 +87,56 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
   const fetchVendors = async () => {
     setVendorsLoading(true);
+    console.log('Fetching vendors...', { initialVendorId });
+    
     try {
-      const { data, error } = await supabase
+      let vendorsQuery = supabase
         .from('vendors')
-        .select('id, name, description')
-        .eq('is_active', true)
+        .select('id, name, description, is_active')
         .order('name');
 
+      // If we have an initialVendorId, fetch all vendors to ensure pre-selected vendor is included
+      if (!initialVendorId) {
+        vendorsQuery = vendorsQuery.eq('is_active', true);
+      }
+
+      const { data, error } = await vendorsQuery;
+
       if (error) throw error;
-      setVendors(data || []);
+      
+      const fetchedVendors = data || [];
+      console.log('Fetched vendors:', fetchedVendors);
+
+      // If we have initialVendorId but it's not in the list, fetch it separately
+      if (initialVendorId && !fetchedVendors.find(v => v.id === initialVendorId)) {
+        console.log('Pre-selected vendor not found, fetching separately...');
+        const { data: specificVendor, error: specificError } = await supabase
+          .from('vendors')
+          .select('id, name, description, is_active')
+          .eq('id', initialVendorId)
+          .single();
+
+        if (!specificError && specificVendor) {
+          fetchedVendors.unshift(specificVendor); // Add to beginning of list
+          console.log('Added pre-selected vendor:', specificVendor);
+        } else {
+          console.error('Failed to fetch pre-selected vendor:', specificError);
+          toast({
+            title: "Warning",
+            description: "The selected vendor could not be found. Please select a different vendor.",
+            variant: "destructive",
+          });
+        }
+      }
+
+      setVendors(fetchedVendors);
+      
+      // Set the pre-selected vendor after vendors are loaded
+      if (initialVendorId && fetchedVendors.find(v => v.id === initialVendorId)) {
+        setSelectedVendorId(initialVendorId);
+        console.log('Pre-selected vendor set:', initialVendorId);
+      }
+      
     } catch (error) {
       console.error('Error fetching vendors:', error);
       toast({
@@ -192,7 +237,22 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
                 ) : (
                   users.map((user) => (
                     <SelectItem key={user.user_id} value={user.user_id}>
-                      {formatUserName(user.first_name, user.last_name, user.email)}
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={user.profile_picture_url} />
+                          <AvatarFallback className="text-xs">
+                            <UserIcon className="h-3 w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">
+                            {formatUserName(user.first_name, user.last_name, user.email)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {user.role}{user.department && ` • ${user.department}`}
+                          </div>
+                        </div>
+                      </div>
                     </SelectItem>
                   ))
                 )}
@@ -203,12 +263,24 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
             {selectedUser && (
               <div className="mt-2 p-3 bg-muted/50 rounded-md">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-sm">
-                      {formatUserName(selectedUser.first_name, selectedUser.last_name, selectedUser.email)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {selectedUser.role}
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={selectedUser.profile_picture_url} />
+                      <AvatarFallback>
+                        <UserIcon className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium text-sm">
+                        {formatUserName(selectedUser.first_name, selectedUser.last_name, selectedUser.email)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {selectedUser.role}
+                        {selectedUser.department && ` • ${selectedUser.department}`}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {selectedUser.email}
+                      </div>
                     </div>
                   </div>
                   <div>
@@ -250,12 +322,24 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
             {/* Selected Vendor Details Display */}
             {selectedVendor && (
               <div className="mt-2 p-3 bg-muted/50 rounded-md">
-                <div className="font-medium text-sm">{selectedVendor.name}</div>
-                {selectedVendor.description && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {selectedVendor.description}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-sm">{selectedVendor.name}</div>
+                    {selectedVendor.description && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {selectedVendor.description}
+                      </div>
+                    )}
                   </div>
-                )}
+                  <div>
+                    <Badge 
+                      variant={selectedVendor.is_active ? "default" : "secondary"} 
+                      className="text-xs"
+                    >
+                      {selectedVendor.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                </div>
               </div>
             )}
             
