@@ -28,13 +28,17 @@ interface VendorStaffAssignmentDialogProps {
   onClose: () => void;
   onSuccess: () => void;
   initialUserId?: string;
+  initialVendorId?: string;
+  vendorName?: string;
 }
 
 export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  initialUserId
+  initialUserId,
+  initialVendorId,
+  vendorName
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -55,7 +59,8 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
   useEffect(() => {
     setSelectedUserId(initialUserId || '');
-  }, [initialUserId]);
+    setSelectedVendorId(initialVendorId || '');
+  }, [initialUserId, initialVendorId]);
 
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -162,7 +167,9 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md relative">
         <DialogHeader>
-          <DialogTitle>Assign User to Vendor</DialogTitle>
+        <DialogTitle>
+          {vendorName ? `Assign Staff to ${vendorName}` : 'Assign User to Vendor'}
+        </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -219,7 +226,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
             <Select 
               value={selectedVendorId} 
               onValueChange={setSelectedVendorId}
-              disabled={vendorsLoading}
+              disabled={vendorsLoading || !!initialVendorId}
             >
               <SelectTrigger>
                 <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Choose a vendor..."} />
@@ -250,6 +257,12 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
                   </div>
                 )}
               </div>
+            )}
+            
+            {initialVendorId && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Vendor is pre-selected and cannot be changed
+              </p>
             )}
           </div>
 

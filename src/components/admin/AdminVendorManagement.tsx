@@ -388,7 +388,8 @@ const AdminVendorManagement = () => {
             setAssignStaffVendor(null);
             queryClient.invalidateQueries({ queryKey: ['admin-vendors'] });
           }}
-          initialUserId={undefined}
+          initialVendorId={assignStaffVendor.id}
+          vendorName={assignStaffVendor.name}
         />
       )}
     </div>
