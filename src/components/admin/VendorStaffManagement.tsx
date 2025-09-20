@@ -7,6 +7,7 @@ import { Plus, UserPlus, RotateCcw } from 'lucide-react';
 import { VendorStaffAssignmentDialog } from './VendorStaffAssignmentDialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { formatUserName } from '@/utils/formatters';
 
 interface VendorStaffAssignment {
   user_id: string;
@@ -160,34 +161,38 @@ export const VendorStaffManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {assignments.map((assignment) => (
-                  <TableRow key={`${assignment.user_id}-${assignment.vendor_id}`}>
-                    <TableCell className="font-medium">
-                      {assignment.user_name}
-                    </TableCell>
-                    <TableCell>{assignment.user_email}</TableCell>
-                    <TableCell>{assignment.vendor_name}</TableCell>
-                    <TableCell>
-                      <Badge variant={assignment.is_active ? 'default' : 'secondary'}>
-                        {assignment.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(assignment.assigned_at)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleStatus(
-                          assignment.user_id,
-                          assignment.vendor_id,
-                          assignment.is_active
-                        )}
-                      >
-                        {assignment.is_active ? 'Deactivate' : 'Activate'}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                 {assignments.map((assignment) => {
+                   const displayName = assignment.user_name || formatUserName('', '', assignment.user_email);
+                   
+                   return (
+                     <TableRow key={`${assignment.user_id}-${assignment.vendor_id}`}>
+                       <TableCell className="font-medium">
+                         {displayName}
+                       </TableCell>
+                       <TableCell>{assignment.user_email}</TableCell>
+                       <TableCell>{assignment.vendor_name}</TableCell>
+                       <TableCell>
+                         <Badge variant={assignment.is_active ? 'default' : 'secondary'}>
+                           {assignment.is_active ? 'Active' : 'Inactive'}
+                         </Badge>
+                       </TableCell>
+                       <TableCell>{formatDate(assignment.assigned_at)}</TableCell>
+                       <TableCell>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleToggleStatus(
+                             assignment.user_id,
+                             assignment.vendor_id,
+                             assignment.is_active
+                           )}
+                         >
+                           {assignment.is_active ? 'Deactivate' : 'Activate'}
+                         </Button>
+                       </TableCell>
+                     </TableRow>
+                   );
+                 })}
               </TableBody>
             </Table>
           )}

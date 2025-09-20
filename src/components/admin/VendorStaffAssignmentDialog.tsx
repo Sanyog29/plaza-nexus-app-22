@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { formatUserName } from '@/utils/formatters';
 
 interface User {
   id: string;
@@ -54,11 +55,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, role')
-        .eq('approval_status', 'approved')
-        .order('first_name');
+      const { data, error } = await supabase.rpc('admin_get_approved_users');
 
       if (error) throw error;
       setUsers(data || []);
@@ -166,11 +163,16 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
                 <SelectValue placeholder="Choose a user..." />
               </SelectTrigger>
               <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.first_name} {user.last_name} ({user.email}) - {user.role}
-                  </SelectItem>
-                ))}
+                {users.map((user) => {
+                  const userName = formatUserName(user.first_name, user.last_name, user.email);
+                  const displayText = user.email ? `${userName} (${user.email}) - ${user.role}` : `${userName} - ${user.role}`;
+                  
+                  return (
+                    <SelectItem key={user.id} value={user.id}>
+                      {displayText}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

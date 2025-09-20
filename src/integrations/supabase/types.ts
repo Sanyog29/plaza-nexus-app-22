@@ -8876,6 +8876,16 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      admin_get_approved_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          role: string
+        }[]
+      }
       admin_get_vendor_staff_assignments: {
         Args: Record<PropertyKey, never>
         Returns: {
