@@ -3,19 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUserName } from '@/utils/formatters';
+import { Loader2 } from 'lucide-react';
 
 interface User {
-  id: string;
+  user_id: string;
   first_name: string;
   last_name: string;
   email: string;
   role: string;
-  department: string;
-  is_assigned_to_vendor: boolean;
-  assigned_vendor_name: string;
 }
 
 interface Vendor {
@@ -42,6 +41,8 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
   const [selectedUserId, setSelectedUserId] = useState(initialUserId || '');
   const [selectedVendorId, setSelectedVendorId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [vendorsLoading, setVendorsLoading] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const { toast } = useToast();
 
@@ -57,6 +58,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
   }, [initialUserId]);
 
   const fetchUsers = async () => {
+    setUsersLoading(true);
     try {
       const { data, error } = await supabase.rpc('admin_get_unassigned_users');
 
@@ -69,10 +71,13 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
         description: "Failed to load users",
         variant: "destructive",
       });
+    } finally {
+      setUsersLoading(false);
     }
   };
 
   const fetchVendors = async () => {
+    setVendorsLoading(true);
     try {
       const { data, error } = await supabase
         .from('vendors')
@@ -89,6 +94,8 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
         description: "Failed to load vendors",
         variant: "destructive",
       });
+    } finally {
+      setVendorsLoading(false);
     }
   };
 
@@ -147,9 +154,13 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
     }
   };
 
+  // Get selected user and vendor details for display
+  const selectedUser = users.find(user => user.user_id === selectedUserId);
+  const selectedVendor = vendors.find(vendor => vendor.id === selectedVendorId);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md relative">
         <DialogHeader>
           <DialogTitle>Assign User to Vendor</DialogTitle>
         </DialogHeader>
@@ -160,60 +171,86 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
             <Select 
               value={selectedUserId} 
               onValueChange={setSelectedUserId}
-              disabled={!!initialUserId}
+              disabled={!!initialUserId || usersLoading}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a user..." />
+                <SelectValue placeholder={usersLoading ? "Loading users..." : "Choose a user..."} />
+                {usersLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    <div className="flex items-center justify-between w-full">
-                      <div>
-                        <div className="font-medium">
-                          {formatUserName(user.first_name, user.last_name, user.email)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {user.role} • {user.department}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {user.is_assigned_to_vendor ? (
-                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                            ⚠️ Assigned to {user.assigned_vendor_name}
-                          </span>
-                        ) : (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                            ✅ Available
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </SelectItem>
-                ))}
+              <SelectContent className="z-[100] max-h-[200px] overflow-y-auto">
+                {users.length === 0 && !usersLoading ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    No unassigned users available
+                  </div>
+                ) : (
+                  users.map((user) => (
+                    <SelectItem key={user.user_id} value={user.user_id}>
+                      {formatUserName(user.first_name, user.last_name, user.email)}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            
+            {/* Selected User Details Display */}
+            {selectedUser && (
+              <div className="mt-2 p-3 bg-muted/50 rounded-md">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-sm">
+                      {formatUserName(selectedUser.first_name, selectedUser.last_name, selectedUser.email)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {selectedUser.role}
+                    </div>
+                  </div>
+                  <div>
+                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                      ✅ Available
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="vendor">Select Vendor</Label>
-            <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
+            <Select 
+              value={selectedVendorId} 
+              onValueChange={setSelectedVendorId}
+              disabled={vendorsLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Choose a vendor..." />
+                <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Choose a vendor..."} />
+                {vendorsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               </SelectTrigger>
-              <SelectContent>
-                {vendors.map((vendor) => (
-                  <SelectItem key={vendor.id} value={vendor.id}>
-                    {vendor.name}
-                    {vendor.description && (
-                      <span className="text-sm text-muted-foreground ml-2">
-                        - {vendor.description.substring(0, 50)}...
-                      </span>
-                    )}
-                  </SelectItem>
-                ))}
+              <SelectContent className="z-[100] max-h-[200px] overflow-y-auto">
+                {vendors.length === 0 && !vendorsLoading ? (
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    No active vendors available
+                  </div>
+                ) : (
+                  vendors.map((vendor) => (
+                    <SelectItem key={vendor.id} value={vendor.id}>
+                      {vendor.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            
+            {/* Selected Vendor Details Display */}
+            {selectedVendor && (
+              <div className="mt-2 p-3 bg-muted/50 rounded-md">
+                <div className="font-medium text-sm">{selectedVendor.name}</div>
+                {selectedVendor.description && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {selectedVendor.description}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -225,7 +262,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[100]">
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
@@ -237,8 +274,15 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
           <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleAssign} disabled={loading}>
-            {loading ? 'Assigning...' : 'Assign to Vendor'}
+          <Button onClick={handleAssign} disabled={loading || !selectedUserId || !selectedVendorId}>
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Assigning...
+              </>
+            ) : (
+              'Assign to Vendor'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

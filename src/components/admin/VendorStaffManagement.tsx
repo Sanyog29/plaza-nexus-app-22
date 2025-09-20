@@ -14,12 +14,11 @@ interface VendorStaffAssignment {
   user_id: string;
   vendor_id: string;
   vendor_name: string;
-  user_first_name: string;
-  user_last_name: string;
-  user_email: string;
+  first_name: string;
+  last_name: string;
+  email: string;
   is_active: boolean;
   assigned_at: string;
-  is_orphaned: boolean;
 }
 
 export const VendorStaffManagement: React.FC = () => {
@@ -195,21 +194,16 @@ export const VendorStaffManagement: React.FC = () => {
               </TableHeader>
               <TableBody>
                  {assignments.map((assignment) => {
-                   const displayName = formatUserName(assignment.user_first_name, assignment.user_last_name, assignment.user_email);
+                   const displayName = formatUserName(assignment.first_name, assignment.last_name, assignment.email);
                    
                    return (
-                     <TableRow key={assignment.assignment_id} className={assignment.is_orphaned ? "bg-red-50" : ""}>
+                     <TableRow key={assignment.assignment_id}>
                        <TableCell className="font-medium">
                          <div className="flex items-center gap-2">
                            {displayName}
-                           {assignment.is_orphaned && (
-                             <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                               ORPHANED
-                             </span>
-                           )}
                          </div>
                        </TableCell>
-                       <TableCell>{assignment.user_email}</TableCell>
+                       <TableCell>{assignment.email}</TableCell>
                        <TableCell>{assignment.vendor_name}</TableCell>
                        <TableCell>
                          <Badge variant={assignment.is_active ? 'default' : 'secondary'}>
@@ -226,7 +220,6 @@ export const VendorStaffManagement: React.FC = () => {
                              assignment.vendor_id,
                              assignment.is_active
                            )}
-                           disabled={assignment.is_orphaned}
                          >
                            {assignment.is_active ? 'Deactivate' : 'Activate'}
                          </Button>
