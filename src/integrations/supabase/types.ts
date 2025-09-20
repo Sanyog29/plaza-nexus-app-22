@@ -8812,6 +8812,10 @@ export type Database = {
         Args: { target_vendor_id: string }
         Returns: Json
       }
+      admin_backfill_profiles_from_auth: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       admin_bulk_create_users: {
         Args: { users_data: Json }
         Returns: Json
@@ -8897,14 +8901,11 @@ export type Database = {
       admin_get_unassigned_users: {
         Args: Record<PropertyKey, never>
         Returns: {
-          assigned_vendor_name: string
-          department: string
           email: string
           first_name: string
-          id: string
-          is_assigned_to_vendor: boolean
           last_name: string
           role: string
+          user_id: string
         }[]
       }
       admin_get_vendor_staff_assignments: {
@@ -8912,12 +8913,11 @@ export type Database = {
         Returns: {
           assigned_at: string
           assignment_id: string
+          email: string
+          first_name: string
           is_active: boolean
-          is_orphaned: boolean
-          user_email: string
-          user_first_name: string
+          last_name: string
           user_id: string
-          user_last_name: string
           vendor_id: string
           vendor_name: string
         }[]
