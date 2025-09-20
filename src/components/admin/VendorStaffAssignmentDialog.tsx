@@ -63,8 +63,11 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
   useEffect(() => {
     setSelectedUserId(initialUserId || '');
-    // Don't set selectedVendorId here - it will be set after vendors are fetched
-  }, [initialUserId]);
+    if (initialVendorId) {
+      setSelectedVendorId(initialVendorId);
+      console.log('Preselecting vendor immediately', { initialVendorId });
+    }
+  }, [initialUserId, initialVendorId, isOpen]);
 
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -90,51 +93,35 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
     console.log('Fetching vendors...', { initialVendorId });
     
     try {
-      let vendorsQuery = supabase
-        .from('vendors')
-        .select('id, name, description, is_active')
-        .order('name');
-
-      // If we have an initialVendorId, fetch all vendors to ensure pre-selected vendor is included
-      if (!initialVendorId) {
-        vendorsQuery = vendorsQuery.eq('is_active', true);
-      }
-
-      const { data, error } = await vendorsQuery;
-
-      if (error) throw error;
-      
-      const fetchedVendors = data || [];
-      console.log('Fetched vendors:', fetchedVendors);
-
-      // If we have initialVendorId but it's not in the list, fetch it separately
-      if (initialVendorId && !fetchedVendors.find(v => v.id === initialVendorId)) {
-        console.log('Pre-selected vendor not found, fetching separately...');
-        const { data: specificVendor, error: specificError } = await supabase
+      if (initialVendorId) {
+        const { data: specificVendor, error } = await supabase
           .from('vendors')
           .select('id, name, description, is_active')
           .eq('id', initialVendorId)
-          .single();
+          .maybeSingle();
 
-        if (!specificError && specificVendor) {
-          fetchedVendors.unshift(specificVendor); // Add to beginning of list
-          console.log('Added pre-selected vendor:', specificVendor);
+        if (error) throw error;
+
+        if (specificVendor) {
+          setVendors([specificVendor]);
+          console.log('Loaded pre-selected vendor:', specificVendor);
         } else {
-          console.error('Failed to fetch pre-selected vendor:', specificError);
+          setVendors([]);
+          console.warn('Pre-selected vendor not found');
           toast({
             title: "Warning",
-            description: "The selected vendor could not be found. Please select a different vendor.",
-            variant: "destructive",
+            description: "The selected vendor could not be found. You can still proceed.",
           });
         }
-      }
+      } else {
+        const { data, error } = await supabase
+          .from('vendors')
+          .select('id, name, description, is_active')
+          .eq('is_active', true)
+          .order('name');
 
-      setVendors(fetchedVendors);
-      
-      // Set the pre-selected vendor after vendors are loaded
-      if (initialVendorId && fetchedVendors.find(v => v.id === initialVendorId)) {
-        setSelectedVendorId(initialVendorId);
-        console.log('Pre-selected vendor set:', initialVendorId);
+        if (error) throw error;
+        setVendors(data || []);
       }
       
     } catch (error) {
@@ -150,7 +137,8 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
   };
 
   const handleAssign = async () => {
-    if (!selectedUserId || !selectedVendorId) {
+    const vendorIdToUse = selectedVendorId || initialVendorId || '';
+    if (!selectedUserId || !vendorIdToUse) {
       toast({
         title: "Missing Information",
         description: "Please select both user and vendor",
@@ -161,9 +149,10 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
     setLoading(true);
     try {
+      console.log('Assigning vendor staff', { selectedUserId, vendorIdToUse, isActive });
       const { data, error } = await supabase.rpc('admin_add_vendor_staff', {
         p_user_id: selectedUserId,
-        p_vendor_id: selectedVendorId,
+        p_vendor_id: vendorIdToUse,
         p_is_active: isActive
       });
 
@@ -294,59 +283,82 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="vendor">Select Vendor</Label>
-            <Select 
-              value={selectedVendorId} 
-              onValueChange={setSelectedVendorId}
-              disabled={vendorsLoading || !!initialVendorId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Choose a vendor..."} />
-                {vendorsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              </SelectTrigger>
-              <SelectContent className="z-[100] max-h-[200px] overflow-y-auto">
-                {vendors.length === 0 && !vendorsLoading ? (
-                  <div className="p-2 text-sm text-muted-foreground text-center">
-                    No active vendors available
-                  </div>
-                ) : (
-                  vendors.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            
-            {/* Selected Vendor Details Display */}
-            {selectedVendor && (
+            <Label htmlFor="vendor">Vendor</Label>
+            {initialVendorId ? (
               <div className="mt-2 p-3 bg-muted/50 rounded-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-sm">{selectedVendor.name}</div>
-                    {selectedVendor.description && (
+                    <div className="font-medium text-sm">
+                      {selectedVendor?.name || vendorName || 'Selected Vendor'}
+                    </div>
+                    {selectedVendor?.description && (
                       <div className="text-xs text-muted-foreground mt-1">
                         {selectedVendor.description}
                       </div>
                     )}
                   </div>
-                  <div>
+                  {selectedVendor && (
                     <Badge 
                       variant={selectedVendor.is_active ? "default" : "secondary"} 
                       className="text-xs"
                     >
                       {selectedVendor.is_active ? "Active" : "Inactive"}
                     </Badge>
-                  </div>
+                  )}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Vendor is pre-selected and cannot be changed
+                </p>
               </div>
-            )}
-            
-            {initialVendorId && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Vendor is pre-selected and cannot be changed
-              </p>
+            ) : (
+              <>
+                <Select 
+                  value={selectedVendorId} 
+                  onValueChange={setSelectedVendorId}
+                  disabled={vendorsLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Choose a vendor..."} />
+                    {vendorsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  </SelectTrigger>
+                  <SelectContent className="z-[100] max-h-[200px] overflow-y-auto">
+                    {vendors.length === 0 && !vendorsLoading ? (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        No active vendors available
+                      </div>
+                    ) : (
+                      vendors.map((vendor) => (
+                        <SelectItem key={vendor.id} value={vendor.id}>
+                          {vendor.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+
+                {selectedVendor && (
+                  <div className="mt-2 p-3 bg-muted/50 rounded-md">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-sm">{selectedVendor.name}</div>
+                        {selectedVendor.description && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {selectedVendor.description}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Badge 
+                          variant={selectedVendor.is_active ? "default" : "secondary"} 
+                          className="text-xs"
+                        >
+                          {selectedVendor.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -371,7 +383,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
           <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleAssign} disabled={loading || !selectedUserId || !selectedVendorId}>
+          <Button onClick={handleAssign} disabled={loading || !selectedUserId || !(selectedVendorId || initialVendorId)}>
             {loading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
