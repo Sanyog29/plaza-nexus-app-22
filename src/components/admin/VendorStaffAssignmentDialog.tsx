@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -214,6 +214,9 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
         <DialogTitle>
           {vendorName ? `Assign Staff to ${vendorName}` : 'Assign User to Vendor'}
         </DialogTitle>
+        <DialogDescription>
+          Select a user and vendor to create a staff assignment relationship.
+        </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
