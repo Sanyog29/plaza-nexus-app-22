@@ -13,6 +13,9 @@ interface User {
   last_name: string;
   email: string;
   role: string;
+  department: string;
+  is_assigned_to_vendor: boolean;
+  assigned_vendor_name: string;
 }
 
 interface Vendor {
@@ -55,7 +58,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.rpc('admin_get_approved_users');
+      const { data, error } = await supabase.rpc('admin_get_unassigned_users');
 
       if (error) throw error;
       setUsers(data || []);
@@ -163,16 +166,31 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
                 <SelectValue placeholder="Choose a user..." />
               </SelectTrigger>
               <SelectContent>
-                {users.map((user) => {
-                  const userName = formatUserName(user.first_name, user.last_name, user.email);
-                  const displayText = user.email ? `${userName} (${user.email}) - ${user.role}` : `${userName} - ${user.role}`;
-                  
-                  return (
-                    <SelectItem key={user.id} value={user.id}>
-                      {displayText}
-                    </SelectItem>
-                  );
-                })}
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    <div className="flex items-center justify-between w-full">
+                      <div>
+                        <div className="font-medium">
+                          {formatUserName(user.first_name, user.last_name, user.email)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {user.role} • {user.department}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {user.is_assigned_to_vendor ? (
+                          <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                            ⚠️ Assigned to {user.assigned_vendor_name}
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            ✅ Available
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

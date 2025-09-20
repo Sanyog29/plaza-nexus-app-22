@@ -110,7 +110,41 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Delete the user using admin API
+    // First, cascade delete all user data using our comprehensive function
+    const { data: cascadeResult, error: cascadeError } = await supabaseAdmin.rpc(
+      'admin_cascade_delete_user_data',
+      { target_user_id: user_id }
+    );
+
+    if (cascadeError || !cascadeResult?.success) {
+      console.error('Error in cascade deletion:', cascadeError || cascadeResult);
+      
+      // Log failed cascade deletion
+      await supabaseAdmin.from('audit_logs').insert({
+        user_id: user.id,
+        action: 'cascade_delete_failed',
+        resource_type: 'user',
+        resource_id: user_id,
+        new_values: { 
+          error: cascadeError?.message || cascadeResult?.error || 'Unknown cascade deletion error',
+          target_email: userToDelete.user.email,
+          attempted_by: user.email
+        }
+      });
+
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to clean up user data', 
+          details: cascadeError?.message || cascadeResult?.error 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Now delete the user from auth.users
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
     if (deleteError) {
@@ -126,7 +160,8 @@ const handler = async (req: Request): Promise<Response> => {
           new_values: {
             error: deleteError.message,
             target_email: userToDelete.user.email,
-            attempted_by: user.email
+            attempted_by: user.email,
+            cascade_summary: cascadeResult.cleanup_summary
           }
         });
       
@@ -139,7 +174,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Log successful deletion
+    // Log successful deletion with cascade summary
     await supabaseAdmin
       .from('audit_logs')
       .insert({
@@ -150,20 +185,22 @@ const handler = async (req: Request): Promise<Response> => {
         new_values: {
           deleted_user_email: userToDelete.user.email,
           deleted_by: user.email,
-          deletion_timestamp: new Date().toISOString()
+          deletion_timestamp: new Date().toISOString(),
+          cascade_summary: cascadeResult.cleanup_summary
         }
       });
 
-    console.log(`User ${userToDelete.user.email} deleted by admin ${user.email}`);
+    console.log(`User ${userToDelete.user.email} and all related data deleted by admin ${user.email}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'User deleted successfully',
+        message: 'User and all related data deleted successfully',
         deleted_user: {
           id: user_id,
           email: userToDelete.user.email
-        }
+        },
+        cleanup_summary: cascadeResult.cleanup_summary
       }),
       { 
         status: 200, 

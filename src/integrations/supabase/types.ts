@@ -8816,6 +8816,14 @@ export type Database = {
         Args: { users_data: Json }
         Returns: Json
       }
+      admin_cascade_delete_user_data: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
+      admin_cleanup_orphaned_vendor_staff: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       admin_create_user_invitation: {
         Args:
           | {
@@ -8886,14 +8894,30 @@ export type Database = {
           role: string
         }[]
       }
+      admin_get_unassigned_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          assigned_vendor_name: string
+          department: string
+          email: string
+          first_name: string
+          id: string
+          is_assigned_to_vendor: boolean
+          last_name: string
+          role: string
+        }[]
+      }
       admin_get_vendor_staff_assignments: {
         Args: Record<PropertyKey, never>
         Returns: {
           assigned_at: string
+          assignment_id: string
           is_active: boolean
+          is_orphaned: boolean
           user_email: string
+          user_first_name: string
           user_id: string
-          user_name: string
+          user_last_name: string
           vendor_id: string
           vendor_name: string
         }[]

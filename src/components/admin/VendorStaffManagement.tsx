@@ -3,20 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, UserPlus, RotateCcw } from 'lucide-react';
+import { Plus, UserPlus, RotateCcw, Trash2 } from 'lucide-react';
 import { VendorStaffAssignmentDialog } from './VendorStaffAssignmentDialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUserName } from '@/utils/formatters';
 
 interface VendorStaffAssignment {
+  assignment_id: string;
   user_id: string;
-  user_name: string;
-  user_email: string;
   vendor_id: string;
   vendor_name: string;
+  user_first_name: string;
+  user_last_name: string;
+  user_email: string;
   is_active: boolean;
   assigned_at: string;
+  is_orphaned: boolean;
 }
 
 export const VendorStaffManagement: React.FC = () => {
@@ -45,6 +48,28 @@ export const VendorStaffManagement: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCleanupOrphanedRecords = async () => {
+    try {
+      const { data, error } = await supabase.rpc('admin_cleanup_orphaned_vendor_staff');
+      if (error) throw error;
+      
+      const result = data as { message?: string; success?: boolean };
+      
+      toast({
+        title: "Success",
+        description: result?.message || 'Orphaned records cleaned up successfully',
+      });
+      fetchAssignments(); // Refresh the list
+    } catch (error) {
+      console.error('Error cleaning up orphaned records:', error);
+      toast({
+        title: "Error",
+        description: 'Failed to clean up orphaned records',
+        variant: "destructive",
+      });
     }
   };
 
@@ -126,6 +151,14 @@ export const VendorStaffManagement: React.FC = () => {
                 Refresh
               </Button>
               <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleCleanupOrphanedRecords}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clean Orphaned
+              </Button>
+              <Button 
                 size="sm"
                 onClick={() => setShowAssignmentDialog(true)}
               >
@@ -162,12 +195,19 @@ export const VendorStaffManagement: React.FC = () => {
               </TableHeader>
               <TableBody>
                  {assignments.map((assignment) => {
-                   const displayName = assignment.user_name || formatUserName('', '', assignment.user_email);
+                   const displayName = formatUserName(assignment.user_first_name, assignment.user_last_name, assignment.user_email);
                    
                    return (
-                     <TableRow key={`${assignment.user_id}-${assignment.vendor_id}`}>
+                     <TableRow key={assignment.assignment_id} className={assignment.is_orphaned ? "bg-red-50" : ""}>
                        <TableCell className="font-medium">
-                         {displayName}
+                         <div className="flex items-center gap-2">
+                           {displayName}
+                           {assignment.is_orphaned && (
+                             <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                               ORPHANED
+                             </span>
+                           )}
+                         </div>
                        </TableCell>
                        <TableCell>{assignment.user_email}</TableCell>
                        <TableCell>{assignment.vendor_name}</TableCell>
@@ -186,6 +226,7 @@ export const VendorStaffManagement: React.FC = () => {
                              assignment.vendor_id,
                              assignment.is_active
                            )}
+                           disabled={assignment.is_orphaned}
                          >
                            {assignment.is_active ? 'Deactivate' : 'Activate'}
                          </Button>
