@@ -69,6 +69,16 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
     }
   }, [initialUserId, initialVendorId, isOpen]);
 
+  // Lock background scroll when dialog is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
+
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
@@ -218,7 +228,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
                 <SelectValue placeholder={usersLoading ? "Loading users..." : "Choose a user..."} />
                 {usersLoading && <Loader2 className="h-4 w-4 animate-spin" />}
               </SelectTrigger>
-              <SelectContent className="z-[100] max-h-[200px] overflow-y-auto">
+              <SelectContent className="z-[120] bg-popover shadow-md border max-h-[200px] overflow-y-auto" position="popper">
                 {users.length === 0 && !usersLoading ? (
                   <div className="p-2 text-sm text-muted-foreground text-center">
                     No unassigned users available
@@ -321,7 +331,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
                     <SelectValue placeholder={vendorsLoading ? "Loading vendors..." : "Choose a vendor..."} />
                     {vendorsLoading && <Loader2 className="h-4 w-4 animate-spin" />}
                   </SelectTrigger>
-                  <SelectContent className="z-[100] max-h-[200px] overflow-y-auto">
+                  <SelectContent className="z-[120] bg-popover shadow-md border max-h-[200px] overflow-y-auto" position="popper">
                     {vendors.length === 0 && !vendorsLoading ? (
                       <div className="p-2 text-sm text-muted-foreground text-center">
                         No active vendors available
@@ -371,7 +381,7 @@ export const VendorStaffAssignmentDialog: React.FC<VendorStaffAssignmentDialogPr
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="z-[100]">
+              <SelectContent className="z-[120] bg-popover shadow-md border" position="popper">
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
