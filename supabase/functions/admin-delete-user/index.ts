@@ -113,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
     // First, cascade delete all user data using our comprehensive function
     const { data: cascadeResult, error: cascadeError } = await supabaseAdmin.rpc(
       'admin_cascade_delete_user_data',
-      { target_user_id: user_id }
+      { target_user_id: user_id, calling_user_id: user.id }
     );
 
     if (cascadeError || !cascadeResult?.success) {

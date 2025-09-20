@@ -119,15 +119,28 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      console.log('Full error object:', JSON.stringify(error, null, 2));
       
+      // Enhanced error handling with more specific cases
       if (error.message?.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please try again.');
+        setError('Invalid email or password. Please check your credentials and try again.');
       } else if (error.message?.includes('User already registered')) {
         setError('An account with this email already exists. Please sign in instead.');
         setActiveTab('signin');
-      } else if (error.message?.includes('Email not confirmed')) {
+      } else if (error.message?.includes('Email not confirmed') || error.message?.includes('signup_disabled')) {
         setError('Please check your email and click the confirmation link before signing in.');
+      } else if (error.message?.includes('Too many requests')) {
+        setError('Too many login attempts. Please wait a few minutes before trying again.');
+      } else if (error.message?.includes('Password should be at least')) {
+        setError('Password must be at least 6 characters long.');
+      } else if (error.message?.includes('Unable to validate email address')) {
+        setError('Please enter a valid email address.');
+      } else if (error.message?.includes('Network')) {
+        setError('Network error. Please check your connection and try again.');
+      } else if (error.message?.includes('fetch')) {
+        setError('Connection error. Please check your internet and try again.');
       } else {
+        console.warn('Unhandled auth error:', error.message);
         setError(error.message || 'Authentication failed. Please try again.');
       }
     } finally {

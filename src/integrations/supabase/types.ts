@@ -8821,7 +8821,9 @@ export type Database = {
         Returns: Json
       }
       admin_cascade_delete_user_data: {
-        Args: { target_user_id: string }
+        Args:
+          | { calling_user_id: string; target_user_id: string }
+          | { target_user_id: string }
         Returns: Json
       }
       admin_cleanup_orphaned_vendor_staff: {
