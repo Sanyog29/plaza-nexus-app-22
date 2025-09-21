@@ -137,6 +137,9 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const avgSatisfaction = analytics.reduce((sum, item) => sum + Number(item.customer_satisfaction_avg), 0) / analytics.length;
 
+    // Calculate commission at 10%
+    const totalCommission = totalRevenue * 0.1;
+
     // Calculate changes (compare with previous period)
     const midPoint = Math.floor(analytics.length / 2);
     const firstHalf = analytics.slice(0, midPoint);
@@ -169,6 +172,13 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
         title: 'Avg Order Value',
         value: avgOrderValue,
         icon: <TrendingUp className="h-4 w-4" />,
+        format: 'currency' as const
+      },
+      {
+        title: 'Commission Earned',
+        value: totalCommission,
+        change: revenueChange, // Same as revenue change
+        icon: <DollarSign className="h-4 w-4 text-success" />,
         format: 'currency' as const
       },
       {
@@ -217,8 +227,9 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
       <MetricsGrid metrics={metrics} />
 
       <Tabs defaultValue="revenue" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
+          <TabsTrigger value="commission">Commission</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="satisfaction">Satisfaction</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
@@ -243,6 +254,77 @@ const VendorAnalytics: React.FC<VendorAnalyticsProps> = ({ vendorId }) => {
             period={period}
             onPeriodChange={setPeriod}
             type="bar"
+          />
+        </TabsContent>
+
+        <TabsContent value="commission" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-success" />
+                  Commission Overview (10% Rate)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Commission</span>
+                    <span className="font-semibold text-success text-lg">
+                      ₹{(analytics.reduce((sum, item) => sum + Number(item.total_revenue), 0) * 0.1).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Daily Average</span>
+                    <span className="font-semibold">
+                      ₹{analytics.length > 0 ? ((analytics.reduce((sum, item) => sum + Number(item.total_revenue), 0) * 0.1) / analytics.length).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Commission Rate</span>
+                    <span className="font-semibold text-success">10%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Commission Trends
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Best Day Commission</span>
+                    <span className="font-semibold">
+                      ₹{analytics.length > 0 ? (Math.max(...analytics.map(d => Number(d.total_revenue))) * 0.1).toFixed(2) : '0.00'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Growth Rate</span>
+                    <span className={`font-semibold ${metrics.find(m => m.title === 'Total Revenue')?.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {metrics.find(m => m.title === 'Total Revenue')?.change >= 0 ? '+' : ''}{metrics.find(m => m.title === 'Total Revenue')?.change?.toFixed(1) || '0'}%
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Revenue Share</span>
+                    <span className="font-semibold">90% to vendor</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <SalesChart
+            data={salesData.map(item => ({ ...item, commission: item.revenue * 0.1 }))}
+            title="Commission Earnings Over Time"
+            dataKey="commission"
+            period={period}
+            onPeriodChange={setPeriod}
+            type="line"
           />
         </TabsContent>
 

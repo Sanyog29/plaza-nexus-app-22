@@ -8947,6 +8947,10 @@ export type Database = {
         }
         Returns: string
       }
+      backfill_vendor_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       broadcast_request_offer: {
         Args: { p_expires_in_minutes?: number; p_request_id: string }
         Returns: Json
@@ -9101,6 +9105,18 @@ export type Database = {
       get_user_permissions: {
         Args: { user_id: string }
         Returns: Json
+      }
+      get_vendor_cumulative_analytics: {
+        Args: { p_period?: string; p_vendor_id: string }
+        Returns: {
+          average_order_value: number
+          commission_earned: number
+          customer_satisfaction: number
+          period_end: string
+          period_start: string
+          total_orders: number
+          total_revenue: number
+        }[]
       }
       is_admin: {
         Args: { uid: string }
