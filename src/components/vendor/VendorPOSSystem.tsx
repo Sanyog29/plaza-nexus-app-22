@@ -133,7 +133,9 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({
       total_amount: total,
       service_type: orderType,
       table_number: orderType === 'dine-in' ? tableNumber : undefined,
-      items: orderItems
+      items: orderItems,
+      status: 'completed',
+      payment_status: 'paid'
     }, {
       onSuccess: () => {
         clearCart();

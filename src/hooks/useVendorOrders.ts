@@ -17,6 +17,8 @@ interface CreateOrderData {
   table_number?: string;
   items: OrderItem[];
   customer_instructions?: string;
+  status?: 'pending' | 'completed';
+  payment_status?: 'pending' | 'paid';
 }
 
 export const useCreateOrder = () => {
@@ -42,8 +44,8 @@ export const useCreateOrder = () => {
             table_number: orderData.table_number,
             customer_instructions: orderData.customer_instructions,
             pickup_time: pickupTime.toISOString(),
-            status: 'pending',
-            payment_status: 'pending'
+            status: orderData.status || 'pending',
+            payment_status: orderData.payment_status || 'pending'
           })
           .select()
           .single();
@@ -69,9 +71,12 @@ export const useCreateOrder = () => {
       }, { context: 'creating_vendor_order' });
     },
     onSuccess: (order) => {
+      const isCompleted = order?.status === 'completed';
       toast({
-        title: "Order Created Successfully",
-        description: `Order #${order?.id?.slice(-6)} has been placed`,
+        title: isCompleted ? "Sale Completed Successfully" : "Order Created Successfully",
+        description: isCompleted ? 
+          `Sale #${order?.id?.slice(-6)} has been processed` :
+          `Order #${order?.id?.slice(-6)} has been placed`,
       });
       
       // Invalidate relevant queries
