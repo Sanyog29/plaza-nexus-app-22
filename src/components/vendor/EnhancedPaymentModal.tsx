@@ -128,16 +128,17 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 border-0 shadow-2xl">
-        <div className="relative">
-          {/* Animated Header with Bill Number */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative overflow-hidden">
+      <DialogContent className="max-w-md p-0 bg-gradient-to-br from-blue-50 to-purple-50 border-0 shadow-2xl max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="flex flex-col h-full">
+          {/* Fixed Header with Bill Number */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 relative overflow-hidden flex-shrink-0">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
             
             <button 
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
+              className="absolute top-3 right-3 p-2 hover:bg-white/20 rounded-full transition-colors touch-manipulation"
+              style={{ minWidth: '44px', minHeight: '44px' }}
             >
               <X className="w-5 h-5" />
             </button>
@@ -153,8 +154,8 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
             </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="p-6 space-y-4">
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <h4 className="font-semibold mb-3 text-gray-800">Order Details</h4>
               <div className="space-y-2">
@@ -208,7 +209,8 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                 
                 <Button
                   onClick={() => setPaymentMethod('upi')}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 touch-manipulation"
+                  style={{ minHeight: '56px' }}
                 >
                   <Smartphone className="w-5 h-5 mr-2" />
                   Pay with UPI
@@ -216,7 +218,8 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                 
                 <Button
                   onClick={() => setPaymentMethod('card')}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 touch-manipulation"
+                  style={{ minHeight: '56px' }}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   Pay with Card
@@ -228,7 +231,8 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                 <Button
                   variant="outline"
                   onClick={() => setPaymentMethod(null)}
-                  className="flex items-center space-x-2 text-sm"
+                  className="flex items-center space-x-2 text-sm py-3 px-4 touch-manipulation w-full justify-center"
+                  style={{ minHeight: '48px' }}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back to Payment Methods</span>
@@ -264,7 +268,8 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                     <Button
                       onClick={() => handlePayment('upi')}
                       disabled={isProcessing}
-                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg shadow-lg"
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-4 rounded-lg shadow-lg touch-manipulation"
+                      style={{ minHeight: '56px' }}
                     >
                       {isProcessing ? (
                         <div className="flex items-center space-x-2">
@@ -318,7 +323,8 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                     <Button
                       onClick={() => handlePayment('card')}
                       disabled={isProcessing}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg shadow-lg mt-4"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-4 rounded-lg shadow-lg mt-4 touch-manipulation"
+                      style={{ minHeight: '56px' }}
                     >
                       {isProcessing ? (
                         <div className="flex items-center space-x-2">
