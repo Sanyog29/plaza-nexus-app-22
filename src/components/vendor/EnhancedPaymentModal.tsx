@@ -198,11 +198,7 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
                       <span className="font-semibold">Scan to Pay</span>
                     </div>
                     
-                    <div className="bg-white p-4 rounded-lg border-2 border-gray-200 inline-block">
-                      {qrCodeUrl ? <img src={qrCodeUrl} alt="Payment QR Code" className="w-45 h-45 rounded-lg" /> : <div className="w-45 h-45 flex items-center justify-center bg-gray-100 rounded-lg">
-                          <span className="text-gray-500">Loading QR...</span>
-                        </div>}
-                    </div>
+                    
                     
                     <div className="text-sm text-gray-600">
                       <p>UPI ID: {vendor?.store_config?.upi_id || vendor?.contact_phone + '@upi'}</p>
