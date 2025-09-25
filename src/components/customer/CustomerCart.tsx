@@ -98,7 +98,7 @@ export const CustomerCart: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {cart.items.map(item => (
-            <div key={item.id} className="flex items-center gap-4">
+            <div key={item.id} className="flex flex-wrap items-center gap-4">
               <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                 {item.image_url ? (
                   <img
@@ -116,7 +116,7 @@ export const CustomerCart: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <h4 className="font-medium">{item.name}</h4>
                 <p className="text-sm text-muted-foreground">
                   {formatPrice(item.price)} each
@@ -132,7 +132,7 @@ export const CustomerCart: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Button
                   size="sm"
                   variant="outline"
@@ -157,14 +157,14 @@ export const CustomerCart: React.FC = () => {
                   size="sm"
                   variant="ghost"
                   onClick={() => handleRemoveItem(item.id)}
-                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  className="h-8 w-8 p-0 text-destructive hover:text-destructive ml-2"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="text-right">
-                <div className="font-medium">
+              <div className="text-right ml-auto">
+                <div className="font-medium whitespace-nowrap">
                   {formatPrice(item.price * item.quantity)}
                 </div>
               </div>

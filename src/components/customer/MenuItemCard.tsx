@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Minus, Star } from 'lucide-react';
+import { Plus, Minus, Star, Trash2 } from 'lucide-react';
 import { useCart, CartItem } from '@/contexts/CartContext';
 
 interface MenuItem {
@@ -117,10 +117,10 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
               </div>
               <div className="text-right ml-2">
                 <div className="font-bold text-lg whitespace-nowrap">{formatPrice(item.price)}</div>
-                {item.average_rating && item.average_rating > 0 && (
+                {(item.average_rating ?? 0) > 0 && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span>{item.average_rating.toFixed(1)}</span>
+                    <span>{item.average_rating!.toFixed(1)}</span>
                   </div>
                 )}
               </div>
@@ -151,72 +151,59 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
               )}
             </div>
 
-            {/* Add to Cart Section */}
-            {cartItem ? (
-              // Item is in cart - show quantity controls
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleUpdateCartQuantity(cartQuantity - 1)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium w-8 text-center">{cartQuantity}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleUpdateCartQuantity(cartQuantity + 1)}
-                  disabled={cartQuantity >= item.stock_quantity}
-                  className="h-8 w-8 p-0"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <span className="text-xs text-muted-foreground ml-2">
-                  In cart
-                </span>
-              </div>
-            ) : (
-              // Item not in cart - show add button
-              <div className="flex items-center gap-2">
-                {!isOutOfStock && item.is_available && (
-                  <>
-                    <div className="flex items-center border rounded-md">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="text-sm w-8 text-center">{quantity}</span>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setQuantity(Math.min(item.stock_quantity, quantity + 1))}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              {cartItem ? (
+                <>
+                  <div className="flex items-center border rounded-md shrink-0">
                     <Button
+                      variant="ghost"
                       size="sm"
-                      onClick={handleAddToCart}
-                      className="flex-1"
+                      onClick={() => handleUpdateCartQuantity(cartItem.quantity - 1)}
+                      disabled={cartItem.quantity <= 1}
+                      className="h-8 w-8 p-0"
                     >
-                      Add to Cart
+                      <Minus className="h-3 w-3" />
                     </Button>
-                  </>
-                )}
-                {(isOutOfStock || !item.is_available) && (
-                  <Button size="sm" disabled className="w-full">
-                    {isOutOfStock ? 'Out of Stock' : 'Not Available'}
+                    <span className="px-3 py-1 text-sm font-medium">
+                      {cartItem.quantity}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleUpdateCartQuantity(cartItem.quantity + 1)}
+                      disabled={cartItem.quantity >= (item.stock_quantity || 999)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateQuantity(item.id, 0)}
+                    className="text-destructive hover:bg-destructive/10 shrink-0"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Remove
                   </Button>
-                )}
-              </div>
-            )}
+                </>
+              ) : (
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock || !item.is_available}
+                  className="flex-1 min-w-[140px] sm:min-w-[120px]"
+                  size="sm"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add to Cart
+                </Button>
+              )}
+              {(isOutOfStock || !item.is_available) && (
+                <Button size="sm" disabled className="w-full">
+                  {isOutOfStock ? 'Out of Stock' : 'Not Available'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
