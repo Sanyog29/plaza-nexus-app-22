@@ -126,7 +126,7 @@ const App = () => (
               <Route path="/bookings" element={<BookingsPage />} />
               <Route path="/bookings/new" element={<BookingNewPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
-              <Route path="/cafeteria" element={<CafeteriaPage />} />
+              <Route path="/cafeteria/*" element={<CafeteriaPage />} />
               <Route path="/food-pos" element={<FoodPOSPage />} />
               <Route path="/vendor-portal" element={<VendorPortalPage />} />
               <Route path="/vendor-portal/invoice/:orderId" element={
