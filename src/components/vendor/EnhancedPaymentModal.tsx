@@ -107,7 +107,7 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
       onClose();
     }, 2000);
   };
-  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+  const formatCurrency = (amount: number) => `₹${amount.toFixed(0)}`;
   if (!isOpen) return null;
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md p-0 bg-gradient-to-br from-blue-50 to-purple-50 border-0 shadow-2xl max-h-[95vh] overflow-hidden flex flex-col">

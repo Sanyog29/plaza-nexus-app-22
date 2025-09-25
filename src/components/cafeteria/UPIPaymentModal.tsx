@@ -106,12 +106,12 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
               {items.map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <span>{item.name} × {item.quantity}</span>
-                  <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                  <span>₹{(item.price * item.quantity).toFixed(0)}</span>
                 </div>
               ))}
               <div className="border-t pt-2 flex justify-between font-semibold">
                 <span>Total Amount</span>
-                <span>₹{amount.toFixed(2)}</span>
+                <span>₹{amount.toFixed(0)}</span>
               </div>
             </CardContent>
           </Card>
@@ -150,7 +150,7 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
                       <p className="text-xs text-muted-foreground">
                         Order ID: {orderId}
                       </p>
-                      <Badge variant="secondary">₹{amount.toFixed(2)}</Badge>
+                      <Badge variant="secondary">₹{amount.toFixed(0)}</Badge>
                     </div>
                     
                     {isProcessing ? (
@@ -181,7 +181,7 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
                         {cafeteriaUPI}
                       </Badge>
                       <div className="text-xs text-muted-foreground space-y-1">
-                        <p>Amount: ₹{amount.toFixed(2)}</p>
+                        <p>Amount: ₹{amount.toFixed(0)}</p>
                         <p>Order ID: {orderId}</p>
                       </div>
                     </div>

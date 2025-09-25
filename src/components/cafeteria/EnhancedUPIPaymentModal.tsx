@@ -127,12 +127,12 @@ export const EnhancedUPIPaymentModal: React.FC<EnhancedUPIPaymentModalProps> = (
               {items.map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <span>{item.quantity}x {item.name}</span>
-                  <span>₹{(item.quantity * item.price).toFixed(2)}</span>
+                  <span>₹{(item.quantity * item.price).toFixed(0)}</span>
                 </div>
               ))}
               <div className="border-t pt-1 font-medium flex justify-between">
                 <span>Total</span>
-                <span>₹{amount.toFixed(2)}</span>
+                <span>₹{amount.toFixed(0)}</span>
               </div>
             </div>
           </div>
@@ -224,7 +224,7 @@ export const EnhancedUPIPaymentModal: React.FC<EnhancedUPIPaymentModalProps> = (
             disabled={isProcessing}
             size="lg"
           >
-            {isProcessing ? "Processing..." : `Pay ₹${amount.toFixed(2)}`}
+            {isProcessing ? "Processing..." : `Pay ₹${amount.toFixed(0)}`}
           </Button>
         </div>
       </DialogContent>

@@ -232,7 +232,7 @@ const OrderModal: React.FC<OrderModalProps> = ({ isOpen, onClose, item, loyaltyP
 
             <div className="flex justify-between items-center p-3 bg-muted rounded-md">
               <span className="font-semibold">Total:</span>
-              <span className="font-bold text-lg">₹{(item?.price * quantity).toFixed(2)}</span>
+              <span className="font-bold text-lg">₹{(item?.price * quantity).toFixed(0)}</span>
             </div>
 
             <Button 

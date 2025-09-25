@@ -215,7 +215,7 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({
                     <h3 className="font-semibold text-sm mb-1">{item.name}</h3>
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{item.description}</p>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-sm text-primary">₹{(item.price || 0).toFixed(2)}</span>
+                      <span className="font-bold text-sm text-primary">₹{(item.price || 0).toFixed(0)}</span>
                       <Button 
                         size="sm" 
                         onClick={() => addToCart(item)} 
@@ -260,7 +260,7 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-xs">{item.name}</h4>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="font-semibold text-xs">₹{((item.price || 0) * item.quantity).toFixed(2)}</span>
+                        <span className="font-semibold text-xs">₹{((item.price || 0) * item.quantity).toFixed(0)}</span>
                         <div className="flex items-center gap-1">
                           <Button size="sm" variant="outline" className="h-5 w-5 p-0" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                             <Minus className="w-2 h-2" />
@@ -284,17 +284,17 @@ export const VendorPOSSystem: React.FC<VendorPOSSystemProps> = ({
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="transition-all duration-300">₹{subtotal.toFixed(2)}</span>
+                  <span className="transition-all duration-300">₹{subtotal.toFixed(0)}</span>
                 </div>
                 
                 {discount > 0 && <div className="flex justify-between text-green-600 animate-fade-in">
                     <span>Discount (5%)</span>
-                    <span>-₹{discount.toFixed(2)}</span>
+                    <span>-₹{discount.toFixed(0)}</span>
                   </div>}
                 <Separator />
                 <div className="flex justify-between font-semibold text-sm">
                   <span>Total Payment</span>
-                  <span className="text-primary transition-all duration-300">₹{total.toFixed(2)}</span>
+                  <span className="text-primary transition-all duration-300">₹{total.toFixed(0)}</span>
                 </div>
               </div>
 
