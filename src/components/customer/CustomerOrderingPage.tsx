@@ -8,6 +8,7 @@ import { UtensilsCrossed, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { ResponsiveContainer } from '@/components/common/ResponsiveContainer';
 
 interface Vendor {
   id: string;
@@ -82,72 +83,75 @@ export const CustomerOrderingPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <UtensilsCrossed className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">Order Food</h1>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search restaurants and cuisines..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+    <ResponsiveContainer maxWidth="7xl" padding="md" className="pb-20">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <UtensilsCrossed className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-bold">Order Food</h1>
         </div>
 
-        {/* Cuisine Filter */}
-        {cuisineTypes.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant={selectedCuisine === '' ? 'default' : 'secondary'}
-              className="cursor-pointer"
-              onClick={() => setSelectedCuisine('')}
-            >
-              All
-            </Badge>
-            {cuisineTypes.map(cuisine => (
-              <Badge
-                key={cuisine}
-                variant={selectedCuisine === cuisine ? 'default' : 'secondary'}
-                className="cursor-pointer"
-                onClick={() => setSelectedCuisine(cuisine)}
-              >
-                {cuisine}
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Vendors Grid */}
-      <LoadingWrapper
-        loading={isLoading}
-        error={error}
-        skeleton={
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <VendorSkeleton key={i} />
-            ))}
-          </div>
-        }
-        emptyState={<EmptyState />}
-        isEmpty={!filteredVendors?.length}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredVendors?.map(vendor => (
-            <VendorCard
-              key={vendor.id}
-              vendor={vendor}
+        {/* Search and Filter */}
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search restaurants and cuisines..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 min-h-[44px]"
             />
-          ))}
+          </div>
+
+          {/* Cuisine Filter */}
+          {cuisineTypes.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Badge
+                variant={selectedCuisine === '' ? 'default' : 'secondary'}
+                className="cursor-pointer min-h-[32px] px-3 py-1 touch-manipulation"
+                onClick={() => setSelectedCuisine('')}
+              >
+                All
+              </Badge>
+              {cuisineTypes.map(cuisine => (
+                <Badge
+                  key={cuisine}
+                  variant={selectedCuisine === cuisine ? 'default' : 'secondary'}  
+                  className="cursor-pointer min-h-[32px] px-3 py-1 touch-manipulation"
+                  onClick={() => setSelectedCuisine(cuisine)}
+                >
+                  {cuisine}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
-      </LoadingWrapper>
-    </div>
+
+        {/* Vendors Grid */}
+        <LoadingWrapper
+          loading={isLoading}
+          error={error}
+          skeleton={
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <VendorSkeleton key={i} />
+              ))}
+            </div>
+          }
+          emptyState={<EmptyState />}
+          isEmpty={!filteredVendors?.length}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+            {filteredVendors?.map(vendor => (
+              <div key={vendor.id} className="h-full">
+                <VendorCard
+                  vendor={vendor}
+                />
+              </div>
+            ))}
+          </div>
+        </LoadingWrapper>
+      </div>
+    </ResponsiveContainer>
   );
 };

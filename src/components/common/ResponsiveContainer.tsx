@@ -25,15 +25,15 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
-    '7xl': 'max-w-7xl',
+    '7xl': 'max-w-[1600px]',
     full: 'max-w-full'
   };
 
   const paddingClasses = {
     none: '',
-    sm: isMobile ? 'p-sm' : 'p-md',
-    md: isMobile ? 'p-md' : 'p-lg',
-    lg: isMobile ? 'p-lg' : 'p-xl'
+    sm: isMobile ? 'px-4 py-2' : 'px-6 py-3',
+    md: isMobile ? 'px-4 py-4' : 'px-8 py-6', 
+    lg: isMobile ? 'px-6 py-6' : 'px-12 py-8'
   };
 
   const spacingClasses = {
