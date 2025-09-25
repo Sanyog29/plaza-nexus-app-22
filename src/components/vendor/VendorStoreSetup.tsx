@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { VendorLogoUpload } from './VendorLogoUpload';
 import { 
   Store, 
   Settings, 
@@ -294,12 +295,11 @@ const VendorStoreSetup: React.FC<VendorStoreSetupProps> = ({ vendorId }) => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="logo">Logo URL</Label>
-                  <Input
-                    id="logo"
-                    value={storeConfig.logo}
-                    onChange={(e) => updateSimpleField('logo', e.target.value)}
-                    placeholder="https://example.com/logo.png"
+                  <Label>Store Logo</Label>
+                  <VendorLogoUpload
+                    currentLogoUrl={storeConfig.logo}
+                    onLogoUpdate={(logoUrl) => updateSimpleField('logo', logoUrl || '')}
+                    vendorId={vendorId}
                   />
                 </div>
 
