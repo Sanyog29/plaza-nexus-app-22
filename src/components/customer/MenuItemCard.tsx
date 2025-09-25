@@ -62,7 +62,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
     }
   };
 
-  const formatPrice = (price: number) => `₹${price.toFixed(2)}`;
+  const formatPrice = (price: number) => `₹${price.toFixed(0)}`;
 
   const getDietaryColor = (tag: string) => {
     switch (tag?.toLowerCase()) {

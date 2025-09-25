@@ -327,7 +327,7 @@ export const VendorMenuPage: React.FC = () => {
             return (
               <div key={categoryId}>
                 <h3 className="text-lg font-semibold mb-4">{categoryName}</h3>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {items.map(item => (
                     <MenuItemCard
                       key={item.id}
