@@ -58,35 +58,58 @@ const HomePage = () => {
           </div>
         </div>
         
-        {/* Primary Action Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <DashboardTile title="Helpdesk & Ticketing" description="Report issues, track requests & get support" icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />} to="/requests/new" bgColor="bg-blue-600" count={newMetrics.totalRequests} status={{
-          text: `${newMetrics.pendingRequests} Active Tickets`,
-          color: "bg-white/20 text-white"
-        }} />
+        {/* Primary Action Grid - 4 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <DashboardTile 
+            title="Helpdesk & Ticketing" 
+            description="Report issues, track requests & get support" 
+            icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />} 
+            to="/requests/new" 
+            bgColor="bg-blue-600" 
+            count={newMetrics.totalRequests} 
+            status={{
+              text: `${newMetrics.pendingRequests} Active Tickets`,
+              color: "bg-white/20 text-white"
+            }} 
+          />
           
-          <DashboardTile title="Visitor Management" description="Check-in visitors & manage access control" icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />} to="/security" bgColor="bg-indigo-600" count={newMetrics.totalVisitors} status={{
-          text: `${newMetrics.activeVisitors} Active Visitors`,
-          color: "bg-white/20 text-white"
-        }} />
+          <DashboardTile 
+            title="Visitor Management" 
+            description="Check-in visitors & manage access control" 
+            icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />} 
+            to="/security" 
+            bgColor="bg-indigo-600" 
+            count={newMetrics.totalVisitors} 
+            status={{
+              text: `${newMetrics.activeVisitors} Active Visitors`,
+              color: "bg-white/20 text-white"
+            }} 
+          />
           
-          <DashboardTile title="Room Bookings" description="Reserve meeting spaces & conference rooms" icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />} to="/bookings" bgColor="bg-purple-600" count={newMetrics.upcomingBookings} status={{
-          text: `Available Today`,
-          color: "bg-white/20 text-white"
-        }} />
-        </div>
-        
-        {/* Secondary Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DashboardTile title="Cafe & Loyalty" description="Order via app • Earn points • Pay via UPI" icon={<Coffee size={28} className="text-gray-800" strokeWidth={1.5} />} to="/cafeteria" bgColor="bg-amber-600" status={{
-          text: "Order & Earn Points",
-          color: "bg-gray-800 text-amber-600"
-        }} />
-          
-          <DashboardTile title="Critical Alerts" description="Important facility updates & notifications" icon={<Bell size={28} className="text-white" strokeWidth={1.5} />} to="/alerts" bgColor="bg-red-600" count={newMetrics.systemAlerts} status={{
-          text: `${newMetrics.systemAlerts > 0 ? 'Require Attention' : 'All Clear'}`,
-          color: "bg-white text-red-600"
-        }} />
+          <DashboardTile 
+            title="Room Bookings" 
+            description="Reserve meeting spaces & conference rooms" 
+            icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />} 
+            to="/bookings" 
+            bgColor="bg-purple-600" 
+            count={newMetrics.upcomingBookings} 
+            status={{
+              text: `Available Today`,
+              color: "bg-white/20 text-white"
+            }} 
+          />
+
+          <DashboardTile 
+            title="Cafe & Loyalty" 
+            description="Order via app • Earn points • Pay via UPI" 
+            icon={<Coffee size={28} className="text-white" strokeWidth={1.5} />} 
+            to="/cafeteria" 
+            bgColor="bg-amber-600" 
+            status={{
+              text: "Order & Earn Points",
+              color: "bg-white/20 text-white"
+            }} 
+          />
         </div>
       </div>
 

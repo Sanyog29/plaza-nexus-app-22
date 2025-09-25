@@ -33,7 +33,7 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
 
   return (
     <Link to={to} className="block group">
-      <div className={`${bgColor} rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}>
+      <div className={`${bgColor} rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg h-full`}>
         <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         <div className="relative z-10">
