@@ -214,7 +214,10 @@ export const CustomerCart: React.FC = () => {
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
           cartItems={cart.items}
-          totalAmount={finalTotal}
+          subtotal={cart.total}
+          discount={0}
+          total={finalTotal}
+          orderType="takeaway"
           onPaymentSuccess={handlePaymentSuccess}
           vendorId={cart.vendor_id}
         />
