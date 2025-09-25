@@ -83,7 +83,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
   };
 
   return (
-    <Card className={`group transition-all duration-200 ${!item.is_available || isOutOfStock ? 'opacity-60' : 'hover:shadow-md'}`}>
+    <Card className={`group overflow-hidden transition-all duration-200 ${!item.is_available || isOutOfStock ? 'opacity-60' : 'hover:shadow-md'}`}>
       <CardContent className="p-4">
         <div className="flex gap-4">
           {/* Item Image */}
@@ -116,7 +116,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
                 )}
               </div>
               <div className="text-right ml-2">
-                <div className="font-bold text-lg">{formatPrice(item.price)}</div>
+                <div className="font-bold text-lg whitespace-nowrap">{formatPrice(item.price)}</div>
                 {item.average_rating && item.average_rating > 0 && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
@@ -147,12 +147,6 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
               {item.preparation_time_minutes && (
                 <Badge variant="outline" className="text-xs px-2 py-0">
                   {item.preparation_time_minutes} mins
-                </Badge>
-              )}
-              
-              {isLowStock && !isOutOfStock && (
-                <Badge variant="destructive" className="text-xs px-2 py-0">
-                  Limited Stock
                 </Badge>
               )}
             </div>
@@ -216,7 +210,6 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, vendorName }) 
                     </Button>
                   </>
                 )}
-                
                 {(isOutOfStock || !item.is_available) && (
                   <Button size="sm" disabled className="w-full">
                     {isOutOfStock ? 'Out of Stock' : 'Not Available'}
