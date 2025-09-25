@@ -83,11 +83,11 @@ const HomePage = () => {
             description="Report issues, track requests & get support"
             icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />}
             to="/requests/new"
-            bgColor="bg-gradient-to-br from-plaza-blue to-blue-700"
+            bgColor="bg-blue-600"
             count={newMetrics.totalRequests}
             status={{
               text: `${newMetrics.pendingRequests} Active Tickets`,
-              color: "bg-blue-500/20 text-blue-200"
+              color: "bg-white/20 text-white"
             }}
           />
           
@@ -96,11 +96,11 @@ const HomePage = () => {
             description="Check-in visitors & manage access control"
             icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />}
             to="/security"
-            bgColor="bg-gradient-to-br from-indigo-600 to-indigo-800"
+            bgColor="bg-indigo-600"
             count={newMetrics.totalVisitors}
             status={{
               text: `${newMetrics.activeVisitors} Active Visitors`,
-              color: "bg-indigo-400/20 text-indigo-200"
+              color: "bg-white/20 text-white"
             }}
           />
           
@@ -109,11 +109,11 @@ const HomePage = () => {
             description="Reserve meeting spaces & conference rooms"
             icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />}
             to="/bookings"
-            bgColor="bg-gradient-to-br from-purple-600 to-purple-800"
+            bgColor="bg-purple-600"
             count={newMetrics.upcomingBookings}
             status={{
               text: `Available Today`,
-              color: "bg-purple-400/20 text-purple-200"
+              color: "bg-white/20 text-white"
             }}
           />
         </div>
@@ -123,12 +123,12 @@ const HomePage = () => {
           <DashboardTile 
             title="Cafe & Loyalty"
             description="Order via app • Earn points • Pay via UPI"
-            icon={<Coffee size={28} className="text-white" strokeWidth={1.5} />}
+            icon={<Coffee size={28} className="text-gray-800" strokeWidth={1.5} />}
             to="/cafeteria"
-            bgColor="bg-gradient-to-br from-amber-600 to-amber-800"
+            bgColor="bg-amber-600"
             status={{
               text: "Order & Earn Points",
-              color: "bg-amber-400/20 text-amber-200"
+              color: "bg-gray-800 text-amber-600"
             }}
           />
           
@@ -137,11 +137,11 @@ const HomePage = () => {
             description="Important facility updates & notifications"
             icon={<Bell size={28} className="text-white" strokeWidth={1.5} />}
             to="/alerts"
-            bgColor="bg-gradient-to-br from-red-600 to-red-800"
+            bgColor="bg-red-600"
             count={newMetrics.systemAlerts}
             status={{
               text: `${newMetrics.systemAlerts > 0 ? 'Require Attention' : 'All Clear'}`,
-              color: "bg-red-400/20 text-red-200"
+              color: "bg-white text-red-600"
             }}
           />
         </div>
@@ -175,26 +175,26 @@ const HomePage = () => {
         </Card>
 
         {/* Building Metrics */}
-        <Card className="bg-card/50 backdrop-blur">
+        <Card className="bg-gray-100 border-gray-200">
           <CardContent className="p-6">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-500/20 p-2 rounded-lg">
-                  <Users size={20} className="text-blue-400" />
+                <div className="bg-blue-600 p-2 rounded-lg">
+                  <Users size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-white">Building Occupancy</p>
-                  <p className="text-sm text-blue-400">{oldMetrics.occupancyRate}% • {oldMetrics.totalOccupants.toLocaleString()} people</p>
+                  <p className="font-medium text-gray-900">Building Occupancy</p>
+                  <p className="text-sm text-gray-700">{oldMetrics.occupancyRate}% • {oldMetrics.totalOccupants.toLocaleString()} people</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="bg-emerald-500/20 p-2 rounded-lg">
-                  <Thermometer size={20} className="text-emerald-400" />
+                <div className="bg-emerald-600 p-2 rounded-lg">
+                  <Thermometer size={20} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-medium text-white">Climate Control</p>
-                  <p className="text-sm text-emerald-400">
+                  <p className="font-medium text-gray-900">Climate Control</p>
+                  <p className="text-sm text-gray-700">
                     {oldMetrics.currentTemperature}°C • {oldMetrics.currentTemperature >= 22 && oldMetrics.currentTemperature <= 26 ? 'Optimal' : 'Adjusting'}
                   </p>
                 </div>
@@ -204,29 +204,29 @@ const HomePage = () => {
         </Card>
 
         {/* System Performance */}
-        <Card className="bg-card/50 backdrop-blur">
+        <Card className="bg-gray-100 border-gray-200">
           <CardContent className="p-6">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-white">System Health</h4>
+                <h4 className="font-semibold text-gray-900">System Health</h4>
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                  <span className="text-xs text-emerald-400">Online</span>
+                  <div className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></div>
+                  <span className="text-xs text-emerald-700">Online</span>
                 </div>
               </div>
               
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300">Request Response</span>
-                  <span className="text-sm text-emerald-400">98.5%</span>
+                  <span className="text-sm text-gray-600">Request Response</span>
+                  <span className="text-sm text-emerald-700">98.5%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300">System Uptime</span>
-                  <span className="text-sm text-emerald-400">99.9%</span>
+                  <span className="text-sm text-gray-600">System Uptime</span>
+                  <span className="text-sm text-emerald-700">99.9%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300">User Satisfaction</span>
-                  <span className="text-sm text-emerald-400">4.8/5</span>
+                  <span className="text-sm text-gray-600">User Satisfaction</span>
+                  <span className="text-sm text-emerald-700">4.8/5</span>
                 </div>
               </div>
             </div>
@@ -245,29 +245,29 @@ const HomePage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
+          <Card className="bg-gray-100 border-gray-200 hover:bg-gray-50 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-plaza-blue/20 p-2 rounded-lg">
-                  <Building size={24} className="text-plaza-blue" />
+                <div className="bg-blue-600 p-2 rounded-lg">
+                  <Building size={24} className="text-white" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-white">SS Plaza Directory</h4>
-                  <p className="text-sm text-gray-400">Floor plans • Emergency contacts • Guidelines</p>
+                  <h4 className="font-medium text-gray-900">SS Plaza Directory</h4>
+                  <p className="text-sm text-gray-600">Floor plans • Emergency contacts • Guidelines</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-card/50 backdrop-blur hover:bg-card/60 transition-colors">
+          <Card className="bg-gray-100 border-gray-200 hover:bg-gray-50 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-emerald-500/20 p-2 rounded-lg">
-                  <Shield size={24} className="text-emerald-400" />
+                <div className="bg-emerald-600 p-2 rounded-lg">
+                  <Shield size={24} className="text-white" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-white">Safety & Security</h4>
-                  <p className="text-sm text-gray-400">Emergency procedures • Safety protocols</p>
+                  <h4 className="font-medium text-gray-900">Safety & Security</h4>
+                  <p className="text-sm text-gray-600">Emergency procedures • Safety protocols</p>
                 </div>
               </div>
             </CardContent>

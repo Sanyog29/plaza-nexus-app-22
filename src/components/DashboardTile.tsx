@@ -24,26 +24,33 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
   count,
   status,
 }) => {
+  // Determine text color based on background
+  const isLightBg = bgColor.includes('amber') || bgColor.includes('gray-100');
+  const textColor = isLightBg ? 'text-gray-900' : 'text-white';
+  const descriptionColor = isLightBg ? 'text-gray-700' : 'text-white/90';
+  const iconBgColor = isLightBg ? 'bg-white/90' : 'bg-white/20';
+  const countBgColor = isLightBg ? 'bg-gray-800 text-white' : 'bg-white/90 text-gray-900';
+
   return (
     <Link to={to} className="block group">
-      <div className={`${bgColor} rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:brightness-110`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className={`${bgColor} rounded-xl p-6 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}>
+        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-4">
-            <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
+            <div className={`${iconBgColor} p-3 rounded-lg backdrop-blur-sm`}>
               {icon}
             </div>
             {count !== undefined && (
-              <span className="bg-background/90 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
+              <span className={`${countBgColor} text-xs font-semibold px-3 py-1.5 rounded-full`}>
                 {count}
               </span>
             )}
           </div>
           
-          <h3 className="text-lg font-semibold text-primary-foreground mb-1">{title}</h3>
+          <h3 className={`text-xl font-semibold ${textColor} mb-1`}>{title}</h3>
           {description && (
-            <p className="text-primary-foreground/90 text-sm mb-4">{description}</p>
+            <p className={`${descriptionColor} text-sm mb-4`}>{description}</p>
           )}
           
           {status && (
