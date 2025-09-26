@@ -660,7 +660,7 @@ const AdminContentPage = () => {
         type="website"
         noindex
       />
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="w-full space-y-6">
         <UserStatusDisplay />
         
         <div className="flex items-center justify-between">

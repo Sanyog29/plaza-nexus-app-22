@@ -190,14 +190,14 @@ const StaffAlertsPage = () => {
   const acknowledgedAlerts = systemAlerts.filter(alert => alert.status === 'acknowledged');
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-20">
+    <div className="w-full space-y-6 pb-20">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2">Staff Alerts</h1>
         <p className="text-gray-400">Monitor system alerts and facility issues</p>
       </div>
 
       {/* Alert Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mb-8">
         <Card className="bg-red-500/10 border-red-500/30">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">

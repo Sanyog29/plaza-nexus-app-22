@@ -5,7 +5,7 @@ import HierarchicalRequestForm from '@/components/maintenance/HierarchicalReques
 
 const NewRequestPage = () => {
   return (
-    <div className="px-4 py-6">
+    <div className="w-full space-y-6">
       <RequestFormHeader />
       <div className="mt-6">
         <HierarchicalRequestForm />

@@ -25,7 +25,7 @@ export default function UnifiedDashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="w-full space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-white">
@@ -42,7 +42,7 @@ export default function UnifiedDashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           <Card className="bg-card/50 backdrop-blur">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-white">Role</CardTitle>

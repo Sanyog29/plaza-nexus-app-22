@@ -267,7 +267,7 @@ const StaffRequestsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 pb-20">
+       <div className="w-full space-y-6 pb-20">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Maintenance Requests</h1>
           <p className="text-gray-400">Manage and track maintenance requests</p>
@@ -278,7 +278,7 @@ const StaffRequestsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-20">
+    <div className="w-full space-y-6 pb-20">
       {/* Real-time Task Completion Notifier */}
       <TaskCompletionNotifier />
       

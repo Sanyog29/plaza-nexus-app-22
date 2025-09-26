@@ -253,7 +253,7 @@ const AdminRequestsPage = () => {
         type="website"
         noindex
       />
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="w-full space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-white">Request Management</h1>
@@ -262,7 +262,7 @@ const AdminRequestsPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">

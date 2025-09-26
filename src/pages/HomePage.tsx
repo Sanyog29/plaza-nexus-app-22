@@ -31,14 +31,14 @@ const HomePage = () => {
 
   // Show loading state
   if (oldLoading || newLoading) {
-    return <div className="px-4 py-6 flex items-center justify-center min-h-screen">
+    return <div className="w-full flex items-center justify-center min-h-screen">
         <div className="flex items-center gap-2 text-white">
           <Loader2 className="h-6 w-6 animate-spin" />
           <span>Loading dashboard...</span>
         </div>
       </div>;
   }
-  return <div className="px-4 py-6 space-y-8">
+  return <div className="w-full space-y-8">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-white mb-2">
           Welcome to SS Plaza, {firstName}
@@ -59,7 +59,7 @@ const HomePage = () => {
         </div>
         
         {/* Primary Action Grid - 4 Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           <DashboardTile title="Helpdesk & Ticketing" description="Report issues, track requests & get support" icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />} to="/requests/new" bgColor="bg-blue-600" count={newMetrics.totalRequests} status={{
           text: `${newMetrics.pendingRequests} Active Tickets`,
           color: "bg-white/20 text-white"

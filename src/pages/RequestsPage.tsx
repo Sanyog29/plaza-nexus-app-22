@@ -235,7 +235,7 @@ const RequestsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-6">
+      <div className="w-full space-y-6">
         <div className="flex justify-center items-center h-40">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plaza-blue"></div>
         </div>
@@ -244,7 +244,7 @@ const RequestsPage = () => {
   }
 
   return (
-    <div className="px-4 py-6">
+    <div className="w-full space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-white">Requests</h2>
@@ -276,7 +276,7 @@ const RequestsPage = () => {
       )}
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 mb-6">
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="bg-plaza-blue/20 p-2 rounded-full">

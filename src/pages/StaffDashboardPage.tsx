@@ -78,7 +78,7 @@ const StaffDashboardPage = () => {
       {/* Real-time Task Completion Notifier */}
       <TaskCompletionNotifier />
       
-      <div className="container mx-auto px-4 py-8 pb-20">
+      <div className="w-full space-y-6 pb-20">
       {/* Feature Notification System */}
       <FeatureNotificationSystem />
       
@@ -150,7 +150,7 @@ const StaffDashboardPage = () => {
       <AdvancedNotificationCenter />
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mb-8">
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ const StaffDashboardPage = () => {
       <Card className="bg-card/50 backdrop-blur mb-8">
         
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
             <Button onClick={() => navigate('/requests/new')} className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30">
               <Plus className="h-6 w-6 text-green-400 mb-2" />
               <span className="text-sm">Raise Request</span>

@@ -58,7 +58,7 @@ const VisitorManagementPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
@@ -71,7 +71,7 @@ const VisitorManagementPage: React.FC = () => {
         </div>
 
         {/* Status Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mb-6">
           <Card className="bg-card/50 backdrop-blur">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">

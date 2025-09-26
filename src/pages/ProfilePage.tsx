@@ -62,7 +62,7 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto px-4 py-8">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plaza-blue"></div>
         </div>
@@ -72,7 +72,7 @@ const ProfilePage = () => {
 
   return (
     <ProfileErrorBoundary onSignOut={signOut}>
-      <div className="container max-w-4xl mx-auto px-4 py-8">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -220,7 +220,7 @@ const ProfilePage = () => {
                 {userRole === 'tenant_manager' && (
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                       <Button 
                         className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
                         onClick={() => navigate('/requests/new')}

@@ -521,7 +521,7 @@ const UserManualPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="w-full max-w-6xl mx-auto space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-4">User Manual & Documentation</h1>
         <p className="text-gray-400 mb-6">

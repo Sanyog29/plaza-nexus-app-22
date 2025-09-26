@@ -101,7 +101,7 @@ const TenantPortalPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
       {/* Header */}
       <div className="bg-card border-b border-border/40">
-        <div className="container mx-auto px-4 py-6">
+        <div className="w-full px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
@@ -124,7 +124,7 @@ const TenantPortalPage = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="w-full px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>

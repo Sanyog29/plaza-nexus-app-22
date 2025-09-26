@@ -102,7 +102,7 @@ const MaintenancePage = () => {
   };
 
   return (
-    <div className="px-4 py-6 space-y-6">
+    <div className="w-full space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-white">Maintenance Management</h2>
