@@ -60,56 +60,25 @@ const HomePage = () => {
         
         {/* Primary Action Grid - 4 Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <DashboardTile 
-            title="Helpdesk & Ticketing" 
-            description="Report issues, track requests & get support" 
-            icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />} 
-            to="/requests/new" 
-            bgColor="bg-blue-600" 
-            count={newMetrics.totalRequests} 
-            status={{
-              text: `${newMetrics.pendingRequests} Active Tickets`,
-              color: "bg-white/20 text-white"
-            }} 
-          />
+          <DashboardTile title="Helpdesk & Ticketing" description="Report issues, track requests & get support" icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />} to="/requests/new" bgColor="bg-blue-600" count={newMetrics.totalRequests} status={{
+          text: `${newMetrics.pendingRequests} Active Tickets`,
+          color: "bg-white/20 text-white"
+        }} />
           
-          <DashboardTile 
-            title="Visitor Management" 
-            description="Check-in visitors & manage access control" 
-            icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />} 
-            to="/security" 
-            bgColor="bg-indigo-600" 
-            count={newMetrics.totalVisitors} 
-            status={{
-              text: `${newMetrics.activeVisitors} Active Visitors`,
-              color: "bg-white/20 text-white"
-            }} 
-          />
+          <DashboardTile title="Visitor Management" description="Check-in visitors & manage access control" icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />} to="/security" bgColor="bg-indigo-600" count={newMetrics.totalVisitors} status={{
+          text: `${newMetrics.activeVisitors} Active Visitors`,
+          color: "bg-white/20 text-white"
+        }} />
           
-          <DashboardTile 
-            title="Room Bookings" 
-            description="Reserve meeting spaces & conference rooms" 
-            icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />} 
-            to="/bookings" 
-            bgColor="bg-purple-600" 
-            count={newMetrics.upcomingBookings} 
-            status={{
-              text: `Available Today`,
-              color: "bg-white/20 text-white"
-            }} 
-          />
+          <DashboardTile title="Room Bookings" description="Reserve meeting spaces & conference rooms" icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />} to="/bookings" bgColor="bg-purple-600" count={newMetrics.upcomingBookings} status={{
+          text: `Available Today`,
+          color: "bg-white/20 text-white"
+        }} />
 
-          <DashboardTile 
-            title="Cafe & Loyalty" 
-            description="Order via app • Earn points • Pay via UPI" 
-            icon={<Coffee size={28} className="text-white" strokeWidth={1.5} />} 
-            to="/cafeteria" 
-            bgColor="bg-amber-600" 
-            status={{
-              text: "Order & Earn Points",
-              color: "bg-white/20 text-white"
-            }} 
-          />
+          <DashboardTile title="Cafe & Loyalty" description="Order via app • Earn points • Pay via UPI" icon={<Coffee size={28} className="text-white" strokeWidth={1.5} />} to="/cafeteria" bgColor="bg-amber-600" status={{
+          text: "Order & Earn Points",
+          color: "bg-white/20 text-white"
+        }} />
         </div>
       </div>
 
@@ -134,7 +103,7 @@ const HomePage = () => {
                   <Building size={24} className="text-white" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">SS Plaza Directory</h4>
+                  <h4 className="text-gray-900 font-medium text-base text-left">SS Plaza Directory</h4>
                   <p className="text-sm text-gray-600">Floor plans • Emergency contacts • Guidelines</p>
                 </div>
               </div>
