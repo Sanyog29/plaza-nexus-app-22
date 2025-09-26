@@ -193,7 +193,7 @@ const UnifiedAdminDashboard = () => {
         noindex
       />
       <LoadingWrapper loading={isLoading} error={error ? new Error(error) : null}>
-        <div className="px-4 py-6 space-y-6">
+        <div className="w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -285,7 +285,7 @@ const UnifiedAdminDashboard = () => {
 
           <TabsContent value="overview" className="space-y-6">
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
               {quickStats.map((stat) => {
                 const IconComponent = stat.icon;
                 return (
@@ -308,7 +308,7 @@ const UnifiedAdminDashboard = () => {
             {/* Featured Tools Grid */}
             <div>
               <h2 className="text-xl font-bold text-white mb-4">Admin Tools</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {featuredTools.map((tool) => {
                   const IconComponent = tool.icon;
                   return (
