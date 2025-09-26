@@ -28,7 +28,17 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
   const isLightBg = bgColor.includes('amber') || bgColor.includes('gray-100');
   const textColor = isLightBg ? 'text-gray-900' : 'text-white';
   const descriptionColor = isLightBg ? 'text-gray-700' : 'text-white/90';
-  const iconBgColor = 'bg-orange-200';
+  
+  // Match icon container color to background with pastel variants
+  const getIconBgColor = () => {
+    if (bgColor.includes('amber')) return 'bg-orange-200';
+    if (bgColor.includes('blue-600')) return 'bg-blue-200';
+    if (bgColor.includes('indigo')) return 'bg-indigo-200';
+    if (bgColor.includes('purple')) return 'bg-purple-200';
+    return isLightBg ? 'bg-white/90' : 'bg-white/20';
+  };
+  
+  const iconBgColor = getIconBgColor();
   const countBgColor = isLightBg ? 'bg-gray-800 text-white' : 'bg-white/90 text-gray-900';
 
   return (
