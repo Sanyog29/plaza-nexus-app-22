@@ -28,7 +28,7 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
   const isLightBg = bgColor.includes('amber') || bgColor.includes('gray-100');
   const textColor = isLightBg ? 'text-gray-900' : 'text-white';
   const descriptionColor = isLightBg ? 'text-gray-700' : 'text-white/90';
-  const iconBgColor = isLightBg ? 'bg-white/90' : 'bg-white/20';
+  const iconBgColor = 'bg-orange-200';
   const countBgColor = isLightBg ? 'bg-gray-800 text-white' : 'bg-white/90 text-gray-900';
 
   return (
