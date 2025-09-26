@@ -117,7 +117,7 @@ const HomePage = () => {
                   <Shield size={24} className="text-white" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">Safety & Security</h4>
+                  <h4 className="font-medium text-gray-900 text-base text-left">Safety & Security</h4>
                   <p className="text-sm text-gray-600">Emergency procedures • Safety protocols</p>
                 </div>
               </div>
