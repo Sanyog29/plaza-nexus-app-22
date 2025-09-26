@@ -48,7 +48,7 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
             )}
           </div>
           
-          <h3 className={`text-xl font-semibold ${textColor} mb-1`}>{title}</h3>
+          <h3 className="text-xl font-semibold text-white mb-1">{title}</h3>
           {description && (
             <p className={`${descriptionColor} text-sm mb-4`}>{description}</p>
           )}
