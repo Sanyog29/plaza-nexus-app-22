@@ -9,6 +9,7 @@ import { EnhancedPaymentModal } from '@/components/vendor/EnhancedPaymentModal';
 import { useCreateOrder } from '@/hooks/useVendorOrders';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
+import { MobileButtonGroup } from '@/components/layout/MobileOptimized';
 
 export const CustomerCart: React.FC = () => {
   const { cart, updateQuantity, removeItem, clearCart } = useCart();
@@ -282,14 +283,14 @@ export const CustomerCart: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-6">
-            <Button variant="outline" onClick={clearCart} className="flex-1">
+          <MobileButtonGroup className="mt-6">
+            <Button variant="outline" onClick={clearCart} className="w-full">
               Clear Cart
             </Button>
-            <Button onClick={handleCheckout} className="flex-1" size="lg">
+            <Button onClick={handleCheckout} className="w-full" size="lg">
               Proceed to Payment
             </Button>
-          </div>
+          </MobileButtonGroup>
         </CardContent>
       </Card>
 
