@@ -204,13 +204,31 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
 
   const getMenuGroups = () => {
     switch (userRole) {
+      // Executive/Admin Level - Full admin access
       case 'admin':
       case 'ops_supervisor':
+      case 'ceo':
+      case 'cxo':
+      case 'vp':
+      case 'assistant_vice_president':
+      case 'assistant_general_manager':
         return adminMenuGroups;
+        
+      // Management, Staff, Operations & Vendors - Staff level access with requests
+      case 'assistant_manager':
+      case 'assistant_floor_manager':
       case 'field_staff':
       case 'ops_l1':
       case 'ops_l2':
+      case 'mst':
+      case 'fe':
+      case 'hk':
+      case 'se':
+      case 'vendor':
+      case 'food_vendor':
         return staffMenuGroups;
+        
+      // Tenants - Limited access
       default:
         return tenantMenuGroups;
     }
