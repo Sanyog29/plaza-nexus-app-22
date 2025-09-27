@@ -25,17 +25,17 @@ export function QuickActions({ userRole }: QuickActionsProps) {
     switch (userRole) {
       case 'admin':
         return [
-          { label: 'New User', icon: Users, action: () => navigate('/admin/users/new'), color: 'bg-blue-500' },
-          { label: 'Add Asset', icon: Building, action: () => navigate('/admin/assets/new'), color: 'bg-green-500' },
-          { label: 'View Reports', icon: BarChart3, action: () => navigate('/admin/analytics'), color: 'bg-purple-500' },
-          { label: 'System Config', icon: Zap, action: () => navigate('/admin/settings'), color: 'bg-orange-500' },
+          { label: 'New Request', icon: Plus, action: () => navigate('/requests/new'), color: 'bg-blue-500' },
+          { label: 'New User', icon: Users, action: () => navigate('/admin/users/new'), color: 'bg-green-500' },
+          { label: 'Add Asset', icon: Building, action: () => navigate('/admin/assets/new'), color: 'bg-purple-500' },
+          { label: 'View Reports', icon: BarChart3, action: () => navigate('/admin/analytics'), color: 'bg-orange-500' },
         ];
       case 'staff':
         return [
-          { label: 'Take Task', icon: ClipboardList, action: () => navigate('/staff/tasks/new'), color: 'bg-blue-500' },
-          { label: 'Start Maintenance', icon: Wrench, action: () => navigate('/staff/maintenance/new'), color: 'bg-green-500' },
-          { label: 'Security Check', icon: Shield, action: () => navigate('/staff/security/check'), color: 'bg-red-500' },
-          { label: 'View Schedule', icon: Calendar, action: () => navigate('/staff/schedule'), color: 'bg-purple-500' },
+          { label: 'New Request', icon: Plus, action: () => navigate('/requests/new'), color: 'bg-blue-500' },
+          { label: 'Take Task', icon: ClipboardList, action: () => navigate('/staff/tasks/new'), color: 'bg-green-500' },
+          { label: 'Start Maintenance', icon: Wrench, action: () => navigate('/staff/maintenance/new'), color: 'bg-purple-500' },
+          { label: 'View Schedule', icon: Calendar, action: () => navigate('/staff/schedule'), color: 'bg-orange-500' },
         ];
       default:
         return [

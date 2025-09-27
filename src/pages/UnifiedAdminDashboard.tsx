@@ -32,7 +32,8 @@ import {
   Monitor,
   Package,
   UserCheck,
-  Globe
+  Globe,
+  Plus
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 
@@ -80,6 +81,14 @@ const UnifiedAdminDashboard = () => {
 
   // Featured tools with enhanced descriptions
   const featuredTools = [
+    {
+      title: "Create Request",
+      description: "Submit a new service or maintenance request",
+      icon: Plus,
+      route: "/requests/new",
+      color: "text-blue-500",
+      isExternal: true
+    },
     {
       title: "System Health",
       description: "Real-time monitoring, alerts, and performance analytics",

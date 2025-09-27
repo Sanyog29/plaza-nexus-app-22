@@ -216,61 +216,73 @@ const ProfilePage = () => {
                   </Card>
                 )}
 
-                {/* Quick Actions - Only show for tenant_managers */}
-                {userRole === 'tenant_manager' && (
-                  <Card className="p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                {/* Quick Actions - Show for all authenticated users */}
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                    <Button 
+                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                      onClick={() => navigate('/requests/new')}
+                    >
+                      <span className="text-plaza-blue text-xl mb-1">+</span>
+                      <span>New Request</span>
+                    </Button>
+                    
+                    <Button 
+                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                      onClick={() => navigate('/requests')}
+                    >
+                      <span className="text-plaza-blue text-xl mb-1">📋</span>
+                      <span>{userRole === 'admin' || userRole === 'field_staff' ? 'All Requests' : 'My Requests'}</span>
+                    </Button>
+                    
+                    {(userRole === 'tenant_manager' || userRole === 'admin') && (
+                      <>
+                        <Button 
+                          className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                          onClick={() => navigate('/services')}
+                        >
+                          <span className="text-plaza-blue text-xl mb-1">🏢</span>
+                          <span>Services</span>
+                        </Button>
+                        
+                        <Button 
+                          className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                          onClick={() => navigate('/cafeteria')}
+                        >
+                          <span className="text-plaza-blue text-xl mb-1">🍴</span>
+                          <span>Cafeteria</span>
+                        </Button>
+                        
+                        <Button 
+                          className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                          onClick={() => navigate('/bookings')}
+                        >
+                          <span className="text-plaza-blue text-xl mb-1">📅</span>
+                          <span>Bookings</span>
+                        </Button>
+                      </>
+                    )}
+                    
+                    {(userRole === 'admin' || userRole === 'field_staff') && (
                       <Button 
                         className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                        onClick={() => navigate('/requests/new')}
-                      >
-                        <span className="text-plaza-blue text-xl mb-1">+</span>
-                        <span>New Request</span>
-                      </Button>
-                      
-                      <Button 
-                        className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                        onClick={() => navigate('/requests')}
-                      >
-                        <span className="text-plaza-blue text-xl mb-1">📋</span>
-                        <span>My Requests</span>
-                      </Button>
-                      
-                      <Button 
-                        className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                        onClick={() => navigate('/services')}
+                        onClick={() => navigate('/admin/assets')}
                       >
                         <span className="text-plaza-blue text-xl mb-1">🏢</span>
-                        <span>Services</span>
+                        <span>Assets</span>
                       </Button>
-                      
-                      <Button 
-                        className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                        onClick={() => navigate('/security')}
-                      >
-                        <span className="text-plaza-blue text-xl mb-1">🔒</span>
-                        <span>Security</span>
-                      </Button>
-                      
-                      <Button 
-                        className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                        onClick={() => navigate('/cafeteria')}
-                      >
-                        <span className="text-plaza-blue text-xl mb-1">🍴</span>
-                        <span>Cafeteria</span>
-                      </Button>
-                      
-                      <Button 
-                        className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
-                        onClick={() => navigate('/bookings')}
-                      >
-                        <span className="text-plaza-blue text-xl mb-1">📅</span>
-                        <span>Bookings</span>
-                      </Button>
-                    </div>
-                  </Card>
-                )}
+                    )}
+                    
+                    <Button 
+                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                      onClick={() => navigate('/security')}
+                    >
+                      <span className="text-plaza-blue text-xl mb-1">🔒</span>
+                      <span>Security</span>
+                    </Button>
+                  </div>
+                </Card>
 
                 {/* Incoming Tasks - Only show for field staff */}
                 {userRole === 'field_staff' && <IncomingTasks />}
