@@ -120,8 +120,8 @@ const App = () => (
               {/* General Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/requests" element={<RequestsPage />} />
-              <Route path="/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/requests/new" element={<NewRequestPage />} />
+              <Route path="/requests/:requestId" element={<RequestDetailsPage />} />
               <Route path="/new-request" element={<NewRequestPage />} />
               <Route path="/bookings" element={<BookingsPage />} />
               <Route path="/bookings/new" element={<BookingNewPage />} />
@@ -152,8 +152,9 @@ const App = () => (
               <Route path="/admin/users/new" element={<UserNewPage />} />
               <Route path="/admin/assets" element={<AssetsPage />} />
               <Route path="/admin/assets/new" element={<AssetNewPage />} />
-               <Route path="/admin/requests" element={<AdminRequestsPage />} />
-               <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
+                <Route path="/admin/requests" element={<AdminRequestsPage />} />
+                <Route path="/admin/requests/new" element={<NewRequestPage />} />
+                <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
                <Route path="/admin/bookings" element={<AdminBookingsPage />} />
                <Route path="/admin/services" element={<AdminServicesPage />} />
               <Route path="/admin/security" element={<AdminSecurityPage />} />
