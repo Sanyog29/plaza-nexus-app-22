@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,21 +21,42 @@ import { formatUserNameFromProfile } from '@/utils/formatters';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
+  const navigate = useNavigate();
+  const { user, isAdmin, isStaff: userIsStaff } = useAuth();
+  const { toast } = useToast();
+  
+  // UUID validation and sanitization
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const isValidUuid = requestId && uuidRegex.test(requestId);
+  const sanitizedRequestId = isValidUuid ? requestId : undefined;
+  
+  // Redirect if requestId is "new" or invalid
+  useEffect(() => {
+    if (requestId === 'new' || !isValidUuid) {
+      if (isAdmin) {
+        navigate('/admin/requests/new', { replace: true });
+      } else if (userIsStaff) {
+        navigate('/staff/requests/new', { replace: true });
+      } else {
+        navigate('/requests/new', { replace: true });
+      }
+      return;
+    }
+  }, [requestId, isValidUuid, isAdmin, userIsStaff, navigate]);
+  
   const [request, setRequest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStaff, setIsStaff] = useState(false);
   const [showTimeExtensionModal, setShowTimeExtensionModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { extensions } = useTimeExtensions(requestId);
+  const { extensions } = useTimeExtensions(sanitizedRequestId);
   
   useEffect(() => {
-    if (requestId) {
+    if (sanitizedRequestId) {
       fetchRequestDetails();
       checkStaffStatus();
     }
-  }, [requestId, user]);
+  }, [sanitizedRequestId, user]);
 
   const checkStaffStatus = async () => {
     if (!user) return;
@@ -50,7 +71,7 @@ const RequestDetailsPage = () => {
   };
 
   const fetchRequestDetails = async () => {
-    if (!requestId) return;
+    if (!sanitizedRequestId) return;
     
     try {
       setIsLoading(true);
@@ -62,7 +83,7 @@ const RequestDetailsPage = () => {
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
         `)
-        .eq('id', requestId)
+        .eq('id', sanitizedRequestId)
         .maybeSingle();
         
       if (error) throw error;
@@ -70,14 +91,14 @@ const RequestDetailsPage = () => {
       
       // Set up real-time subscription for workflow updates
       const channel = supabase
-        .channel(`request_${requestId}_workflow`)
+        .channel(`request_${sanitizedRequestId}_workflow`)
         .on(
           'postgres_changes',
           {
             event: 'UPDATE',
             schema: 'public',
             table: 'maintenance_requests',
-            filter: `id=eq.${requestId}`
+            filter: `id=eq.${sanitizedRequestId}`
           },
           (payload) => {
             console.log('Request updated via realtime:', payload.new);
@@ -104,6 +125,11 @@ const RequestDetailsPage = () => {
       setIsLoading(false);
     }
   };
+
+  // Early return if no valid requestId - component will redirect
+  if (!sanitizedRequestId) {
+    return null;
+  }
 
   if (isLoading) {
     return (
