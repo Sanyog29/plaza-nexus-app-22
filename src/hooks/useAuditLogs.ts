@@ -21,7 +21,7 @@ interface AuditLog {
 }
 
 export const useAuditLogs = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isStaff } = useAuth();
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
@@ -32,7 +32,8 @@ export const useAuditLogs = () => {
     user_id?: string;
     date_range?: { start: string; end: string };
   }) => {
-    if (!isAdmin && !user) return;
+    // Only admins and staff can view audit logs
+    if (!isAdmin && !isStaff) return;
 
     try {
       setIsLoading(true);
@@ -62,8 +63,11 @@ export const useAuditLogs = () => {
           .lte('created_at', filters.date_range.end);
       }
 
-      // If not admin, only show user's own logs
-      if (!isAdmin) {
+      // Admins see all logs
+      // Staff members see logs based on RLS policies (all logs they're authorized to see)
+      // Food vendors see only their own logs (enforced by RLS)
+      // Note: RLS policies now handle access control, but we keep client-side logic for clarity
+      if (!isAdmin && !isStaff) {
         query = query.eq('user_id', user!.id);
       }
 
@@ -156,10 +160,10 @@ export const useAuditLogs = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && (isAdmin || isStaff)) {
       fetchAuditLogs();
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, isStaff]);
 
   return {
     auditLogs,
