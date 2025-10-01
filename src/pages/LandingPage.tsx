@@ -133,7 +133,7 @@ const LandingPage: React.FC = () => {
               Everything You Need in One Place
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed to simplify building management and enhance operational efficiency.
+              Powerful features designed to simplify facility management and enhance operational efficiency.
             </p>
           </div>
 
