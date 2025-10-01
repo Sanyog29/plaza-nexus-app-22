@@ -13,6 +13,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalErrorProvider } from "./components/common/GlobalErrorProvider";
 
 import AuthPage from "./pages/AuthPage";
+import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import RequestsPage from "./pages/RequestsPage";
 import NewRequestPage from "./pages/NewRequestPage";
@@ -111,14 +112,18 @@ const App = () => (
                   <Sonner />
             <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            
             <Route element={
               <ProtectedRoute>
                 <AppLayout />
               </ProtectedRoute>
             }>
               {/* General Routes */}
-              <Route path="/" element={<HomePage />} />
+              <Route path="/dashboard" element={<HomePage />} />
+              <Route path="/home" element={<HomePage />} />
               <Route path="/requests" element={<RequestsPage />} />
               <Route path="/requests/new" element={<NewRequestPage />} />
               <Route path="/requests/:requestId" element={<RequestDetailsPage />} />

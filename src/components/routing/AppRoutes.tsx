@@ -12,7 +12,7 @@ export const AppRoutes: React.FC = () => {
       <Suspense fallback={<DashboardSkeleton className="p-6" />}>
         <Routes>
           <Route path="/admin/*" element={<UnifiedAdminDashboard />} />
-          <Route path="/" element={<UnifiedAdminDashboard />} />
+          <Route path="/dashboard" element={<UnifiedAdminDashboard />} />
           <Route path="*" element={<UnifiedAdminDashboard />} />
         </Routes>
       </Suspense>
