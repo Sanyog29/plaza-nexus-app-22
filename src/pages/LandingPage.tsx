@@ -86,11 +86,11 @@ const LandingPage: React.FC = () => {
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
               <TrendingUp className="h-4 w-4" />
-              <span>Next-Generation Building Management</span>
+              <span>Next-Generation Facility Management</span>
             </div>
             
             <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Your Complete Building Management
+              Your Complete Facility Management
               <span className="text-primary"> Solution</span>
             </h1>
             
@@ -190,7 +190,7 @@ const LandingPage: React.FC = () => {
               Ready to Get Started?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join hundreds of satisfied users managing their building operations efficiently with SS Plaza.
+              Join hundreds of satisfied users managing their facility operations efficiently with SS Plaza.
             </p>
             <Link to="/auth">
               <Button size="lg" className="gap-2">
