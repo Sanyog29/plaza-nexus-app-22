@@ -16,7 +16,7 @@ const WelcomeCard = () => {
   };
 
   const getTimeBasedMessage = () => {
-    if (currentHour < 12) return 'Start your day with seamless building management';
+    if (currentHour < 12) return 'Start your day with seamless facility management';
     if (currentHour < 17) return 'Continue managing your workspace efficiently';
     return 'Access your tenant services anytime';
   };
