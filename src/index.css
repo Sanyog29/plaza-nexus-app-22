@@ -75,15 +75,15 @@
 
   .dark {
     /* Dark theme - Apple Style with proper contrast */
-    --background: 0 0 9;
+    --background: 220 13 9;
     --foreground: 0 0 98;
 
-    /* Card and surface colors */
-    --card: 0 0 12;
+    /* Card and surface colors - darker for better contrast */
+    --card: 220 13 14;
     --card-foreground: 0 0 98;
-    --card-glass: 0 0 12 / 0.8;
+    --card-glass: 220 13 14 / 0.8;
 
-    --popover: 0 0 12;
+    --popover: 220 13 14;
     --popover-foreground: 0 0 98;
 
     /* Primary brand colors - Apple Blue (adjusted for dark) */
@@ -92,33 +92,33 @@
     --primary-glow: 213 94 78;
     
     /* Secondary colors - Apple Dark Gray */
-    --secondary: 0 0 18;
+    --secondary: 220 13 18;
     --secondary-foreground: 0 0 98;
 
-    /* Muted colors */
-    --muted: 0 0 18;
-    --muted-foreground: 0 0 70;
+    /* Muted colors - lighter for better readability */
+    --muted: 220 13 18;
+    --muted-foreground: 0 0 63;
 
-    /* Accent colors - Apple System Blue */
-    --accent: 0 0 15;
+    /* Accent colors - more visible in dark mode */
+    --accent: 220 13 21;
     --accent-foreground: 0 0 98;
 
     /* Status colors - Apple System Colors (dark mode) */
     --destructive: 0 91 71;
     --destructive-foreground: 0 0 100;
-    --success: 142 76 36;
+    --success: 142 71 45;
     --success-foreground: 0 0 100;
-    --warning: 32 95 44;
-    --warning-foreground: 0 0 100;
+    --warning: 38 92 50;
+    --warning-foreground: 0 0 0;
     
     /* Enhanced UI colors */
     --success-subtle: 142 76 36 / 0.2;
     --error-subtle: 0 91 71 / 0.2;
     --info-subtle: 213 94 68 / 0.2;
 
-    /* UI elements */
-    --border: 0 0 20;
-    --input: 0 0 18;
+    /* UI elements - more visible borders */
+    --border: 220 13 24;
+    --input: 220 13 18;
     --ring: 213 94 68;
 
     /* Gradients */

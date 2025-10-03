@@ -159,15 +159,15 @@ const RequestsPage = () => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'bg-plaza-blue bg-opacity-20 text-plaza-blue';
+        return 'bg-primary/20 text-primary';
       case 'in_progress':
-        return 'bg-yellow-500 bg-opacity-20 text-yellow-500';
+        return 'bg-warning/20 text-warning';
       case 'completed':
-        return 'bg-green-500 bg-opacity-20 text-green-500';
+        return 'bg-success/20 text-success';
       case 'cancelled':
-        return 'bg-red-500 bg-opacity-20 text-red-500';
+        return 'bg-destructive/20 text-destructive';
       default:
-        return 'bg-gray-500 bg-opacity-20 text-gray-500';
+        return 'bg-muted/20 text-muted-foreground';
     }
   };
 
@@ -247,11 +247,11 @@ const RequestsPage = () => {
     <div className="w-full space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-white">Requests</h2>
-          <p className="text-sm text-gray-400 mt-1">Track your service requests</p>
+          <h2 className="text-2xl font-bold text-foreground">Requests</h2>
+          <p className="text-sm text-muted-foreground mt-1">Track your service requests</p>
         </div>
         <Link to="/requests/new">
-          <Button className="bg-plaza-blue hover:bg-blue-700">New Request</Button>
+          <Button className="bg-primary hover:bg-primary/90">New Request</Button>
         </Link>
       </div>
 
@@ -260,7 +260,7 @@ const RequestsPage = () => {
         <Card className="bg-card/50 backdrop-blur mb-4">
           <CardContent className="p-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Filtered by:</span>
+              <span className="text-sm text-muted-foreground">Filtered by:</span>
               <Badge variant="outline" className="text-sm">
                 Status: {statusFilter.replace('_', ' ')}
                 <button 
@@ -279,36 +279,36 @@ const RequestsPage = () => {
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 mb-6">
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="bg-plaza-blue/20 p-2 rounded-full">
-              <Clock size={20} className="text-plaza-blue" />
+            <div className="bg-primary/20 p-2 rounded-full">
+              <Clock size={20} className="text-primary" />
             </div>
             <div>
-              <p className="text-sm text-gray-400">Active</p>
-              <p className="text-lg font-semibold text-white">{stats.active}</p>
+              <p className="text-sm text-muted-foreground">Active</p>
+              <p className="text-lg font-semibold text-foreground">{stats.active}</p>
             </div>
           </CardContent>
         </Card>
         
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="bg-yellow-500/20 p-2 rounded-full">
-              <AlertTriangle size={20} className="text-yellow-500" />
+            <div className="bg-warning/20 p-2 rounded-full">
+              <AlertTriangle size={20} className="text-warning" />
             </div>
             <div>
-              <p className="text-sm text-gray-400">Pending</p>
-              <p className="text-lg font-semibold text-white">{stats.pending}</p>
+              <p className="text-sm text-muted-foreground">Pending</p>
+              <p className="text-lg font-semibold text-foreground">{stats.pending}</p>
             </div>
           </CardContent>
         </Card>
         
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="bg-green-500/20 p-2 rounded-full">
-              <CheckCircle size={20} className="text-green-500" />
+            <div className="bg-success/20 p-2 rounded-full">
+              <CheckCircle size={20} className="text-success" />
             </div>
             <div>
-              <p className="text-sm text-gray-400">Resolved</p>
-              <p className="text-lg font-semibold text-white">{stats.resolved}</p>
+              <p className="text-sm text-muted-foreground">Resolved</p>
+              <p className="text-lg font-semibold text-foreground">{stats.resolved}</p>
             </div>
           </CardContent>
         </Card>
@@ -317,11 +317,11 @@ const RequestsPage = () => {
       {requests.length === 0 ? (
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-8 text-center">
-            <MessageSquare size={48} className="text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No requests yet</h3>
-            <p className="text-gray-400 mb-4">You haven't submitted any maintenance requests yet.</p>
+            <MessageSquare size={48} className="text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No requests yet</h3>
+            <p className="text-muted-foreground mb-4">You haven't submitted any maintenance requests yet.</p>
             <Link to="/requests/new">
-              <Button className="bg-plaza-blue hover:bg-blue-700">Create Your First Request</Button>
+              <Button className="bg-primary hover:bg-primary/90">Create Your First Request</Button>
             </Link>
           </CardContent>
         </Card>
@@ -332,30 +332,30 @@ const RequestsPage = () => {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start flex-1">
-                    <div className="bg-plaza-blue bg-opacity-20 p-2 rounded-full mr-3 mt-1">
-                      <MessageSquare size={18} className="text-plaza-blue" />
+                    <div className="bg-primary/20 p-2 rounded-full mr-3 mt-1">
+                      <MessageSquare size={18} className="text-primary" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-white">{request.title}</h4>
+                        <h4 className="font-medium text-foreground">{request.title}</h4>
                         {getPriorityBadge(request.priority)}
                       </div>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {request.main_categories?.name || 'General'}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">{request.location}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{request.location}</p>
                       <div className="mt-2 space-y-1">
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           Created: {new Date(request.created_at).toLocaleString()}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           Updated: {new Date(request.updated_at).toLocaleString()}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           Reported by: You
                         </p>
                         {request.assignee && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             Assigned to: {formatUserNameFromProfile(request.assignee)}
                           </p>
                         )}
@@ -370,7 +370,7 @@ const RequestsPage = () => {
                     
                     {/* Feedback prompt for completed requests */}
                     {request.status === 'completed' && !requestsWithFeedback.has(request.id) && (
-                      <Button variant="outline" size="sm" className="border-green-400/30 text-green-400 hover:bg-green-400/10">
+                      <Button variant="outline" size="sm" className="border-success/30 text-success hover:bg-success/10">
                         <Star className="h-3 w-3 mr-1" />
                         Rate
                       </Button>
@@ -391,7 +391,7 @@ const RequestsPage = () => {
                             e.preventDefault();
                             setDeleteDialog({ open: true, request, loading: false });
                           }}
-                          className="text-red-400 hover:text-red-300 border-red-400/20 hover:border-red-400/40"
+                          className="text-destructive hover:text-destructive/80 border-destructive/20 hover:border-destructive/40"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>

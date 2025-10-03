@@ -57,13 +57,13 @@ const StaffDashboardPage = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'text-green-400';
+        return 'text-success';
       case 'in_progress':
-        return 'text-yellow-400';
+        return 'text-warning';
       case 'pending':
-        return 'text-red-400';
+        return 'text-destructive';
       default:
-        return 'text-gray-400';
+        return 'text-muted-foreground';
     }
   };
   if (isLoading) {
@@ -83,24 +83,24 @@ const StaffDashboardPage = () => {
       <FeatureNotificationSystem />
       
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Staff Dashboard</h1>
-        <p className="text-gray-400">Monitor and manage facility operations</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Staff Dashboard</h1>
+        <p className="text-muted-foreground">Monitor and manage facility operations</p>
       </div>
 
       {/* Incoming Requests - Compact */}
       <Card className="bg-card/50 backdrop-blur mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-white text-lg">Incoming Requests</CardTitle>
+          <CardTitle className="text-foreground text-lg">Incoming Requests</CardTitle>
           <CardDescription>Tasks available for you to accept</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="max-h-64 overflow-y-auto space-y-3">
-            {offers.length === 0 && recentRequests.length === 0 ? <p className="text-gray-400 text-center py-4">No incoming requests</p> : <>
+            {offers.length === 0 && recentRequests.length === 0 ? <p className="text-muted-foreground text-center py-4">No incoming requests</p> : <>
                 {/* Show offers first (with Accept button) */}
-                {offers.slice(0, 5).map(offer => <div key={offer.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors">
+                {offers.slice(0, 5).map(offer => <div key={offer.id} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors">
                     <div className="flex-1">
-                      <h4 className="font-medium text-white mb-1">{offer.request.title}</h4>
-                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <h4 className="font-medium text-foreground mb-1">{offer.request.title}</h4>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>{offer.request.location}</span>
                         <span>•</span>
                         <span>{new Date(offer.expires_at).toLocaleDateString()}</span>
@@ -114,7 +114,7 @@ const StaffDashboardPage = () => {
                               {profile?.first_name?.[0]}{profile?.last_name?.[0]}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm text-green-400">Assigned to you</span>
+                          <span className="text-sm text-success">Assigned to you</span>
                           <Button size="sm" variant="outline" onClick={() => navigate(`/requests/${offer.request_id}`)}>
                             View
                           </Button>
@@ -130,10 +130,10 @@ const StaffDashboardPage = () => {
                   </div>)}
                 
                 {/* Show recent requests without offers (with View button) */}
-                {offers.length < 5 && recentRequests.filter(req => !offers.some(offer => offer.request_id === req.id)).slice(0, 5 - offers.length).map(request => <div key={request.id} className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
+                {offers.length < 5 && recentRequests.filter(req => !offers.some(offer => offer.request_id === req.id)).slice(0, 5 - offers.length).map(request => <div key={request.id} className="flex items-center justify-between p-3 bg-accent/30 rounded-lg hover:bg-accent/50 transition-colors">
                       <div className="flex-1">
-                        <h4 className="font-medium text-white mb-1">{request.title}</h4>
-                        <p className="text-sm text-gray-400">
+                        <h4 className="font-medium text-foreground mb-1">{request.title}</h4>
+                        <p className="text-sm text-muted-foreground">
                           {new Date(request.created_at).toLocaleDateString()}
                         </p>
                       </div>
@@ -155,10 +155,10 @@ const StaffDashboardPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Total Requests</p>
-                <p className="text-2xl font-bold text-white">{requestStats.total}</p>
+                <p className="text-sm text-muted-foreground">Total Requests</p>
+                <p className="text-2xl font-bold text-foreground">{requestStats.total}</p>
               </div>
-              <ClipboardList className="h-8 w-8 text-plaza-blue" />
+              <ClipboardList className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -167,10 +167,10 @@ const StaffDashboardPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Pending</p>
-                <p className="text-2xl font-bold text-red-400">{requestStats.pending}</p>
+                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-2xl font-bold text-destructive">{requestStats.pending}</p>
               </div>
-              <Clock className="h-8 w-8 text-red-400" />
+              <Clock className="h-8 w-8 text-destructive" />
             </div>
           </CardContent>
         </Card>
@@ -179,10 +179,10 @@ const StaffDashboardPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">In Progress</p>
-                <p className="text-2xl font-bold text-yellow-400">{requestStats.inProgress}</p>
+                <p className="text-sm text-muted-foreground">In Progress</p>
+                <p className="text-2xl font-bold text-warning">{requestStats.inProgress}</p>
               </div>
-              <Wrench className="h-8 w-8 text-yellow-400" />
+              <Wrench className="h-8 w-8 text-warning" />
             </div>
           </CardContent>
         </Card>
@@ -191,10 +191,10 @@ const StaffDashboardPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Completed</p>
-                <p className="text-2xl font-bold text-green-400">{requestStats.completed}</p>
+                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-2xl font-bold text-success">{requestStats.completed}</p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-400" />
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </CardContent>
         </Card>
@@ -208,8 +208,8 @@ const StaffDashboardPage = () => {
         
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
-            <Button onClick={() => navigate('/requests/new')} className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30">
-              <Plus className="h-6 w-6 text-green-400 mb-2" />
+            <Button onClick={() => navigate('/requests/new')} className="h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30">
+              <Plus className="h-6 w-6 text-success mb-2" />
               <span className="text-sm">Raise Request</span>
             </Button>
             
@@ -223,13 +223,13 @@ const StaffDashboardPage = () => {
               <span className="text-sm">Active Alerts</span>
             </Button>
             
-            <Button onClick={() => navigate('/staff/performance')} className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30">
-              <Activity className="h-6 w-6 text-green-400 mb-2" />
+            <Button onClick={() => navigate('/staff/performance')} className="h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30">
+              <Activity className="h-6 w-6 text-success mb-2" />
               <span className="text-sm">Performance</span>
             </Button>
             
-            <Button onClick={() => navigate('/staff/training')} className="h-20 flex flex-col bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30">
-              <GraduationCap className="h-6 w-6 text-blue-400 mb-2" />
+            <Button onClick={() => navigate('/staff/training')} className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30">
+              <GraduationCap className="h-6 w-6 text-primary mb-2" />
               <span className="text-sm">Training</span>
             </Button>
           </div>
@@ -240,7 +240,7 @@ const StaffDashboardPage = () => {
       <FeatureGuard feature="advancedDashboardsEnabled" enableFeatureRequest={false} showDisabledState={false} featureDisplayName="Advanced Analytics Dashboard" featureDescription="Access comprehensive analytics, forecasting, and performance insights." upgradeHint="Available for ops_supervisor and admin roles">
         <Card className="bg-card/50 backdrop-blur mb-8">
           <CardHeader>
-            <CardTitle className="text-white">Advanced Analytics</CardTitle>
+            <CardTitle className="text-foreground">Advanced Analytics</CardTitle>
             <CardDescription>Comprehensive facility performance insights</CardDescription>
           </CardHeader>
           <CardContent>
@@ -250,13 +250,13 @@ const StaffDashboardPage = () => {
                 <span className="text-sm">Analytics</span>
               </Button>
               
-              <Button onClick={() => navigate('/analytics/forecasting')} className="h-20 flex flex-col bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30">
-                <TrendingUp className="h-6 w-6 text-blue-400 mb-2" />
+              <Button onClick={() => navigate('/analytics/forecasting')} className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30">
+                <TrendingUp className="h-6 w-6 text-primary mb-2" />
                 <span className="text-sm">Forecasting</span>
               </Button>
               
-              <Button onClick={() => navigate('/analytics/reports')} className="h-20 flex flex-col bg-green-500/10 hover:bg-green-500/20 border border-green-500/30">
-                <FileSpreadsheet className="h-6 w-6 text-green-400 mb-2" />
+              <Button onClick={() => navigate('/analytics/reports')} className="h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30">
+                <FileSpreadsheet className="h-6 w-6 text-success mb-2" />
                 <span className="text-sm">Reports</span>
               </Button>
             </div>
@@ -268,7 +268,7 @@ const StaffDashboardPage = () => {
       <FeatureGuard feature="dataExportEnabled" enableFeatureRequest={false} showDisabledState={false} featureDisplayName="Data Export & Import Tools" featureDescription="Export facility data and import bulk updates via CSV files." upgradeHint="Contact your supervisor for access to data management tools">
         <Card className="bg-card/50 backdrop-blur mb-8">
           <CardHeader>
-            <CardTitle className="text-white">Data Management</CardTitle>
+            <CardTitle className="text-foreground">Data Management</CardTitle>
             <CardDescription>Import, export, and manage facility data</CardDescription>
           </CardHeader>
           <CardContent>
@@ -296,7 +296,7 @@ const StaffDashboardPage = () => {
       <Card className="bg-card/50 backdrop-blur">
         
         <CardContent>
-          <p className="text-gray-400 text-center py-8">No recent requests found</p>
+          <p className="text-muted-foreground text-center py-8">No recent requests found</p>
         </CardContent>
       </Card>
       
