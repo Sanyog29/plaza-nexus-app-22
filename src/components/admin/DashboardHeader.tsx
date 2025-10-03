@@ -10,7 +10,7 @@ const DashboardHeader = () => {
     <div className="flex items-center justify-between">
       <div>
         <h2 className="text-2xl font-bold text-foreground">Admin Dashboard</h2>
-        <p className="text-sm text-gray-400 mt-1">Real-time building operations and analytics</p>
+        <p className="text-sm text-muted-foreground mt-1">Real-time building operations and analytics</p>
       </div>
       <div className="flex gap-2">
         <Button

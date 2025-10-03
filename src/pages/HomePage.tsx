@@ -52,7 +52,7 @@ const HomePage = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-2xl font-semibold text-foreground">Core Operations</h3>
-          <div className="flex items-center gap-2 text-sm text-emerald-400">
+          <div className="flex items-center gap-2 text-sm text-success">
             <Activity size={16} />
             <span>Live System</span>
           </div>
@@ -99,8 +99,8 @@ const HomePage = () => {
           <Card className="bg-card border hover:bg-accent transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <Building size={24} className="text-white" />
+                <div className="bg-blue-600 dark:bg-blue-700 p-2 rounded-lg">
+                  <Building size={24} className="text-white dark:text-blue-50" />
                 </div>
                 <div>
                   <h4 className="text-foreground font-medium text-base text-left">SS Plaza Directory</h4>
@@ -113,8 +113,8 @@ const HomePage = () => {
           <Card className="bg-card border hover:bg-accent transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="bg-emerald-600 p-2 rounded-lg">
-                  <Shield size={24} className="text-white" />
+                <div className="bg-emerald-600 dark:bg-emerald-700 p-2 rounded-lg">
+                  <Shield size={24} className="text-white dark:text-emerald-50" />
                 </div>
                 <div>
                   <h4 className="font-medium text-foreground text-base text-left">Safety & Security</h4>
