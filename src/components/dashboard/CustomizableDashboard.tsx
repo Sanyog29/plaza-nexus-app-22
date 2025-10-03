@@ -220,7 +220,7 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
         <div className="grid grid-cols-3 gap-2 text-center">
            <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
                 onClick={() => navigate(getRouteForStatus('all'))}>
-             <div className="text-2xl font-bold text-white">{counts.totalRequests}</div>
+             <div className="text-2xl font-bold text-foreground">{counts.totalRequests}</div>
              <div className="text-xs text-muted-foreground">Total</div>
            </div>
            <div className="cursor-pointer hover:bg-white/5 rounded p-2 transition-colors" 
