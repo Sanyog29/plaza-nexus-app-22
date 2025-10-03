@@ -22,7 +22,7 @@ interface ResponsiveLayoutProps {
 }
 
 export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
-  const { user, userRole: authUserRole, userDepartment, signOut } = useAuth();
+  const { user, userRole: authUserRole, userDepartment, signOut, isAdmin, isStaff } = useAuth();
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
@@ -39,10 +39,8 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
     );
   }
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const isStaffRoute = location.pathname.startsWith('/staff');
-  
-  if (!isAdminRoute && !isStaffRoute) {
+  // Show full layout with header for staff/admin, regardless of route
+  if (!isAdmin && !isStaff) {
     return <Outlet />;
   }
 
