@@ -177,11 +177,11 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
   const slaInfo = request ? getSLAInfo() : null;
 
   if (loading) {
-    return <div className="p-4 text-center text-gray-400">Loading request details...</div>;
+    return <div className="p-4 text-center text-foreground">Loading request details...</div>;
   }
 
   if (!request) {
-    return <div className="p-4 text-center text-gray-400">Request not found</div>;
+    return <div className="p-4 text-center text-foreground">Request not found</div>;
   }
 
   const renderPriorityBadge = (priority: string) => {
@@ -225,7 +225,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
       <Card className="bg-card/50 backdrop-blur">
         <CardHeader className="pb-2">
           <div className="flex justify-between">
-            <CardTitle className="text-lg text-white">Request Details</CardTitle>
+            <CardTitle className="text-lg text-foreground">Request Details</CardTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -241,8 +241,8 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           <CardContent>
             <div className="space-y-4">
               <div className="flex flex-col gap-1">
-                <h3 className="text-xl font-bold text-white">{request.title}</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
+                <h3 className="text-xl font-bold text-foreground">{request.title}</h3>
+                <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin size={14} />
                   <span>{request.location}</span>
                 </div>
@@ -250,50 +250,50 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-400 mb-1">Category</p>
-                  <p className="font-medium text-white">{request.main_categories?.name || 'Uncategorized'}</p>
+                  <p className="text-sm text-foreground mb-1">Category</p>
+                  <p className="font-medium text-foreground">{request.main_categories?.name || 'Uncategorized'}</p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-400 mb-1">Priority</p>
+                  <p className="text-sm text-foreground mb-1">Priority</p>
                   {renderPriorityBadge(request.priority)}
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-400 mb-1">Status</p>
+                  <p className="text-sm text-foreground mb-1">Status</p>
                   {renderStatusBadge(request.status)}
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-400 mb-1">Reported by</p>
+                  <p className="text-sm text-foreground mb-1">Reported by</p>
                   <div className="flex items-center gap-2">
                     <User size={16} className="text-plaza-blue" />
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-foreground">
                       {formatUserNameFromProfile(request.reporter)}
                     </p>
                   </div>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-400 mb-1">Created at</p>
+                  <p className="text-sm text-foreground mb-1">Created at</p>
                   <div className="flex items-center gap-2">
                     <Calendar size={16} className="text-plaza-blue" />
-                    <p className="font-medium text-white">{format(new Date(request.created_at), 'PPp')}</p>
+                    <p className="font-medium text-foreground">{format(new Date(request.created_at), 'PPp')}</p>
                   </div>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-400 mb-1">Updated at</p>
+                  <p className="text-sm text-foreground mb-1">Updated at</p>
                   <div className="flex items-center gap-2">
                     <Clock size={16} className="text-plaza-blue" />
-                    <p className="font-medium text-white">{format(new Date(request.updated_at), 'PPp')}</p>
+                    <p className="font-medium text-foreground">{format(new Date(request.updated_at), 'PPp')}</p>
                   </div>
                 </div>
 
                 {slaInfo && (
                   <div className="col-span-2">
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-sm text-gray-400">SLA Status</p>
+                      <p className="text-sm text-foreground">SLA Status</p>
                       <Badge
                         className={`${slaInfo.breached ? 'bg-red-900 text-red-300' : 'bg-yellow-900 text-yellow-300'}`}
                         variant="outline"
@@ -312,18 +312,18 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               </div>
               
               <div>
-                <p className="text-sm text-gray-400 mb-1">Description</p>
-                <p className="text-white whitespace-pre-wrap">{request.description}</p>
+                <p className="text-sm text-foreground mb-1">Description</p>
+                <p className="text-foreground whitespace-pre-wrap">{request.description}</p>
               </div>
 
               {/* Photos Section */}
               {(request.before_photo_url || request.after_photo_url) && (
                 <div>
-                  <p className="text-sm text-gray-400 mb-2">Photos</p>
+                  <p className="text-sm text-foreground mb-2">Photos</p>
                   <div className="grid grid-cols-2 gap-4">
                     {request.before_photo_url && (
                       <div>
-                        <p className="text-xs text-gray-400 mb-1">Before</p>
+                        <p className="text-xs text-foreground mb-1">Before</p>
                         <img
                           src={request.before_photo_url}
                           alt="Before"
@@ -333,7 +333,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                     )}
                     {request.after_photo_url && (
                       <div>
-                        <p className="text-xs text-gray-400 mb-1">After</p>
+                        <p className="text-xs text-foreground mb-1">After</p>
                         <img
                           src={request.after_photo_url}
                           alt="After"
@@ -349,7 +349,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
               {isStaff && (
                 <div className="grid grid-cols-1 gap-4 pt-4 mt-4 border-t border-gray-700">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-white">Priority</label>
+                    <label className="text-sm font-medium text-foreground">Priority</label>
                     <Select
                       value={updatedPriority || undefined}
                       onValueChange={(value) => setUpdatedPriority(value as RequestPriority)}
@@ -368,7 +368,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                   </div>
                   
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-white">Assign To</label>
+                    <label className="text-sm font-medium text-foreground">Assign To</label>
                     <Select
                       value={updatedAssignee || 'unassigned'}
                       onValueChange={(value) => setUpdatedAssignee(value === 'unassigned' ? null : value)}
@@ -390,7 +390,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                   
                   {updatedStatus !== request.status && (
                     <div className="flex flex-col gap-2">
-                      <label className="text-sm font-medium text-white">Status Update Note</label>
+                      <label className="text-sm font-medium text-foreground">Status Update Note</label>
                       <Textarea
                         placeholder="Add a note about this status change..."
                         value={statusNote}
