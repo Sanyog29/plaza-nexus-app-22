@@ -135,7 +135,7 @@ const RequestDetailsPage = () => {
     return (
       <div className="px-4 py-6">
         <div className="flex justify-center items-center h-40">
-          <p className="text-gray-400">Loading request details...</p>
+          <p className="text-foreground">Loading request details...</p>
         </div>
       </div>
     );
@@ -145,7 +145,7 @@ const RequestDetailsPage = () => {
     return (
       <div className="px-4 py-6">
         <div className="flex justify-center items-center h-40">
-          <p className="text-gray-400">Request not found</p>
+          <p className="text-foreground">Request not found</p>
         </div>
       </div>
     );
@@ -224,7 +224,7 @@ const RequestDetailsPage = () => {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-white mb-3">{request.title}</h1>
+                <h1 className="text-3xl font-bold text-foreground mb-3">{request.title}</h1>
                 <div className="flex items-center gap-3 mb-4">
                   <Badge variant="outline">{request.main_categories?.name || 'Uncategorized'}</Badge>
                   <Badge 
@@ -244,25 +244,25 @@ const RequestDetailsPage = () => {
             </div>
 
             <div className="bg-card/50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-white mb-2">Issue Description</h2>
-              <p className="text-gray-300 leading-relaxed mb-4">{request.description}</p>
+              <h2 className="text-lg font-semibold text-foreground mb-2">Issue Description</h2>
+              <p className="text-foreground leading-relaxed mb-4">{request.description}</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-foreground">
                   <Clock className="h-4 w-4" />
                   <span>Created: {new Date(request.created_at).toLocaleString()}</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-foreground">
                   <MessageSquare className="h-4 w-4" />
                   <span>Reported by: {formatUserNameFromProfile(request.reporter)}</span>
                 </div>
                 {request.assignee && (
-                  <div className="flex items-center gap-2 text-gray-400">
+                  <div className="flex items-center gap-2 text-foreground">
                     <User className="h-4 w-4" />
                     <span>Assigned to: {formatUserNameFromProfile(request.assignee)}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 text-gray-400">
+                <div className="flex items-center gap-2 text-foreground">
                   <div className="h-4 w-4 flex items-center justify-center">
                     📍
                   </div>
@@ -289,7 +289,7 @@ const RequestDetailsPage = () => {
       {/* Request Progress Tracker */}
       <Card className="bg-card mb-6">
         <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-white mb-4">Request Progress</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-4">Request Progress</h3>
           <TicketProgressBar
             status={request.status}
             assignedAt={request.assigned_at}
@@ -315,7 +315,7 @@ const RequestDetailsPage = () => {
       {/* Attachments Section */}
       <Card className="bg-card mb-6">
         <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-white mb-3">Attachments</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-3">Attachments</h3>
           <AttachmentViewer requestId={requestId!} />
         </CardContent>
       </Card>
@@ -343,7 +343,7 @@ const RequestDetailsPage = () => {
       {/* For tenants, show just the comments component */}
       {!isStaff && requestId && (
         <div className="mt-6">
-          <h3 className="text-xl font-bold text-white mb-4">Communication</h3>
+          <h3 className="text-xl font-bold text-foreground mb-4">Communication</h3>
           <RequestDetailPanel 
             requestId={requestId} 
             onUpdate={fetchRequestDetails}
