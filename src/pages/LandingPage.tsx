@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { 
@@ -15,8 +15,18 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { useAuth } from '@/components/AuthProvider';
 
 const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
   const features = [
     {
       icon: Wrench,

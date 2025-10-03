@@ -19,7 +19,7 @@ const AuthPage = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  const from = location.state?.from?.pathname || "/";
+  const from = location.state?.from?.pathname || "/dashboard";
 
   // If there's an invitation token, show the invitation acceptance form
   if (invitation) {
