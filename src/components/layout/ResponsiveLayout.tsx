@@ -22,13 +22,12 @@ interface ResponsiveLayoutProps {
 }
 
 export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
-  const { user, userRole: authUserRole, userDepartment, signOut, isAdmin, isStaff } = useAuth();
+  const { user, userRole: authUserRole, userDepartment, signOut, isAdmin, isStaff, isLoading } = useAuth();
   const location = useLocation();
   const { metrics } = useDashboardMetrics();
   const isMobile = useIsMobile();
 
-
-  console.log('ResponsiveLayout - Role:', authUserRole, 'Department:', userDepartment);
+  console.log('ResponsiveLayout - Role:', authUserRole, 'isAdmin:', isAdmin, 'isStaff:', isStaff, 'isLoading:', isLoading);
 
   // Guard clause to ensure we're in router context
   if (!location) {
@@ -39,7 +38,17 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
     );
   }
 
+  // Wait for auth to load before deciding on layout
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   // Show full layout with header for staff/admin, regardless of route
+  // For non-admin/non-staff users, render without the sidebar/header
   if (!isAdmin && !isStaff) {
     return <Outlet />;
   }

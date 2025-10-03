@@ -200,14 +200,16 @@ export const VendorMenuPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-32">
-      {/* Header */}
-      <div className="flex items-center gap-3">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-3 mb-2">
         <Button 
           variant="outline" 
           size="sm"
           onClick={() => navigate('/cafeteria')}
+          className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Back to Restaurants</span>
         </Button>
         <h1 className="text-xl font-bold">Menu</h1>
       </div>
