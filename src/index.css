@@ -14,7 +14,7 @@
     
     /* Light theme - Apple Style */
     --background: 0 0 100;
-    --foreground: 210 11 15;
+    --foreground: 0 0 0;
 
     /* Card and surface colors */
     --card: 0 0 100;
@@ -35,7 +35,7 @@
 
     /* Muted colors - Apple Gray */
     --muted: 210 20 96;
-    --muted-foreground: 215 16 47;
+    --muted-foreground: 0 0 0;
 
     /* Accent colors - Apple System Blue */
     --accent: 213 94 68;
@@ -76,7 +76,7 @@
   .dark {
     /* Dark theme - Apple Style with proper contrast */
     --background: 220 13 9;
-    --foreground: 0 0 98;
+    --foreground: 0 0 100;
 
     /* Card and surface colors - darker for better contrast */
     --card: 220 13 14;
@@ -97,7 +97,7 @@
 
     /* Muted colors - lighter for better readability */
     --muted: 220 13 18;
-    --muted-foreground: 0 0 63;
+    --muted-foreground: 0 0 100;
 
     /* Accent colors - more visible in dark mode */
     --accent: 220 13 21;
