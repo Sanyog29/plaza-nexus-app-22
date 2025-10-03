@@ -32,7 +32,7 @@ const HomePage = () => {
   // Show loading state
   if (oldLoading || newLoading) {
     return <div className="w-full flex items-center justify-center min-h-screen">
-        <div className="flex items-center gap-2 text-white">
+        <div className="flex items-center gap-2 text-foreground">
           <Loader2 className="h-6 w-6 animate-spin" />
           <span>Loading dashboard...</span>
         </div>
@@ -40,10 +40,10 @@ const HomePage = () => {
   }
   return <div className="w-full space-y-8">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">
+        <h2 className="text-3xl font-bold text-foreground mb-2">
           Welcome to SS Plaza, {firstName}
         </h2>
-        <p className="text-gray-400">{currentDate}</p>
+        <p className="text-muted-foreground">{currentDate}</p>
       </div>
 
       <VisitorNotificationBanner />
@@ -51,7 +51,7 @@ const HomePage = () => {
       {/* Core Operations - Priority Features */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-semibold text-white">Core Operations</h3>
+          <h3 className="text-2xl font-semibold text-foreground">Core Operations</h3>
           <div className="flex items-center gap-2 text-sm text-emerald-400">
             <Activity size={16} />
             <span>Live System</span>
@@ -88,7 +88,7 @@ const HomePage = () => {
       {/* Building Info & Quick Access */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold text-white">Building Information</h3>
+          <h3 className="text-xl font-semibold text-foreground">Building Information</h3>
           <Link to="/info-hub" className="text-plaza-blue text-sm hover:underline flex items-center gap-1">
             <FileText size={14} />
             View Directory
@@ -96,29 +96,29 @@ const HomePage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-gray-100 border-gray-200 hover:bg-gray-50 transition-colors">
+          <Card className="bg-card border hover:bg-accent transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="bg-blue-600 p-2 rounded-lg">
                   <Building size={24} className="text-white" />
                 </div>
                 <div>
-                  <h4 className="text-gray-900 font-medium text-base text-left">SS Plaza Directory</h4>
-                  <p className="text-sm text-gray-600">Floor plans • Emergency contacts • Guidelines</p>
+                  <h4 className="text-foreground font-medium text-base text-left">SS Plaza Directory</h4>
+                  <p className="text-sm text-muted-foreground">Floor plans • Emergency contacts • Guidelines</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-gray-100 border-gray-200 hover:bg-gray-50 transition-colors">
+          <Card className="bg-card border hover:bg-accent transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="bg-emerald-600 p-2 rounded-lg">
                   <Shield size={24} className="text-white" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 text-base text-left">Safety & Security</h4>
-                  <p className="text-sm text-gray-600">Emergency procedures • Safety protocols</p>
+                  <h4 className="font-medium text-foreground text-base text-left">Safety & Security</h4>
+                  <p className="text-sm text-muted-foreground">Emergency procedures • Safety protocols</p>
                 </div>
               </div>
             </CardContent>
