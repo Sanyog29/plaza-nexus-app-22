@@ -253,10 +253,10 @@ const StaffRequestsPage = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-400" />;
-      case 'in_progress': return <Wrench className="h-4 w-4 text-yellow-400" />;
-      case 'pending': return <Clock className="h-4 w-4 text-red-400" />;
-      default: return <AlertTriangle className="h-4 w-4 text-gray-400" />;
+      case 'completed': return <CheckCircle className="h-4 w-4 text-foreground" />;
+      case 'in_progress': return <Wrench className="h-4 w-4 text-foreground" />;
+      case 'pending': return <Clock className="h-4 w-4 text-foreground" />;
+      default: return <AlertTriangle className="h-4 w-4 text-foreground" />;
     }
   };
 
@@ -269,8 +269,8 @@ const StaffRequestsPage = () => {
     return (
        <div className="w-full space-y-6 pb-20">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">Maintenance Requests</h1>
-          <p className="text-gray-400">Manage and track maintenance requests</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Maintenance Requests</h1>
+          <p className="text-foreground">Manage and track maintenance requests</p>
         </div>
         <LoadingState type="card" count={5} />
       </div>
@@ -283,8 +283,8 @@ const StaffRequestsPage = () => {
       <TaskCompletionNotifier />
       
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Maintenance Requests</h1>
-        <p className="text-gray-400">Manage and track maintenance requests</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Maintenance Requests</h1>
+        <p className="text-foreground">Manage and track maintenance requests</p>
       </div>
 
       {/* Error Banner */}
@@ -313,13 +313,13 @@ const StaffRequestsPage = () => {
           {/* Filter indicator */}
           {(statusFilter !== 'all' || priorityFilter !== 'all') && (
             <div className="mb-4 flex items-center gap-2">
-              <span className="text-sm text-gray-400">Filtered by:</span>
+              <span className="text-sm text-foreground">Filtered by:</span>
               {statusFilter !== 'all' && (
                 <Badge variant="outline" className="text-sm">
                   Status: {statusFilter.replace('_', ' ')}
                   <button 
                     onClick={() => setStatusFilter('all')}
-                    className="ml-2 hover:text-red-400"
+                    className="ml-2 hover:opacity-80"
                   >
                     ×
                   </button>
@@ -330,7 +330,7 @@ const StaffRequestsPage = () => {
                   Priority: {priorityFilter}
                   <button 
                     onClick={() => setPriorityFilter('all')}
-                    className="ml-2 hover:text-red-400"
+                    className="ml-2 hover:opacity-80"
                   >
                     ×
                   </button>
@@ -341,7 +341,7 @@ const StaffRequestsPage = () => {
           
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-foreground" />
               <Input
                 placeholder="Search requests..."
                 className="pl-10"
@@ -399,7 +399,7 @@ const StaffRequestsPage = () => {
           {filteredRequests.length === 0 ? (
             <Card className="bg-card/50 backdrop-blur">
               <CardContent className="p-8 text-center">
-                <p className="text-gray-400">No requests found</p>
+                <p className="text-foreground">No requests found</p>
               </CardContent>
             </Card>
           ) : (
@@ -412,14 +412,14 @@ const StaffRequestsPage = () => {
                         <div className="flex items-center gap-2 mb-2">
                           {getStatusIcon(request.status)}
                           <h3 
-                            className="font-semibold text-white cursor-pointer hover:text-plaza-blue"
+                            className="font-semibold text-foreground cursor-pointer hover:opacity-80"
                              onClick={() => navigate(`/staff/requests/${request.id}`)}
                           >
                             {request.title}
                           </h3>
                         </div>
-                        <p className="text-gray-400 text-sm mb-2">{request.description}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <p className="text-foreground text-sm mb-2">{request.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-foreground">
                           <span>📍 {request.location}</span>
                           <span>👤 Reported by: {request.reporterName || 'Unknown User'}</span>
                           {request.assigneeName && (

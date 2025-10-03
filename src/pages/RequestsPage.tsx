@@ -265,7 +265,7 @@ const RequestsPage = () => {
                 Status: {statusFilter.replace('_', ' ')}
                 <button 
                   onClick={() => setStatusFilter('all')}
-                  className="ml-2 hover:text-red-400"
+                  className="ml-2 hover:opacity-80"
                 >
                   ×
                 </button>

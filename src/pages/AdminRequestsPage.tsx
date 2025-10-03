@@ -256,8 +256,8 @@ const AdminRequestsPage = () => {
       <div className="w-full space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">Request Management</h1>
-          <p className="text-gray-400">Monitor and manage all maintenance requests</p>
+          <h1 className="text-2xl font-bold text-foreground">Request Management</h1>
+          <p className="text-foreground">Monitor and manage all maintenance requests</p>
         </div>
       </div>
 
@@ -267,10 +267,10 @@ const AdminRequestsPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Pending</p>
-                <p className="text-2xl font-bold text-yellow-400">{pending.length}</p>
+                <p className="text-sm text-foreground">Pending</p>
+                <p className="text-2xl font-bold text-foreground">{pending.length}</p>
               </div>
-              <Clock className="w-8 h-8 text-yellow-400" />
+              <Clock className="w-8 h-8 text-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -279,10 +279,10 @@ const AdminRequestsPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">In Progress</p>
-                <p className="text-2xl font-bold text-blue-400">{inProgress.length}</p>
+                <p className="text-sm text-foreground">In Progress</p>
+                <p className="text-2xl font-bold text-foreground">{inProgress.length}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 text-blue-400" />
+              <AlertTriangle className="w-8 h-8 text-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -291,10 +291,10 @@ const AdminRequestsPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Completed</p>
-                <p className="text-2xl font-bold text-green-400">{completed.length}</p>
+                <p className="text-sm text-foreground">Completed</p>
+                <p className="text-2xl font-bold text-foreground">{completed.length}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-400" />
+              <CheckCircle className="w-8 h-8 text-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -303,10 +303,10 @@ const AdminRequestsPage = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-400">Overdue</p>
-                <p className="text-2xl font-bold text-red-400">{overdue.length}</p>
+                <p className="text-sm text-foreground">Overdue</p>
+                <p className="text-2xl font-bold text-foreground">{overdue.length}</p>
               </div>
-              <XCircle className="w-8 h-8 text-red-400" />
+              <XCircle className="w-8 h-8 text-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -318,13 +318,13 @@ const AdminRequestsPage = () => {
           {/* Filter indicator */}
           {(statusFilter !== 'all' || priorityFilter !== 'all') && (
             <div className="mb-4 flex items-center gap-2">
-              <span className="text-sm text-gray-400">Filtered by:</span>
+              <span className="text-sm text-foreground">Filtered by:</span>
               {statusFilter !== 'all' && (
                 <Badge variant="outline" className="text-sm">
                   Status: {statusFilter.replace('_', ' ')}
                   <button 
                     onClick={() => setStatusFilter('all')}
-                    className="ml-2 hover:text-red-400"
+                    className="ml-2 hover:opacity-80"
                   >
                     ×
                   </button>
@@ -335,7 +335,7 @@ const AdminRequestsPage = () => {
                   Priority: {priorityFilter}
                   <button 
                     onClick={() => setPriorityFilter('all')}
-                    className="ml-2 hover:text-red-400"
+                    className="ml-2 hover:opacity-80"
                   >
                     ×
                   </button>
@@ -347,7 +347,7 @@ const AdminRequestsPage = () => {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
                 <Input
                   placeholder="Search requests..."
                   value={searchTerm}
@@ -449,7 +449,7 @@ const RequestsList: React.FC<RequestsListProps> = ({
     return (
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-8 text-center">
-          <p className="text-gray-400">No requests found</p>
+          <p className="text-foreground">No requests found</p>
         </CardContent>
       </Card>
     );
@@ -463,13 +463,13 @@ const RequestsList: React.FC<RequestsListProps> = ({
             <div className="flex items-start justify-between">
               <div className="flex-1 cursor-pointer" onClick={() => navigate(`/admin/requests/${request.id}`)}>
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-white">{request.title}</h3>
+                  <h3 className="font-semibold text-foreground">{request.title}</h3>
                   {isOverdue(request.sla_breach_at) && (
                     <Badge className="bg-red-900 text-red-300">OVERDUE</Badge>
                   )}
                 </div>
                 
-                <p className="text-gray-400 text-sm mb-3 line-clamp-2">{request.description}</p>
+                <p className="text-foreground text-sm mb-3 line-clamp-2">{request.description}</p>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
                   <Badge className={`flex items-center gap-1 ${getStatusColor(request.status)}`}>
