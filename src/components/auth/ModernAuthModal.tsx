@@ -26,6 +26,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const { toast } = useToast();
 
   // Reset form when modal opens/closes
@@ -78,9 +79,22 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setPhoneError('');
 
     try {
       if (activeTab === 'signup') {
+        // Validate phone number if provided
+        let validatedPhone = phone;
+        if (phone) {
+          const phoneValidation = validateAndFormatPhone(phone);
+          if (!phoneValidation.isValid) {
+            setPhoneError(phoneValidation.error || 'Invalid phone number');
+            setIsLoading(false);
+            return;
+          }
+          validatedPhone = phoneValidation.formatted || phone;
+        }
+
         // Sign up logic
         const { error } = await supabase.auth.signUp({
           email,
@@ -90,7 +104,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
             data: {
               first_name: firstName,
               last_name: lastName,
-              phone: phone
+              phone: validatedPhone
             }
           }
         });
@@ -247,20 +261,16 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
 
             {/* Phone field - only for signup */}
             {activeTab === 'signup' && (
-              <div className="relative">
-                <div className="flex items-center absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400">
-                  <span className="mr-1">🇺🇸</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <Input
-                  type="tel"
-                  placeholder="(775) 351-6501"
+              <div>
+                <PhoneInput
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full p-3 pl-16 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  onChange={setPhone}
+                  placeholder="Enter mobile number"
+                  className="phone-input-modal"
                 />
+                {phoneError && (
+                  <p className="text-red-400 text-xs mt-1">{phoneError}</p>
+                )}
               </div>
             )}
 

@@ -58,10 +58,21 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     }
   };
 
+  // Check if we're in modal mode based on className
+  const isModalStyle = className.includes('phone-input-modal');
+  
+  const selectClassName = isModalStyle
+    ? "w-24 rounded-r-none border-r-0 bg-white bg-opacity-5 border-0 text-white focus:ring-2 focus:ring-blue-500"
+    : "w-24 rounded-r-none border-r-0";
+  
+  const inputClassName = isModalStyle
+    ? "rounded-l-none bg-white bg-opacity-5 border-0 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+    : "rounded-l-none";
+
   return (
     <div className={`flex ${className}`}>
       <Select value={selectedCountryCode} onValueChange={handleCountryCodeChange} disabled={disabled}>
-        <SelectTrigger className="w-24 rounded-r-none border-r-0">
+        <SelectTrigger className={selectClassName}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -77,7 +88,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         value={localNumber}
         onChange={(e) => handleLocalNumberChange(e.target.value)}
         placeholder={placeholder}
-        className="rounded-l-none"
+        className={inputClassName}
         disabled={disabled}
       />
     </div>
