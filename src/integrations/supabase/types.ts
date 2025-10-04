@@ -5786,6 +5786,61 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_profile_access_log: {
+        Row: {
+          access_reason: string | null
+          accessed_by: string | null
+          created_at: string
+          fields_accessed: string[]
+          id: string
+          ip_address: unknown | null
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_reason?: string | null
+          accessed_by?: string | null
+          created_at?: string
+          fields_accessed: string[]
+          id?: string
+          ip_address?: unknown | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_reason?: string | null
+          accessed_by?: string | null
+          created_at?: string
+          fields_accessed?: string[]
+          id?: string
+          ip_address?: unknown | null
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensitive_profile_access_log_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sensitive_profile_access_log_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sensitive_profile_access_log_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_bookings: {
         Row: {
           assigned_at: string | null
@@ -9622,6 +9677,24 @@ export type Database = {
       get_invitation_details: {
         Args: { token: string }
         Returns: Json
+      }
+      get_public_profile_fields: {
+        Args: { profile_id: string }
+        Returns: {
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          avatar_url: string
+          bio: string
+          department: string
+          designation: string
+          first_name: string
+          floor: string
+          id: string
+          interests: string[]
+          last_name: string
+          role: Database["public"]["Enums"]["app_role"]
+          skills: string[]
+          zone: string
+        }[]
       }
       get_recent_sla_breaches: {
         Args: { days_back?: number }
