@@ -66,9 +66,18 @@ export const useProfile = () => {
     }
     
     try {
+      // SECURITY: Use explicit column selection instead of SELECT *
+      // User can only fetch their own full profile (enforced by RLS)
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          id, first_name, last_name, role, office_number, phone_number,
+          avatar_url, department, floor, zone, emergency_contact_name,
+          emergency_contact_phone, emergency_contact_relationship,
+          profile_visibility, notification_preferences, bio, skills,
+          interests, created_at, updated_at, mobile_number, employee_id,
+          government_id, email, designation, approval_status
+        `)
         .eq('id', user.id)
         .maybeSingle();
 

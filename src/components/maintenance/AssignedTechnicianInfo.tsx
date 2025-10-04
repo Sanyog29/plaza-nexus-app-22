@@ -6,6 +6,8 @@ import { User, Phone, Mail, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUserNameFromProfile } from '@/utils/formatters';
 import { format } from 'date-fns';
+import { SensitiveLink } from '@/components/ui/SensitiveField';
+import { PublicProfile } from '@/types/profile-security';
 
 interface AssignedTechnicianInfoProps {
   assignedToUserId?: string;
@@ -14,13 +16,7 @@ interface AssignedTechnicianInfoProps {
   status: string;
 }
 
-interface TechnicianProfile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone_number?: string;
-  email?: string;
-  role: string;
+interface TechnicianProfile extends PublicProfile {
   specialization?: string;
 }
 
@@ -45,29 +41,20 @@ const AssignedTechnicianInfo: React.FC<AssignedTechnicianInfoProps> = ({
     try {
       setLoading(true);
       
-      // Get profile info including email
+      // SECURITY: Use public profile view for basic info
+      // Sensitive fields (phone, email) will be handled by SensitiveField component
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, phone_number, email, role, specialization')
+        .from('profiles_public')
+        .select('*')
         .eq('id', assignedToUserId)
         .single();
 
       if (profileError) throw profileError;
 
-      setTechnician(profile);
+      setTechnician(profile as TechnicianProfile);
 
     } catch (error: any) {
       console.error('Error fetching technician info:', error);
-      // Fallback to just profile data
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, phone_number, email, role, specialization')
-        .eq('id', assignedToUserId)
-        .single();
-      
-      if (profile) {
-        setTechnician(profile);
-      }
     } finally {
       setLoading(false);
     }
@@ -141,16 +128,25 @@ const AssignedTechnicianInfo: React.FC<AssignedTechnicianInfoProps> = ({
         </div>
 
         <div className="space-y-2">
-          {technician.phone_number && (
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="w-4 h-4 text-plaza-blue" />
-              <span className="text-gray-300">{technician.phone_number}</span>
-            </div>
-          )}
+          {/* SECURITY: Phone and email use SensitiveLink component with permission checks */}
+          <div className="flex items-center gap-2 text-sm">
+            <Phone className="w-4 h-4 text-plaza-blue" />
+            <SensitiveLink 
+              userId={technician.id} 
+              field="phone_number"
+              type="phone" 
+              className="text-gray-300 hover:text-plaza-blue"
+            />
+          </div>
           
           <div className="flex items-center gap-2 text-sm">
             <Mail className="w-4 h-4 text-plaza-blue" />
-            <span className="text-gray-300">{technician.email}</span>
+            <SensitiveLink 
+              userId={technician.id} 
+              field="email"
+              type="email" 
+              className="text-gray-300 hover:text-plaza-blue"
+            />
           </div>
         </div>
 
