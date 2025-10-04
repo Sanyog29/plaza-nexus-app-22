@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import RequestWorkflowManager from './RequestWorkflowManager';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { User, Clock, CheckCircle, AlertTriangle, MessageSquare, Calendar, MapPin, ChevronDown, ChevronUp, Timer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
@@ -37,6 +38,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
   const [updatedPriority, setUpdatedPriority] = useState<RequestPriority | null>(null);
   const [statusNote, setStatusNote] = useState('');
   const [expanded, setExpanded] = useState(true);
+  const [photoPreview, setPhotoPreview] = useState<{ url: string; title: string } | null>(null);
   const { toast } = useToast();
   const { user, isL1, isStaff } = useAuth();
 
@@ -323,27 +325,45 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     {request.before_photo_url && (
                       <div>
-                        <p className="text-xs text-foreground mb-1">Before</p>
+                        <p className="text-xs text-muted-foreground mb-2">Before</p>
                         <img
                           src={request.before_photo_url}
                           alt="Before"
-                          className="w-full h-32 object-cover rounded border border-gray-700"
+                          className="w-full h-64 object-contain rounded-lg border cursor-pointer hover:opacity-90 transition-opacity bg-muted/30"
+                          onClick={() => setPhotoPreview({ url: request.before_photo_url!, title: 'Before' })}
                         />
                       </div>
                     )}
                     {request.after_photo_url && (
                       <div>
-                        <p className="text-xs text-foreground mb-1">After</p>
+                        <p className="text-xs text-muted-foreground mb-2">After</p>
                         <img
                           src={request.after_photo_url}
                           alt="After"
-                          className="w-full h-32 object-cover rounded border border-gray-700"
+                          className="w-full h-64 object-contain rounded-lg border cursor-pointer hover:opacity-90 transition-opacity bg-muted/30"
+                          onClick={() => setPhotoPreview({ url: request.after_photo_url!, title: 'After' })}
                         />
                       </div>
                     )}
                   </div>
                 </div>
               )}
+
+              {/* Photo Preview Dialog */}
+              <Dialog open={!!photoPreview} onOpenChange={() => setPhotoPreview(null)}>
+                <DialogContent className="max-w-5xl">
+                  <DialogHeader>
+                    <DialogTitle>{photoPreview?.title} Photo</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex items-center justify-center p-4">
+                    <img
+                      src={photoPreview?.url}
+                      alt={photoPreview?.title}
+                      className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* Admin/Staff Update Section */}
               {isStaff && (
