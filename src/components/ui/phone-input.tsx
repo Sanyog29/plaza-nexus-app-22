@@ -66,7 +66,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     : "w-24 rounded-r-none border-r-0";
   
   const inputClassName = isModalStyle
-    ? "rounded-l-none bg-white bg-opacity-5 border-0 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+    ? "rounded-l-none bg-white bg-opacity-5 border-0 text-white placeholder-white focus:ring-2 focus:ring-blue-500"
     : "rounded-l-none";
 
   return (
