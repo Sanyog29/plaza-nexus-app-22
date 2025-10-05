@@ -665,7 +665,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                       <span>Response: {formatSLATime(slaInfo.response_sla_minutes)}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-blue-600" />
+                      <Clock className="h-4 w-4 text-purple-600" />
                       <span>Resolution: {formatSLATime(slaInfo.resolution_sla_minutes)}</span>
                     </div>
                   </div>
@@ -723,11 +723,11 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
 
             {/* Enhanced Attachments Section */}
             <div className="space-y-2">
-              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-400 font-medium mb-1">
+              <div className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg">
+                <p className="text-sm text-purple-700 dark:text-purple-400 font-medium mb-1">
                   📸 For faster resolution, please attach photos or screenshots
                 </p>
-                <p className="text-xs text-blue-600 dark:text-blue-500">
+                <p className="text-xs text-purple-600 dark:text-purple-500">
                   Clear images help our team understand and prioritize your request
                 </p>
               </div>
