@@ -20,7 +20,7 @@ const AdminDashboardPage = () => {
     <>
       <SEOHead
         title="Admin Dashboard"
-        description="Real-time operations, analytics, and management for SS Plaza."
+        description="Real-time operations, analytics, and management for AUTOPILOT."
         url={`${window.location.origin}/admin/dashboard`}
         type="website"
         noindex

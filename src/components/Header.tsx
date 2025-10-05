@@ -9,6 +9,7 @@ import { Button } from './ui/button';
 import { useAuth } from './AuthProvider';
 import AvailabilityToggle from './availability/AvailabilityToggle';
 import { HeaderCreditsBadge } from './header/HeaderCreditsBadge';
+import autopilotLogo from '@/assets/autopilot-logo.png';
 
 const Header: React.FC = () => {
   const { signOut, user } = useAuth();
@@ -26,7 +27,7 @@ const Header: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <Link to="/" className="flex items-center space-x-2">
-            <h1 className="text-lg font-bold text-foreground">SS Plaza</h1>
+            <img src={autopilotLogo} alt="AUTOPILOT" className="h-8" />
           </Link>
         </div>
         <div className="flex items-center space-x-4">

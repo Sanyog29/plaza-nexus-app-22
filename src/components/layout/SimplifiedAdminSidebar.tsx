@@ -371,7 +371,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
             </div>
             {!isCollapsed && (
               <div className="flex-1">
-                <h2 className="font-bold text-foreground text-lg">SS Plaza</h2>
+                <h2 className="font-bold text-foreground text-lg">AUTOPILOT</h2>
                 <p className="text-xs text-muted-foreground/80 capitalize font-medium">
                   {userRole === 'admin' ? 'Admin' : 
                    userRole === 'ops_supervisor' ? 'Supervisor' :

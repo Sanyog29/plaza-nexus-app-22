@@ -46,7 +46,7 @@ export const useEmailService = () => {
         </div>
         
         <p>If you need to make any changes, please contact our support team.</p>
-        <p>Best regards,<br>SS Plaza Team</p>
+        <p>Best regards,<br>AUTOPILOT Team</p>
       </div>
     `;
 
@@ -84,7 +84,7 @@ export const useEmailService = () => {
         ` : ''}
         
         <p>Please share this QR code with your visitor for easy entry.</p>
-        <p>Best regards,<br>SS Plaza Security Team</p>
+        <p>Best regards,<br>AUTOPILOT Security Team</p>
       </div>
     `;
 
@@ -117,7 +117,7 @@ export const useEmailService = () => {
         <p>${requestDetails.description}</p>
         
         <p>Please take immediate action to resolve this request.</p>
-        <p>Best regards,<br>SS Plaza System</p>
+        <p>Best regards,<br>AUTOPILOT System</p>
       </div>
     `;
 
@@ -172,7 +172,7 @@ export const useEmailService = () => {
         </div>
         
         <p>For security inquiries, please contact the front desk.</p>
-        <p>Best regards,<br>SS Plaza Security Team</p>
+        <p>Best regards,<br>AUTOPILOT Security Team</p>
       </div>
     `;
 
@@ -207,7 +207,7 @@ export const useEmailService = () => {
         </div>
         
         <p>Please check with your visitor or contact security if needed.</p>
-        <p>Best regards,<br>SS Plaza Security Team</p>
+        <p>Best regards,<br>AUTOPILOT Security Team</p>
       </div>
     `;
 
@@ -250,7 +250,7 @@ export const useEmailService = () => {
           </div>
         ` : ''}
         
-        <p>Best regards,<br>SS Plaza Security System</p>
+        <p>Best regards,<br>AUTOPILOT Security System</p>
       </div>
     `;
 

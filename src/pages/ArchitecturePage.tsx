@@ -253,8 +253,8 @@ graph TD
   return (
     <>
       <SEOHead
-        title="System Architecture | SS Plaza"
-        description="Technical architecture diagrams and system flow documentation for SS Plaza management platform."
+        title="System Architecture | AUTOPILOT"
+        description="Technical architecture diagrams and system flow documentation for AUTOPILOT management platform."
         url={`${window.location.origin}/architecture`}
         type="website"
         noindex
@@ -267,7 +267,7 @@ graph TD
           <div>
             <h1 className="text-3xl font-bold text-white">System Architecture</h1>
             <p className="text-gray-400 mt-1">
-              Comprehensive technical diagrams and system flows for SS Plaza enterprise platform
+              Comprehensive technical diagrams and system flows for AUTOPILOT enterprise platform
             </p>
           </div>
         </div>

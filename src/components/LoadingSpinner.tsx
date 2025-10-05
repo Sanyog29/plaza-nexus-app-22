@@ -28,7 +28,7 @@ export function PageLoader() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <LoadingSpinner size="lg" />
-        <p className="text-muted-foreground animate-pulse">Loading SS Plaza...</p>
+        <p className="text-muted-foreground animate-pulse">Loading AUTOPILOT...</p>
       </div>
     </div>
   );

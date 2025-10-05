@@ -283,7 +283,7 @@ export const UnifiedSettingsPage: React.FC<UnifiedSettingsPageProps> = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="orgName">Organization Name</Label>
-                        <Input id="orgName" placeholder="SS Plaza" />
+                        <Input id="orgName" placeholder="AUTOPILOT" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="timezone">Timezone</Label>

@@ -1,6 +1,6 @@
 {
-  "name": "Plaza Nexus - Facility Management",
-  "short_name": "Plaza Nexus",
+  "name": "AUTOPILOT - Facility Management",
+  "short_name": "AUTOPILOT",
   "description": "Comprehensive facility management platform with offline capabilities",
   "start_url": "/",
   "display": "standalone",

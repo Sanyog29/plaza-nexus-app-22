@@ -182,7 +182,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             {isSignUp 
-              ? 'Join SS Plaza to access premium tenant services'
+              ? 'Join AUTOPILOT to access premium tenant services'
               : 'Sign in to your tenant management dashboard'}
           </CardDescription>
         </CardHeader>
@@ -346,7 +346,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
           
           <div className="text-center">
             <p className="text-xs text-muted-foreground">
-              SS Plaza Professional Tenant Platform
+              AUTOPILOT Professional Tenant Platform
             </p>
           </div>
         </CardFooter>

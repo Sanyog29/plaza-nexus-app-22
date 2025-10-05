@@ -24,7 +24,7 @@ const LoyaltyCard: React.FC = () => {
         <div className="bg-white/20 p-2 rounded-lg">
           <Coffee className="h-6 w-6" />
         </div>
-        <span className="text-sm">SS Plaza Rewards</span>
+        <span className="text-sm">AUTOPILOT Rewards</span>
       </div>
       
       <div className="space-y-2">

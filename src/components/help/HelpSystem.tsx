@@ -14,7 +14,7 @@ const helpCategories = [
     title: 'Getting Started',
     icon: Book,
     articles: [
-      { id: 1, title: 'Welcome to SS Plaza', description: 'Learn the basics of using the platform', views: 1234 },
+      { id: 1, title: 'Welcome to AUTOPILOT', description: 'Learn the basics of using the platform', views: 1234 },
       { id: 2, title: 'Setting up your profile', description: 'Complete your profile information', views: 892 },
       { id: 3, title: 'Navigation overview', description: 'Find your way around the interface', views: 756 },
     ]

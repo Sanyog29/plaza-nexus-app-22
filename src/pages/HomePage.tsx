@@ -41,7 +41,7 @@ const HomePage = () => {
   return <div className="w-full space-y-8">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          Welcome to SS Plaza, {firstName}
+          Welcome to AUTOPILOT, {firstName}
         </h2>
         <p className="text-muted-foreground">{currentDate}</p>
       </div>
@@ -103,7 +103,7 @@ const HomePage = () => {
                   <Building size={24} className="text-white dark:text-blue-50" />
                 </div>
                 <div>
-                  <h4 className="text-foreground font-medium text-base text-left">SS Plaza Directory</h4>
+                  <h4 className="text-foreground font-medium text-base text-left">AUTOPILOT Directory</h4>
                   <p className="text-sm text-muted-foreground">Floor plans • Emergency contacts • Guidelines</p>
                 </div>
               </div>

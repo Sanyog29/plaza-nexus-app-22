@@ -28,13 +28,13 @@ export const UPIPaymentModal: React.FC<UPIPaymentModalProps> = ({
   const [paymentComplete, setPaymentComplete] = useState(false);
 
   // UPI ID for the cafeteria (this would be configurable)
-  const cafeteriaUPI = "cafeteria@sspuaza";
+  const cafeteriaUPI = "cafeteria@autopilot";
   
   // Generate UPI payment URL
   const generateUPIUrl = () => {
     const params = new URLSearchParams({
       pa: cafeteriaUPI,
-      pn: "SS Plaza Cafeteria",
+      pn: "AUTOPILOT Cafeteria",
       tr: orderId,
       am: amount.toString(),
       cu: "INR",

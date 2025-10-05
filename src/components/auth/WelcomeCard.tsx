@@ -35,7 +35,7 @@ const WelcomeCard = () => {
             <Building className="h-8 w-8" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">SS Plaza</h1>
+            <h1 className="text-3xl font-bold">AUTOPILOT</h1>
             <p className="text-sm opacity-90 font-medium">Professional Building Management</p>
           </div>
         </div>
@@ -88,7 +88,7 @@ const WelcomeCard = () => {
             </p>
             <p className="flex items-center gap-2 text-sm font-medium">
               <Mail size={14} />
-              support@ssplaza.com
+              support@autopilot.com
             </p>
             <p className="text-xs opacity-75 mt-2">
               Our dedicated support team is available around the clock to assist you.

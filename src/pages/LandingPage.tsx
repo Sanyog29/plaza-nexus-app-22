@@ -70,8 +70,8 @@ const LandingPage: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="SS Plaza - Smart Building Management System"
-        description="Modern facility management platform for SS Plaza. Manage maintenance, cafeteria orders, security, room bookings, and more - all in one place."
+        title="AUTOPILOT - Smart Building Management System"
+        description="Modern facility management platform for AUTOPILOT. Manage maintenance, cafeteria orders, security, room bookings, and more - all in one place."
         keywords={['building management', 'facility management', 'maintenance requests', 'cafeteria ordering', 'security system', 'room booking']}
       />
       
@@ -81,7 +81,7 @@ const LandingPage: React.FC = () => {
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Building2 className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">SS Plaza</h1>
+              <h1 className="text-2xl font-bold text-foreground">AUTOPILOT</h1>
             </div>
             <Link to="/auth">
               <Button variant="default">
@@ -200,7 +200,7 @@ const LandingPage: React.FC = () => {
               Ready to Get Started?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join hundreds of satisfied users managing their facility operations efficiently with SS Plaza.
+              Join hundreds of satisfied users managing their facility operations efficiently with AUTOPILOT.
             </p>
             <Link to="/auth">
               <Button size="lg" className="gap-2">
@@ -214,7 +214,7 @@ const LandingPage: React.FC = () => {
         {/* Footer */}
         <footer className="border-t border-border bg-surface/30 py-8">
           <div className="container mx-auto px-4 text-center text-muted-foreground">
-            <p>© 2025 SS Plaza. All rights reserved.</p>
+            <p>© 2025 AUTOPILOT. All rights reserved.</p>
           </div>
         </footer>
       </div>

@@ -82,7 +82,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
       if (error) throw error;
 
       toast({
-        title: "Welcome to SS Plaza!",
+        title: "Welcome to AUTOPILOT!",
         description: "Your profile has been set up successfully.",
       });
 
@@ -216,7 +216,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete }
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <Card className="w-full max-w-md bg-card border-border">
         <CardHeader className="text-center">
-          <CardTitle className="text-white">Welcome to SS Plaza</CardTitle>
+          <CardTitle className="text-white">Welcome to AUTOPILOT</CardTitle>
           <CardDescription>
             Let's set up your profile ({currentStep} of {totalSteps})
           </CardDescription>
