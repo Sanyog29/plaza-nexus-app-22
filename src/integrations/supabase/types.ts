@@ -10991,6 +10991,10 @@ export type Database = {
         Args: { setting_category: string; setting_key: string }
         Returns: Json
       }
+      get_user_display_name: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
       get_user_management_data: {
         Args: Record<PropertyKey, never> | { caller_id: string }
         Returns: {

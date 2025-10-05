@@ -79,15 +79,49 @@ const RequestDetailsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories!maintenance_requests_category_id_fkey(name),
-          reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
+          main_categories!maintenance_requests_category_id_fkey(name)
         `)
         .eq('id', sanitizedRequestId)
         .maybeSingle();
         
       if (error) throw error;
-      setRequest(data);
+      
+      if (data) {
+        // Fetch reporter name using the reliable database function
+        let reporterName = 'Unknown User';
+        if (data.reported_by) {
+          const { data: reporterNameData } = await supabase
+            .rpc('get_user_display_name', { user_uuid: data.reported_by });
+          if (reporterNameData) reporterName = reporterNameData;
+        }
+
+        // Fetch assignee name using the reliable database function
+        let assigneeName = null;
+        if (data.assigned_to) {
+          const { data: assigneeNameData } = await supabase
+            .rpc('get_user_display_name', { user_uuid: data.assigned_to });
+          if (assigneeNameData) assigneeName = assigneeNameData;
+        }
+
+        // Enhance the data with fetched names
+        const enhancedData = {
+          ...data,
+          reporter: { 
+            first_name: reporterName.split(' ')[0] || reporterName,
+            last_name: reporterName.split(' ').slice(1).join(' ') || '',
+            email: ''
+          },
+          assignee: assigneeName ? {
+            first_name: assigneeName.split(' ')[0] || assigneeName,
+            last_name: assigneeName.split(' ').slice(1).join(' ') || '',
+            email: ''
+          } : null
+        };
+        
+        setRequest(enhancedData);
+      } else {
+        setRequest(data);
+      }
       
       // Set up real-time subscription for workflow updates
       const channel = supabase
