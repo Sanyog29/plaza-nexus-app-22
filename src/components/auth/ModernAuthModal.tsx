@@ -195,7 +195,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               className={`py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 ${
                 activeTab === 'signup'
                   ? 'bg-white text-black shadow-md'
-                  : 'text-gray-400'
+                  : 'text-white text-opacity-80'
               }`}
             >
               Sign up
@@ -205,7 +205,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               className={`py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 ${
                 activeTab === 'signin'
                   ? 'bg-white text-black shadow-md'
-                  : 'text-gray-400'
+                  : 'text-white text-opacity-80'
               }`}
             >
               Sign in
@@ -220,7 +220,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           {/* Error message */}
           {error && (
             <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm">{error}</p>
+              <p className="text-white text-sm">{error}</p>
             </div>
           )}
 
@@ -234,28 +234,28 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
                 <Input
                   type="text"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
               </div>
             )}
 
             {/* Email field */}
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white text-opacity-60" size={18} />
               <Input
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               />
             </div>
 
@@ -269,7 +269,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
                   className="phone-input-modal"
                 />
                 {phoneError && (
-                  <p className="text-red-400 text-xs mt-1">{phoneError}</p>
+                  <p className="text-white text-xs mt-1">{phoneError}</p>
                 )}
               </div>
             )}
@@ -281,7 +281,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="w-full p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             />
 
             {/* Submit button */}
@@ -302,7 +302,7 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           </form>
 
           {/* Divider */}
-          <div className="text-center text-sm text-gray-400 mt-4">OR SIGN IN WITH</div>
+          <div className="text-center text-sm text-white mt-4">OR SIGN IN WITH</div>
           
           {/* Social login buttons */}
           <div className="flex gap-4 mt-2">
@@ -330,8 +330,8 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           </div>
 
           {/* Terms */}
-          <p className="text-center text-xs text-gray-500 mt-4">
-            By creating an account, you agree to our <a href="#" className="underline text-gray-400">Terms & Service</a>
+          <p className="text-center text-xs text-white text-opacity-80 mt-4">
+            By creating an account, you agree to our <a href="#" className="underline text-white">Terms & Service</a>
           </p>
         </div>
       </div>
