@@ -234,14 +234,16 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl !text-white placeholder:!text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  style={{ color: '#ffffff' }}
                 />
                 <Input
                   type="text"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  className="w-1/2 p-3 bg-white bg-opacity-5 border-0 rounded-xl !text-white placeholder:!text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  style={{ color: '#ffffff' }}
                 />
               </div>
             )}
@@ -255,7 +257,8 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl !text-white placeholder:!text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                style={{ color: '#ffffff' }}
               />
             </div>
 
@@ -281,7 +284,8 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="w-full p-3 bg-white bg-opacity-5 border-0 rounded-xl !text-white placeholder:!text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              style={{ color: '#ffffff' }}
             />
 
             {/* Submit button */}
