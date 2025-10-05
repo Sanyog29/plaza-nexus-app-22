@@ -4,6 +4,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* New Design System - Gradient Keyframes */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; filter: blur(20px); }
+  50% { opacity: 0.8; filter: blur(30px); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @layer base {
   :root {
     /* Base font size for rem calculations */
@@ -58,6 +84,12 @@
     --border: 214 32 91;
     --input: 214 32 91;
     --ring: 213 94 68;
+    
+    /* New gradient colors */
+    --gradient-start: 221 83% 70%;
+    --gradient-end: 262 83% 58%;
+    --gradient-dark-start: 226 71% 40%;
+    --gradient-dark-end: 226 62% 8%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -120,6 +152,12 @@
     --border: 220 13 24;
     --input: 220 13 18;
     --ring: 213 94 68;
+    
+    /* New gradient colors */
+    --gradient-start: 221 83% 70%;
+    --gradient-end: 262 83% 58%;
+    --gradient-dark-start: 226 71% 40%;
+    --gradient-dark-end: 226 62% 8%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -221,6 +259,53 @@
 }
 
 @layer utilities {
+  /* New Design System Utilities */
+  .gradient-blue-purple {
+    background: linear-gradient(135deg, hsl(var(--gradient-start)) 0%, hsl(var(--gradient-end)) 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 6s ease infinite;
+  }
+  
+  .gradient-dark {
+    background: linear-gradient(180deg, hsl(var(--gradient-dark-start)) 0%, hsl(var(--gradient-dark-end)) 100%);
+  }
+  
+  .glass-card-enhanced {
+    @apply bg-white/5 backdrop-blur-2xl border border-white/20 shadow-2xl;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl;
+  }
+  
+  .rounded-ultra {
+    @apply rounded-3xl;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out;
+  }
+  
+  .animate-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .animate-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2s infinite;
+  }
+
   /* Glass morphism effects */
   .glass-card {
     background: hsl(var(--card-glass));

@@ -76,15 +76,24 @@ const LandingPage: React.FC = () => {
       />
       
       <div className="min-h-screen bg-background">
+        {/* Floating gradient orbs */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        </div>
+        
         {/* Header */}
-        <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-50">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Building2 className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">AUTOPILOT</h1>
+              <Building2 className="h-6 w-6 text-primary" />
+              <span className="text-xl font-bold">AUTOPILOT</span>
             </div>
             <Link to="/auth">
-              <Button variant="default">
+              <Button 
+                variant="default"
+                className="rounded-full px-6 hover:scale-105 transition-transform"
+              >
                 Sign In
               </Button>
             </Link>
@@ -92,71 +101,82 @@ const LandingPage: React.FC = () => {
         </header>
 
         {/* Hero Section */}
-        <section className="container mx-auto px-4 py-20 text-center">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
-              <TrendingUp className="h-4 w-4" />
-              <span>Next-Generation Facility Management</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Your Complete Facility Management
-              <span className="text-primary"> Solution</span>
+        <section className="relative container mx-auto px-4 py-24 md:py-32 animate-slide-up">
+          <div className="flex flex-col items-center text-center space-y-8">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
+              Smart Building Management
+              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mt-2">
+                Made Simple
+              </span>
             </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Streamline operations, enhance tenant experience, and manage your facility efficiently with our comprehensive platform.
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl leading-relaxed">
+              Streamline your building operations with AI-powered insights, 
+              real-time monitoring, and automated workflows.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link to="/auth">
-                <Button size="lg" className="gap-2">
-                  Get Started
-                  <ArrowRight className="h-4 w-4" />
+                <Button 
+                  size="lg"
+                  className="rounded-full px-8 py-6 text-lg gradient-blue-purple hover:scale-105 transition-all shadow-lg hover:shadow-2xl animate-shimmer"
+                >
+                  Get Started Free
                 </Button>
               </Link>
-              <Button size="lg" variant="outline">
-                Learn More
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="rounded-full px-8 py-6 text-lg border-2 hover:scale-105 hover:bg-white/10 transition-all"
+              >
+                Request Demo
               </Button>
             </div>
           </div>
         </section>
 
         {/* Stats Section */}
-        <section className="border-y border-border bg-surface/30">
-          <div className="container mx-auto px-4 py-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
+        <section className="relative py-16">
+          <div className="container mx-auto px-4">
+            <div className="glass-card-enhanced rounded-ultra p-12">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-3 animate-pulse-gentle">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm md:text-base text-muted-foreground font-medium">
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="container mx-auto px-4 py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Everything You Need in One Place
+        <section className="container mx-auto px-4 py-24">
+          <div className="text-center mb-16 animate-slide-up">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Everything You Need
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed to simplify facility management and enhance operational efficiency.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Comprehensive tools to manage every aspect of your building operations
             </p>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-border bg-surface">
-                <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
+              <Card 
+                key={index} 
+                className="rounded-2xl border-2 border-white/10 bg-card/50 backdrop-blur-sm hover-lift overflow-hidden group p-6"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <feature.icon className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
+                <h3 className="text-xl font-semibold mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-base">
                   {feature.description}
                 </p>
               </Card>
@@ -165,56 +185,95 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Benefits Section */}
-        <section className="bg-surface/30 border-y border-border py-20">
+        <section className="gradient-dark py-24">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="text-4xl font-bold text-foreground text-center mb-12">
-                Why Choose SS Plaza?
-              </h2>
-              
-              <div className="space-y-6">
-                {[
-                  'Real-time tracking and updates for all operations',
-                  'Mobile-friendly interface for on-the-go access',
-                  'Automated workflows and smart notifications',
-                  'Comprehensive reporting and analytics',
-                  'Secure access control and data protection',
-                  'Dedicated 24/7 support team'
-                ].map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="bg-primary/10 rounded-full p-1 mt-1">
-                      <CheckCircle2 className="h-5 w-5 text-primary" />
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8">
+                <h2 className="text-4xl md:text-5xl font-bold mb-8">
+                  Why Choose AUTOPILOT?
+                </h2>
+                <div className="space-y-6">
+                  <div className="glass-card-enhanced rounded-2xl p-6 hover-lift">
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-2">Real-time Monitoring</h3>
+                        <p className="text-muted-foreground">
+                          Stay informed with instant updates on all building systems
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-lg text-foreground">{benefit}</p>
                   </div>
-                ))}
+                  <div className="glass-card-enhanced rounded-2xl p-6 hover-lift">
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-2">AI-Powered Insights</h3>
+                        <p className="text-muted-foreground">
+                          Get smart recommendations based on historical data
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="glass-card-enhanced rounded-2xl p-6 hover-lift">
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-2">Easy Integration</h3>
+                        <p className="text-muted-foreground">
+                          Connect with your existing building management systems
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="relative h-96 rounded-3xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-white/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 animate-pulse-gentle"></div>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="container mx-auto px-4 py-20">
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 p-12 text-center">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Ready to Get Started?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join hundreds of satisfied users managing their facility operations efficiently with AUTOPILOT.
-            </p>
-            <Link to="/auth">
-              <Button size="lg" className="gap-2">
-                Sign Up Now
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </Card>
+        <section className="container mx-auto px-4 py-24">
+          <div className="relative rounded-ultra overflow-hidden gradient-blue-purple p-16 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"></div>
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+                Ready to Transform Your Building Management?
+              </h2>
+              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                Join thousands of satisfied customers already using AUTOPILOT
+              </p>
+              <Link to="/auth">
+                <Button 
+                  size="lg"
+                  className="rounded-full px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 hover:scale-105 transition-all shadow-2xl animate-shimmer"
+                >
+                  Start Your Free Trial
+                </Button>
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-border bg-surface/30 py-8">
-          <div className="container mx-auto px-4 text-center text-muted-foreground">
-            <p>© 2025 AUTOPILOT. All rights reserved.</p>
+        <footer className="border-t border-white/10 bg-gradient-to-b from-background to-background/50 py-12">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-6 w-6 text-primary" />
+                <span className="text-lg font-bold">AUTOPILOT</span>
+              </div>
+              <p className="text-muted-foreground">&copy; 2025 AUTOPILOT. All rights reserved.</p>
+            </div>
           </div>
         </footer>
       </div>
