@@ -166,7 +166,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
   return (
     <Card className="bg-card/50 backdrop-blur">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg text-white">
+        <CardTitle className="text-lg text-foreground">
           Communication Thread
         </CardTitle>
       </CardHeader>
