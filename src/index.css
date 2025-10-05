@@ -15,14 +15,71 @@
   50% { transform: translateY(-20px); }
 }
 
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.5);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes stagger-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes card-hover-lift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes stat-counter {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes glow-pulse {
   0%, 100% { opacity: 0.5; filter: blur(20px); }
   50% { opacity: 0.8; filter: blur(30px); }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% { 
+    background-position: -200% 0;
+  }
+  100% { 
+    background-position: 200% 0;
+  }
 }
 
 @keyframes slide-up {
@@ -102,6 +159,11 @@
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Dashboard Gradient Colors - Light Mode */
+    --dashboard-gradient-1: 217 100% 70%;
+    --dashboard-gradient-2: 270 70% 75%;
+    --dashboard-gradient-3: 200 80% 65%;
+
     --radius: 0.75rem;
   }
 
@@ -166,6 +228,11 @@
     /* Shadows with rem units */
     --shadow-elegant: 0 0.625rem 1.875rem -0.625rem hsl(0 0 0 / 0.5);
     --shadow-glass: 0 0.5rem 2rem 0 hsl(0 0 0 / 0.3);
+
+    /* Dashboard Gradient Colors - Dark Mode */
+    --dashboard-gradient-1: 217 91% 30%;
+    --dashboard-gradient-2: 270 50% 25%;
+    --dashboard-gradient-3: 215 25% 20%;
   }
 }
 
@@ -975,3 +1042,88 @@
     border-radius: 0.5rem;
   }
 }
+
+/* Dashboard Animation Utilities */
+.dashboard-card-animated {
+  @apply transition-all duration-300 hover:shadow-lg;
+  animation: stagger-fade-in 0.5s ease-out;
+}
+
+.stat-card-animated {
+  @apply transition-all duration-300;
+  animation: stat-counter 0.6s ease-out;
+}
+
+.hover-scale-lift {
+  @apply transition-all duration-300;
+}
+
+.hover-scale-lift:hover {
+  @apply shadow-xl;
+  animation: card-hover-lift 0.3s ease-out forwards;
+}
+
+.dashboard-gradient-default {
+  background: linear-gradient(135deg, 
+    hsl(var(--dashboard-gradient-1)), 
+    hsl(var(--dashboard-gradient-2))
+  );
+}
+
+.dashboard-gradient-professional {
+  background: linear-gradient(135deg, 
+    hsl(var(--dashboard-gradient-1)), 
+    hsl(var(--dashboard-gradient-3))
+  );
+}
+
+.dashboard-gradient-vendor {
+  background: linear-gradient(135deg, 
+    hsl(var(--dashboard-gradient-2)), 
+    hsl(var(--dashboard-gradient-3))
+  );
+}
+
+.dashboard-gradient-tenant {
+  background: linear-gradient(135deg, 
+    hsl(var(--dashboard-gradient-3)), 
+    hsl(var(--dashboard-gradient-1))
+  );
+}
+
+.glass-enhanced {
+  @apply backdrop-blur-xl bg-background/30 border border-border/50;
+  box-shadow: 0 8px 32px 0 hsl(var(--primary) / 0.1);
+}
+
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.1),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Animation Variants */
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-stagger {
+  animation: stagger-fade-in 0.6s ease-out;
+}
+
+/* Stagger delay utilities */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }

@@ -18,6 +18,8 @@ import { FeatureNotificationSystem } from '@/components/common/FeatureNotificati
 import { SEOHead } from '@/components/seo/SEOHead';
 import { RequestPopupNotification } from '@/components/staff/RequestPopupNotification';
 import { useNewRequestNotifications } from '@/hooks/useNewRequestNotifications';
+import { AnimatedBackground } from '@/components/common/AnimatedBackground';
+import { useStaggerAnimation } from '@/hooks/useScrollAnimation';
 interface RequestStats {
   total: number;
   pending: number;
@@ -28,6 +30,8 @@ const StaffDashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [acceptedOffers, setAcceptedOffers] = useState<Set<string>>(new Set());
+  const visibleStats = useStaggerAnimation(4, 100);
+  const visibleActions = useStaggerAnimation(5, 80);
 
   // Hooks
   const { offers, acceptOffer } = useRequestOffers();
@@ -78,7 +82,8 @@ const StaffDashboardPage = () => {
       {/* Real-time Task Completion Notifier */}
       <TaskCompletionNotifier />
       
-      <div className="w-full space-y-6 pb-20">
+      <div className="relative w-full space-y-6 pb-20">
+        <AnimatedBackground variant="professional" />
       {/* Feature Notification System */}
       <FeatureNotificationSystem />
       
@@ -88,7 +93,7 @@ const StaffDashboardPage = () => {
       </div>
 
       {/* Incoming Requests - Compact */}
-      <Card className="bg-card/50 backdrop-blur mb-6">
+      <Card className="bg-card/50 backdrop-blur mb-6 dashboard-card-animated">
         <CardHeader className="pb-3">
           <CardTitle className="text-foreground text-lg">Incoming Requests</CardTitle>
           <CardDescription>Tasks available for you to accept</CardDescription>
@@ -97,7 +102,7 @@ const StaffDashboardPage = () => {
           <div className="max-h-64 overflow-y-auto space-y-3">
             {offers.length === 0 && recentRequests.length === 0 ? <p className="text-muted-foreground text-center py-4">No incoming requests</p> : <>
                 {/* Show offers first (with Accept button) */}
-                {offers.slice(0, 5).map(offer => <div key={offer.id} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-colors">
+                {offers.slice(0, 5).map((offer, index) => <div key={offer.id} className="flex items-center justify-between p-3 bg-accent/50 rounded-lg hover:bg-accent/70 transition-all duration-300 animate-slide-in-left hover-scale-lift" style={{ animationDelay: `${index * 0.1}s` }}>
                     <div className="flex-1">
                       <h4 className="font-medium text-foreground mb-1">{offer.request.title}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -151,7 +156,7 @@ const StaffDashboardPage = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mb-8">
-        <Card className="bg-card/50 backdrop-blur">
+        <Card className={`bg-card/50 backdrop-blur hover-scale-lift stat-card-animated ${visibleStats.has(0) ? 'animate-stagger' : 'opacity-0'}`} style={{ animationDelay: '0s' }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -163,19 +168,19 @@ const StaffDashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 backdrop-blur">
+        <Card className={`bg-card/50 backdrop-blur hover-scale-lift stat-card-animated ${visibleStats.has(1) ? 'animate-stagger' : 'opacity-0'}`} style={{ animationDelay: '0.1s' }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
                 <p className="text-2xl font-bold text-destructive">{requestStats.pending}</p>
               </div>
-              <Clock className="h-8 w-8 text-destructive" />
+              <Clock className="h-8 w-8 text-destructive animate-pulse-glow" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 backdrop-blur">
+        <Card className={`bg-card/50 backdrop-blur hover-scale-lift stat-card-animated ${visibleStats.has(2) ? 'animate-stagger' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -187,7 +192,7 @@ const StaffDashboardPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 backdrop-blur">
+        <Card className={`bg-card/50 backdrop-blur hover-scale-lift stat-card-animated ${visibleStats.has(3) ? 'animate-stagger' : 'opacity-0'}`} style={{ animationDelay: '0.3s' }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -204,31 +209,51 @@ const StaffDashboardPage = () => {
       
 
       {/* Quick Actions - Streamlined */}
-      <Card className="bg-card/50 backdrop-blur mb-8">
+      <Card className="bg-card/50 backdrop-blur mb-8 dashboard-card-animated">
         
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4">
-            <Button onClick={() => navigate('/requests/new')} className="h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30">
+            <Button 
+              onClick={() => navigate('/requests/new')} 
+              className={`h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30 hover-scale-lift ${visibleActions.has(0) ? 'animate-stagger' : 'opacity-0'}`}
+              style={{ animationDelay: '0s' }}
+            >
               <Plus className="h-6 w-6 text-success mb-2" />
               <span className="text-sm">Raise Request</span>
             </Button>
             
-            <Button onClick={() => navigate('/staff/requests')} className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30">
+            <Button 
+              onClick={() => navigate('/staff/requests')} 
+              className={`h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30 hover-scale-lift ${visibleActions.has(1) ? 'animate-stagger' : 'opacity-0'}`}
+              style={{ animationDelay: '0.08s' }}
+            >
               <ClipboardList className="h-6 w-6 text-primary mb-2" />
               <span className="text-sm">My Requests</span>
             </Button>
             
-            <Button onClick={() => navigate('/staff/alerts')} className="h-20 flex flex-col bg-destructive/10 hover:bg-destructive/20 border border-destructive/30">
+            <Button 
+              onClick={() => navigate('/staff/alerts')} 
+              className={`h-20 flex flex-col bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 hover-scale-lift ${visibleActions.has(2) ? 'animate-stagger' : 'opacity-0'}`}
+              style={{ animationDelay: '0.16s' }}
+            >
               <AlertTriangle className="h-6 w-6 text-destructive mb-2" />
               <span className="text-sm">Active Alerts</span>
             </Button>
             
-            <Button onClick={() => navigate('/staff/performance')} className="h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30">
+            <Button 
+              onClick={() => navigate('/staff/performance')} 
+              className={`h-20 flex flex-col bg-success/10 hover:bg-success/20 border border-success/30 hover-scale-lift ${visibleActions.has(3) ? 'animate-stagger' : 'opacity-0'}`}
+              style={{ animationDelay: '0.24s' }}
+            >
               <Activity className="h-6 w-6 text-success mb-2" />
               <span className="text-sm">Performance</span>
             </Button>
             
-            <Button onClick={() => navigate('/staff/training')} className="h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30">
+            <Button 
+              onClick={() => navigate('/staff/training')} 
+              className={`h-20 flex flex-col bg-primary/10 hover:bg-primary/20 border border-primary/30 hover-scale-lift ${visibleActions.has(4) ? 'animate-stagger' : 'opacity-0'}`}
+              style={{ animationDelay: '0.32s' }}
+            >
               <GraduationCap className="h-6 w-6 text-primary mb-2" />
               <span className="text-sm">Training</span>
             </Button>

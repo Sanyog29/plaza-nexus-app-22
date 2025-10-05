@@ -14,12 +14,15 @@ import { ProfileErrorBoundary } from '@/components/ProfileErrorBoundary';
 import { ActivityFeed } from '@/components/profile/ActivityFeed';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { IncomingTasks } from '@/components/profile/IncomingTasks';
+import { AnimatedBackground } from '@/components/common/AnimatedBackground';
+import { useStaggerAnimation } from '@/hooks/useScrollAnimation';
 
 const ProfilePage = () => {
   const { user, signOut, isStaff, isAdmin, userRole, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { profile, isLoading, isProfileComplete, completionPercentage, updateProfile } = useProfile();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const visibleActions = useStaggerAnimation(8, 100);
 
   useEffect(() => {
     // Show onboarding only for tenant_manager users if profile is empty (no first/last name)
@@ -72,7 +75,8 @@ const ProfilePage = () => {
 
   return (
     <ProfileErrorBoundary onSignOut={signOut}>
-      <div className="w-full max-w-6xl mx-auto space-y-6">
+      <div className="relative w-full max-w-6xl mx-auto space-y-6">
+        <AnimatedBackground variant="default" />
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -100,7 +104,7 @@ const ProfilePage = () => {
             ) : (
               <div className="space-y-6">
                 {/* Profile Header */}
-                <Card className="p-6">
+                <Card className="p-6 dashboard-card-animated backdrop-blur-sm">
                   <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
                     <AvatarUpload
                       currentAvatarUrl={profile.avatar_url}
@@ -151,7 +155,7 @@ const ProfilePage = () => {
 
                 {/* Profile Completion - Only show for tenant_managers */}
                 {userRole === 'tenant_manager' && (
-                  <Card className="p-6">
+                  <Card className="p-6 dashboard-card-animated backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-white">Profile Completion</h3>
                       <span className="text-sm text-gray-400">{completionPercentage}%</span>
@@ -217,11 +221,12 @@ const ProfilePage = () => {
                 )}
 
                 {/* Quick Actions - Show for all authenticated users */}
-                <Card className="p-6">
+                <Card className="p-6 dashboard-card-animated backdrop-blur-sm">
                   <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                     <Button 
-                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                      className={`h-20 flex-col bg-card hover:bg-muted border hover-scale-lift ${visibleActions.has(0) ? 'animate-stagger' : 'opacity-0'}`}
+                      style={{ animationDelay: '0s' }}
                       onClick={() => navigate('/requests/new')}
                     >
                       <span className="text-plaza-blue text-xl mb-1">+</span>
@@ -229,7 +234,8 @@ const ProfilePage = () => {
                     </Button>
                     
                     <Button 
-                      className="h-20 flex-col bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                      className={`h-20 flex-col bg-card hover:bg-muted border hover-scale-lift ${visibleActions.has(1) ? 'animate-stagger' : 'opacity-0'}`}
+                      style={{ animationDelay: '0.1s' }}
                       onClick={() => navigate('/requests')}
                     >
                       <span className="text-plaza-blue text-xl mb-1">📋</span>

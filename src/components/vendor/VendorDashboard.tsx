@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { AnimatedBackground } from '@/components/common/AnimatedBackground';
+import { useStaggerAnimation } from '@/hooks/useScrollAnimation';
 import { 
   Package,
   TrendingUp,
@@ -44,6 +46,8 @@ interface PaymentData {
 
 export function VendorDashboard() {
   const { user } = useAuth();
+  const visibleStats = useStaggerAnimation(4, 120);
+  const visibleOrders = useStaggerAnimation(2, 150);
   
   // Mock data
   const [orders] = useState<Order[]>([
@@ -125,9 +129,11 @@ export function VendorDashboard() {
   ];
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="relative space-y-6 p-4">
+      <AnimatedBackground variant="vendor" />
+      
       {/* Header */}
-      <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20">
+      <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20 dashboard-card-animated backdrop-blur-sm shimmer-effect">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -146,7 +152,11 @@ export function VendorDashboard() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quickStats.map((stat, index) => (
-          <Card key={index}>
+          <Card 
+            key={index}
+            className={`hover-scale-lift stat-card-animated backdrop-blur-sm ${visibleStats.has(index) ? 'animate-stagger' : 'opacity-0'}`}
+            style={{ animationDelay: `${index * 0.12}s` }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
                 <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -172,7 +182,7 @@ export function VendorDashboard() {
         </TabsList>
 
         <TabsContent value="orders" className="space-y-4">
-          <Card>
+          <Card className="dashboard-card-animated backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
@@ -180,8 +190,12 @@ export function VendorDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {orders.map((order) => (
-                <div key={order.id} className="border rounded-lg p-4 space-y-3">
+              {orders.map((order, index) => (
+                <div 
+                  key={order.id} 
+                  className={`border rounded-lg p-4 space-y-3 hover-scale-lift transition-all duration-300 ${visibleOrders.has(index) ? 'animate-slide-in-left' : 'opacity-0'}`}
+                  style={{ animationDelay: `${index * 0.15}s` }}
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium">{order.orderNumber}</h3>
@@ -223,7 +237,7 @@ export function VendorDashboard() {
 
         <TabsContent value="finances" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+            <Card className="dashboard-card-animated backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-5 w-5" />
@@ -253,7 +267,7 @@ export function VendorDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="dashboard-card-animated backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />

@@ -25,10 +25,14 @@ import {
   Star
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { AnimatedBackground } from '@/components/common/AnimatedBackground';
+import { useStaggerAnimation } from '@/hooks/useScrollAnimation';
 
 export function MobileTenantDashboard() {
   const { user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const visibleStats = useStaggerAnimation(3, 150);
+  const visibleActions = useStaggerAnimation(4, 100);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -176,9 +180,11 @@ export function MobileTenantDashboard() {
   };
 
   return (
-    <div className="space-y-6 p-4 pb-24">
+    <div className="relative space-y-6 p-4 pb-24">
+      <AnimatedBackground variant="tenant" />
+      
       {/* Personalized Welcome Header */}
-      <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 border-primary/10 overflow-hidden relative">
+      <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 border-primary/10 overflow-hidden relative dashboard-card-animated backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
@@ -204,7 +210,11 @@ export function MobileTenantDashboard() {
       {/* Enhanced Quick Stats */}
       <div className="grid grid-cols-3 gap-3">
         {personalStats.map((stat, index) => (
-          <Card key={index} className="relative overflow-hidden">
+          <Card 
+            key={index} 
+            className={`relative overflow-hidden hover-scale-lift backdrop-blur-sm ${visibleStats.has(index) ? 'animate-stagger' : 'opacity-0'}`}
+            style={{ animationDelay: `${index * 0.15}s` }}
+          >
             <CardContent className="p-4">
               <div className={`inline-flex p-2 rounded-xl ${stat.bgColor} mb-3`}>
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -221,10 +231,10 @@ export function MobileTenantDashboard() {
       </div>
 
       {/* Smart Quick Actions */}
-      <Card>
+      <Card className="dashboard-card-animated backdrop-blur-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-accent">
+            <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-accent animate-pulse-glow">
               <Zap className="h-5 w-5 text-white" />
             </div>
             <span>Quick Actions</span>
@@ -237,7 +247,8 @@ export function MobileTenantDashboard() {
                 key={index}
                 variant="outline"
                 size="lg"
-                className="h-20 flex-col gap-2 p-4 border-muted hover:border-primary/20 group relative"
+                className={`h-20 flex-col gap-2 p-4 border-muted hover:border-primary/20 group relative hover-scale-lift transition-all duration-300 ${visibleActions.has(index) ? 'animate-stagger' : 'opacity-0'}`}
+                style={{ animationDelay: `${index * 0.1}s` }}
                 onClick={() => window.location.href = action.href}
               >
                 {action.popular && (
@@ -264,7 +275,7 @@ export function MobileTenantDashboard() {
       </Card>
 
       {/* Today's Schedule */}
-      <Card>
+      <Card className="dashboard-card-animated backdrop-blur-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -279,8 +290,12 @@ export function MobileTenantDashboard() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3">
-            {todaySchedule.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/30">
+            {todaySchedule.map((item, index) => (
+              <div 
+                key={item.id} 
+                className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-all duration-300 animate-slide-in-left hover-scale-lift"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="text-center min-w-[50px]">
                   <div className="text-sm font-semibold text-primary">{item.time}</div>
                 </div>
@@ -298,7 +313,7 @@ export function MobileTenantDashboard() {
       </Card>
 
       {/* Building Insights */}
-      <Card>
+      <Card className="dashboard-card-animated backdrop-blur-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3">
             <Activity className="h-5 w-5 text-primary" />
@@ -308,8 +323,12 @@ export function MobileTenantDashboard() {
         <CardContent className="pt-0">
           <div className="grid grid-cols-3 gap-4">
             {buildingInsights.map((insight, index) => (
-              <div key={index} className="text-center space-y-2">
-                <div className={`inline-flex p-2 rounded-lg ${getStatusColor(insight.status)}`}>
+              <div 
+                key={index} 
+                className="text-center space-y-2 animate-stagger"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                <div className={`inline-flex p-2 rounded-lg ${getStatusColor(insight.status)} transition-all duration-300 hover:scale-110 animate-pulse-glow`}>
                   <insight.icon className="h-4 w-4" />
                 </div>
                 <div className="text-sm font-semibold">{insight.value}</div>
@@ -321,7 +340,7 @@ export function MobileTenantDashboard() {
       </Card>
 
       {/* Recent Updates */}
-      <Card>
+      <Card className="dashboard-card-animated backdrop-blur-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -335,8 +354,12 @@ export function MobileTenantDashboard() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3">
-            {recentUpdates.map((update) => (
-              <div key={update.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+            {recentUpdates.map((update, index) => (
+              <div 
+                key={update.id} 
+                className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-all duration-300 animate-slide-in-left hover-scale-lift"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="p-2 rounded-lg bg-primary/10">
                   <update.icon className="h-4 w-4 text-primary" />
                 </div>
