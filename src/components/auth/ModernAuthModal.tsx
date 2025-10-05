@@ -248,14 +248,14 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
 
             {/* Email field */}
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white text-opacity-60" size={18} />
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white" size={18} />
               <Input
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="w-full p-3 pl-10 bg-white bg-opacity-5 border-0 rounded-xl text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               />
             </div>
 
