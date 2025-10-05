@@ -187,55 +187,50 @@ const LandingPage: React.FC = () => {
         {/* Benefits Section */}
         <section className="gradient-dark py-24">
           <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-8">
-                <h2 className="text-4xl md:text-5xl font-bold mb-8">
-                  Why Choose AUTOPILOT?
-                </h2>
-                <div className="space-y-6">
-                  <div className="glass-card-enhanced rounded-2xl p-6 hover-lift">
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle2 className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-2">Real-time Monitoring</h3>
-                        <p className="text-muted-foreground">
-                          Stay informed with instant updates on all building systems
-                        </p>
-                      </div>
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-4xl md:text-5xl font-bold mb-12 text-white">
+                Why Choose AUTOPILOT?
+              </h2>
+              <div className="space-y-6">
+                <div className="glass-card-enhanced rounded-2xl p-8 hover-lift">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="h-8 w-8 text-white" />
                     </div>
-                  </div>
-                  <div className="glass-card-enhanced rounded-2xl p-6 hover-lift">
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle2 className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-2">AI-Powered Insights</h3>
-                        <p className="text-muted-foreground">
-                          Get smart recommendations based on historical data
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="glass-card-enhanced rounded-2xl p-6 hover-lift">
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle2 className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-2">Easy Integration</h3>
-                        <p className="text-muted-foreground">
-                          Connect with your existing building management systems
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-3 text-white">Real-time Monitoring</h3>
+                      <p className="text-white/90 font-semibold text-lg">
+                        Stay informed with instant updates on all building systems
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="relative h-96 rounded-3xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-white/10 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 animate-pulse-gentle"></div>
+                <div className="glass-card-enhanced rounded-2xl p-8 hover-lift">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-3 text-white">AI-Powered Insights</h3>
+                      <p className="text-white/90 font-semibold text-lg">
+                        Get smart recommendations based on historical data
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="glass-card-enhanced rounded-2xl p-8 hover-lift">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-3 text-white">Easy Integration</h3>
+                      <p className="text-white/90 font-semibold text-lg">
+                        Connect with your existing building management systems
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
