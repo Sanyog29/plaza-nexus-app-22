@@ -104,7 +104,7 @@ const LandingPage: React.FC = () => {
         <section className="relative container mx-auto px-4 py-24 md:py-32 animate-slide-up">
           <div className="flex flex-col items-center text-center space-y-8">
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
-              Smart Fascility Management
+              Smart Facility Management
               <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mt-2">
                 Made Simple
               </span>
