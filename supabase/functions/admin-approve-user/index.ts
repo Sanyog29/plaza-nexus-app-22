@@ -55,15 +55,21 @@ serve(async (req: Request) => {
       throw new Error("Authentication failed");
     }
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from("profiles")
+    // Check if user is admin (using user_roles table)
+    const { data: adminRole, error: roleError } = await supabaseAdmin
+      .from("user_roles")
       .select("role")
-      .eq("id", user.id)
-      .single();
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
 
-    if (profileError || !profile || profile.role !== "admin") {
-      console.error("Permission denied for user:", user.id, profile?.role);
+    if (roleError) {
+      console.error("Error checking admin role:", roleError);
+      throw new Error("Failed to verify admin permissions");
+    }
+
+    if (!adminRole) {
+      console.error("Permission denied for user:", user.id);
       throw new Error("Only administrators can approve/reject users");
     }
 

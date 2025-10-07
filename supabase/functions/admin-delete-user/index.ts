@@ -56,14 +56,27 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if the user is an admin
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
+    // Check if the user is an admin (using user_roles table)
+    const { data: adminRole, error: roleError } = await supabaseAdmin
+      .from('user_roles')
       .select('role')
-      .eq('id', user.id)
-      .single();
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
 
-    if (profileError || profile?.role !== 'admin') {
+    if (roleError) {
+      console.error('Error checking admin role:', roleError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to verify admin permissions', details: roleError.message }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    if (!adminRole) {
+      console.error('Permission denied for user:', user.id);
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions. Admin access required.' }),
         { 
@@ -113,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
     // First, cascade delete all user data using our comprehensive function
     const { data: cascadeResult, error: cascadeError } = await supabaseAdmin.rpc(
       'admin_cascade_delete_user_data',
-      { target_user_id: user_id, calling_user_id: user.id }
+      { target_user_id: user_id }
     );
 
     if (cascadeError || !cascadeResult?.success) {
