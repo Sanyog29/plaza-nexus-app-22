@@ -33,7 +33,7 @@ export const StickyCartPanel: React.FC<StickyCartPanelProps> = ({
   const formatPrice = (price: number) => `₹${price.toFixed(0)}`;
 
   return (
-    <div className="fixed bottom-[72px] left-4 right-4 z-40 md:bottom-4">
+    <div className="fixed bottom-[72px] left-4 right-20 z-40 md:bottom-4 md:right-24">
       <Card className="shadow-lg border-2 bg-background">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
