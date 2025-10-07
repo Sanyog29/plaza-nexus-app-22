@@ -8822,6 +8822,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_approval_audit: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          new_status: string | null
+          old_status: string | null
+          performed_by: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          performed_by?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          performed_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_invitations: {
         Row: {
           created_at: string
@@ -11035,7 +11065,18 @@ export type Database = {
           total_revenue: number
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_admin: {
+        Args: { uid: string }
+        Returns: boolean
+      }
+      is_admin_secure: {
         Args: { uid: string }
         Returns: boolean
       }

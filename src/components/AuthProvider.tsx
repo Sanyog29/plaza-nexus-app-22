@@ -436,6 +436,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [checkUserRole]);
 
+  // Real-time subscription for profile updates (instant approval reflection)
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Profile updated in real-time:', payload);
+          const newProfile = payload.new as any;
+          
+          // Update approval status immediately
+          if (newProfile.approval_status && newProfile.approval_status !== approvalStatus) {
+            setApprovalStatus(newProfile.approval_status);
+            
+            if (newProfile.approval_status === 'approved') {
+              toast('Account Approved!', {
+                description: 'Your account has been approved. You now have full access.',
+              });
+            }
+          }
+          
+          // Update role states if changed
+          if (newProfile.role) {
+            updateRoleStates(
+              newProfile.role,
+              newProfile.user_category || 'default',
+              newProfile.specialization
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, approvalStatus, updateRoleStates]);
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut();

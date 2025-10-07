@@ -281,23 +281,26 @@ export const EnhancedUserManagement: React.FC = () => {
 
   const handleApproveUser = async (userId: string) => {
     try {
-      const { error } = await supabase.rpc('approve_user', {
+      const { data, error } = await supabase.rpc('approve_user', {
         target_user_id: userId,
         approver_id: (await supabase.auth.getUser()).data.user?.id
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || 'Failed to approve user');
+      }
 
       toast({
         title: "Success",
-        description: "User approved successfully",
+        description: "User approved successfully. They can now access the system.",
       });
 
-      fetchUsers();
+      await fetchUsers();
     } catch (error: any) {
+      console.error('Approval error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to approve user",
+        title: "Approval Failed",
+        description: error.message || "Failed to approve user. Please check your permissions.",
         variant: "destructive",
       });
     }
@@ -305,24 +308,27 @@ export const EnhancedUserManagement: React.FC = () => {
 
   const handleRejectUser = async (userId: string, reason: string = 'Rejected by admin') => {
     try {
-      const { error } = await supabase.rpc('reject_user', {
+      const { data, error } = await supabase.rpc('reject_user', {
         target_user_id: userId,
         approver_id: (await supabase.auth.getUser()).data.user?.id,
         reason: reason
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || 'Failed to reject user');
+      }
 
       toast({
         title: "Success",
-        description: "User rejected successfully",
+        description: "User rejected successfully.",
       });
 
-      fetchUsers();
+      await fetchUsers();
     } catch (error: any) {
+      console.error('Rejection error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to reject user",
+        title: "Rejection Failed",
+        description: error.message || "Failed to reject user. Please check your permissions.",
         variant: "destructive",
       });
     }

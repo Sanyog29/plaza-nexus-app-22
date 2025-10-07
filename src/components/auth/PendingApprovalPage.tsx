@@ -1,11 +1,87 @@
-import { Clock, Mail, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Clock, Mail, AlertCircle, RefreshCw, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const PendingApprovalPage = () => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isChecking, setIsChecking] = useState(false);
+
+  // Real-time subscription for instant approval detection
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`approval-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Profile approval status changed:', payload);
+          if (payload.new.approval_status === 'approved') {
+            toast({
+              title: 'Account Approved!',
+              description: 'Your account has been approved. Redirecting...',
+            });
+            setTimeout(() => navigate('/dashboard'), 1000);
+          } else if (payload.new.approval_status === 'rejected') {
+            toast({
+              title: 'Account Rejected',
+              description: 'Your account application was not approved.',
+              variant: 'destructive',
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, navigate, toast]);
+
+  const handleCheckStatus = async () => {
+    if (!user) return;
+    
+    setIsChecking(true);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('approval_status')
+      .eq('id', user.id)
+      .single();
+
+    setIsChecking(false);
+
+    if (profile?.approval_status === 'approved') {
+      toast({
+        title: 'Account Approved!',
+        description: 'Your account has been approved. Redirecting...',
+      });
+      setTimeout(() => navigate('/dashboard'), 1000);
+    } else if (profile?.approval_status === 'rejected') {
+      toast({
+        title: 'Account Rejected',
+        description: 'Your account application was not approved.',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Still Pending',
+        description: 'Your account is still awaiting approval.',
+      });
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -30,7 +106,7 @@ const PendingApprovalPage = () => {
               <div>
                 <p className="font-medium text-sm">What happens next?</p>
                 <p className="text-sm text-muted-foreground">
-                  An administrator will review your account and you'll receive an email notification once approved.
+                  An administrator will review your account and you'll be notified once approved. This page will automatically update.
                 </p>
               </div>
             </div>
@@ -44,13 +120,26 @@ const PendingApprovalPage = () => {
               </div>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleSignOut}
-          >
-            Sign Out
-          </Button>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleCheckStatus}
+              disabled={isChecking}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
+              Check Status
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex-1" 
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
