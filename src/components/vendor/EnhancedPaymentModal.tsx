@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, CreditCard, Smartphone, QrCode, ArrowLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -117,17 +117,16 @@ export const EnhancedPaymentModal: React.FC<EnhancedPaymentModalProps> = ({
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
             
-            <button onClick={onClose} className="absolute top-3 right-3 p-2 hover:bg-white/20 rounded-full transition-colors touch-manipulation" style={{
+            <button onClick={onClose} className="absolute top-3 right-3 p-2 hover:bg-white/20 rounded-full transition-colors touch-manipulation z-50" style={{
             minWidth: '44px',
             minHeight: '44px'
           }}>
               <X className="w-5 h-5" />
             </button>
             
-            <div className="relative z-10">
-              <h3 className="text-lg font-semibold mb-2">Order Invoice</h3>
-              
-            </div>
+            <DialogTitle className="relative z-10 text-lg font-semibold mb-2">
+              Order Invoice
+            </DialogTitle>
           </div>
 
           {/* Scrollable Content */}
