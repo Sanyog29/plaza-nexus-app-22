@@ -106,8 +106,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         itemCount,
       };
 
-      toast.success("Added to Cart", {
-        description: `${item.name} added to your cart.`,
+      toast.success(`${item.name} added to cart`, {
+        duration: 2000,
       });
 
       return { cart: newCart };
@@ -228,8 +228,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
-    toast.success("Cart Cleared", {
-      description: "All items have been removed from your cart.",
+    toast.success("Cart cleared", {
+      duration: 2000,
     });
   };
 
