@@ -96,16 +96,17 @@ const OrderCard: React.FC<OrderCardProps> = ({
   const updateOrderStatus = async (newStatus: string, notes?: string) => {
     setIsUpdating(true);
     try {
-      // Update order status
-      const { error: orderError } = await supabase
-        .from('cafeteria_orders')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', order.id);
+      const { data, error } = await supabase.functions.invoke('update-order-status', {
+        body: {
+          order_id: order.id,
+          new_status: newStatus,
+          notes: notes,
+        },
+      });
 
-      if (orderError) throw orderError;
+      if (error) {
+        throw new Error(error.message || 'Failed to update order status');
+      }
 
       // Add timeline entry
       const { error: timelineError } = await supabase
@@ -117,10 +118,15 @@ const OrderCard: React.FC<OrderCardProps> = ({
           timestamp: new Date().toISOString()
         }]);
 
-      if (timelineError) throw timelineError;
+      if (timelineError) {
+        console.error('Timeline entry error:', timelineError);
+      }
 
       onStatusUpdate(order.id, newStatus);
-      toast({ title: `Order ${newStatus}!` });
+      toast({ 
+        title: `Order ${newStatus}!`,
+        description: data?.message || `Order status updated successfully`
+      });
     } catch (error: any) {
       console.error('Error updating order status:', error);
       toast({
