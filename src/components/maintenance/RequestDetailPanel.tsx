@@ -63,10 +63,20 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         .maybeSingle();
 
       if (error) throw error;
-      setRequest(data);
-      setUpdatedStatus(data.status);
-      setUpdatedAssignee(data.assigned_to);
-      setUpdatedPriority(data.priority);
+      
+      // Process data to prefer main_category_id over category_id
+      if (data) {
+        const processedData = {
+          ...data,
+          main_categories: (data as any).main_categories || (data as any).main_categories_fallback
+        };
+        setRequest(processedData);
+        setUpdatedStatus(processedData.status);
+        setUpdatedAssignee(processedData.assigned_to);
+        setUpdatedPriority(processedData.priority);
+      } else {
+        setRequest(data);
+      }
     } catch (error: any) {
       toast({
         title: "Error fetching request details",

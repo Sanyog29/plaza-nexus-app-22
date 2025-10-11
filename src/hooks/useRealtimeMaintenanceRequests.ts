@@ -10,6 +10,7 @@ interface MaintenanceRequest {
   priority: string;
   assigned_to?: string;
   completed_at?: string;
+  sla_breach_at?: string;
 }
 
 interface RequestStats {
@@ -34,18 +35,19 @@ export const useRealtimeMaintenanceRequests = () => {
   const calculateStats = (requests: MaintenanceRequest[]): RequestStats => {
     const now = new Date();
     return requests.reduce(
-      (acc, req: any) => {
+      (acc, req) => {
         acc.total++;
         if (req.status === 'pending') acc.pending++;
         else if (req.status === 'in_progress') acc.inProgress++;
         else if (req.status === 'completed') acc.completed++;
         
-        // Check if overdue
-        if (!['completed', 'cancelled'].includes(req.status) && 
-            req.sla_breach_at && 
-            new Date(req.sla_breach_at) < now) {
-          acc.overdue++;
+        // Calculate overdue: not completed/cancelled AND past SLA
+        if (!['completed', 'cancelled'].includes(req.status) && req.sla_breach_at) {
+          if (new Date(req.sla_breach_at) < now) {
+            acc.overdue++;
+          }
         }
+        
         return acc;
       },
       { total: 0, pending: 0, inProgress: 0, completed: 0, overdue: 0 }

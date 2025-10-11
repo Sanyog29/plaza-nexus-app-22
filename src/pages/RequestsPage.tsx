@@ -29,6 +29,9 @@ interface MaintenanceRequest {
     name: string;
     icon: string;
   };
+  maintenance_processes?: {
+    name: string;
+  };
   reporter?: {
     first_name?: string;
     last_name?: string;
@@ -105,9 +108,11 @@ const RequestsPage = () => {
             name,
             icon
           ),
-          maintenance_processes (
-            name
+          main_categories_fallback:main_categories!maintenance_requests_category_id_fkey (
+            name,
+            icon
           ),
+          maintenance_processes(name),
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
@@ -117,14 +122,16 @@ const RequestsPage = () => {
 
       if (error) throw error;
 
-      // Process the data to handle the array structure from Supabase
+      // Process the data to prefer main_category_id over category_id
       const processedData = (data || []).map(request => {
-        const categoryArray = request.main_categories as any;
+        const mainCategory = request.main_categories || request.main_categories_fallback;
+        const categoryData = Array.isArray(mainCategory) && mainCategory.length > 0 
+          ? mainCategory[0]
+          : mainCategory || undefined;
+        
         return {
           ...request,
-          main_categories: Array.isArray(categoryArray) && categoryArray.length > 0 
-            ? categoryArray[0]
-            : categoryArray || undefined
+          main_categories: categoryData
         };
       });
 
@@ -367,6 +374,11 @@ const RequestsPage = () => {
                       <p className="text-sm text-muted-foreground mt-1">
                         {request.main_categories?.name || 'General'}
                       </p>
+                      {request.maintenance_processes?.name && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Process: {request.maintenance_processes.name}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground mt-1">{request.location}</p>
                       <div className="mt-2 space-y-1">
                         <p className="text-xs text-muted-foreground">
