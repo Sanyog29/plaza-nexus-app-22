@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreateProcessInput, MaintenanceProcess } from '@/hooks/useProcesses';
 
 interface AddProcessFormProps {
@@ -19,7 +19,7 @@ export function AddProcessForm({
   isSubmitting = false 
 }: AddProcessFormProps) {
   const [name, setName] = useState(editingProcess?.name || '');
-  const [description, setDescription] = useState(editingProcess?.description || '');
+  const [floor, setFloor] = useState(editingProcess?.description || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +28,11 @@ export function AddProcessForm({
 
     await onSubmit({
       name: name.trim(),
-      description: description.trim() || undefined,
+      description: floor || undefined,
     });
 
     setName('');
-    setDescription('');
+    setFloor('');
   };
 
   return (
@@ -51,16 +51,21 @@ export function AddProcessForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="process-description">Description</Label>
-        <Textarea
-          id="process-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter process description (optional)..."
-          rows={3}
-          maxLength={500}
-          disabled={isSubmitting}
-        />
+        <Label htmlFor="process-floor">Floor</Label>
+        <Select value={floor} onValueChange={setFloor} disabled={isSubmitting}>
+          <SelectTrigger id="process-floor">
+            <SelectValue placeholder="Select floor (optional)..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Ground Floor">Ground Floor</SelectItem>
+            <SelectItem value="1st Floor">1st Floor</SelectItem>
+            <SelectItem value="2nd Floor">2nd Floor</SelectItem>
+            <SelectItem value="3rd Floor">3rd Floor</SelectItem>
+            <SelectItem value="4th Floor">4th Floor</SelectItem>
+            <SelectItem value="5th Floor">5th Floor</SelectItem>
+            <SelectItem value="Basement">Basement</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex justify-end gap-2">
