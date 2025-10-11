@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Plus,
   Wrench,
@@ -11,10 +12,12 @@ import {
   ClipboardList,
   BarChart3,
   Zap,
-  Settings
+  Settings,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProcessManagementDialog } from '@/components/maintenance/ProcessManagementDialog';
+import { BulkRequestImport } from '@/components/maintenance/BulkRequestImport';
 
 interface QuickActionsProps {
   userRole: 'admin' | 'staff' | 'tenant';
@@ -23,14 +26,15 @@ interface QuickActionsProps {
 export function QuickActions({ userRole }: QuickActionsProps) {
   const navigate = useNavigate();
   const [showProcessDialog, setShowProcessDialog] = useState(false);
+  const [showBulkImportDialog, setShowBulkImportDialog] = useState(false);
 
   const getActions = () => {
     switch (userRole) {
       case 'admin':
         return [
           { label: 'New Request', icon: Plus, action: () => navigate('/requests/new'), color: 'bg-blue-500' },
+          { label: 'Bulk Import', icon: FileSpreadsheet, action: () => setShowBulkImportDialog(true), color: 'bg-green-500' },
           { label: 'Manage Processes', icon: Settings, action: () => setShowProcessDialog(true), color: 'bg-purple-500' },
-          { label: 'New User', icon: Users, action: () => navigate('/admin/users/new'), color: 'bg-green-500' },
           { label: 'View Reports', icon: BarChart3, action: () => navigate('/admin/analytics'), color: 'bg-orange-500' },
         ];
       case 'staff':
@@ -83,6 +87,15 @@ export function QuickActions({ userRole }: QuickActionsProps) {
         open={showProcessDialog} 
         onOpenChange={setShowProcessDialog} 
       />
+
+      <Dialog open={showBulkImportDialog} onOpenChange={setShowBulkImportDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Bulk Import Maintenance Requests</DialogTitle>
+          </DialogHeader>
+          <BulkRequestImport onComplete={() => setShowBulkImportDialog(false)} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -3493,6 +3493,48 @@ export type Database = {
           },
         ]
       }
+      maintenance_request_bulk_uploads: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_summary: Json | null
+          failed_records: number | null
+          filename: string
+          id: string
+          success_summary: Json | null
+          successful_records: number | null
+          total_records: number | null
+          upload_status: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_summary?: Json | null
+          failed_records?: number | null
+          filename: string
+          id?: string
+          success_summary?: Json | null
+          successful_records?: number | null
+          total_records?: number | null
+          upload_status?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_summary?: Json | null
+          failed_records?: number | null
+          filename?: string
+          id?: string
+          success_summary?: Json | null
+          successful_records?: number | null
+          total_records?: number | null
+          upload_status?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       maintenance_request_feedback: {
         Row: {
           communication_rating: number | null
@@ -11275,6 +11317,10 @@ export type Database = {
       }
       admin_backfill_profiles_from_auth: {
         Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      admin_bulk_create_maintenance_requests: {
+        Args: { requests_data: Json; upload_id: string }
         Returns: Json
       }
       admin_bulk_create_users: {
