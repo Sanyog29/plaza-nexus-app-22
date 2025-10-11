@@ -31,6 +31,8 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedProcess, setSelectedProcess] = useState('');
+  const [processes, setProcesses] = useState<any[]>([]);
   const [location, setLocation] = useState('');
   const [priority, setPriority] = useState<RequestPriority>('medium');
   const [estimatedTime, setEstimatedTime] = useState(120);
@@ -100,6 +102,7 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
           title,
           description,
           category_id: selectedCategory,
+          process_id: selectedProcess || null,
           location,
           reported_by: userId,
           priority,
@@ -135,6 +138,19 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
   const handleFilesChange = (files: File[]) => {
     setAttachmentFiles(files);
   };
+
+  // Fetch processes
+  React.useEffect(() => {
+    const fetchProcesses = async () => {
+      const { data } = await supabase
+        .from('maintenance_processes')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      setProcesses(data || []);
+    };
+    fetchProcesses();
+  }, []);
 
   // Update estimated time based on priority
   React.useEffect(() => {
@@ -204,6 +220,22 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
         isLoading={isLoading}
         disabled={submitting}
       />
+
+      <div className="space-y-2">
+        <Label htmlFor="process">Process (Optional)</Label>
+        <Select value={selectedProcess} onValueChange={setSelectedProcess} disabled={isLoading || submitting}>
+          <SelectTrigger className="bg-card border-gray-600">
+            <SelectValue placeholder="Select a process..." />
+          </SelectTrigger>
+          <SelectContent>
+            {processes.map((process) => (
+              <SelectItem key={process.id} value={process.id}>
+                {process.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="priority">Priority *</Label>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,9 +10,11 @@ import {
   Shield,
   ClipboardList,
   BarChart3,
-  Zap
+  Zap,
+  Settings
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ProcessManagementDialog } from '@/components/maintenance/ProcessManagementDialog';
 
 interface QuickActionsProps {
   userRole: 'admin' | 'staff' | 'tenant';
@@ -20,14 +22,15 @@ interface QuickActionsProps {
 
 export function QuickActions({ userRole }: QuickActionsProps) {
   const navigate = useNavigate();
+  const [showProcessDialog, setShowProcessDialog] = useState(false);
 
   const getActions = () => {
     switch (userRole) {
       case 'admin':
         return [
           { label: 'New Request', icon: Plus, action: () => navigate('/requests/new'), color: 'bg-blue-500' },
+          { label: 'Manage Processes', icon: Settings, action: () => setShowProcessDialog(true), color: 'bg-purple-500' },
           { label: 'New User', icon: Users, action: () => navigate('/admin/users/new'), color: 'bg-green-500' },
-          { label: 'Add Asset', icon: Building, action: () => navigate('/admin/assets/new'), color: 'bg-purple-500' },
           { label: 'View Reports', icon: BarChart3, action: () => navigate('/admin/analytics'), color: 'bg-orange-500' },
         ];
       case 'staff':
@@ -50,29 +53,36 @@ export function QuickActions({ userRole }: QuickActionsProps) {
   const actions = getActions();
 
   return (
-    <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/20">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-        <Zap className="h-4 w-4 text-yellow-500" />
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-2">
-          {actions.map((action, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="sm"
-              onClick={action.action}
-              className="flex flex-col items-center gap-1 h-auto p-3 hover:shadow-md transition-all duration-200"
-            >
-              <div className={`p-2 rounded-lg ${action.color} text-white`}>
-                <action.icon className="h-4 w-4" />
-              </div>
-              <span className="text-xs font-medium">{action.label}</span>
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-yellow-500/20">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+          <Zap className="h-4 w-4 text-yellow-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2">
+            {actions.map((action, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={action.action}
+                className="flex flex-col items-center gap-1 h-auto p-3 hover:shadow-md transition-all duration-200"
+              >
+                <div className={`p-2 rounded-lg ${action.color} text-white`}>
+                  <action.icon className="h-4 w-4" />
+                </div>
+                <span className="text-xs font-medium">{action.label}</span>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <ProcessManagementDialog 
+        open={showProcessDialog} 
+        onOpenChange={setShowProcessDialog} 
+      />
+    </>
   );
 }

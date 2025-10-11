@@ -79,7 +79,8 @@ const RequestDetailsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories!maintenance_requests_category_id_fkey(name)
+          main_categories!maintenance_requests_category_id_fkey(name),
+          maintenance_processes(name, description)
         `)
         .eq('id', sanitizedRequestId)
         .maybeSingle();

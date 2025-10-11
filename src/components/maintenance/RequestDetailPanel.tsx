@@ -56,7 +56,8 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           *,
           main_categories!maintenance_requests_category_id_fkey(name),
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email),
+          maintenance_processes(name, description)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -254,6 +255,13 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                 <div>
                   <p className="text-sm text-foreground mb-1">Category</p>
                   <p className="font-medium text-foreground">{request.main_categories?.name || 'Uncategorized'}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-foreground mb-1">Process</p>
+                  <Badge variant="outline" className="bg-primary/20 text-primary">
+                    {request.maintenance_processes?.name || 'No Process Assigned'}
+                  </Badge>
                 </div>
                 
                 <div>

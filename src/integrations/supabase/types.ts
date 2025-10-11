@@ -3424,6 +3424,75 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_processes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_processes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "monthly_leaderboard"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_processes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_processes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_processes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_decrypted_data"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_processes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_request_feedback: {
         Row: {
           communication_rating: number | null
@@ -3516,6 +3585,7 @@ export type Database = {
           main_category_id: string | null
           next_escalation_at: string | null
           priority: Database["public"]["Enums"]["request_priority"]
+          process_id: string | null
           reported_by: string | null
           resolution_sla_at: string | null
           response_sla_at: string | null
@@ -3564,6 +3634,7 @@ export type Database = {
           main_category_id?: string | null
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
+          process_id?: string | null
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -3612,6 +3683,7 @@ export type Database = {
           main_category_id?: string | null
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
+          process_id?: string | null
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -3695,6 +3767,13 @@ export type Database = {
             columns: ["main_category_id"]
             isOneToOne: false
             referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_processes"
             referencedColumns: ["id"]
           },
           {
