@@ -227,7 +227,7 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
           <SelectTrigger className="bg-card border-gray-600">
             <SelectValue placeholder="Select a process..." />
           </SelectTrigger>
-          <SelectContent className="bg-card border-gray-600 z-50">
+          <SelectContent className="bg-card border-gray-600">
             {processes.map((process) => (
               <SelectItem key={process.id} value={process.id} className="hover:bg-gray-800">
                 {process.name}
