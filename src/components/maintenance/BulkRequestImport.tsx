@@ -86,8 +86,34 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
 
   const mapProcess = (processName: string): string | undefined => {
     if (processName.toLowerCase().trim() === 'na') return undefined;
-    const normalized = processName.toLowerCase().trim();
-    const process = processes.find(p => p.name.toLowerCase() === normalized);
+    
+    // Aggressive normalization
+    const normalized = processName
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' '); // Normalize whitespace
+    
+    console.log('🔍 Mapping process:', { original: processName, normalized, availableProcesses: processes.map(p => p.name) });
+    
+    // Try exact match first
+    let process = processes.find(p => 
+      p.name.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ') === normalized
+    );
+    
+    // Try partial match if exact match fails
+    if (!process) {
+      process = processes.find(p => 
+        p.name.toLowerCase().includes(normalized) || normalized.includes(p.name.toLowerCase())
+      );
+    }
+    
+    if (process) {
+      console.log('✅ Process matched:', process.name);
+    } else {
+      console.warn('❌ Process not found:', processName, 'Available:', processes.map(p => p.name).join(', '));
+    }
+    
     return process?.id;
   };
 
@@ -176,10 +202,11 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
         // Map process
         const processId = row.Process ? mapProcess(row.Process) : undefined;
         if (row.Process && row.Process.toLowerCase() !== 'na' && !processId) {
+          const availableProcesses = processes.map(p => p.name).join(', ');
           errors.push({ 
             row: rowNum, 
             field: 'Process', 
-            message: `Process "${row.Process}" not found in system`,
+            message: `Process "${row.Process}" not found. Available processes: ${availableProcesses}`,
             value: row.Process 
           });
         }
@@ -525,10 +552,13 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
               </Button>
               <Button 
                 onClick={handleImport} 
-                disabled={parsedData.length === 0 || processing}
+                disabled={parsedData.length === 0 || processing || validationErrors.length > 0}
                 className="flex-1"
               >
-                Import {parsedData.length} Requests
+                {validationErrors.length > 0 
+                  ? `Fix ${validationErrors.length} Errors to Import` 
+                  : `Import ${parsedData.length} Requests`
+                }
               </Button>
             </div>
           </CardContent>
