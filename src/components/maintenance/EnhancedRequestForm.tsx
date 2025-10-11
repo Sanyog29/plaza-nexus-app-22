@@ -82,10 +82,10 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedCategory || !title || !description || !location) {
+    if (!selectedCategory || !title || !location) {
       toast({
         title: "Error",
-        description: "Please fill all required fields",
+        description: "Please fill all required fields (Title, Location, Category)",
         variant: "destructive",
       });
       return;
@@ -171,10 +171,10 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="description">Description *</Label>
+        <Label htmlFor="description">Description (Optional)</Label>
         <Textarea
           id="description"
-          placeholder="Provide details about your request..."
+          placeholder="Provide additional details about your request (optional)..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
