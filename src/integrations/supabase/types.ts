@@ -10956,6 +10956,10 @@ export type Database = {
         Args: { p_end_date: string; p_start_date: string }
         Returns: Json
       }
+      calculate_business_hours: {
+        Args: { end_time: string; start_time: string }
+        Returns: number
+      }
       calculate_cross_module_kpis: {
         Args: Record<PropertyKey, never>
         Returns: undefined
