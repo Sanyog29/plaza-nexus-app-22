@@ -349,8 +349,6 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
         title: 'Import Complete',
         description: `Successfully imported ${allResults.success_count} requests. ${allResults.error_count} failed.`,
       });
-
-      if (onComplete) onComplete();
     } catch (error: any) {
       console.error('Import error:', error);
       toast({
@@ -571,8 +569,11 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
                 <Download className="h-4 w-4 mr-2" />
                 Download Results
               </Button>
-              <Button onClick={reset} className="flex-1">
+              <Button onClick={reset} variant="outline" className="flex-1">
                 Import Another File
+              </Button>
+              <Button onClick={onComplete} className="flex-1">
+                Close
               </Button>
             </div>
           </CardContent>
