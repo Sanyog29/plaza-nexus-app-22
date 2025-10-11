@@ -171,15 +171,7 @@ const AdminRequestsPage = () => {
 
     setIsDeleting(true);
     try {
-      // Check if request can be deleted (only pending requests)
-      if (requestToDelete.status !== 'pending') {
-        toast({
-          title: "Cannot delete request",
-          description: "Only pending requests can be deleted",
-          variant: "destructive",
-        });
-        return;
-      }
+      // Proceed with soft delete for any status
 
       // Soft delete the request by setting deleted_at timestamp
       const { error } = await supabase

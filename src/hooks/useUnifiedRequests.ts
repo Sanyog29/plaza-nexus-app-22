@@ -277,44 +277,30 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     if (!user) return false;
 
     try {
-      // Check if the request can be deleted (must be pending)
+      // Fetch minimal data for permission check
       const { data: request, error: fetchError } = await supabase
         .from('maintenance_requests')
-        .select('status, reported_by')
+        .select('reported_by')
         .eq('id', requestId)
         .single();
 
       if (fetchError) throw fetchError;
 
-      // Validate deletion is allowed
-      if (request.status !== 'pending') {
-        toast.error('Only pending requests can be deleted');
-        return false;
-      }
-
-      // For non-staff users, ensure they can only delete their own requests
+      // Non-staff users can only delete their own requests
       if (!isStaff && request.reported_by !== user.id) {
         toast.error('You can only delete your own requests');
         return false;
       }
 
-      // Delete attachments first (they should cascade but let's be explicit)
-      await supabase
-        .from('request_attachments')
-        .delete()
-        .eq('request_id', requestId);
-
-      // Delete comments
-      await supabase
-        .from('request_comments')
-        .delete()
-        .eq('request_id', requestId);
-
-      // Delete the request
+      // Soft delete the request
       const { error } = await supabase
         .from('maintenance_requests')
-        .delete()
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: user.id
+        })
         .eq('id', requestId);
+
 
       if (error) throw error;
 
