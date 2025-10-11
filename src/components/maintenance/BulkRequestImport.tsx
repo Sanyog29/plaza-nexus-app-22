@@ -36,7 +36,7 @@ interface ParsedRequest {
   building_floor_id?: string;
   building_area_id?: string;
   process_id?: string;
-  category_id?: string;
+  main_category_id?: string;
   created_at?: string;
 }
 
@@ -50,7 +50,7 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
   const [results, setResults] = useState<any>(null);
   const [floors, setFloors] = useState<any[]>([]);
   const [processes, setProcesses] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [mainCategories, setMainCategories] = useState<any[]>([]);
 
   React.useEffect(() => {
     loadReferenceData();
@@ -60,12 +60,12 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
     const [floorsRes, processesRes, categoriesRes] = await Promise.all([
       supabase.from('building_floors').select('id, name').eq('is_active', true),
       supabase.from('maintenance_processes').select('id, name').eq('is_active', true),
-      supabase.from('maintenance_categories').select('id, name')
+      supabase.from('main_categories').select('id, name')
     ]);
 
     if (floorsRes.data) setFloors(floorsRes.data);
     if (processesRes.data) setProcesses(processesRes.data);
-    if (categoriesRes.data) setCategories(categoriesRes.data);
+    if (categoriesRes.data) setMainCategories(categoriesRes.data);
   };
 
   const parseDate = (dateStr: string): string | null => {
@@ -93,21 +93,27 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
 
   const inferCategory = (description: string): string | undefined => {
     const keywords: Record<string, string[]> = {
-      'electrical': ['wiring', 'wire', 'electrical', 'switch', 'board', 'power'],
-      'hvac': ['ac', 'temperature', 'cooling', 'heating', 'ventilation'],
-      'plumbing': ['water', 'tap', 'leak', 'drainage', 'washroom', 'toilet'],
-      'cleaning': ['cleaning', 'trash', 'garbage', 'dirty'],
-      'safety': ['fire', 'extinguisher', 'emergency', 'safety'],
+      'Electrical & Lighting': ['wiring', 'wire', 'electrical', 'switch', 'board', 'power', 'light'],
+      'HVAC & Air Quality': ['ac', 'temperature', 'cooling', 'heating', 'ventilation', 'hvac'],
+      'Plumbing & Washrooms': ['water', 'tap', 'leak', 'drainage', 'washroom', 'toilet', 'plumbing'],
+      'Housekeeping & Cleaning': ['cleaning', 'trash', 'garbage', 'dirty'],
+      'Health & Safety': ['fire', 'extinguisher', 'emergency', 'safety'],
+      'Security & Access Control': ['access', 'security', 'door', 'lock'],
     };
 
     const desc = description.toLowerCase();
     for (const [categoryName, keywordList] of Object.entries(keywords)) {
       if (keywordList.some(kw => desc.includes(kw))) {
-        const category = categories.find(c => c.name.toLowerCase().includes(categoryName));
-        return category?.id;
+        const category = mainCategories.find(c => 
+          c.name === categoryName || c.name.toLowerCase().includes(categoryName.toLowerCase())
+        );
+        if (category) return category.id;
       }
     }
-    return undefined;
+    
+    // Default to 'Other / General' if no match
+    const otherCategory = mainCategories.find(c => c.name === 'Other / General');
+    return otherCategory?.id;
   };
 
   const inferPriority = (description: string): 'urgent' | 'high' | 'medium' | 'low' => {
@@ -179,9 +185,10 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
         }
 
         // Build location from wing and location
+        const locationParts = [row.Wing, row.Location].filter(Boolean);
         const location = row.Wing?.toLowerCase() === 'whole floor' 
-          ? row.Location 
-          : `${row.Wing} - ${row.Location}`;
+          ? row.Location || '' 
+          : locationParts.join(' - ');
 
         // Infer category and priority
         const categoryId = row['Issue Description'] ? inferCategory(row['Issue Description']) : undefined;
@@ -203,7 +210,7 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
             priority,
             building_floor_id: floorId,
             process_id: processId,
-            category_id: categoryId,
+            main_category_id: categoryId,
             created_at: parsedDate || undefined,
           });
         }
@@ -332,12 +339,15 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
 
         if (error) throw error;
 
-        // Aggregate results (safely handle Json type)
+        // Aggregate results (map SQL function response to UI expectations)
         const resultData = data as any;
-        allResults.success_count += resultData?.success_count || 0;
-        allResults.error_count += resultData?.error_count || 0;
-        allResults.success_results = [...allResults.success_results, ...(resultData?.success_results || [])];
-        allResults.error_results = [...allResults.error_results, ...(resultData?.error_results || [])];
+        const inserted = resultData?.inserted_count ?? 0;
+        const failed = resultData?.failed_count ?? (Array.isArray(resultData?.error_details) ? resultData.error_details.length : 0);
+        const errors = Array.isArray(resultData?.error_details) ? resultData.error_details : [];
+        
+        allResults.success_count += inserted;
+        allResults.error_count += failed;
+        allResults.error_results = [...allResults.error_results, ...errors];
 
         setProgress(((i + 1) / batches.length) * 100);
       }
@@ -398,12 +408,12 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {['upload', 'preview', 'processing', 'complete'].map((s, i) => (
-            <React.Fragment key={s}>
+            <span key={s} className="contents">
               {i > 0 && <div className="h-px w-8 bg-border" />}
               <Badge variant={step === s ? 'default' : 'outline'} className="capitalize">
                 {s}
               </Badge>
-            </React.Fragment>
+            </span>
           ))}
         </div>
       </div>
