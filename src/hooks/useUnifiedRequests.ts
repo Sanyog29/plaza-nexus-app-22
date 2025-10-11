@@ -91,7 +91,8 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
             first_name,
             last_name
           )
-        `, { count: 'exact' });
+        `, { count: 'exact' })
+        .is('deleted_at', null); // Exclude soft-deleted requests
 
       // Apply role-based filtering
       if (!isStaff) {
