@@ -286,6 +286,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
 
   const quickActionItems = [
     { title: 'New Request', url: '/requests/new', icon: Plus },
+    { title: 'Manage Processes', url: '/admin/quick-actions', icon: Cog },
     { title: 'Emergency Alert', url: '/alerts/emergency', icon: Bell },
     { title: 'Quick Report', url: '/reports/quick', icon: FileText },
     { title: 'System Status', url: '/admin/system-health', icon: Activity }
@@ -425,7 +426,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
                 </Button>
               </div>
               <div className="grid grid-cols-2 gap-1">
-                {quickActionItems.slice(0, 4).map((action) => (
+                {quickActionItems.slice(0, 6).map((action) => (
                   <NavLink
                     key={action.url}
                     to={action.url}
