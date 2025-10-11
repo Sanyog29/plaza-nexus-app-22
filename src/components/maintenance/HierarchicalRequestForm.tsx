@@ -24,6 +24,7 @@ const formSchema = z.object({
   customIssueType: z.string().optional(),
   buildingAreaId: z.string().min(1, 'Please select an area'),
   buildingFloorId: z.string().min(1, 'Please select a floor'),
+  processId: z.string().optional(),
   priority: z.enum(['urgent', 'high', 'medium', 'low', 'critical']),
   is_crisis: z.boolean().optional()
 }).refine((data) => {
@@ -166,6 +167,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   const [availableIssueTypes, setAvailableIssueTypes] = useState<IssueTypeMapping[]>([]);
   const [buildingAreas, setBuildingAreas] = useState<BuildingArea[]>([]);
   const [buildingFloors, setBuildingFloors] = useState<BuildingFloor[]>([]);
+  const [processes, setProcesses] = useState<any[]>([]);
   const [slaInfo, setSlaInfo] = useState<SLAInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -186,6 +188,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       customIssueType: '',
       buildingAreaId: '',
       buildingFloorId: '',
+      processId: '',
       priority: 'medium',
       is_crisis: false
     }
@@ -218,10 +221,11 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       try {
         setIsLoadingCategories(true);
         
-        const [categoriesResult, areasResult, floorsResult] = await Promise.all([
+        const [categoriesResult, areasResult, floorsResult, processesResult] = await Promise.all([
           supabase.from('main_categories').select('*').eq('is_active', true).order('sort_order'),
           supabase.from('building_areas').select('*').eq('is_active', true).order('sort_order'),
-          supabase.from('building_floors').select('*').eq('is_active', true).order('sort_order')
+          supabase.from('building_floors').select('*').eq('is_active', true).order('sort_order'),
+          supabase.from('maintenance_processes').select('*').eq('is_active', true).order('display_order')
         ]);
 
         if (categoriesResult.error) throw categoriesResult.error;
@@ -231,6 +235,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         setMainCategories(categoriesResult.data || []);
         setBuildingAreas(areasResult.data || []);
         setBuildingFloors(floorsResult.data || []);
+        setProcesses(processesResult.data || []);
       } catch (error: any) {
         toast({
           title: "Error loading form data",
@@ -408,6 +413,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         issue_type: finalIssueType,
         building_area_id: data.buildingAreaId,
         building_floor_id: data.buildingFloorId,
+        process_id: data.processId || null,
         priority: safePriority,
         status: 'pending' as const,
         reported_by: user.id,
@@ -639,6 +645,37 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                         {buildingFloors.map((floor) => (
                           <SelectItem key={floor.id} value={floor.id}>
                             {floor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Process */}
+              <FormField
+                control={form.control}
+                name="processId"
+                render={({ field }) => (
+                  <FormItem className="col-span-1 md:col-span-2">
+                    <FormLabel>Process (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Select process..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        {processes.map((process) => (
+                          <SelectItem key={process.id} value={process.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{process.name}</span>
+                              {process.description && (
+                                <span className="text-xs text-muted-foreground">{process.description}</span>
+                              )}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
