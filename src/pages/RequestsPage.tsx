@@ -221,21 +221,13 @@ const RequestsPage = () => {
     setDeleteDialog(prev => ({ ...prev, loading: true }));
     
     try {
-      // Delete attachments and comments first
-      await supabase
-        .from('request_attachments')
-        .delete()
-        .eq('request_id', deleteDialog.request.id);
-
-      await supabase
-        .from('request_comments')
-        .delete()
-        .eq('request_id', deleteDialog.request.id);
-
-      // Delete the request
+      // Soft delete the request by setting deleted_at timestamp
       const { error } = await supabase
         .from('maintenance_requests')
-        .delete()
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: user.id
+        })
         .eq('id', deleteDialog.request.id);
 
       if (error) throw error;
@@ -419,19 +411,19 @@ const RequestsPage = () => {
                         </Button>
                       </Link>
                       
-                      {request.status === 'pending' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setDeleteDialog({ open: true, request, loading: false });
-                          }}
-                          className="text-destructive hover:text-destructive/80 border-destructive/20 hover:border-destructive/40"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
+                      {/* Delete button - available for all requests */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setDeleteDialog({ open: true, request, loading: false });
+                        }}
+                        className="text-destructive hover:text-destructive/80 border-destructive/20 hover:border-destructive/40"
+                        title="Delete request"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 </div>

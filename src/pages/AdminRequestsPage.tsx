@@ -181,22 +181,13 @@ const AdminRequestsPage = () => {
         return;
       }
 
-      // Delete attachments first
-      await supabase
-        .from('request_attachments')
-        .delete()
-        .eq('request_id', requestToDelete.id);
-
-      // Delete comments
-      await supabase
-        .from('request_comments')
-        .delete()
-        .eq('request_id', requestToDelete.id);
-
-      // Delete the request
+      // Soft delete the request by setting deleted_at timestamp
       const { error } = await supabase
         .from('maintenance_requests')
-        .delete()
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: (await supabase.auth.getUser()).data.user?.id
+        })
         .eq('id', requestToDelete.id);
 
       if (error) throw error;
@@ -509,19 +500,19 @@ const RequestsList: React.FC<RequestsListProps> = ({
                   />
                 )}
                 
-                {request.status === 'pending' && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeleteRequest(request);
-                    }}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                {/* Delete button - available for all requests */}
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteRequest(request);
+                  }}
+                  className="h-8 w-8 p-0"
+                  title="Delete request"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardContent>
