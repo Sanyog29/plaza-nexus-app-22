@@ -79,8 +79,90 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
   };
 
   const mapFloor = (floorName: string): string | undefined => {
-    const normalized = floorName.toLowerCase().trim();
-    const floor = floors.find(f => f.name.toLowerCase() === normalized);
+    // Aggressive normalization
+    const normalized = floorName
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' '); // Normalize whitespace
+    
+    console.log('🏢 Mapping floor:', { original: floorName, normalized, availableFloors: floors.map(f => f.name) });
+    
+    // Synonym mapping for common variations
+    const synonyms: Record<string, string> = {
+      'ground': 'ground floor',
+      'gf': 'ground floor',
+      'g floor': 'ground floor',
+      'ground fl': 'ground floor',
+      'basement': 'basement',
+      'b': 'basement',
+      'b floor': 'basement',
+      'cafeteria': 'cafeteria',
+      'cafe': 'cafeteria',
+      'canteen': 'cafeteria',
+      '1': '1st floor',
+      '1st': '1st floor',
+      'first': '1st floor',
+      'first floor': '1st floor',
+      '2': '2nd floor',
+      '2nd': '2nd floor',
+      'second': '2nd floor',
+      'second floor': '2nd floor',
+      '3': '3rd floor',
+      '3rd': '3rd floor',
+      'third': '3rd floor',
+      'third floor': '3rd floor',
+      '4': '4th floor',
+      '4th': '4th floor',
+      'fourth': '4th floor',
+      'fourth floor': '4th floor',
+      '5': '5th floor',
+      '5th': '5th floor',
+      'fifth': '5th floor',
+      'fifth floor': '5th floor',
+      '6': '6th floor',
+      '6th': '6th floor',
+      'sixth': '6th floor',
+      'sixth floor': '6th floor',
+      '7': '7th floor',
+      '7th': '7th floor',
+      'seventh': '7th floor',
+      'seventh floor': '7th floor',
+      '8': '8th floor',
+      '8th': '8th floor',
+      'eighth': '8th floor',
+      'eighth floor': '8th floor',
+      '9': '9th floor',
+      '9th': '9th floor',
+      'ninth': '9th floor',
+      'ninth floor': '9th floor',
+      '10': '10th floor',
+      '10th': '10th floor',
+      'tenth': '10th floor',
+      'tenth floor': '10th floor',
+    };
+    
+    // Check synonyms first
+    const mappedName = synonyms[normalized] || normalized;
+    
+    // Try exact match with normalized name
+    let floor = floors.find(f => 
+      f.name.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ') === mappedName
+    );
+    
+    // Try partial match if exact match fails
+    if (!floor) {
+      floor = floors.find(f => 
+        f.name.toLowerCase().includes(mappedName) || mappedName.includes(f.name.toLowerCase())
+      );
+    }
+    
+    if (floor) {
+      console.log('✅ Floor matched:', floor.name);
+    } else {
+      console.warn('❌ Floor not found:', floorName, 'Available:', floors.map(f => f.name).join(', '));
+    }
+    
     return floor?.id;
   };
 
@@ -96,15 +178,37 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
     
     console.log('🔍 Mapping process:', { original: processName, normalized, availableProcesses: processes.map(p => p.name) });
     
+    // Synonym mapping for common variations
+    const synonyms: Record<string, string> = {
+      'mee sho': 'meesho',
+      'meesho cabin': 'meesho',
+      'meesho office': 'meesho',
+      'hub': 'hub room',
+      'hub rm': 'hub room',
+      'hubroom': 'hub room',
+      'hubrm': 'hub room',
+      'amex': 'amex',
+      'american express': 'amex',
+      'axis': 'axis bank',
+      'cafe': 'cafeteria',
+      'cafeteria area': 'cafeteria',
+      'canteen': 'cafeteria',
+      'idfc': 'idfc',
+      'idfc bank': 'idfc',
+    };
+    
+    // Check synonyms first
+    const mappedName = synonyms[normalized] || normalized;
+    
     // Try exact match first
     let process = processes.find(p => 
-      p.name.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ') === normalized
+      p.name.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ') === mappedName
     );
     
     // Try partial match if exact match fails
     if (!process) {
       process = processes.find(p => 
-        p.name.toLowerCase().includes(normalized) || normalized.includes(p.name.toLowerCase())
+        p.name.toLowerCase().includes(mappedName) || mappedName.includes(p.name.toLowerCase())
       );
     }
     
@@ -191,10 +295,11 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
         // Map floor
         const floorId = row.Floor ? mapFloor(row.Floor) : undefined;
         if (row.Floor && !floorId) {
+          const availableFloors = floors.map(f => f.name).join(', ');
           errors.push({ 
             row: rowNum, 
             field: 'Floor', 
-            message: `Floor "${row.Floor}" not found in system`,
+            message: `Floor "${row.Floor}" not found. Available floors: ${availableFloors}`,
             value: row.Floor 
           });
         }
@@ -323,13 +428,18 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
 
   const handleImport = async () => {
     if (parsedData.length === 0) {
+      const hasFileRows = file !== null;
       toast({
-        title: 'No Data',
-        description: 'No valid requests to import.',
+        title: 'No Valid Requests',
+        description: hasFileRows 
+          ? 'All rows have validation errors. Please fix the errors and try again.'
+          : 'No valid requests to import.',
         variant: 'destructive',
       });
       return;
     }
+
+    console.log(`🚀 Starting import of ${parsedData.length} requests...`);
 
     setProcessing(true);
     setStep('processing');
@@ -359,12 +469,19 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
 
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
+        console.log(`📦 Processing batch ${i + 1}/${batches.length} (${batch.length} requests)`);
+        
         const { data, error } = await supabase.rpc('admin_bulk_create_maintenance_requests', {
           requests_data: batch,
           upload_id: uploadRecord.id
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Batch RPC error:', error);
+          throw error;
+        }
+        
+        console.log(`✅ Batch ${i + 1} completed:`, data);
 
         // Aggregate results (map SQL function response to UI expectations)
         const resultData = data as any;
