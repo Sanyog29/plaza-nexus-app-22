@@ -17,6 +17,7 @@ interface RequestStats {
   pending: number;
   inProgress: number;
   completed: number;
+  overdue: number;
 }
 
 export const useRealtimeMaintenanceRequests = () => {
@@ -24,21 +25,30 @@ export const useRealtimeMaintenanceRequests = () => {
     total: 0,
     pending: 0,
     inProgress: 0,
-    completed: 0
+    completed: 0,
+    overdue: 0
   });
   const [recentRequests, setRecentRequests] = useState<MaintenanceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const calculateStats = (requests: MaintenanceRequest[]): RequestStats => {
+    const now = new Date();
     return requests.reduce(
-      (acc, req) => {
+      (acc, req: any) => {
         acc.total++;
         if (req.status === 'pending') acc.pending++;
         else if (req.status === 'in_progress') acc.inProgress++;
         else if (req.status === 'completed') acc.completed++;
+        
+        // Check if overdue
+        if (!['completed', 'cancelled'].includes(req.status) && 
+            req.sla_breach_at && 
+            new Date(req.sla_breach_at) < now) {
+          acc.overdue++;
+        }
         return acc;
       },
-      { total: 0, pending: 0, inProgress: 0, completed: 0 }
+      { total: 0, pending: 0, inProgress: 0, completed: 0, overdue: 0 }
     );
   };
 
@@ -46,7 +56,8 @@ export const useRealtimeMaintenanceRequests = () => {
     try {
       const { data: requests, error } = await supabase
         .from('maintenance_requests')
-        .select('id, status, created_at, title, priority, assigned_to, completed_at')
+        .select('id, status, created_at, title, priority, assigned_to, completed_at, sla_breach_at')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .limit(50); // Increased limit for better stats
 

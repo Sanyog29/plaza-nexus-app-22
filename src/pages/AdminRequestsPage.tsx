@@ -93,6 +93,7 @@ const AdminRequestsPage = () => {
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

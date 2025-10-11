@@ -54,7 +54,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories!maintenance_requests_category_id_fkey(name),
+          main_categories!maintenance_requests_main_category_id_fkey(name),
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email),
           maintenance_processes(name, description)

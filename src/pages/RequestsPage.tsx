@@ -48,7 +48,8 @@ const RequestsPage = () => {
   const [stats, setStats] = useState({
     active: 0,
     pending: 0,
-    resolved: 0
+    resolved: 0,
+    overdue: 0
   });
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; request: MaintenanceRequest | null; loading: boolean }>({
     open: false,
@@ -100,14 +101,18 @@ const RequestsPage = () => {
         .from('maintenance_requests')
         .select(`
           *,
-          main_categories!maintenance_requests_category_id_fkey (
+          main_categories!maintenance_requests_main_category_id_fkey (
             name,
             icon
+          ),
+          maintenance_processes (
+            name
           ),
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
         `)
         .eq('reported_by', user.id)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -126,14 +131,21 @@ const RequestsPage = () => {
       setRequests(processedData);
       
       // Calculate stats
+      const now = new Date();
       const activeCount = processedData?.filter(req => ['pending', 'in_progress'].includes(req.status)).length || 0;
       const pendingCount = processedData?.filter(req => req.status === 'pending').length || 0;
       const resolvedCount = processedData?.filter(req => req.status === 'completed').length || 0;
+      const overdueCount = processedData?.filter(req => 
+        !['completed', 'cancelled'].includes(req.status) && 
+        req.sla_breach_at && 
+        new Date(req.sla_breach_at) < now
+      ).length || 0;
       
       setStats({
         active: activeCount,
         pending: pendingCount,
-        resolved: resolvedCount
+        resolved: resolvedCount,
+        overdue: overdueCount
       });
 
       // Check which completed requests have feedback
@@ -276,7 +288,7 @@ const RequestsPage = () => {
       )}
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="bg-primary/20 p-2 rounded-full">
@@ -309,6 +321,18 @@ const RequestsPage = () => {
             <div>
               <p className="text-sm text-muted-foreground">Resolved</p>
               <p className="text-lg font-semibold text-foreground">{stats.resolved}</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card/50 backdrop-blur">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-destructive/20 p-2 rounded-full">
+              <Timer size={20} className="text-destructive" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Overdue</p>
+              <p className="text-lg font-semibold text-foreground">{stats.overdue}</p>
             </div>
           </CardContent>
         </Card>
