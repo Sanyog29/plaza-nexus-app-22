@@ -11320,7 +11320,7 @@ export type Database = {
         Returns: Json
       }
       admin_bulk_create_maintenance_requests: {
-        Args: { requests_data: Json; upload_id: string }
+        Args: { requests: Json } | { requests_data: Json; upload_id: string }
         Returns: Json
       }
       admin_bulk_create_users: {
@@ -11709,6 +11709,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      infer_main_category_id: {
+        Args: { desc_text: string; title_text: string }
+        Returns: string
       }
       is_admin: {
         Args: { uid: string }
