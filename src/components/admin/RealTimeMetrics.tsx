@@ -36,7 +36,8 @@ const RealTimeMetrics = () => {
       const { data: activeRequests } = await supabase
         .from('maintenance_requests')
         .select('id, priority, created_at, sla_breach_at')
-        .in('status', ['pending', 'in_progress']);
+        .in('status', ['pending', 'in_progress'])
+        .is('deleted_at', null);
 
       // Fetch today's completed requests
       const today = new Date().toISOString().split('T')[0];
@@ -44,7 +45,8 @@ const RealTimeMetrics = () => {
         .from('maintenance_requests')
         .select('id, completed_at, created_at')
         .eq('status', 'completed')
-        .gte('completed_at', today);
+        .gte('completed_at', today)
+        .is('deleted_at', null);
 
       // Fetch staff data for utilization
       const { data: staffData } = await supabase.rpc('get_user_management_data');

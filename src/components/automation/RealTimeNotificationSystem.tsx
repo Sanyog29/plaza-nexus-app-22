@@ -147,6 +147,7 @@ const RealTimeNotificationSystem: React.FC = () => {
         .select('*')
         .lt('sla_breach_at', new Date().toISOString())
         .neq('status', 'completed')
+        .is('deleted_at', null)
         .limit(5);
 
       if (breachedRequests && breachedRequests.length > 0) {
@@ -181,7 +182,8 @@ const RealTimeNotificationSystem: React.FC = () => {
       const { data: recentRequests } = await supabase
         .from('maintenance_requests')
         .select('*')
-        .gte('created_at', oneHourAgo.toISOString());
+        .gte('created_at', oneHourAgo.toISOString())
+        .is('deleted_at', null);
 
       // Get completed requests for average response time
       const { data: completedRequests } = await supabase
@@ -189,7 +191,8 @@ const RealTimeNotificationSystem: React.FC = () => {
         .select('created_at, completed_at')
         .eq('status', 'completed')
         .not('completed_at', 'is', null)
-        .gte('completed_at', new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString());
+        .gte('completed_at', new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString())
+        .is('deleted_at', null);
 
       // Calculate average response time
       const avgResponseTime = completedRequests && completedRequests.length > 0
@@ -205,7 +208,8 @@ const RealTimeNotificationSystem: React.FC = () => {
         .from('maintenance_requests')
         .select('id')
         .lt('sla_breach_at', now.toISOString())
-        .neq('status', 'completed');
+        .neq('status', 'completed')
+        .is('deleted_at', null);
 
       // Calculate system health score (simplified)
       const totalRequests = recentRequests?.length || 0;

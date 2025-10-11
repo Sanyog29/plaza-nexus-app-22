@@ -82,7 +82,8 @@ const PerformanceCharts: React.FC = () => {
           main_categories!maintenance_requests_category_id_fkey(name)
         `)
         .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .lte('created_at', endDate.toISOString())
+        .is('deleted_at', null);
 
       if (requests) {
         // Process category performance

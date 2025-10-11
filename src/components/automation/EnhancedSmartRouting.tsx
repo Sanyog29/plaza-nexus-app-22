@@ -95,7 +95,8 @@ const EnhancedSmartRouting: React.FC = () => {
     const { data: requests } = await supabase
       .from('maintenance_requests')
       .select('*')
-      .gte('created_at', sevenDaysAgo.toISOString());
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .is('deleted_at', null);
 
     const totalRequests = requests?.length || 0;
     const assignedRequests = requests?.filter(r => r.assigned_to).length || 0;
@@ -151,7 +152,8 @@ const EnhancedSmartRouting: React.FC = () => {
           .from('maintenance_requests')
           .select('id')
           .eq('assigned_to', member.id)
-          .neq('status', 'completed');
+          .neq('status', 'completed')
+          .is('deleted_at', null);
 
         const workload = activeRequests?.length || 0;
         
@@ -178,6 +180,7 @@ const EnhancedSmartRouting: React.FC = () => {
       .select('*')
       .is('assigned_to', null)
       .eq('status', 'pending')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(5);
 

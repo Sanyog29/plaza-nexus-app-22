@@ -11320,7 +11320,9 @@ export type Database = {
         Returns: Json
       }
       admin_bulk_create_maintenance_requests: {
-        Args: { requests_data: Json; upload_id: string }
+        Args:
+          | { request_data: Json[]; upload_id: string }
+          | { requests_data: Json; upload_id: string }
         Returns: Json
       }
       admin_bulk_create_users: {

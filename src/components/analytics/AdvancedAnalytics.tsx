@@ -108,7 +108,8 @@ export const AdvancedAnalytics: React.FC = () => {
     const { data, error } = await supabase
       .from('maintenance_requests')
       .select('id, status, created_at, completed_at')
-      .gte('created_at', getDateRange());
+      .gte('created_at', getDateRange())
+      .is('deleted_at', null);
 
     if (error) throw error;
 

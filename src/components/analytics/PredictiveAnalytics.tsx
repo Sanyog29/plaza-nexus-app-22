@@ -61,7 +61,8 @@ export function PredictiveAnalytics() {
         .from('maintenance_requests')
         .select('*')
         .in('status', ['pending', 'in_progress'])
-        .not('sla_breach_at', 'is', null);
+        .not('sla_breach_at', 'is', null)
+        .is('deleted_at', null);
 
       const slaRiskCount = pendingRequests?.filter(req => 
         new Date(req.sla_breach_at!) < new Date(Date.now() + 24 * 60 * 60 * 1000)

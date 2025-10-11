@@ -45,7 +45,8 @@ export const EnhancedMaintenanceAnalytics: React.FC = () => {
             .from('maintenance_requests')
             .select('id, status, created_at')
             .gte('created_at', `${dayStr}T00:00:00`)
-            .lt('created_at', `${dayStr}T23:59:59`);
+            .lt('created_at', `${dayStr}T23:59:59`)
+            .is('deleted_at', null);
 
           return {
             date: format(day, 'MMM dd'),
@@ -63,7 +64,8 @@ export const EnhancedMaintenanceAnalytics: React.FC = () => {
           .from('maintenance_requests')
           .select('priority, sla_breach_at, completed_at, status')
           .gte('created_at', dateRange.from.toISOString())
-          .lte('created_at', dateRange.to.toISOString());
+          .lte('created_at', dateRange.to.toISOString())
+          .is('deleted_at', null);
 
         const priorities = ['urgent', 'high', 'medium', 'low'];
         const slaByPriority = priorities.map(priority => {

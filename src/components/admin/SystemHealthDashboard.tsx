@@ -116,7 +116,8 @@ export const SystemHealthDashboard = () => {
       const { data: maintenanceStats, error: maintenanceError } = await supabase
         .from('maintenance_requests')
         .select('status, priority, sla_breach_at, created_at')
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .is('deleted_at', null);
 
       if (maintenanceError) throw maintenanceError;
 

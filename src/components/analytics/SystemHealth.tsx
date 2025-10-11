@@ -81,6 +81,7 @@ export const SystemHealth: React.FC = () => {
         .from('maintenance_requests')
         .select('*')
         .neq('status', 'completed')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (requestsError) throw requestsError;

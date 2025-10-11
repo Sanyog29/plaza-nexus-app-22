@@ -94,7 +94,8 @@ const StaffWorkloadBalancer: React.FC = () => {
                 main_categories!maintenance_requests_category_id_fkey(name)
               `)
               .eq('assigned_to', profile.id)
-              .in('status', ['assigned', 'in_progress']);
+              .in('status', ['assigned', 'in_progress'])
+              .is('deleted_at', null);
 
             // Completed requests today
             const today = new Date();
@@ -104,7 +105,8 @@ const StaffWorkloadBalancer: React.FC = () => {
               .select('id')
               .eq('assigned_to', profile.id)
               .eq('status', 'completed')
-              .gte('completed_at', today.toISOString());
+              .gte('completed_at', today.toISOString())
+              .is('deleted_at', null);
 
             // Calculate metrics
             const active = activeRequests?.length || 0;
@@ -150,7 +152,8 @@ const StaffWorkloadBalancer: React.FC = () => {
                 main_categories!maintenance_requests_category_id_fkey(name)
               `)
               .eq('assigned_to', profile.id)
-              .in('status', ['assigned', 'in_progress']);
+              .in('status', ['assigned', 'in_progress'])
+              .is('deleted_at', null);
 
             const priority_breakdown = {
               urgent: 0,
