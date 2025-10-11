@@ -1,1 +1,4 @@
 project_id = "mukqpwinqhdfffdkthcg"
+
+[functions.flush-maintenance-requests]
+verify_jwt = true

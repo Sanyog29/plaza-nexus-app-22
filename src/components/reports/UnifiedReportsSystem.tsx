@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Progress } from "@/components/ui/progress";
 import { 
   FileText, 
@@ -17,12 +18,15 @@ import {
   Wrench,
   Users,
   Clock,
-  Star
+  Star,
+  Trash2
 } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
 import { extractCategoryName } from '@/utils/categoryUtils';
+import FlushRequestsDialog from './FlushRequestsDialog';
+import { DateRange } from "react-day-picker";
 
 interface ReportData {
   totalRequests: number;
@@ -46,6 +50,8 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
   const [loading, setLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const [isFlushDialogOpen, setIsFlushDialogOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{from: Date | null, to: Date | null}>({
     from: null,
     to: null
@@ -55,30 +61,38 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
     if (user) {
       fetchReportData();
     }
-  }, [user, selectedPeriod]);
+  }, [user, selectedPeriod, customDateRange]);
 
   const fetchReportData = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      // Calculate date range based on selected period
-      const endDate = new Date();
-      const startDate = new Date();
+      // Calculate date range based on selected period or custom range
+      let startDate: Date;
+      let endDate: Date;
       
-      switch (selectedPeriod) {
-        case '7d':
-          startDate.setDate(endDate.getDate() - 7);
-          break;
-        case '30d':
-          startDate.setDate(endDate.getDate() - 30);
-          break;
-        case '90d':
-          startDate.setDate(endDate.getDate() - 90);
-          break;
-        case '1y':
-          startDate.setFullYear(endDate.getFullYear() - 1);
-          break;
+      if (selectedPeriod === 'custom' && customDateRange?.from && customDateRange?.to) {
+        startDate = customDateRange.from;
+        endDate = customDateRange.to;
+      } else {
+        endDate = new Date();
+        startDate = new Date();
+        
+        switch (selectedPeriod) {
+          case '7d':
+            startDate.setDate(endDate.getDate() - 7);
+            break;
+          case '30d':
+            startDate.setDate(endDate.getDate() - 30);
+            break;
+          case '90d':
+            startDate.setDate(endDate.getDate() - 90);
+            break;
+          case '1y':
+            startDate.setFullYear(endDate.getFullYear() - 1);
+            break;
+        }
       }
 
       // Build query based on user role
@@ -89,7 +103,8 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
           main_categories!maintenance_requests_category_id_fkey(name)
         `)
         .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .lte('created_at', endDate.toISOString())
+        .is('deleted_at', null); // Exclude soft-deleted requests
 
       // If not admin/staff, filter by user's requests
       if (!isAdmin && !isStaff) {
@@ -272,7 +287,7 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">
             {isAdminView ? 'System Reports' : 'My Reports'}
@@ -285,9 +300,14 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-32">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Select value={selectedPeriod} onValueChange={(value) => {
+            setSelectedPeriod(value);
+            if (value !== 'custom') {
+              setCustomDateRange(undefined);
+            }
+          }}>
+            <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -295,13 +315,33 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
               <SelectItem value="30d">Last 30 days</SelectItem>
               <SelectItem value="90d">Last 90 days</SelectItem>
               <SelectItem value="1y">Last year</SelectItem>
+              <SelectItem value="custom">Custom Range</SelectItem>
             </SelectContent>
           </Select>
+
+          {selectedPeriod === 'custom' && (
+            <DatePickerWithRange 
+              selected={customDateRange} 
+              onSelect={setCustomDateRange}
+              className="w-auto"
+            />
+          )}
           
           <Button onClick={exportReport} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
+
+          {isAdmin && (
+            <Button 
+              onClick={() => setIsFlushDialogOpen(true)} 
+              variant="destructive"
+              size="default"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Flush Old Requests
+            </Button>
+          )}
         </div>
       </div>
 
@@ -446,6 +486,12 @@ const UnifiedReportsSystem: React.FC<UnifiedReportsSystemProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Flush Requests Dialog */}
+      <FlushRequestsDialog 
+        open={isFlushDialogOpen}
+        onOpenChange={setIsFlushDialogOpen}
+      />
     </div>
   );
 };
