@@ -34,6 +34,7 @@ import AdminContentPage from "./pages/AdminContentPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import AdminRequestsPage from "./pages/AdminRequestsPage";
 import UnifiedAnalyticsPage from "./pages/UnifiedAnalyticsPage";
+import EnhancedAnalyticsPage from "./pages/EnhancedAnalyticsPage";
 import SystemHealthPage from "./pages/SystemHealthPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
 import StaffDashboardPage from "./pages/StaffDashboardPage";
@@ -162,9 +163,10 @@ const App = () => (
                 <Route path="/admin/requests/:requestId" element={<RequestDetailsPage />} />
                <Route path="/admin/bookings" element={<AdminBookingsPage />} />
                <Route path="/admin/services" element={<AdminServicesPage />} />
-              <Route path="/admin/security" element={<AdminSecurityPage />} />
-              <Route path="/admin/analytics" element={<UnifiedAnalyticsPage />} />
-               <Route path="/admin/search" element={<AdminSearchPage />} />
+               <Route path="/admin/security" element={<AdminSecurityPage />} />
+               <Route path="/admin/analytics" element={<UnifiedAnalyticsPage />} />
+               <Route path="/admin/analytics/enhanced" element={<EnhancedAnalyticsPage />} />
+                <Route path="/admin/search" element={<AdminSearchPage />} />
                 <Route path="/admin/settings" element={<UnifiedSettingsPage />} />
                 <Route path="/admin/system-config" element={<UnifiedSettingsPage />} />
                <Route path="/admin/quality" element={<QualityControlPage />} />

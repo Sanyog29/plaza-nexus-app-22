@@ -5229,6 +5229,59 @@ export type Database = {
           },
         ]
       }
+      report_history: {
+        Row: {
+          error_message: string | null
+          export_format: string
+          file_size_bytes: number | null
+          file_url: string | null
+          filter_config: Json | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          metrics_snapshot: Json | null
+          report_type: string
+          scheduled_report_id: string | null
+          status: string
+        }
+        Insert: {
+          error_message?: string | null
+          export_format: string
+          file_size_bytes?: number | null
+          file_url?: string | null
+          filter_config?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          metrics_snapshot?: Json | null
+          report_type: string
+          scheduled_report_id?: string | null
+          status?: string
+        }
+        Update: {
+          error_message?: string | null
+          export_format?: string
+          file_size_bytes?: number | null
+          file_url?: string | null
+          filter_config?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          metrics_snapshot?: Json | null
+          report_type?: string
+          scheduled_report_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_history_scheduled_report_id_fkey"
+            columns: ["scheduled_report_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_attachments: {
         Row: {
           attachment_type: string | null
@@ -5997,6 +6050,54 @@ export type Database = {
           image_url?: string | null
           location?: string
           name?: string
+        }
+        Relationships: []
+      }
+      scheduled_reports: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          export_formats: string[]
+          filter_config: Json
+          id: string
+          is_active: boolean | null
+          last_generated_at: string | null
+          next_generation_at: string | null
+          recipients: Json
+          report_name: string
+          report_type: string
+          schedule_config: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          export_formats?: string[]
+          filter_config: Json
+          id?: string
+          is_active?: boolean | null
+          last_generated_at?: string | null
+          next_generation_at?: string | null
+          recipients: Json
+          report_name: string
+          report_type: string
+          schedule_config: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          export_formats?: string[]
+          filter_config?: Json
+          id?: string
+          is_active?: boolean | null
+          last_generated_at?: string | null
+          next_generation_at?: string | null
+          recipients?: Json
+          report_name?: string
+          report_type?: string
+          schedule_config?: Json
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -10851,6 +10952,10 @@ export type Database = {
         Args: { p_expires_in_minutes?: number; p_request_id: string }
         Returns: Json
       }
+      calculate_advanced_metrics: {
+        Args: { p_end_date: string; p_start_date: string }
+        Returns: Json
+      }
       calculate_cross_module_kpis: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -10932,6 +11037,19 @@ export type Database = {
       generate_analytics_summary: {
         Args: { summary_date: string; summary_type: string }
         Returns: undefined
+      }
+      generate_comprehensive_analytics: {
+        Args: {
+          p_comparison_enabled?: boolean
+          p_end_date: string
+          p_start_date: string
+        }
+        Returns: {
+          change_percentage: number
+          current_period: Json
+          metric_category: string
+          previous_period: Json
+        }[]
       }
       generate_pickup_code: {
         Args: Record<PropertyKey, never>
