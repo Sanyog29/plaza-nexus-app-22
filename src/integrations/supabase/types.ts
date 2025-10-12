@@ -11924,6 +11924,7 @@ export type Database = {
         | "ceo"
         | "cxo"
         | "tenant"
+        | "super_tenant"
       approval_status: "pending" | "approved" | "rejected"
       availability_status_type: "available" | "busy" | "offline" | "on_leave"
       request_priority: "low" | "medium" | "high" | "urgent"
@@ -12090,6 +12091,7 @@ export const Constants = {
         "ceo",
         "cxo",
         "tenant",
+        "super_tenant",
       ],
       approval_status: ["pending", "approved", "rejected"],
       availability_status_type: ["available", "busy", "offline", "on_leave"],
