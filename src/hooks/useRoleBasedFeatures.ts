@@ -209,6 +209,22 @@ const DEFAULT_ROLE_FEATURES: RoleFeatureMatrix = {
     autoReportingEnabled: false,
     dataValidationEnabled: false,
   },
+  // Super Tenant - Read-only observer with analytics access
+  super_tenant: {
+    csvImportEnabled: false,           // ❌ No bulk imports
+    dataExportEnabled: true,           // ✅ Export for analysis
+    googleSheetsEnabled: false,
+    forecastingEnabled: true,          // ✅ View forecasts
+    anomalyDetectionEnabled: false,
+    advancedDashboardsEnabled: true,   // ✅ Full dashboards
+    realTimeUpdatesEnabled: true,      // ✅ Real-time monitoring
+    mobileAccessEnabled: true,         // ✅ Mobile access
+    bulkOperationsEnabled: false,      // ❌ No bulk actions
+    advancedFiltersEnabled: true,      // ✅ Advanced filters
+    emailProcessingEnabled: false,
+    autoReportingEnabled: true,        // ✅ Generate reports
+    dataValidationEnabled: false,
+  },
   vendor: {
     csvImportEnabled: false,
     dataExportEnabled: false,
