@@ -221,6 +221,37 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
     return process?.id;
   };
 
+  // Normalize a raw Excel row's headers (trim, lowercase) and provide alias lookup
+  const buildNormalizedRow = (row: Record<string, any>) => {
+    const map = new Map<string, any>();
+    Object.entries(row).forEach(([k, v]) => {
+      const key = String(k).trim().toLowerCase();
+      map.set(key, v);
+    });
+
+    const aliases: Record<string, string[]> = {
+      date: ['date', 'date (dd.mm.yy)', 'reported date'],
+      floor: ['floor', 'level'],
+      wing: ['wing', 'zone', 'area wing'],
+      process: ['process', 'client', 'tenant', 'department'],
+      location: ['location', 'exact location', 'place', 'site'],
+      'issue description': ['issue description', 'issue', 'description', 'problem']
+    };
+
+    const get = (logical: keyof typeof aliases): string | undefined => {
+      for (const key of aliases[logical]) {
+        if (map.has(key)) {
+          const val = map.get(key);
+          if (val === null || val === undefined) return undefined;
+          return String(val).trim();
+        }
+      }
+      return undefined;
+    };
+
+    return { get };
+  };
+
   const inferCategory = (description: string): string | undefined => {
     const keywords: Record<string, string[]> = {
       'Electrical & Lighting': ['wiring', 'wire', 'electrical', 'switch', 'board', 'power', 'light'],
@@ -262,7 +293,8 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const jsonData: ExcelRow[] = XLSX.utils.sheet_to_json(worksheet);
+      // Keep blanks so alias lookup doesn't produce undefined due to empty cells
+      const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
       const errors: ValidationError[] = [];
       const parsed: ParsedRequest[] = [];
@@ -270,72 +302,80 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
       jsonData.forEach((row, index) => {
         const rowNum = index + 2; // Excel row number (accounting for header)
 
+        const r = buildNormalizedRow(row);
+        const dateRaw = r.get('date');
+        const floorRaw = r.get('floor');
+        const wingRaw = r.get('wing');
+        const processRaw = r.get('process');
+        const locationRaw = r.get('location');
+        const issueRaw = r.get('issue description');
+
         // Validate required fields
-        if (!row.Date) {
+        if (!dateRaw) {
           errors.push({ row: rowNum, field: 'Date', message: 'Date is required' });
         }
-        if (!row.Floor) {
+        if (!floorRaw) {
           errors.push({ row: rowNum, field: 'Floor', message: 'Floor is required' });
         }
-        if (!row['Issue Description']) {
+        if (!issueRaw) {
           errors.push({ row: rowNum, field: 'Issue Description', message: 'Issue Description is required' });
         }
 
         // Parse date
-        const parsedDate = row.Date ? parseDate(row.Date) : null;
-        if (row.Date && !parsedDate) {
+        const parsedDate = dateRaw ? parseDate(String(dateRaw)) : null;
+        if (dateRaw && !parsedDate) {
           errors.push({ 
             row: rowNum, 
             field: 'Date', 
             message: 'Invalid date format. Use DD.MM.YY',
-            value: row.Date 
+            value: String(dateRaw)
           });
         }
 
         // Map floor
-        const floorId = row.Floor ? mapFloor(row.Floor) : undefined;
-        if (row.Floor && !floorId) {
+        const floorId = floorRaw ? mapFloor(String(floorRaw)) : undefined;
+        if (floorRaw && !floorId) {
           const availableFloors = floors.map(f => f.name).join(', ');
           errors.push({ 
             row: rowNum, 
             field: 'Floor', 
-            message: `Floor "${row.Floor}" not found. Available floors: ${availableFloors}`,
-            value: row.Floor 
+            message: `Floor "${floorRaw}" not found. Available floors: ${availableFloors}`,
+            value: String(floorRaw)
           });
         }
 
         // Map process
-        const processId = row.Process ? mapProcess(row.Process) : undefined;
-        if (row.Process && row.Process.toLowerCase() !== 'na' && !processId) {
+        const processId = processRaw ? mapProcess(String(processRaw)) : undefined;
+        if (processRaw && String(processRaw).toLowerCase() !== 'na' && !processId) {
           const availableProcesses = processes.map(p => p.name).join(', ');
           errors.push({ 
             row: rowNum, 
             field: 'Process', 
-            message: `Process "${row.Process}" not found. Available processes: ${availableProcesses}`,
-            value: row.Process 
+            message: `Process "${processRaw}" not found. Available processes: ${availableProcesses}`,
+            value: String(processRaw)
           });
         }
 
-        // Build location from wing and location
-        const locationParts = [row.Wing, row.Location].filter(Boolean);
-        const location = row.Wing?.toLowerCase() === 'whole floor' 
-          ? row.Location || '' 
+        // Build location from wing and location with fallback
+        const locationParts = [wingRaw, locationRaw].filter((v) => !!v && String(v).trim().length > 0) as string[];
+        let location = (String(wingRaw || '').toLowerCase() === 'whole floor')
+          ? (locationRaw || 'Not Specified')
           : locationParts.join(' - ');
         
         console.log(`📍 Location Debug - Row ${rowNum}:`, {
-          Wing: row.Wing,
-          Location: row.Location,
+          Wing: wingRaw ?? { _type: 'undefined', value: 'undefined' },
+          Location: locationRaw ?? { _type: 'undefined', value: 'undefined' },
           Combined: location,
-          Floor: row.Floor
+          Floor: floorRaw ?? { _type: 'undefined', value: 'undefined' }
         });
 
         // Infer category and priority
-        const categoryId = row['Issue Description'] ? inferCategory(row['Issue Description']) : undefined;
-        const priority = row['Issue Description'] ? inferPriority(row['Issue Description']) : 'medium';
+        const categoryId = issueRaw ? inferCategory(String(issueRaw)) : undefined;
+        const priority = issueRaw ? inferPriority(String(issueRaw)) : 'medium';
 
         // Generate title (first 60 chars of description)
-        const title = row['Issue Description'] 
-          ? row['Issue Description'].substring(0, 60) + (row['Issue Description'].length > 60 ? '...' : '')
+        const title = issueRaw 
+          ? String(issueRaw).substring(0, 60) + (String(issueRaw).length > 60 ? '...' : '')
           : '';
 
         // Only add to parsed data if no critical errors for this row
@@ -344,8 +384,8 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
           parsed.push({
             row_number: rowNum,
             title,
-            description: row['Issue Description'] || '',
-            location: location || '',
+            description: String(issueRaw || ''),
+            location: String(location || ''),
             priority,
             building_floor_id: floorId,
             process_id: processId,
