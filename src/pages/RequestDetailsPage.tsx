@@ -80,7 +80,8 @@ const RequestDetailsPage = () => {
         .select(`
           *,
           main_categories!maintenance_requests_category_id_fkey(name),
-          maintenance_processes(name, description)
+          maintenance_processes(name, description),
+          building_floors(name)
         `)
         .eq('id', sanitizedRequestId)
         .maybeSingle();
@@ -299,9 +300,9 @@ const RequestDetailsPage = () => {
                 )}
                 <div className="flex items-center gap-2 text-foreground">
                   <div className="h-4 w-4 flex items-center justify-center">
-                    📍
+                    🏢
                   </div>
-                  <span>Location: {request.location}</span>
+                  <span>Floor: {request.building_floors?.name || request.location || 'Not specified'}</span>
                 </div>
               </div>
             </div>

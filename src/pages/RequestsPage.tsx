@@ -40,6 +40,9 @@ interface MaintenanceRequest {
     first_name?: string;
     last_name?: string;
   };
+  building_floors?: {
+    name: string;
+  };
 }
 
 const RequestsPage = () => {
@@ -114,7 +117,8 @@ const RequestsPage = () => {
           ),
           maintenance_processes(name),
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name),
+          building_floors(name)
         `)
         .eq('reported_by', user.id)
         .is('deleted_at', null)
@@ -371,7 +375,9 @@ const RequestsPage = () => {
                           Process: {request.maintenance_processes.name}
                         </p>
                       )}
-                      <p className="text-sm text-muted-foreground mt-1">{request.location}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Floor: {request.building_floors?.name || request.location || 'Not specified'}
+                      </p>
                       <div className="mt-2 space-y-1">
                         <p className="text-xs text-muted-foreground">
                           Created: {new Date(request.created_at).toLocaleString()}

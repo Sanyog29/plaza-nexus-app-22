@@ -34,6 +34,9 @@ interface MaintenanceRequest {
     first_name?: string;
     last_name?: string;
   };
+  building_floors?: {
+    name: string;
+  };
 }
 
 const AdminRequestsPage = () => {
@@ -91,7 +94,8 @@ const AdminRequestsPage = () => {
         .select(`
           *,
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name),
-          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name)
+          assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name),
+          building_floors(name)
         `)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
@@ -466,7 +470,7 @@ const RequestsList: React.FC<RequestsListProps> = ({
                   </Badge>
                   
                   <Badge variant="outline" className="text-gray-300">
-                    📍 {request.location}
+                    🏢 {request.building_floors?.name || request.location || 'Not specified'}
                   </Badge>
                 </div>
                 

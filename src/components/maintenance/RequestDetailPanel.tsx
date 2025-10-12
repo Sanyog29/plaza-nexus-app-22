@@ -57,7 +57,8 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
           main_categories!maintenance_requests_main_category_id_fkey(name),
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email),
-          maintenance_processes(name, description)
+          maintenance_processes(name, description),
+          building_floors(name)
         `)
         .eq('id', requestId)
         .maybeSingle();
@@ -257,7 +258,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                 <h3 className="text-xl font-bold text-foreground">{request.title}</h3>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin size={14} />
-                  <span>{request.location}</span>
+                  <span>Floor: {request.building_floors?.name || request.location || 'Not specified'}</span>
                 </div>
               </div>
               
