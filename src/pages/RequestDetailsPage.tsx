@@ -302,7 +302,13 @@ const RequestDetailsPage = () => {
                   <div className="h-4 w-4 flex items-center justify-center">
                     🏢
                   </div>
-                  <span>Floor: {request.building_floors?.name || request.location || 'Not specified'}</span>
+                  <span>
+                    {request.building_floors?.name && request.location
+                      ? `${request.building_floors.name} - ${request.location}`
+                      : request.building_floors?.name
+                      ? `${request.building_floors.name} - Location not specified`
+                      : request.location || 'Location not specified'}
+                  </span>
                 </div>
               </div>
             </div>

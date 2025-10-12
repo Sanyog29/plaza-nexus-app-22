@@ -258,7 +258,13 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
                 <h3 className="text-xl font-bold text-foreground">{request.title}</h3>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <MapPin size={14} />
-                  <span>Floor: {request.building_floors?.name || request.location || 'Not specified'}</span>
+                  <span>
+                    {request.building_floors?.name && request.location
+                      ? `${request.building_floors.name} - ${request.location}`
+                      : request.building_floors?.name
+                      ? `${request.building_floors.name} - Location not specified`
+                      : request.location || 'Location not specified'}
+                  </span>
                 </div>
               </div>
               

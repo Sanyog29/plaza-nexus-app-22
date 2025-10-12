@@ -376,7 +376,11 @@ const RequestsPage = () => {
                         </p>
                       )}
                       <p className="text-sm text-muted-foreground mt-1">
-                        Floor: {request.building_floors?.name || request.location || 'Not specified'}
+                        {request.building_floors?.name && request.location
+                          ? `${request.building_floors.name} - ${request.location}`
+                          : request.building_floors?.name
+                          ? `${request.building_floors.name} - Location not specified`
+                          : request.location || 'Location not specified'}
                       </p>
                       <div className="mt-2 space-y-1">
                         <p className="text-xs text-muted-foreground">

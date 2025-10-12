@@ -470,7 +470,11 @@ const RequestsList: React.FC<RequestsListProps> = ({
                   </Badge>
                   
                   <Badge variant="outline" className="text-gray-300">
-                    🏢 {request.building_floors?.name || request.location || 'Not specified'}
+                    🏢 {request.building_floors?.name && request.location
+                      ? `${request.building_floors.name} - ${request.location}`
+                      : request.building_floors?.name
+                      ? `${request.building_floors.name} - Location not specified`
+                      : request.location || 'Location not specified'}
                   </Badge>
                 </div>
                 
