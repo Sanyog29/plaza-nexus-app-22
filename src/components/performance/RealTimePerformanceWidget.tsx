@@ -13,10 +13,12 @@ import {
   Timer
 } from 'lucide-react';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useRequestCounts } from '@/hooks/useRequestCounts';
 import { useAuth } from '@/components/AuthProvider';
 
 const RealTimePerformanceWidget = () => {
   const { metrics, isLoading } = useDashboardData();
+  const { counts } = useRequestCounts();
   const { isStaff } = useAuth();
   const [previousMetrics, setPreviousMetrics] = useState(metrics);
 
@@ -92,11 +94,11 @@ const RealTimePerformanceWidget = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Active Requests</p>
-              <p className="text-2xl font-bold text-foreground">{metrics.pendingRequests}</p>
+              <p className="text-2xl font-bold text-foreground">{counts.activeRequests}</p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-green-500">{metrics.completedRequests}</p>
+              <p className="text-2xl font-bold text-green-500">{counts.completedRequests}</p>
             </div>
           </div>
           

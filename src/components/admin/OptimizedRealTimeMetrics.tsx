@@ -4,14 +4,16 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, Clock, CheckCircle, Users, Zap, TrendingUp } from 'lucide-react';
 import { useOptimizedAdminMetrics } from '@/hooks/useOptimizedAdminMetrics';
+import { useRequestCounts } from '@/hooks/useRequestCounts';
 
 const OptimizedRealTimeMetrics = () => {
   const { metrics, isRealTimeActive, lastFetch } = useOptimizedAdminMetrics();
+  const { counts } = useRequestCounts();
 
   const metricCards = [
     {
       title: 'Active Requests',
-      value: metrics.activeRequests,
+      value: counts.activeRequests,
       icon: Clock,
       color: 'text-blue-500',
       subtitle: `${metrics.urgentRequests} urgent`,
@@ -35,8 +37,8 @@ const OptimizedRealTimeMetrics = () => {
       showProgress: true
     },
     {
-      title: 'Completed Today',
-      value: metrics.completedToday,
+      title: 'Completed',
+      value: counts.completedRequests,
       icon: CheckCircle,
       color: 'text-green-500',
       subtitle: 'Total finished',

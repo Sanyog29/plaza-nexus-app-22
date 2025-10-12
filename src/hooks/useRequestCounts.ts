@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
+import { ACTIVE_REQUEST_STATUSES } from '@/constants/requests';
 
 interface RequestCounts {
   totalRequests: number;
@@ -10,6 +12,7 @@ interface RequestCounts {
 }
 
 export const useRequestCounts = () => {
+  const { user, isStaff, isAdmin } = useAuth();
   const [counts, setCounts] = useState<RequestCounts>({
     totalRequests: 0,
     activeRequests: 0,
@@ -23,19 +26,31 @@ export const useRequestCounts = () => {
   const fetchCounts = async () => {
     try {
       setError(null);
-      const { data: requests, error } = await supabase
+      
+      // Build query with role-based scoping and exclude soft-deleted
+      let query = supabase
         .from('maintenance_requests')
-        .select('status');
+        .select('status')
+        .is('deleted_at', null);
+      
+      // Non-staff/admin users see only their own requests
+      if (!isStaff && !isAdmin && user?.id) {
+        query = query.eq('reported_by', user.id);
+      }
+
+      const { data: requests, error } = await query;
 
       if (error) throw error;
 
       const totalRequests = requests?.length || 0;
       const pendingRequests = requests?.filter(r => r.status === 'pending').length || 0;
       const inProgressRequests = requests?.filter(r => r.status === 'in_progress').length || 0;
-      const assignedRequests = requests?.filter(r => r.status === 'assigned').length || 0;
-      const enRouteRequests = requests?.filter(r => r.status === 'en_route').length || 0;
       const completedRequests = requests?.filter(r => r.status === 'completed').length || 0;
-      const activeRequests = pendingRequests + inProgressRequests + assignedRequests + enRouteRequests;
+      
+      // Active requests using canonical definition
+      const activeRequests = requests?.filter(r => 
+        ACTIVE_REQUEST_STATUSES.includes(r.status as any)
+      ).length || 0;
 
       setCounts({
         totalRequests,

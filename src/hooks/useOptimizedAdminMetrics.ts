@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
 import { handleSupabaseError, retryWithBackoff } from '@/utils/errorHandler';
+import { ACTIVE_REQUEST_STATUSES } from '@/constants/requests';
 
 interface OptimizedMetrics {
   // Core metrics
@@ -83,10 +84,11 @@ export const useOptimizedAdminMetrics = () => {
       const today = new Date().toISOString().split('T')[0];
       const now = new Date();
 
-      // Single optimized query for maintenance requests
+      // Single optimized query for maintenance requests - exclude soft-deleted
       const { data: requests, error: requestsError } = await supabase
         .from('maintenance_requests')
         .select('id, status, priority, created_at, completed_at, sla_breach_at')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (requestsError) throw requestsError;
@@ -99,13 +101,14 @@ export const useOptimizedAdminMetrics = () => {
 
       if (alertsError) throw alertsError;
 
-      // Calculate all metrics from the fetched data
+      // Calculate all metrics using canonical definitions
       const activeRequests = requests?.filter(r => 
-        ['pending', 'in_progress'].includes(r.status)
+        ACTIVE_REQUEST_STATUSES.includes(r.status as any)
       ) || [];
       
-      const completedToday = requests?.filter(r => 
-        r.status === 'completed' && 
+      const completedTotal = requests?.filter(r => r.status === 'completed') || [];
+      
+      const completedToday = completedTotal.filter(r => 
         r.completed_at?.startsWith(today)
       ) || [];
 
@@ -135,7 +138,7 @@ export const useOptimizedAdminMetrics = () => {
       const newMetrics: OptimizedMetrics = {
         activeRequests: activeRequests.length,
         pendingRequests: requests?.filter(r => r.status === 'pending').length || 0,
-        completedToday: completedToday.length,
+        completedToday: completedTotal.length, // Changed to total completed (not just today)
         urgentRequests: urgentRequests.length,
         slaBreaches: slaBreaches.length,
         avgResponseTime: Math.round(avgResponseTime),

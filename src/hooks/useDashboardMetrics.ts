@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from '@/components/AuthProvider';
+import { ACTIVE_REQUEST_STATUSES } from '@/constants/requests';
 
 interface DashboardMetrics {
   activeRequests: number;
@@ -20,6 +22,7 @@ interface DashboardMetrics {
 }
 
 export const useDashboardMetrics = () => {
+  const { user, isStaff, isAdmin } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     activeRequests: 0,
     totalRequests: 0,
@@ -42,12 +45,21 @@ export const useDashboardMetrics = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
+      // Build role-scoped query for maintenance requests
+      let requestQuery = supabase
+        .from('maintenance_requests')
+        .select('status')
+        .is('deleted_at', null);
+      
+      // Non-staff/admin users see only their own requests
+      if (!isStaff && !isAdmin && user?.id) {
+        requestQuery = requestQuery.eq('reported_by', user.id);
+      }
+      
       // Use Promise.allSettled to make queries resilient to individual failures
       const results = await Promise.allSettled([
         // Core maintenance requests (critical)
-        supabase
-          .from('maintenance_requests')
-          .select('status'),
+        requestQuery,
         
         // Optional room data
         supabase
@@ -78,7 +90,10 @@ export const useDashboardMetrics = () => {
       const requestsResult = results[0];
       const requests = requestsResult.status === 'fulfilled' ? requestsResult.value.data : [];
 
-      const activeRequests = requests?.filter(r => r.status === 'pending' || r.status === 'in_progress').length || 0;
+      // Use canonical definitions for consistency
+      const activeRequests = requests?.filter(r => 
+        ACTIVE_REQUEST_STATUSES.includes(r.status as any)
+      ).length || 0;
       const totalRequests = requests?.length || 0;
       const completedRequests = requests?.filter(r => r.status === 'completed').length || 0;
       const pendingMaintenance = requests?.filter(r => r.status === 'pending').length || 0;

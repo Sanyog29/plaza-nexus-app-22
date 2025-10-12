@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
 import { useOptimizedAdminMetrics } from '@/hooks/useOptimizedAdminMetrics';
+import { useRequestCounts } from '@/hooks/useRequestCounts';
 import { useAuth } from '@/components/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -62,6 +63,8 @@ const UnifiedAdminDashboard = () => {
     refreshMetrics,
     getHealthSummary 
   } = useOptimizedAdminMetrics();
+  
+  const { counts: requestCounts } = useRequestCounts();
 
   if (!isAdmin) {
     return (
@@ -155,14 +158,14 @@ const UnifiedAdminDashboard = () => {
   const quickStats = [
     {
       title: 'Active Requests',
-      value: metrics.activeRequests,
+      value: requestCounts.activeRequests,
       icon: Clock,
       color: metrics.urgentRequests > 0 ? 'text-red-500' : 'text-blue-500',
       change: metrics.urgentRequests > 0 ? `${metrics.urgentRequests} urgent` : 'Normal load'
     },
     {
-      title: 'Completed Today',
-      value: metrics.completedToday,
+      title: 'Completed',
+      value: requestCounts.completedRequests,
       icon: CheckCircle,
       color: 'text-green-500',
       change: `Avg ${metrics.avgResponseTime}m response`
