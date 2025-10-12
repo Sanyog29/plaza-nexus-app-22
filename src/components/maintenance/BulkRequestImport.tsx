@@ -488,6 +488,12 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
           throw error;
         }
         
+        // Check if RPC function returned success: false
+        if (data && !(data as any).success) {
+          console.error('❌ Batch failed:', data);
+          throw new Error((data as any).error || 'Batch import failed with no insertions');
+        }
+        
         console.log(`✅ Batch ${i + 1} completed:`, data);
 
         // Aggregate results (map SQL function response to UI expectations)
@@ -506,10 +512,23 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
       setResults(allResults);
       setStep('complete');
 
-      toast({
-        title: 'Import Complete',
-        description: `Successfully imported ${allResults.success_count} requests. ${allResults.error_count} failed.`,
-      });
+      // Check if zero records were inserted
+      if (allResults.success_count === 0) {
+        const errorMessage = allResults.error_results.length > 0
+          ? `All ${parsedData.length} requests failed. First error: ${allResults.error_results[0]?.error || 'Unknown error'}`
+          : `No requests were imported. Please check your data.`;
+        
+        toast({
+          title: 'Import Failed',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Import Complete',
+          description: `Successfully imported ${allResults.success_count} requests. ${allResults.error_count} failed.`,
+        });
+      }
     } catch (error: any) {
       console.error('Import error:', error);
       toast({
