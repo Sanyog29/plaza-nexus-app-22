@@ -321,6 +321,13 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
         const location = row.Wing?.toLowerCase() === 'whole floor' 
           ? row.Location || '' 
           : locationParts.join(' - ');
+        
+        console.log(`📍 Location Debug - Row ${rowNum}:`, {
+          Wing: row.Wing,
+          Location: row.Location,
+          Combined: location,
+          Floor: row.Floor
+        });
 
         // Infer category and priority
         const categoryId = row['Issue Description'] ? inferCategory(row['Issue Description']) : undefined;
