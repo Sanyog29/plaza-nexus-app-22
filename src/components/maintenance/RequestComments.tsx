@@ -38,7 +38,9 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
   useEffect(() => {
     fetchComments();
     
-    // Set up realtime subscription
+    let debounceTimer: NodeJS.Timeout;
+    
+    // Set up realtime subscription with debouncing
     const subscription = supabase
       .channel('request-comments')
       .on('postgres_changes', {
@@ -47,12 +49,17 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
         table: 'request_comments',
         filter: `request_id=eq.${requestId}`
       }, (payload) => {
-        fetchComments(); // Refresh comments when a new one is added
+        // Debounce to prevent rapid re-renders
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          fetchComments();
+        }, 300); // 300ms debounce
       })
       .subscribe();
       
     // Clean up subscription
     return () => {
+      clearTimeout(debounceTimer);
       supabase.removeChannel(subscription);
     };
   }, [requestId]);
@@ -164,7 +171,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
   };
 
   return (
-    <Card className="bg-card/50 backdrop-blur">
+    <Card className="bg-card/50 backdrop-blur min-h-[500px]">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg text-foreground">
           Communication Thread
@@ -192,23 +199,31 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
             </Alert>
           )}
 
-          {comments.length === 0 && !isLoading && !error && (
-            <div className="text-center text-gray-400 py-4">
+          {/* Skeleton loaders for loading state */}
+          {isLoading ? (
+            <div className="space-y-4 min-h-[200px]">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3 p-3 rounded-lg bg-card/80 animate-pulse">
+                  <div className="shrink-0 h-8 w-8 bg-muted rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                    <div className="h-3 bg-muted rounded w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : comments.length === 0 && !error ? (
+            <div className="text-center text-muted-foreground py-16 min-h-[200px] flex items-center justify-center">
               No comments yet. Be the first to start the conversation.
             </div>
-          )}
+          ) : null}
           
-          {isLoading && (
-            <div className="text-center text-gray-400 py-4">
-              Loading comments...
-            </div>
-          )}
-          
-          <div className="space-y-4 max-h-80 overflow-y-auto">
+          <div className="space-y-4 max-h-80 min-h-[200px] overflow-y-auto">
             {comments.map((comment) => (
               <div 
                 key={comment.id} 
                 className="flex gap-3 p-3 rounded-lg bg-card/80"
+                style={{ contentVisibility: 'auto' }}
               >
                 <div className="shrink-0 h-8 w-8 bg-plaza-blue/20 rounded-full flex items-center justify-center">
                   <User size={16} className="text-plaza-blue" />
@@ -236,7 +251,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
             ))}
           </div>
           
-          <div className="pt-4 mt-2 border-t border-gray-700">
+          <div className="sticky bottom-0 bg-card/95 backdrop-blur pt-4 mt-2 border-t border-gray-700 pb-safe">
             {/* Error Banner for Sending Comments */}
             {sendError && (
               <Alert variant="destructive" className="mb-4 bg-red-950/50 border-red-900/50">
@@ -260,8 +275,14 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Type your message here..."
-              className="min-h-24 bg-card border-gray-700"
+              className="min-h-[100px] max-h-[100px] resize-none bg-card border-gray-700"
               disabled={isSending}
+              onFocus={() => {
+                // Prevent zoom on iOS
+                if (window.visualViewport) {
+                  window.scrollTo(0, window.pageYOffset + 1);
+                }
+              }}
             />
             <div className="flex justify-end mt-2">
               <Button 

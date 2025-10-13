@@ -485,6 +485,38 @@
   .m-lg { margin: 1.5rem; }
   .m-xl { margin: 2rem; }
   .m-2xl { margin: 3rem; }
+
+  /* Mobile layout stability fixes */
+  @media (max-width: 768px) {
+    body {
+      overscroll-behavior-y: contain;
+      overflow-x: hidden;
+      position: relative;
+      width: 100%;
+    }
+    
+    /* Prevent layout shift during keyboard open */
+    body.keyboard-open {
+      position: fixed;
+      overflow: hidden;
+    }
+    
+    /* Stable containers */
+    .stable-container {
+      contain: layout style paint;
+      content-visibility: auto;
+    }
+    
+    /* Fixed safe area padding */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+    
+    /* Prevent pull-to-refresh */
+    html {
+      overscroll-behavior: none;
+    }
+  }
 }
 
 @keyframes fadeInUp {

@@ -244,7 +244,7 @@ const RequestDetailsPage = () => {
   const isCurrentUserAssigned = user && request?.assigned_to === user.id;
 
   return (
-    <div className="px-4 py-6">
+    <div className="px-4 py-6 max-w-full overflow-x-hidden">
       <div className="mb-6">
         <Link to="/requests">
           <Button variant="ghost" className="gap-2">
