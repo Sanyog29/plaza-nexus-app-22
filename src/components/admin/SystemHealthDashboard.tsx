@@ -172,8 +172,10 @@ export const SystemHealthDashboard = () => {
       const avgQueryTime = Math.min(200, Math.max(25, urgentRequests * 10 + 50));
       const slowQueries = Math.max(0, Math.floor(urgentRequests / 5));
 
-      // Calculate uptime based on SLA breaches and system health
-      const systemHealthScore = Math.max(0, 100 - (criticalAlerts * 20) - (activeAlerts * 5) - (slaBreaches * 10));
+      // Calculate ticket completion rate
+      const ticketCompletionRate = totalRequests > 0 
+        ? Math.round((completedRequests / totalRequests) * 100)
+        : 0;
       const uptime = Math.max(95, Math.min(99.99, 99.9 - (slaBreaches * 0.1) - (criticalAlerts * 0.05)));
       
       // Calculate error rate based on failed requests and issues
@@ -209,7 +211,7 @@ export const SystemHealthDashboard = () => {
           activeAlerts,
           criticalAlerts,
           slaBreaches,
-          systemHealth: systemHealthScore
+          systemHealth: ticketCompletionRate
         },
         backup: {
           lastBackup: lastBackupTime.toISOString(),
@@ -412,11 +414,11 @@ export const SystemHealthDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Shield className={`h-6 w-6 ${getStatusColor(healthStatus)}`} />
-                Overall System Health
+                <CheckCircle className={`h-6 w-6 ${getStatusColor(healthStatus)}`} />
+                Ticket Completion Rate
               </CardTitle>
               <CardDescription>
-                Real-time health score based on all monitored metrics
+                Percentage of maintenance requests completed
               </CardDescription>
             </div>
             <div className="text-right">

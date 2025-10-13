@@ -26,7 +26,7 @@ describe('MetricsOverview', () => {
     
     expect(screen.getByText('Total Users')).toBeInTheDocument();
     expect(screen.getByText('Active Requests')).toBeInTheDocument();
-    expect(screen.getByText('System Health')).toBeInTheDocument();
+    expect(screen.getByText('Completion Rate')).toBeInTheDocument();
     expect(screen.getByText('SLA Compliance')).toBeInTheDocument();
   });
 
@@ -49,7 +49,7 @@ describe('MetricsOverview', () => {
     
     expect(screen.getByText('150')).toBeInTheDocument(); // totalVisitors
     expect(screen.getByText('12')).toBeInTheDocument();  // activeRequests
-    expect(screen.getByText('98.5%')).toBeInTheDocument(); // system health
+    expect(screen.getByText('0.0%')).toBeInTheDocument(); // completion rate (0 when no requests)
     expect(screen.getByText('94.2%')).toBeInTheDocument(); // SLA compliance
   });
 
