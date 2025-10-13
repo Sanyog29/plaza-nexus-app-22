@@ -171,12 +171,20 @@ const UnifiedAdminDashboard = () => {
       change: `Avg ${metrics.avgResponseTime}m response`
     },
     {
-      title: 'System Health',
-      value: metrics.systemUptime.toFixed(1) + '%',
-      icon: Activity,
-      color: metrics.systemHealth === 'healthy' ? 'text-green-500' : 
-             metrics.systemHealth === 'warning' ? 'text-yellow-500' : 'text-red-500',
-      change: metrics.systemHealth
+      title: 'Completion Rate',
+      value: requestCounts.totalRequests > 0 
+        ? ((requestCounts.completedRequests / requestCounts.totalRequests) * 100).toFixed(1) + '%'
+        : '0.0%',
+      icon: CheckCircle,
+      color: (() => {
+        const rate = requestCounts.totalRequests > 0 
+          ? (requestCounts.completedRequests / requestCounts.totalRequests) * 100 
+          : 0;
+        return rate >= 90 ? 'text-green-500' : rate >= 70 ? 'text-yellow-500' : 'text-red-500';
+      })(),
+      change: requestCounts.totalRequests > 0 
+        ? `${requestCounts.completedRequests} of ${requestCounts.totalRequests} closed`
+        : 'No requests yet'
     },
     {
       title: 'Staff Utilization',
