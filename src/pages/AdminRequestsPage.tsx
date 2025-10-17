@@ -12,7 +12,7 @@ import { Search, Filter, Clock, AlertTriangle, CheckCircle, XCircle, Trash2 } fr
 import { format } from 'date-fns';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { BroadcastTaskButton } from '@/components/admin/BroadcastTaskButton';
+import { AttachBeforePhotoButton } from '@/components/admin/AttachBeforePhotoButton';
 import { formatUserNameFromProfile } from '@/utils/formatters';
 
 interface MaintenanceRequest {
@@ -26,6 +26,7 @@ interface MaintenanceRequest {
   reported_by: string;
   assigned_to?: string;
   sla_breach_at?: string;
+  before_photo_url?: string | null;
   reporter?: {
     first_name?: string;
     last_name?: string;
@@ -384,19 +385,19 @@ const AdminRequestsPage = () => {
         </TabsList>
         
         <TabsContent value="all" className="mt-4">
-          <RequestsList requests={filteredRequests} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
+          <RequestsList requests={filteredRequests} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} onPhotoAttached={fetchRequests} />
         </TabsContent>
         
         <TabsContent value="pending" className="mt-4">
-          <RequestsList requests={pending} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
+          <RequestsList requests={pending} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} onPhotoAttached={fetchRequests} />
         </TabsContent>
         
         <TabsContent value="overdue" className="mt-4">
-          <RequestsList requests={overdue} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
+          <RequestsList requests={overdue} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} onPhotoAttached={fetchRequests} />
         </TabsContent>
         
         <TabsContent value="in_progress" className="mt-4">
-          <RequestsList requests={inProgress} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} />
+          <RequestsList requests={inProgress} navigate={navigate} getStatusIcon={getStatusIcon} getStatusColor={getStatusColor} getPriorityColor={getPriorityColor} isOverdue={isOverdue} onDeleteRequest={openDeleteDialog} onPhotoAttached={fetchRequests} />
         </TabsContent>
       </Tabs>
 
@@ -422,6 +423,7 @@ interface RequestsListProps {
   getPriorityColor: (priority: string) => string;
   isOverdue: (slaBreachAt: string | undefined) => boolean;
   onDeleteRequest: (request: MaintenanceRequest) => void;
+  onPhotoAttached: () => void;
 }
 
 const RequestsList: React.FC<RequestsListProps> = ({ 
@@ -431,7 +433,8 @@ const RequestsList: React.FC<RequestsListProps> = ({
   getStatusColor, 
   getPriorityColor, 
   isOverdue,
-  onDeleteRequest 
+  onDeleteRequest,
+  onPhotoAttached
 }) => {
   if (requests.length === 0) {
     return (
@@ -491,12 +494,12 @@ const RequestsList: React.FC<RequestsListProps> = ({
               
               {/* Action Buttons */}
               <div className="flex items-center gap-2 ml-4">
-                {/* Broadcast Button - Show for pending/open requests without assignment */}
-                {(request.status === 'pending' || request.status === 'open') && !request.assigned_to && (
-                  <BroadcastTaskButton
+                {/* Show Attach Before Photo button when no photo is attached */}
+                {!request.before_photo_url && (
+                  <AttachBeforePhotoButton
                     requestId={request.id}
                     requestTitle={request.title}
-                    isAssigned={!!request.assigned_to}
+                    onPhotoAttached={onPhotoAttached}
                   />
                 )}
                 
