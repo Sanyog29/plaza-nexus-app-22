@@ -109,15 +109,11 @@ export const useAuditLogger = () => {
   };
 };
 
-// Get user IP address (simplified - in production, you'd use a proper service)
+// Security Note: IP address should be captured server-side for security
+// Removed external API call to api.ipify.org to prevent untrusted third-party access
 const getUserIP = async (): Promise<string> => {
-  try {
-    const response = await fetch('https://api.ipify.org?format=json');
-    const data = await response.json();
-    return data.ip;
-  } catch {
-    return 'unknown';
-  }
+  // IP tracking removed for security - implement server-side if needed
+  return 'client-side-tracking-disabled';
 };
 
 // HOC to automatically log component views
