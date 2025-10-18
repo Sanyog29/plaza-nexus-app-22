@@ -21,6 +21,13 @@ interface CreateOrderData {
   payment_status?: 'pending' | 'paid';
 }
 
+interface OrderCreationResponse {
+  success: boolean;
+  order_id?: string;
+  error?: string;
+  message?: string;
+}
+
 export const useCreateOrder = () => {
   const { toast } = useToast();
   const { withErrorHandling } = useErrorHandler();
@@ -33,41 +40,34 @@ export const useCreateOrder = () => {
         const pickupTime = new Date();
         pickupTime.setMinutes(pickupTime.getMinutes() + 15); // Default 15 minutes from now
 
-        // Create the order
-        const { data: order, error: orderError } = await supabase
-          .from('cafeteria_orders')
-          .insert({
-            vendor_id: orderData.vendor_id,
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            total_amount: orderData.total_amount,
-            service_type: orderData.service_type,
-            table_number: orderData.table_number,
-            customer_instructions: orderData.customer_instructions,
-            pickup_time: pickupTime.toISOString(),
-            status: orderData.status || 'pending',
-            payment_status: orderData.payment_status || 'pending'
-          })
-          .select()
-          .single();
-
-        if (orderError) throw orderError;
-
-        // Create order items
+        // Prepare order items for server-side validation
         const orderItems = orderData.items.map(item => ({
-          order_id: order.id,
-          item_id: item.item_id,
+          id: item.item_id,
           quantity: item.quantity,
-          unit_price: item.unit_price,
-          special_instructions: item.special_instructions
+          price: item.unit_price
         }));
 
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems);
+        // Call server-side validation function (prevents stock manipulation)
+        const { data, error } = await supabase.rpc('validate_and_create_cafeteria_order', {
+          p_vendor_id: orderData.vendor_id,
+          p_order_items: orderItems,
+          p_total_amount: orderData.total_amount,
+          p_pickup_time: pickupTime.toISOString(),
+          p_customer_instructions: orderData.customer_instructions || null
+        });
 
-        if (itemsError) throw itemsError;
+        if (error) throw error;
 
-        return order;
+        // Cast the response to the expected type
+        const response = data as unknown as OrderCreationResponse;
+
+        // Check if the server-side validation succeeded
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to create order');
+        }
+
+        // Return the order ID for further processing
+        return { id: response.order_id!, status: orderData.status || 'pending' };
       }, { context: 'creating_vendor_order' });
     },
     onSuccess: (order) => {

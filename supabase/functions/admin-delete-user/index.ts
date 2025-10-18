@@ -187,7 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Log successful deletion with cascade summary (without PII)
+    // Log successful deletion with cascade summary (NO PII - only user IDs)
     await supabaseAdmin
       .from('audit_logs')
       .insert({
@@ -203,16 +203,14 @@ const handler = async (req: Request): Promise<Response> => {
         }
       });
 
-    console.log(`User ${userToDelete.user.email} and all related data deleted by admin ${user.email}`);
+    // Log to console with user IDs only (no emails for GDPR compliance)
+    console.log(`User ${user_id} and all related data deleted by admin ${user.id}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'User and all related data deleted successfully',
-        deleted_user: {
-          id: user_id,
-          email: userToDelete.user.email
-        },
+        deleted_user_id: user_id,
         cleanup_summary: cascadeResult.cleanup_summary
       }),
       { 
