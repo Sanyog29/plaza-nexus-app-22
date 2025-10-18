@@ -12,23 +12,31 @@ export interface AppError {
 
 export class AppErrorHandler {
   private static logError(error: AppError) {
+    // SECURITY: Sanitize context to avoid logging sensitive data
+    const sanitizedContext = error.context ? 
+      Object.fromEntries(
+        Object.entries(error.context).filter(([key]) => 
+          !['password', 'token', 'apiKey', 'secret', 'authorization'].includes(key.toLowerCase())
+        )
+      ) : undefined;
+
     const logData = {
       message: error.message,
       code: error.code,
       severity: error.severity,
-      context: error.context,
+      context: sanitizedContext,
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
       url: window.location.href,
     };
 
-    // Log to console in development
+    // Log to console in development only
     if (process.env.NODE_ENV === 'development') {
-      console.error('[AppError]', logData, error.originalError);
+      console.error('[AppError]', logData);
+      // Log original error separately (may contain stack trace)
+      if (error.originalError) {
+        console.error('[Original Error]', error.originalError.message);
+      }
     }
-
-    // In production, you could send to monitoring service
-    // analytics.track('error', logData);
   }
 
   static handle(error: AppError) {

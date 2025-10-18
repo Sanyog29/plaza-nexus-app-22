@@ -494,7 +494,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           filter: `id=eq.${user.id}`,
         },
         (payload) => {
-          console.log('Profile updated in real-time:', payload);
           const newProfile = payload.new as any;
           
           // Update approval status immediately
@@ -508,13 +507,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
           
-          // Update role states if changed
-          if (newProfile.role) {
-            updateRoleStates(
-              newProfile.role,
-              newProfile.user_category || 'default',
-              newProfile.specialization
-            );
+          // SECURITY: Fetch role from user_roles, not profiles
+          if (user?.id) {
+            setTimeout(async () => {
+              const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              
+              if (roleData) {
+                updateRoleStates(
+                  roleData.role,
+                  newProfile.user_category || 'tenant',
+                  newProfile.specialization
+                );
+              }
+            }, 0);
           }
         }
       )
