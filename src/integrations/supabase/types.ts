@@ -5749,6 +5749,48 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          action: string
+          error_message: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          resource_id: string | null
+          resource_type: string
+          success: boolean
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          success: boolean
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          success?: boolean
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       security_incidents: {
         Row: {
           actions_taken: string | null
@@ -10736,6 +10778,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: Json
       }
+      get_user_role: {
+        Args: { target_user_id: string }
+        Returns: string
+      }
       get_vendor_cumulative_analytics: {
         Args: { p_period?: string; p_vendor_id: string }
         Returns: {
@@ -10873,6 +10919,10 @@ export type Database = {
       role_requires_department: {
         Args: { user_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
+      }
+      sanitize_text_input: {
+        Args: { input: string; max_length?: number }
+        Returns: string
       }
       set_system_setting: {
         Args: {
