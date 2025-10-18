@@ -5135,7 +5135,6 @@ export type Database = {
           notification_preferences: Json | null
           office_number: string | null
           onboarding_date: string | null
-          password_hash: string | null
           phone_number: string | null
           phone_number_encrypted: string | null
           profile_visibility: string | null
@@ -5181,7 +5180,6 @@ export type Database = {
           notification_preferences?: Json | null
           office_number?: string | null
           onboarding_date?: string | null
-          password_hash?: string | null
           phone_number?: string | null
           phone_number_encrypted?: string | null
           profile_visibility?: string | null
@@ -5227,7 +5225,6 @@ export type Database = {
           notification_preferences?: Json | null
           office_number?: string | null
           onboarding_date?: string | null
-          password_hash?: string | null
           phone_number?: string | null
           phone_number_encrypted?: string | null
           profile_visibility?: string | null
@@ -11171,79 +11168,46 @@ export type Database = {
       profiles_with_decrypted_data: {
         Row: {
           approval_status: Database["public"]["Enums"]["approval_status"] | null
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
           department: string | null
-          designation: string | null
           email: string | null
           employee_id: string | null
           first_name: string | null
-          floor: string | null
           government_id: string | null
           id: string | null
-          interests: string[] | null
           last_name: string | null
           mobile_number: string | null
-          office_number: string | null
           phone_number: string | null
           role: Database["public"]["Enums"]["app_role"] | null
-          skills: string[] | null
-          specialization: string | null
-          updated_at: string | null
-          zone: string | null
         }
         Insert: {
           approval_status?:
             | Database["public"]["Enums"]["approval_status"]
             | null
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
           department?: string | null
-          designation?: string | null
           email?: string | null
           employee_id?: never
           first_name?: string | null
-          floor?: string | null
           government_id?: never
           id?: string | null
-          interests?: string[] | null
           last_name?: string | null
           mobile_number?: never
-          office_number?: string | null
           phone_number?: never
           role?: Database["public"]["Enums"]["app_role"] | null
-          skills?: string[] | null
-          specialization?: string | null
-          updated_at?: string | null
-          zone?: string | null
         }
         Update: {
           approval_status?:
             | Database["public"]["Enums"]["approval_status"]
             | null
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
           department?: string | null
-          designation?: string | null
           email?: string | null
           employee_id?: never
           first_name?: string | null
-          floor?: string | null
           government_id?: never
           id?: string | null
-          interests?: string[] | null
           last_name?: string | null
           mobile_number?: never
-          office_number?: string | null
           phone_number?: never
           role?: Database["public"]["Enums"]["app_role"] | null
-          skills?: string[] | null
-          specialization?: string | null
-          updated_at?: string | null
-          zone?: string | null
         }
         Relationships: []
       }
@@ -11667,19 +11631,18 @@ export type Database = {
         Args: Record<PropertyKey, never> | { caller_id: string }
         Returns: {
           approval_status: string
-          approved_at: string
-          approved_by: string
           assigned_role_title: string
           confirmed_at: string
           created_at: string
+          department: string
           email: string
           first_name: string
-          has_profile: boolean
           id: string
           last_name: string
           last_sign_in_at: string
-          rejection_reason: string
+          phone_number: string
           role: string
+          specialization: string
           updated_at: string
         }[]
       }
@@ -11902,6 +11865,16 @@ export type Database = {
       update_user_role_safe: {
         Args: { new_role_text: string; target_user_id: string }
         Returns: boolean
+      }
+      validate_and_create_cafeteria_order: {
+        Args: {
+          p_customer_instructions?: string
+          p_order_items: Json
+          p_pickup_time: string
+          p_total_amount: number
+          p_vendor_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {

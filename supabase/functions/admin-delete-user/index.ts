@@ -132,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (cascadeError || !cascadeResult?.success) {
       console.error('Error in cascade deletion:', cascadeError || cascadeResult);
       
-      // Log failed cascade deletion
+      // Log failed cascade deletion (without PII)
       await supabaseAdmin.from('audit_logs').insert({
         user_id: user.id,
         action: 'cascade_delete_failed',
@@ -140,8 +140,8 @@ const handler = async (req: Request): Promise<Response> => {
         resource_id: user_id,
         new_values: { 
           error: cascadeError?.message || cascadeResult?.error || 'Unknown cascade deletion error',
-          target_email: userToDelete.user.email,
-          attempted_by: user.email
+          target_user_id: user_id,
+          attempted_by_user_id: user.id
         }
       });
 
@@ -162,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (deleteError) {
       console.error('Error deleting user:', deleteError);
-      // Log the failed deletion attempt
+      // Log the failed deletion attempt (without PII)
       await supabaseAdmin
         .from('audit_logs')
         .insert({
@@ -172,8 +172,8 @@ const handler = async (req: Request): Promise<Response> => {
           resource_id: user_id,
           new_values: {
             error: deleteError.message,
-            target_email: userToDelete.user.email,
-            attempted_by: user.email,
+            target_user_id: user_id,
+            attempted_by_user_id: user.id,
             cascade_summary: cascadeResult.cleanup_summary
           }
         });
@@ -187,7 +187,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Log successful deletion with cascade summary
+    // Log successful deletion with cascade summary (without PII)
     await supabaseAdmin
       .from('audit_logs')
       .insert({
@@ -196,8 +196,8 @@ const handler = async (req: Request): Promise<Response> => {
         resource_type: 'user',
         resource_id: user_id,
         new_values: {
-          deleted_user_email: userToDelete.user.email,
-          deleted_by: user.email,
+          deleted_user_id: user_id,
+          deleted_by_admin_id: user.id,
           deletion_timestamp: new Date().toISOString(),
           cascade_summary: cascadeResult.cleanup_summary
         }
