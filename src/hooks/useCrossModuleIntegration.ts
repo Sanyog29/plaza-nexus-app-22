@@ -149,7 +149,8 @@ export const useCrossModuleIntegration = () => {
                 <p><strong>Visitor:</strong> ${visitor.name}</p>
                 <p><strong>Company:</strong> ${visitor.company || 'N/A'}</p>
                 <p><strong>Host:</strong> ${(() => {
-                  const profile = Array.isArray(visitor.profiles) ? visitor.profiles[0] : visitor.profiles;
+                  const profiles = visitor.profiles_public;
+                  const profile = Array.isArray(profiles) ? profiles[0] : profiles;
                   return profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Unknown';
                 })()}</p>
                 <p><strong>Location:</strong> ${eventData.location || 'Unknown'}</p>

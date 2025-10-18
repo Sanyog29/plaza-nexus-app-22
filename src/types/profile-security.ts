@@ -9,18 +9,35 @@ export interface PublicProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  office_number: string | null;
+  phone_number: string | null;
+  created_at: string;
+  updated_at: string;
   avatar_url: string | null;
-  department: string | null;
   floor: string | null;
   zone: string | null;
+  department: string | null;
+  approval_status: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  rejection_reason: string | null;
+  profile_visibility: string | null;
+  notification_preferences: any;
   bio: string | null;
   skills: string[] | null;
   interests: string[] | null;
+  specialization: string | null;
   designation: string | null;
+  supervisor_id: string | null;
+  shift_start: string | null;
+  shift_end: string | null;
+  onboarding_date: string | null;
+  is_active: boolean | null;
+  mobile_number: string | null;
+  assigned_role_title: string | null;
+  email: string | null;
+  user_category: string;
   role: string;
-  approval_status: string;
-  created_at: string;
-  updated_at: string;
 }
 
 /**
@@ -81,18 +98,35 @@ export const PUBLIC_FIELDS = [
   'id',
   'first_name',
   'last_name',
+  'office_number',
+  'phone_number',
+  'created_at',
+  'updated_at',
   'avatar_url',
-  'department',
   'floor',
   'zone',
+  'department',
+  'approval_status',
+  'approved_by',
+  'approved_at',
+  'rejection_reason',
+  'profile_visibility',
+  'notification_preferences',
   'bio',
   'skills',
   'interests',
+  'specialization',
   'designation',
-  'role',
-  'approval_status',
-  'created_at',
-  'updated_at'
+  'supervisor_id',
+  'shift_start',
+  'shift_end',
+  'onboarding_date',
+  'is_active',
+  'mobile_number',
+  'assigned_role_title',
+  'email',
+  'user_category',
+  'role'
 ] as const;
 
 /**

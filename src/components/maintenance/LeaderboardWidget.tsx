@@ -9,15 +9,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 
 interface LeaderboardEntry {
-  id: string;
-  technician_name: string;
-  avatar_url?: string;
-  department?: string;
+  technician_id: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  points_earned: number;
+  points_balance: number;
   current_tier: string;
-  monthly_points: number;
-  total_points: number;
+  updated_at: string;
   tickets_completed: number;
-  avg_completion_hours: number;
 }
 
 interface LeaderboardWidgetProps {
@@ -52,7 +52,7 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
       setLeaderboard(data || []);
 
       // Find user's rank
-      const userIndex = data?.findIndex(entry => entry.id === user?.id);
+      const userIndex = data?.findIndex(entry => entry.technician_id === user?.id);
       setUserRank(userIndex !== -1 && userIndex !== undefined ? userIndex + 1 : null);
 
     } catch (error: any) {
@@ -124,7 +124,7 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">
-                        {leaderboard[userRank - 1]?.monthly_points || 0} pts
+                        {leaderboard[userRank - 1]?.points_balance || 0} pts
                       </p>
                       <p className="text-xs text-muted-foreground">This month</p>
                     </div>
@@ -138,9 +138,9 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
             <div className="space-y-3">
               {leaderboard.slice(0, Math.min(limit, 10)).map((entry, index) => (
                 <div 
-                  key={entry.id} 
+                  key={entry.technician_id} 
                   className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                    entry.id === user?.id ? 'bg-primary/5 border border-primary/20' : 'hover:bg-muted/50'
+                    entry.technician_id === user?.id ? 'bg-primary/5 border border-primary/20' : 'hover:bg-muted/50'
                   }`}
                 >
                   {/* Rank */}
@@ -150,28 +150,25 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
 
                   {/* Avatar */}
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={entry.avatar_url} alt={entry.technician_name} />
                     <AvatarFallback className="text-xs">
-                      {getInitials(entry.technician_name)}
+                      {getInitials(`${entry.first_name} ${entry.last_name}`)}
                     </AvatarFallback>
                   </Avatar>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{entry.technician_name}</p>
+                      <p className="font-medium truncate">{`${entry.first_name} ${entry.last_name}`}</p>
                       {entry.current_tier && (
                         <div className={`w-2 h-2 rounded-full ${getTierBadgeColor(entry.current_tier)}`} />
                       )}
                     </div>
-                    {entry.department && (
-                      <p className="text-xs text-muted-foreground truncate">{entry.department}</p>
-                    )}
+                    <p className="text-xs text-muted-foreground truncate">{entry.role}</p>
                   </div>
 
                   {/* Points */}
                   <div className="text-right">
-                    <p className="font-semibold">{entry.monthly_points.toLocaleString()}</p>
+                    <p className="font-semibold">{entry.points_balance.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">points</p>
                   </div>
                 </div>
@@ -186,9 +183,9 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
                 .slice(0, Math.min(limit, 10))
                 .map((entry, index) => (
                 <div 
-                  key={entry.id} 
+                  key={entry.technician_id} 
                   className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                    entry.id === user?.id ? 'bg-primary/5 border border-primary/20' : 'hover:bg-muted/50'
+                    entry.technician_id === user?.id ? 'bg-primary/5 border border-primary/20' : 'hover:bg-muted/50'
                   }`}
                 >
                   {/* Rank */}
@@ -198,23 +195,18 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
 
                   {/* Avatar */}
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={entry.avatar_url} alt={entry.technician_name} />
                     <AvatarFallback className="text-xs">
-                      {getInitials(entry.technician_name)}
+                      {getInitials(`${entry.first_name} ${entry.last_name}`)}
                     </AvatarFallback>
                   </Avatar>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{entry.technician_name}</p>
+                    <p className="font-medium truncate">{`${entry.first_name} ${entry.last_name}`}</p>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
                         {entry.tickets_completed} completed
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {entry.avg_completion_hours.toFixed(1)}h avg
                       </span>
                     </div>
                   </div>
@@ -239,7 +231,7 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <Badge variant="secondary" className="justify-center py-2">
                   <TrendingUp className="w-3 h-3 mr-1" />
-                  {leaderboard[0]?.monthly_points || 0} Top Score
+                  {leaderboard[0]?.points_balance || 0} Top Score
                 </Badge>
                 <Badge variant="outline" className="justify-center py-2">
                   <CheckCircle2 className="w-3 h-3 mr-1" />

@@ -16,7 +16,7 @@ interface AssignedTechnicianInfoProps {
   status: string;
 }
 
-interface TechnicianProfile extends PublicProfile {
+interface TechnicianProfile extends Omit<PublicProfile, 'specialization'> {
   specialization?: string;
 }
 
