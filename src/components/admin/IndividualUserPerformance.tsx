@@ -123,11 +123,12 @@ export const IndividualUserPerformance: React.FC = () => {
       // Process data
       const perfData = currentPerformance as any;
       
+      const prof = profile as any;
       const performance: UserPerformance = {
         user_id: targetUserId,
-        name: `${profile.first_name} ${profile.last_name}`.trim() || 'Unknown',
-        role: profile.role,
-        avatar_url: profile.avatar_url,
+        name: `${prof.first_name} ${prof.last_name}`.trim() || 'Unknown',
+        role: prof.role,
+        avatar_url: prof.avatar_url,
         currentScore: {
           efficiency: Math.round(Number(perfData?.efficiency_score) || 85),
           quality: Math.round(Number(perfData?.quality_score) || 90),

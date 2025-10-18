@@ -27,7 +27,7 @@ export const usePublicProfile = (userId?: string) => {
           .maybeSingle();
 
         if (error) throw error;
-        setProfile(data as PublicProfile);
+        setProfile(data as unknown as PublicProfile);
       } catch (error: any) {
         console.error('Error fetching public profile:', error);
       } finally {
@@ -156,7 +156,7 @@ export const usePublicProfiles = (filters?: { department?: string; floor?: strin
         const { data, error } = await query;
 
         if (error) throw error;
-        setProfiles(data as PublicProfile[]);
+        setProfiles(data as unknown as PublicProfile[]);
       } catch (error: any) {
         console.error('Error fetching public profiles:', error);
       } finally {

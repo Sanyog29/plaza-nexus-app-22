@@ -157,14 +157,15 @@ const EnhancedSmartRouting: React.FC = () => {
 
         const workload = activeRequests?.length || 0;
         
+        const m = member as any;
         return {
-          id: member.id,
-          name: `${member.first_name} ${member.last_name}`,
-          role: member.role as string,
+          id: m.id,
+          name: `${m.first_name} ${m.last_name}`,
+          role: m.role as string,
           currentWorkload: workload,
           skillMatch: Math.floor(Math.random() * 30) + 70, // Mock skill matching
           responseTime: Math.floor(Math.random() * 4) + 1, // Mock response time in hours
-          location: member.zone || 'General',
+          location: m.zone || 'General',
           availability: workload < 3 ? 'available' : workload < 6 ? 'busy' : 'offline'
         } as StaffMember;
       })

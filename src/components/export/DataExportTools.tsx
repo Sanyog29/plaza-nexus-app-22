@@ -197,11 +197,12 @@ export function DataExportTools({ className }: DataExportToolsProps) {
           case 'users':
             if (!adminUser) break;
             
-            const { data: users } = await supabase
+            const usersRes = await supabase
               .from('profiles_public')
               .select('id, first_name, last_name, role, department, phone_number, office_number, floor, zone, created_at');
+            const users = (usersRes.data as any[]) || [];
 
-            data = users?.map(u => ({
+            data = users.map((u: any) => ({
               ID: u.id,
               'First Name': u.first_name || '',
               'Last Name': u.last_name || '',
@@ -212,7 +213,7 @@ export function DataExportTools({ className }: DataExportToolsProps) {
               Floor: u.floor || '',
               Zone: u.zone || '',
               'Created At': new Date(u.created_at).toLocaleDateString()
-            })) || [];
+            }));
 
             headers = ['ID', 'First Name', 'Last Name', 'Role', 'Department', 'Phone', 'Office', 'Floor', 'Zone', 'Created At'];
             filename = `user_directory_${new Date().toISOString().split('T')[0]}`;

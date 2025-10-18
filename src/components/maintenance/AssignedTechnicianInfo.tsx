@@ -51,7 +51,7 @@ const AssignedTechnicianInfo: React.FC<AssignedTechnicianInfoProps> = ({
 
       if (profileError) throw profileError;
 
-      setTechnician(profile as TechnicianProfile);
+      setTechnician(profile as unknown as TechnicianProfile);
 
     } catch (error: any) {
       console.error('Error fetching technician info:', error);

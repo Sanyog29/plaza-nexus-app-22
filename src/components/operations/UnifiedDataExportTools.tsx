@@ -100,12 +100,13 @@ const UnifiedDataExportTools: React.FC = () => {
           break;
 
         case 'users':
-          const { data: users } = await supabase
+          const usersRes = await supabase
             .from('profiles_public')
             .select('*')
             .order('created_at', { ascending: false });
+          const users = (usersRes.data as any[]) || [];
 
-          data = users?.map(user => ({
+          data = users.map((user: any) => ({
             id: user.id,
             full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown',
             email: user.email || 'Unknown',
@@ -113,7 +114,7 @@ const UnifiedDataExportTools: React.FC = () => {
             department: user.department,
             status: user.approval_status,
             created_at: new Date(user.created_at).toLocaleDateString()
-          })) || [];
+          }));
           filename = 'users';
           break;
 
