@@ -9776,6 +9776,7 @@ export type Database = {
           main_category_id: string | null
           next_escalation_at: string | null
           priority: Database["public"]["Enums"]["request_priority"] | null
+          process_id: string | null
           reported_by: string | null
           resolution_sla_at: string | null
           response_sla_at: string | null
@@ -9824,6 +9825,7 @@ export type Database = {
           main_category_id?: string | null
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"] | null
+          process_id?: string | null
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -9872,6 +9874,7 @@ export type Database = {
           main_category_id?: string | null
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"] | null
+          process_id?: string | null
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -9944,6 +9947,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "maintenance_requests_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_processes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "maintenance_requests_reported_by_fkey"
             columns: ["reported_by"]
             isOneToOne: false
@@ -10012,100 +10022,318 @@ export type Database = {
       profiles_public: {
         Row: {
           approval_status: Database["public"]["Enums"]["approval_status"] | null
+          approved_at: string | null
+          approved_by: string | null
+          assigned_role_title: string | null
+          avatar_url: string | null
+          bio: string | null
           created_at: string | null
           department: string | null
+          designation: string | null
+          email: string | null
           first_name: string | null
+          floor: string | null
           id: string | null
+          interests: string[] | null
+          is_active: boolean | null
           last_name: string | null
+          mobile_number: string | null
+          notification_preferences: Json | null
+          office_number: string | null
+          onboarding_date: string | null
           phone_number: string | null
+          profile_visibility: string | null
+          rejection_reason: string | null
           role: string | null
+          shift_end: string | null
+          shift_start: string | null
+          skills: string[] | null
+          specialization: string | null
+          supervisor_id: string | null
           updated_at: string | null
           user_category:
             | Database["public"]["Enums"]["user_category_type"]
             | null
+          zone: string | null
         }
         Insert: {
           approval_status?:
             | Database["public"]["Enums"]["approval_status"]
             | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_role_title?: string | null
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           department?: string | null
+          designation?: string | null
+          email?: string | null
           first_name?: string | null
+          floor?: string | null
           id?: string | null
+          interests?: string[] | null
+          is_active?: boolean | null
           last_name?: string | null
+          mobile_number?: string | null
+          notification_preferences?: Json | null
+          office_number?: string | null
+          onboarding_date?: string | null
           phone_number?: string | null
+          profile_visibility?: string | null
+          rejection_reason?: string | null
           role?: string | null
+          shift_end?: string | null
+          shift_start?: string | null
+          skills?: string[] | null
+          specialization?: string | null
+          supervisor_id?: string | null
           updated_at?: string | null
           user_category?:
             | Database["public"]["Enums"]["user_category_type"]
             | null
+          zone?: string | null
         }
         Update: {
           approval_status?:
             | Database["public"]["Enums"]["approval_status"]
             | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_role_title?: string | null
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           department?: string | null
+          designation?: string | null
+          email?: string | null
           first_name?: string | null
+          floor?: string | null
           id?: string | null
+          interests?: string[] | null
+          is_active?: boolean | null
           last_name?: string | null
+          mobile_number?: string | null
+          notification_preferences?: Json | null
+          office_number?: string | null
+          onboarding_date?: string | null
           phone_number?: string | null
+          profile_visibility?: string | null
+          rejection_reason?: string | null
           role?: string | null
+          shift_end?: string | null
+          shift_start?: string | null
+          skills?: string[] | null
+          specialization?: string | null
+          supervisor_id?: string | null
           updated_at?: string | null
           user_category?:
             | Database["public"]["Enums"]["user_category_type"]
             | null
+          zone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_profiles: {
         Row: {
           approval_status: Database["public"]["Enums"]["approval_status"] | null
+          approved_at: string | null
+          approved_by: string | null
+          assigned_role_title: string | null
+          avatar_url: string | null
+          bio: string | null
           created_at: string | null
           department: string | null
+          designation: string | null
+          email: string | null
           first_name: string | null
+          floor: string | null
           id: string | null
+          interests: string[] | null
+          is_active: boolean | null
           last_name: string | null
+          mobile_number: string | null
+          notification_preferences: Json | null
+          office_number: string | null
+          onboarding_date: string | null
           phone_number: string | null
+          profile_visibility: string | null
+          rejection_reason: string | null
           role: string | null
+          shift_end: string | null
+          shift_start: string | null
+          skills: string[] | null
+          specialization: string | null
+          supervisor_id: string | null
           updated_at: string | null
           user_category:
             | Database["public"]["Enums"]["user_category_type"]
             | null
+          zone: string | null
         }
         Insert: {
           approval_status?:
             | Database["public"]["Enums"]["approval_status"]
             | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_role_title?: string | null
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           department?: string | null
+          designation?: string | null
+          email?: string | null
           first_name?: string | null
+          floor?: string | null
           id?: string | null
+          interests?: string[] | null
+          is_active?: boolean | null
           last_name?: string | null
+          mobile_number?: string | null
+          notification_preferences?: Json | null
+          office_number?: string | null
+          onboarding_date?: string | null
           phone_number?: string | null
+          profile_visibility?: string | null
+          rejection_reason?: string | null
           role?: string | null
+          shift_end?: string | null
+          shift_start?: string | null
+          skills?: string[] | null
+          specialization?: string | null
+          supervisor_id?: string | null
           updated_at?: string | null
           user_category?:
             | Database["public"]["Enums"]["user_category_type"]
             | null
+          zone?: string | null
         }
         Update: {
           approval_status?:
             | Database["public"]["Enums"]["approval_status"]
             | null
+          approved_at?: string | null
+          approved_by?: string | null
+          assigned_role_title?: string | null
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           department?: string | null
+          designation?: string | null
+          email?: string | null
           first_name?: string | null
+          floor?: string | null
           id?: string | null
+          interests?: string[] | null
+          is_active?: boolean | null
           last_name?: string | null
+          mobile_number?: string | null
+          notification_preferences?: Json | null
+          office_number?: string | null
+          onboarding_date?: string | null
           phone_number?: string | null
+          profile_visibility?: string | null
+          rejection_reason?: string | null
           role?: string | null
+          shift_end?: string | null
+          shift_start?: string | null
+          skills?: string[] | null
+          specialization?: string | null
+          supervisor_id?: string | null
           updated_at?: string | null
           user_category?:
             | Database["public"]["Enums"]["user_category_type"]
             | null
+          zone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
