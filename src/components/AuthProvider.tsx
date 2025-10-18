@@ -318,24 +318,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUserRole = React.useCallback(async (userId: string) => {
     try {
-      const { data: profile, error } = await supabase
+      // Fetch role from user_roles table (authoritative source)
+      const { data: userRole, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      // Fetch profile data for other fields
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role, user_category, department, approval_status')
+        .select('user_category, department, approval_status')
         .eq('id', userId)
         .maybeSingle();
       
-      if (error) {
-        console.error('Error fetching profile:', error);
-        updateRoleStates('tenant', 'tenant');
-        setUserDepartment(null);
-        setApprovalStatus('pending');
-        return;
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.error('Error fetching user role:', roleError);
       }
       
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error fetching profile:', profileError);
+      }
+      
+      // Determine the role - prioritize user_roles table, fallback to tenant
+      const role = userRole?.role || 'tenant';
+      
       if (profile) {
-        updateRoleStates(profile.role, profile.user_category || 'tenant', null);
+        updateRoleStates(role, profile.user_category || 'tenant', null);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
+      } else if (userRole) {
+        // Role exists but no profile - create profile
+        updateRoleStates(role, 'tenant', null);
+        setUserDepartment(null);
+        setApprovalStatus('pending');
       } else {
         try {
           const { error: insertError } = await supabase
