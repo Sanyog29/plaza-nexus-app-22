@@ -353,26 +353,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUserDepartment(null);
         setApprovalStatus('pending');
       } else {
+        // No role found in user_roles - create default tenant role
         try {
-          const { error: insertError } = await supabase
+          // Insert role into user_roles table (authoritative source)
+          const { error: roleInsertError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: userId,
+              role: 'tenant'
+            });
+          
+          if (roleInsertError) {
+            console.error('Role creation failed:', roleInsertError);
+          }
+          
+          // Create profile without role column (roles stored in user_roles only)
+          const { error: profileInsertError } = await supabase
             .from('profiles')
             .insert({
               id: userId,
               first_name: '',
               last_name: '',
-              role: 'tenant',
+              user_category: 'tenant',
               approval_status: 'pending'
             });
           
-          if (insertError) {
-            console.error('Profile creation failed:', insertError);
+          if (profileInsertError) {
+            console.error('Profile creation failed:', profileInsertError);
           }
           
           updateRoleStates('tenant', 'tenant');
           setUserDepartment(null);
           setApprovalStatus('pending');
         } catch (createError) {
-          console.error('Profile creation exception:', createError);
+          console.error('Profile/role creation exception:', createError);
           updateRoleStates('tenant', 'tenant');
           setUserDepartment(null);
           setApprovalStatus('pending');
