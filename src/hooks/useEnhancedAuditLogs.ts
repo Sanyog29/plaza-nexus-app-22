@@ -59,7 +59,7 @@ export function useEnhancedAuditLogs() {
         .from('audit_logs')
         .select(`
           *,
-          user_profile:profiles(first_name, last_name, role)
+          user_profile:profiles_public(first_name, last_name, role)
         `)
         .order('created_at', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
@@ -107,7 +107,7 @@ export function useEnhancedAuditLogs() {
         .from('audit_logs')
         .select(`
           *,
-          user_profile:profiles(first_name, last_name, role)
+          user_profile:profiles_public(first_name, last_name, role)
         `)
         .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Last 30 days
 
@@ -178,7 +178,7 @@ export function useEnhancedAuditLogs() {
         .from('audit_logs')
         .select(`
           *,
-          user_profile:profiles(first_name, last_name, role)
+          user_profile:profiles_public(first_name, last_name, role)
         `)
         .order('created_at', { ascending: false });
 

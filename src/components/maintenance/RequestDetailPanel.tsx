@@ -92,7 +92,7 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
   const fetchStaff = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('*')
         .in('role', ['admin', 'mst', 'fe', 'hk', 'se', 'assistant_manager', 'assistant_floor_manager']);
 

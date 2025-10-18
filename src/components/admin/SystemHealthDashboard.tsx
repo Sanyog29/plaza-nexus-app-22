@@ -107,7 +107,7 @@ export const SystemHealthDashboard = () => {
 
       // Fetch user metrics
       const { data: userStats, error: userError } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('role, approval_status');
 
       if (userError) throw userError;

@@ -101,14 +101,14 @@ const UnifiedDataExportTools: React.FC = () => {
 
         case 'users':
           const { data: users } = await supabase
-            .from('profiles')
+            .from('profiles_public')
             .select('*')
             .order('created_at', { ascending: false });
 
           data = users?.map(user => ({
             id: user.id,
             full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown',
-            email: 'Unknown', // Email is not available in profiles table
+            email: user.email || 'Unknown',
             role: user.role,
             department: user.department,
             status: user.approval_status,

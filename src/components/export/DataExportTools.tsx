@@ -85,7 +85,7 @@ export function DataExportTools({ className }: DataExportToolsProps) {
 
   const isAdmin = async () => {
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('profiles_public')
       .select('role')
       .eq('id', user?.id)
       .maybeSingle();
@@ -198,7 +198,7 @@ export function DataExportTools({ className }: DataExportToolsProps) {
             if (!adminUser) break;
             
             const { data: users } = await supabase
-              .from('profiles')
+              .from('profiles_public')
               .select('id, first_name, last_name, role, department, phone_number, office_number, floor, zone, created_at');
 
             data = users?.map(u => ({

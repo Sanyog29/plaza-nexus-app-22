@@ -95,7 +95,7 @@ export const StaffTrainingModule: React.FC = () => {
     try {
       // Fetch staff profiles
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('*')
         .in('role', ['field_staff', 'ops_supervisor', 'admin']);
 

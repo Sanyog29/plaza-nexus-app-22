@@ -122,7 +122,7 @@ export const L1OnboardingForm: React.FC<{ staffId?: string; onSuccess?: () => vo
 
   const fetchSupervisors = async () => {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('profiles_public')
       .select('id, first_name, last_name, role')
       .in('role', ['admin', 'ops_supervisor'])
       .order('first_name');

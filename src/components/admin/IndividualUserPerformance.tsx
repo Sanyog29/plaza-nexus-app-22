@@ -79,9 +79,9 @@ export const IndividualUserPerformance: React.FC = () => {
 
   const fetchUserPerformance = async (targetUserId: string) => {
     try {
-      // Get user profile
+      // Get user profile with role from public view
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('*')
         .eq('id', targetUserId)
         .maybeSingle();

@@ -71,14 +71,14 @@ export function GlobalSearch({ className, placeholder = "Search across all modul
 
       // Search users (admin only)
       const { data: profile } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('role')
         .eq('id', user?.id)
         .maybeSingle();
 
       if (profile?.role === 'admin' && (!selectedFilters.length || selectedFilters.includes('user'))) {
         const { data: users } = await supabase
-          .from('profiles')
+          .from('profiles_public')
           .select('id, first_name, last_name, role, department')
           .or(`first_name.ilike.%${searchQuery}%, last_name.ilike.%${searchQuery}%, department.ilike.%${searchQuery}%`)
           .limit(5);

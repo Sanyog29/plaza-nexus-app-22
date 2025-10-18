@@ -103,7 +103,7 @@ export const useCrossModuleIntegration = () => {
         .select(`
           *,
           visitor_categories (name, color),
-          profiles!inner (first_name, last_name, role)
+          profiles_public!inner (first_name, last_name, role)
         `)
         .eq('id', visitorId)
         .maybeSingle();
@@ -173,7 +173,7 @@ export const useCrossModuleIntegration = () => {
         case 'vip_arrival':
           // Send notifications to relevant staff
           const { data: staffProfiles } = await supabase
-            .from('profiles')
+            .from('profiles_public')
             .select('id')
             .in('role', ['admin', 'ops_supervisor']);
 

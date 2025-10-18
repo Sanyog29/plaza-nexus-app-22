@@ -120,7 +120,7 @@ const EnhancedSmartRouting: React.FC = () => {
 
     // Calculate staff utilization
     const { data: staff } = await supabase
-      .from('profiles')
+      .from('profiles_public')
       .select('*')
       .in('role', ['field_staff', 'ops_supervisor']);
 
@@ -139,13 +139,13 @@ const EnhancedSmartRouting: React.FC = () => {
 
   const loadStaffData = async (): Promise<StaffMember[]> => {
     const { data: staff } = await supabase
-      .from('profiles')
+      .from('profiles_public')
       .select('*')
       .in('role', ['field_staff', 'ops_supervisor', 'admin']);
 
     if (!staff) return [];
 
-    // Get current workload for each staff member
+    // Get current workload for each staff member  
     const staffWithWorkload = await Promise.all(
       staff.map(async (member) => {
         const { data: activeRequests } = await supabase
@@ -160,7 +160,7 @@ const EnhancedSmartRouting: React.FC = () => {
         return {
           id: member.id,
           name: `${member.first_name} ${member.last_name}`,
-          role: member.role,
+          role: member.role as string,
           currentWorkload: workload,
           skillMatch: Math.floor(Math.random() * 30) + 70, // Mock skill matching
           responseTime: Math.floor(Math.random() * 4) + 1, // Mock response time in hours

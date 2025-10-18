@@ -79,7 +79,7 @@ const RequestComments: React.FC<RequestCommentsProps> = ({ requestId }) => {
       // Fetch user profiles separately
       const userIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
       const { data: profilesData } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('id, first_name, last_name, role')
         .in('id', userIds);
 
