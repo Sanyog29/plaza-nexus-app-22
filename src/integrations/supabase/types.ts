@@ -4705,6 +4705,7 @@ export type Database = {
           phone_number_encrypted: string | null
           profile_visibility: string | null
           rejection_reason: string | null
+          role: string | null
           shift_end: string | null
           shift_start: string | null
           skills: string[] | null
@@ -4749,6 +4750,7 @@ export type Database = {
           phone_number_encrypted?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
+          role?: string | null
           shift_end?: string | null
           shift_start?: string | null
           skills?: string[] | null
@@ -4793,6 +4795,7 @@ export type Database = {
           phone_number_encrypted?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
+          role?: string | null
           shift_end?: string | null
           shift_start?: string | null
           skills?: string[] | null
@@ -9977,8 +9980,9 @@ export type Database = {
           last_name: string | null
           points_balance: number | null
           points_earned: number | null
-          role: Database["public"]["Enums"]["app_role"] | null
+          role: string | null
           technician_id: string | null
+          tickets_completed: number | null
           updated_at: string | null
         }
         Relationships: [
@@ -10014,9 +10018,41 @@ export type Database = {
           id: string | null
           last_name: string | null
           phone_number: string | null
-          role: Database["public"]["Enums"]["app_role"] | null
+          role: string | null
           updated_at: string | null
           user_category:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
+        }
+        Insert: {
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          created_at?: string | null
+          department?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          phone_number?: string | null
+          role?: string | null
+          updated_at?: string | null
+          user_category?:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
+        }
+        Update: {
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          created_at?: string | null
+          department?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          phone_number?: string | null
+          role?: string | null
+          updated_at?: string | null
+          user_category?:
             | Database["public"]["Enums"]["user_category_type"]
             | null
         }
@@ -10031,8 +10067,41 @@ export type Database = {
           id: string | null
           last_name: string | null
           phone_number: string | null
-          role: Database["public"]["Enums"]["app_role"] | null
+          role: string | null
+          updated_at: string | null
           user_category:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
+        }
+        Insert: {
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          created_at?: string | null
+          department?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          phone_number?: string | null
+          role?: string | null
+          updated_at?: string | null
+          user_category?:
+            | Database["public"]["Enums"]["user_category_type"]
+            | null
+        }
+        Update: {
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          created_at?: string | null
+          department?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          phone_number?: string | null
+          role?: string | null
+          updated_at?: string | null
+          user_category?:
             | Database["public"]["Enums"]["user_category_type"]
             | null
         }
