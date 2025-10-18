@@ -85,7 +85,11 @@ export const StaffPerformanceAnalytics = () => {
         .from('user_performance_scores')
         .select(`
           *,
-          user:profiles_public!user_id(first_name, last_name, role)
+          user:profiles_public!user_id(
+            first_name, 
+            last_name,
+            user_roles(role)
+          )
         `)
         .gte('metric_date', startDate)
         .order('metric_date', { ascending: false });
