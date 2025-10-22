@@ -9905,7 +9905,7 @@ export type Database = {
         Returns: string
       }
       get_user_management_data: {
-        Args: { caller_id: string }
+        Args: Record<PropertyKey, never>
         Returns: {
           approval_status: string
           approved_at: string
