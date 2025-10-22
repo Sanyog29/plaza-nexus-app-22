@@ -9905,19 +9905,23 @@ export type Database = {
         Returns: string
       }
       get_user_management_data: {
-        Args: Record<PropertyKey, never> | { caller_id: string }
+        Args: { caller_id: string }
         Returns: {
           approval_status: string
+          approved_at: string
+          approved_by: string
           assigned_role_title: string
           confirmed_at: string
           created_at: string
           department: string
           email: string
           first_name: string
+          has_profile: boolean
           id: string
           last_name: string
           last_sign_in_at: string
           phone_number: string
+          rejection_reason: string
           role: string
           specialization: string
           updated_at: string
