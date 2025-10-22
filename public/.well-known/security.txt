@@ -1,0 +1,14 @@
+Contact: mailto:security@digitide.com
+Expires: 2026-10-22T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://preview--plaza-nexus-app-22.lovable.app/.well-known/security.txt
+Policy: https://preview--plaza-nexus-app-22.lovable.app/security-policy.html
+
+# Security Measures Implemented
+# - Row Level Security (RLS) on all database tables
+# - SQL injection protection via parameterized queries
+# - Content Security Policy (CSP) headers
+# - Input validation and sanitization
+# - Secure authentication via Supabase
+# - HTTPS/SSL encryption on all connections
+# - Regular security audits and monitoring

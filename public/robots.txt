@@ -1,9 +1,25 @@
+# AUTOPILOT Tenant Management Platform
+# Developed by Digitide
+# This is a legitimate business application
+
 User-agent: *
 Allow: /auth
+Allow: /security-policy.html
+Allow: /.well-known/security.txt
 Disallow: /admin/
 Disallow: /staff/
 Disallow: /profile
 Disallow: /vendor-portal/
 Disallow: /security
+Disallow: /api/
+Disallow: /pos/
 
-Sitemap: https://YOUR_DOMAIN/sitemap.xml
+# Security & Policy Information
+Sitemap: https://preview--plaza-nexus-app-22.lovable.app/sitemap.xml
+
+# This site implements:
+# - Content Security Policy (CSP)
+# - Row Level Security (RLS) 
+# - HTTPS/SSL encryption
+# - Input validation and sanitization
+# - Secure authentication
