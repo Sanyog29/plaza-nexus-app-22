@@ -92,7 +92,8 @@ export const SimplifiedTaskSystem: React.FC = () => {
     { id: 'staff3', name: 'Mike Johnson', role: 'hk_security' }
   ];
 
-  const isOpsL2 = profile?.role === 'ops_l2' || profile?.role === 'admin';
+  const isOpsL2 = profile?.assigned_role_title?.toLowerCase().includes('ops_l2') || 
+                  profile?.assigned_role_title?.toLowerCase().includes('admin');
 
   return (
     <div className="space-y-6">

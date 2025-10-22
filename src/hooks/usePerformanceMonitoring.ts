@@ -192,11 +192,11 @@ export const usePerformanceMonitoring = () => {
     try {
       const { data } = await supabase
         .from('profiles')
-        .select('role')
+        .select('assigned_role_title')
         .eq('id', user.id)
         .maybeSingle();
       
-      return data?.role === 'admin';
+      return data?.assigned_role_title?.toLowerCase().includes('admin') || false;
     } catch {
       return false;
     }

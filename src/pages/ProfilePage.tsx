@@ -118,7 +118,7 @@ const ProfilePage = () => {
                           : user.email
                         }
                       </h2>
-                      <p className="text-plaza-blue font-medium capitalize">{profile.role}</p>
+                      <p className="text-plaza-blue font-medium capitalize">{profile.assigned_role_title || 'User'}</p>
                       <p className="text-gray-400 text-sm mt-1">{user.email}</p>
                       
                       <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">

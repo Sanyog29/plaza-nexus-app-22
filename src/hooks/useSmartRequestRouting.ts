@@ -83,12 +83,12 @@ export const useSmartRequestRouting = () => {
       const { data: staff, error } = await supabase
         .from('profiles')
         .select(`
-          id, first_name, last_name, role, floor, zone,
+          id, first_name, last_name, assigned_role_title, floor, zone,
           maintenance_requests:maintenance_requests!assigned_to(
             id, status, priority, created_at
           )
         `)
-        .in('role', ['field_staff', 'ops_supervisor']);
+        .not('assigned_role_title', 'is', null);
 
       if (error) throw error;
 
@@ -111,14 +111,14 @@ export const useSmartRequestRouting = () => {
         const urgencyPenalty = urgentRequests * 2;
 
         // Role-based scoring
-        const roleScore = member.role === 'ops_supervisor' ? 2 : 1;
+        const roleScore = member.assigned_role_title?.includes('supervisor') ? 2 : 1;
 
         const totalScore = locationScore + workloadScore + roleScore - urgencyPenalty;
 
         return {
           staff_id: member.id,
           name: `${member.first_name} ${member.last_name}`,
-          role: member.role,
+          role: member.assigned_role_title || 'Staff',
           score: totalScore,
           workload: totalRequests,
           location: `${member.floor || 'Any'} - ${member.zone || 'Any'}`
@@ -242,12 +242,12 @@ export const useSmartRequestRouting = () => {
       const { data: staff, error } = await supabase
         .from('profiles')
         .select(`
-          id, first_name, last_name, role, floor, zone,
+          id, first_name, last_name, assigned_role_title, floor, zone,
           maintenance_requests:maintenance_requests!assigned_to(
             id, status, priority, created_at, completed_at
           )
         `)
-        .in('role', ['field_staff', 'ops_supervisor']);
+        .not('assigned_role_title', 'is', null);
 
       if (error) throw error;
 
@@ -268,7 +268,7 @@ export const useSmartRequestRouting = () => {
         return {
           staff_id: member.id,
           name: `${member.first_name} ${member.last_name}`,
-          role: member.role,
+          role: member.assigned_role_title || 'Staff',
           active_requests: activeRequests.length,
           avg_completion_time: Math.round(avgCompletionTime * 100) / 100,
           current_capacity: Math.max(0, 10 - activeRequests.length), // Assume max 10 concurrent

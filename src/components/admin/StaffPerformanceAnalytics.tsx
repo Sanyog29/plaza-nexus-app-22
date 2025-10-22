@@ -13,7 +13,7 @@ interface StaffMember {
   id: string;
   first_name: string;
   last_name: string;
-  role: string;
+  assigned_role_title: string | null;
   department?: string;
 }
 
@@ -33,7 +33,7 @@ interface PerformanceScore {
   user: {
     first_name: string;
     last_name: string;
-    role: string;
+    assigned_role_title: string | null;
   };
 }
 
@@ -71,8 +71,8 @@ export const StaffPerformanceAnalytics = () => {
       // Fetch staff members
       const { data: staff, error: staffError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, role, department')
-        .in('role', ['field_staff', 'ops_supervisor'])
+        .select('id, first_name, last_name, assigned_role_title, department')
+        .not('assigned_role_title', 'is', null)
         .order('first_name', { ascending: true });
 
       if (staffError) throw staffError;
@@ -85,10 +85,10 @@ export const StaffPerformanceAnalytics = () => {
         .from('user_performance_scores')
         .select(`
           *,
-          user:profiles_public!user_id(
+          user:profiles!user_id(
             first_name, 
             last_name,
-            user_roles(role)
+            assigned_role_title
           )
         `)
         .gte('metric_date', startDate)
@@ -160,7 +160,8 @@ export const StaffPerformanceAnalytics = () => {
     }));
 
   const roleDistribution = staffMembers.reduce((acc, staff) => {
-    acc[staff.role] = (acc[staff.role] || 0) + 1;
+    const role = staff.assigned_role_title || 'unassigned';
+    acc[role] = (acc[role] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
@@ -355,7 +356,7 @@ export const StaffPerformanceAnalytics = () => {
                             {score.user.first_name} {score.user.last_name}
                           </p>
                           <p className="text-sm text-muted-foreground capitalize">
-                            {score.user.role.replace('_', ' ')}
+                            {score.user.assigned_role_title || 'Staff'}
                           </p>
                         </div>
                         <div className="text-right">
@@ -389,7 +390,7 @@ export const StaffPerformanceAnalytics = () => {
                           {score.user.first_name} {score.user.last_name}
                         </CardTitle>
                         <CardDescription className="capitalize">
-                          {score.user.role.replace('_', ' ')}
+                          {score.user.assigned_role_title || 'Staff'}
                         </CardDescription>
                       </div>
                       <Badge variant="outline">

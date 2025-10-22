@@ -134,8 +134,8 @@ export const useAutomatedAlerts = () => {
       // Get admin emails
       const { data: admins } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('role', 'admin');
+        .select('id, assigned_role_title')
+        .filter('assigned_role_title', 'ilike', '%admin%');
 
       if (admins) {
         for (const admin of admins) {

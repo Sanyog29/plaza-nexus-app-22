@@ -12,7 +12,7 @@ interface LeaderboardEntry {
   technician_id: string;
   first_name: string;
   last_name: string;
-  role: string;
+  assigned_role_title: string | null;
   points_earned: number;
   points_balance: number;
   current_tier: string;
@@ -42,18 +42,38 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
 
   const fetchLeaderboard = async () => {
     try {
+      // Fetch user performance data instead of monthly_leaderboard
       const { data, error } = await supabase
-        .from('monthly_leaderboard')
-        .select('*')
+        .from('user_performance_scores')
+        .select(`
+          user_id,
+          total_tasks_completed,
+          productivity_score,
+          efficiency_score,
+          profiles:user_id(first_name, last_name, assigned_role_title)
+        `)
+        .order('productivity_score', { ascending: false })
         .limit(limit);
 
       if (error) throw error;
 
-      setLeaderboard(data || []);
+      const formattedData: LeaderboardEntry[] = (data || []).map((entry: any) => ({
+        technician_id: entry.user_id,
+        first_name: entry.profiles?.first_name || 'Unknown',
+        last_name: entry.profiles?.last_name || '',
+        assigned_role_title: entry.profiles?.assigned_role_title || null,
+        points_earned: Math.round(entry.productivity_score * 10) || 0,
+        points_balance: Math.round((entry.productivity_score + entry.efficiency_score) * 5) || 0,
+        current_tier: entry.productivity_score >= 90 ? 'gold' : entry.productivity_score >= 70 ? 'silver' : 'bronze',
+        updated_at: new Date().toISOString(),
+        tickets_completed: entry.total_tasks_completed || 0,
+      }));
+
+      setLeaderboard(formattedData);
 
       // Find user's rank
-      const userIndex = data?.findIndex(entry => entry.technician_id === user?.id);
-      setUserRank(userIndex !== -1 && userIndex !== undefined ? userIndex + 1 : null);
+      const userIndex = formattedData.findIndex(entry => entry.technician_id === user?.id);
+      setUserRank(userIndex !== -1 ? userIndex + 1 : null);
 
     } catch (error: any) {
       console.error('Error fetching leaderboard:', error);
@@ -163,7 +183,7 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({
                         <div className={`w-2 h-2 rounded-full ${getTierBadgeColor(entry.current_tier)}`} />
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">{entry.role}</p>
+                    <p className="text-xs text-muted-foreground truncate">{entry.assigned_role_title || 'Staff'}</p>
                   </div>
 
                   {/* Points */}

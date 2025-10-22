@@ -281,7 +281,7 @@ export const useEnhancedOfflineMode = () => {
       const { data: adminProfiles } = await supabase
         .from('profiles')
         .select('*')
-        .in('role', ['admin', 'ops_supervisor']);
+        .not('assigned_role_title', 'is', null);
 
       // Cache current VIP/critical visitors
       const { data: criticalVisitors } = await supabase

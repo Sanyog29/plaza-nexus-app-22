@@ -65,7 +65,7 @@ const BulkOperationsPage = () => {
       // Fetch users with role filtering
       const { data: userData } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, role, created_at')
+        .select('id, first_name, last_name, assigned_role_title, created_at, email')
         .order('created_at', { ascending: false });
 
       // Fetch maintenance requests
@@ -78,7 +78,8 @@ const BulkOperationsPage = () => {
       if (userData) {
         const usersWithEmail = userData.map(user => ({
           ...user,
-          email: `user-${user.id.slice(0, 8)}@example.com` // Mock email for display
+          role: user.assigned_role_title || 'user',
+          email: user.email || `user-${user.id.slice(0, 8)}@example.com`
         }));
         setUsers(usersWithEmail);
       }

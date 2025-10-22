@@ -15,7 +15,7 @@ interface Profile {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  role: string;
+  assigned_role_title: string | null;
   office_number: string | null;
   phone_number: string | null;
   avatar_url: string | null;
@@ -71,7 +71,7 @@ export const useProfile = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select(`
-          id, first_name, last_name, role, office_number, phone_number,
+          id, first_name, last_name, assigned_role_title, office_number, phone_number,
           avatar_url, department, floor, zone, emergency_contact_name,
           emergency_contact_phone, emergency_contact_relationship,
           profile_visibility, notification_preferences, bio, skills,
@@ -92,7 +92,6 @@ export const useProfile = () => {
             id: user.id,
             first_name: '',
             last_name: '',
-            role: 'tenant_manager',
             notification_preferences: {
               maintenance: true,
               announcements: true,
@@ -188,7 +187,6 @@ export const useProfile = () => {
           bio: profileData.bio || null,
           skills: profileData.skills || null,
           interests: profileData.interests || null,
-          role: 'tenant_manager',
         })
         .select()
         .maybeSingle();

@@ -92,8 +92,8 @@ const TrainingManagement: React.FC = () => {
     const fetchStaff = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name')
-        .in('role', ['field_staff', 'ops_supervisor'])
+        .select('id, first_name, last_name, assigned_role_title')
+        .not('assigned_role_title', 'is', null)
         .eq('approval_status', 'approved');
       
       if (data) {
