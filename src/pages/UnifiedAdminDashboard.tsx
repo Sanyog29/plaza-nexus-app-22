@@ -34,7 +34,8 @@ import {
   Package,
   UserCheck,
   Globe,
-  Plus
+  Plus,
+  Building2
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 
@@ -48,6 +49,7 @@ const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage')
 const BulkOperationsPage = lazy(() => import('@/pages/BulkOperationsPage'));
 const AuditLogsPage = lazy(() => import('@/pages/AuditLogsPage'));
 const VisitorManagementPage = lazy(() => import('@/pages/VisitorManagementPage'));
+const PropertyManagementPage = lazy(() => import('@/pages/admin/PropertyManagementPage').then(m => ({ default: m.default })));
 
 const UnifiedAdminDashboard = () => {
   const navigate = useNavigate();
@@ -138,6 +140,14 @@ const UnifiedAdminDashboard = () => {
       icon: FileText,
       route: "audit",
       color: "text-red-500"
+    },
+    {
+      title: "Property Management",
+      description: "Manage properties and assignments",
+      icon: Building2,
+      route: "properties",
+      color: "text-cyan-500",
+      badge: "Multi-Property"
     },
     {
       title: "Settings",
@@ -273,7 +283,7 @@ const UnifiedAdminDashboard = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-9 bg-card/50">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-10 bg-card/50">
             <TabsTrigger value="overview" className="data-[state=active]:bg-primary">
               Overview
             </TabsTrigger>
@@ -297,6 +307,9 @@ const UnifiedAdminDashboard = () => {
             </TabsTrigger>
             <TabsTrigger value="visitors" className="data-[state=active]:bg-primary">
               Visitors
+            </TabsTrigger>
+            <TabsTrigger value="properties" className="data-[state=active]:bg-primary">
+              Properties
             </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-primary">
               Settings
@@ -491,6 +504,12 @@ const UnifiedAdminDashboard = () => {
           <TabsContent value="visitors" className="space-y-6">
             <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
               <VisitorManagementPage />
+            </Suspense>
+          </TabsContent>
+
+          <TabsContent value="properties" className="space-y-6">
+            <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
+              <PropertyManagementPage />
             </Suspense>
           </TabsContent>
 
