@@ -101,14 +101,15 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+    // Check if user is admin or super_admin
+    const { data: userRole, error: roleError } = await supabase
+      .from('user_roles')
       .select('role')
-      .eq('id', user.id)
-      .single();
+      .eq('user_id', user.id)
+      .or('role.eq.admin,role.eq.super_admin')
+      .maybeSingle();
 
-    if (profileError || profile?.role !== 'admin') {
+    if (roleError || !userRole) {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -355,9 +356,8 @@ const handler = async (req: Request): Promise<Response> => {
         .update({
           first_name,
           last_name,
-          role,
           assigned_role_title: inputRole, // Store the original role title assigned
-          department: role === 'tenant' ? null : department,
+          department: role === 'tenant_manager' ? null : department,
           specialization,
           emp_id,
           phone_number: normalizedPhone || mobile_number || phone_number,
@@ -365,6 +365,15 @@ const handler = async (req: Request): Promise<Response> => {
           floor
         })
         .eq('id', newUser.user.id);
+
+      // Insert role into user_roles table
+      await supabase
+        .from('user_roles')
+        .insert({
+          user_id: newUser.user.id,
+          role: role,
+          assigned_by: user.id
+        });
 
       // Create notification for admin
         await supabase

@@ -49,7 +49,7 @@ const QualityControlPage = lazy(() => import('@/pages/admin/QualityControlPage')
 const BulkOperationsPage = lazy(() => import('@/pages/BulkOperationsPage'));
 const AuditLogsPage = lazy(() => import('@/pages/AuditLogsPage'));
 const VisitorManagementPage = lazy(() => import('@/pages/VisitorManagementPage'));
-const PropertyManagementPage = lazy(() => import('@/pages/admin/PropertyManagementPage').then(m => ({ default: m.default })));
+const PropertyManagementPage = lazy(() => import('@/pages/admin/PropertyManagementPage'));
 
 const UnifiedAdminDashboard = () => {
   const navigate = useNavigate();

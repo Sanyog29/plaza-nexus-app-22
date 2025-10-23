@@ -117,7 +117,9 @@ const AssignedTechnicianInfo: React.FC<AssignedTechnicianInfoProps> = ({
             <h3 className="font-semibold text-white text-lg">
               {formatUserNameFromProfile(technician)}
             </h3>
-            <p className="text-gray-400 text-sm capitalize">{technician.role.replace('_', ' ')}</p>
+            {technician.assigned_role_title && (
+              <p className="text-gray-400 text-sm capitalize">{technician.assigned_role_title.replace('_', ' ')}</p>
+            )}
             {technician.specialization && (
               <p className="text-gray-500 text-sm">{technician.specialization}</p>
             )}

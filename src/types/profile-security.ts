@@ -37,7 +37,6 @@ export interface PublicProfile {
   assigned_role_title: string | null;
   email: string | null;
   user_category: string;
-  role: string;
 }
 
 /**
@@ -125,8 +124,7 @@ export const PUBLIC_FIELDS = [
   'mobile_number',
   'assigned_role_title',
   'email',
-  'user_category',
-  'role'
+  'user_category'
 ] as const;
 
 /**
