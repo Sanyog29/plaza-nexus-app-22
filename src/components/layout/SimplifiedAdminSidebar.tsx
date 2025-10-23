@@ -205,6 +205,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
   const getMenuGroups = () => {
     switch (userRole) {
       // Executive/Admin Level - Full admin access
+      case 'super_admin':
       case 'admin':
       case 'ops_supervisor':
       case 'ceo':
