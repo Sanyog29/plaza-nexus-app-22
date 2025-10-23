@@ -386,8 +386,8 @@ export const EnhancedUserManagement: React.FC = () => {
       const { data, error } = await supabase.rpc('update_user_role_and_department', {
         target_user_id: userId,
         role_text: newRole,
-        department: departmentSelection.department || null,
-        specialization: departmentSelection.specialization || null
+        dept: departmentSelection.department || null,
+        spec: departmentSelection.specialization || null
       });
 
       if (error) throw error;
