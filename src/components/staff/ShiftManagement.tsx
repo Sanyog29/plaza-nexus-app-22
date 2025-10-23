@@ -80,13 +80,12 @@ const ShiftManagement: React.FC = () => {
   // Fetch staff list
   useEffect(() => {
     const fetchStaff = async () => {
-      const result: any = await supabase
+      const result = await (supabase as any)
         .from('profiles')
         .select('id, first_name, last_name')
         .in('role', ['field_staff', 'ops_supervisor'])
         .eq('approval_status', 'approved');
-      
-      const { data } = result;
+      const data = result.data;
       
       if (data) {
         setStaffList(data);

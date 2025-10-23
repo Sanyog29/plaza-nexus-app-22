@@ -136,10 +136,11 @@ export const useAutomatedWorkflows = () => {
           
           // Create notifications for each recipient role
           for (const role of recipients) {
-            const { data: profiles } = await supabase
+            const result = await (supabase as any)
               .from('profiles')
               .select('id')
               .eq('role', role);
+            const profiles = result.data;
 
             if (profiles) {
               for (const profile of profiles) {
