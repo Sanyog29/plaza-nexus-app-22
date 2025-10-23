@@ -54,7 +54,7 @@ serve(async (req) => {
             id: authUser.user.id,
             first_name: userData.firstName,
             last_name: userData.lastName,
-            role: userData.role
+            assigned_role_title: userData.role.replace('_', ' ')
           })
 
         if (profileError) {
@@ -63,6 +63,25 @@ serve(async (req) => {
             email: userData.email, 
             success: false, 
             error: `Profile creation failed: ${profileError.message}`,
+            userId: authUser.user.id
+          })
+          continue
+        }
+
+        // Insert role into user_roles table
+        const { error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .insert({
+            user_id: authUser.user.id,
+            role: userData.role
+          })
+
+        if (roleError) {
+          console.error(`Error creating role for ${userData.email}:`, roleError)
+          results.push({ 
+            email: userData.email, 
+            success: false, 
+            error: `Role creation failed: ${roleError.message}`,
             userId: authUser.user.id
           })
         } else {

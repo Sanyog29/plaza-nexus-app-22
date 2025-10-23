@@ -103,7 +103,7 @@ export const useCrossModuleIntegration = () => {
         .select(`
           *,
           visitor_categories (name, color),
-          profiles_public!inner (first_name, last_name, role)
+          profiles_public!inner (first_name, last_name, assigned_role_title)
         `)
         .eq('id', visitorId)
         .maybeSingle();
@@ -172,14 +172,16 @@ export const useCrossModuleIntegration = () => {
           break;
 
         case 'vip_arrival':
-          // Send notifications to relevant staff
-          const { data: staffProfiles } = await supabase
-            .from('profiles_public')
-            .select('id')
+          // Send notifications to relevant staff via user_roles
+          const { data: adminRoles } = await supabase
+            .from('user_roles')
+            .select('user_id')
             .in('role', ['admin', 'ops_supervisor']);
+          
+          const staffProfiles = adminRoles ? { data: adminRoles.map(r => ({ id: r.user_id })) } : { data: null };
 
-          if (staffProfiles) {
-            for (const profile of staffProfiles) {
+          if (staffProfiles.data) {
+            for (const profile of staffProfiles.data) {
               await supabase.rpc('create_notification', {
                 target_user_id: profile.id,
                 notification_title: 'VIP Visitor Arrival',

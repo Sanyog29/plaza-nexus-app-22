@@ -41,7 +41,7 @@ export const useComplianceReporting = () => {
         .select(`
           *,
           visitor_categories (name),
-          profiles!inner (first_name, last_name, role),
+          profiles!inner (first_name, last_name, assigned_role_title),
           visitor_check_logs (*)
         `)
         .gte('visit_date', startDate)
