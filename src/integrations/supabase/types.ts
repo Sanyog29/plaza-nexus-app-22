@@ -92,7 +92,7 @@ export type Database = {
           firmware_version: string | null
           floor: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean
           last_ping: string | null
           location: string
@@ -109,7 +109,7 @@ export type Database = {
           firmware_version?: string | null
           floor: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           last_ping?: string | null
           location: string
@@ -126,7 +126,7 @@ export type Database = {
           firmware_version?: string | null
           floor?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean
           last_ping?: string | null
           location?: string
@@ -389,7 +389,7 @@ export type Database = {
           action: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           resource_id: string | null
@@ -401,7 +401,7 @@ export type Database = {
           action: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           resource_id?: string | null
@@ -413,7 +413,7 @@ export type Database = {
           action?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           resource_id?: string | null
@@ -4398,7 +4398,7 @@ export type Database = {
           changed_by: string | null
           changes: Json
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           profile_id: string
           timestamp: string | null
           user_agent: string | null
@@ -4408,7 +4408,7 @@ export type Database = {
           changed_by?: string | null
           changes: Json
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           profile_id: string
           timestamp?: string | null
           user_agent?: string | null
@@ -4418,7 +4418,7 @@ export type Database = {
           changed_by?: string | null
           changes?: Json
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           profile_id?: string
           timestamp?: string | null
           user_agent?: string | null
@@ -5471,7 +5471,7 @@ export type Database = {
           action: string
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           resource_id: string | null
           resource_type: string
@@ -5484,7 +5484,7 @@ export type Database = {
           action: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type: string
@@ -5497,7 +5497,7 @@ export type Database = {
           action?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           resource_id?: string | null
           resource_type?: string
@@ -5831,7 +5831,7 @@ export type Database = {
           created_at: string
           fields_accessed: string[]
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           target_user_id: string | null
           user_agent: string | null
         }
@@ -5841,7 +5841,7 @@ export type Database = {
           created_at?: string
           fields_accessed: string[]
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           target_user_id?: string | null
           user_agent?: string | null
         }
@@ -5851,7 +5851,7 @@ export type Database = {
           created_at?: string
           fields_accessed?: string[]
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           target_user_id?: string | null
           user_agent?: string | null
         }
@@ -9532,14 +9532,8 @@ export type Database = {
       }
     }
     Functions: {
-      accept_request_offer: {
-        Args: { p_request_id: string }
-        Returns: Json
-      }
-      acknowledge_ticket: {
-        Args: { ticket_id: string }
-        Returns: boolean
-      }
+      accept_request_offer: { Args: { p_request_id: string }; Returns: Json }
+      acknowledge_ticket: { Args: { ticket_id: string }; Returns: boolean }
       add_business_hours: {
         Args: { hours_to_add: number; start_time: string }
         Returns: string
@@ -9552,31 +9546,36 @@ export type Database = {
         Args: { target_vendor_id: string }
         Returns: Json
       }
-      admin_backfill_profiles_from_auth: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      admin_backfill_profiles_from_auth: { Args: never; Returns: Json }
       admin_bulk_create_maintenance_requests: {
         Args: { requests_data: Json; upload_id: string }
         Returns: Json
       }
-      admin_bulk_create_users: {
-        Args: { users_data: Json }
-        Returns: Json
-      }
-      admin_cascade_delete_user_data: {
-        Args:
-          | { calling_user_id: string; target_user_id: string }
-          | { target_user_id: string }
-        Returns: Json
-      }
-      admin_cleanup_orphaned_vendor_staff: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      admin_create_user_invitation: {
-        Args:
-          | {
+      admin_bulk_create_users: { Args: { users_data: Json }; Returns: Json }
+      admin_cascade_delete_user_data:
+        | {
+            Args: { calling_user_id: string; target_user_id: string }
+            Returns: Json
+          }
+        | { Args: { target_user_id: string }; Returns: Json }
+      admin_cleanup_orphaned_vendor_staff: { Args: never; Returns: Json }
+      admin_create_user_invitation:
+        | {
+            Args: {
+              invitation_department?: string
+              invitation_email: string
+              invitation_first_name: string
+              invitation_floor?: string
+              invitation_last_name: string
+              invitation_office_number?: string
+              invitation_phone_number?: string
+              invitation_role: string
+              invitation_specialization?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
               invitation_department?: string
               invitation_email: string
               invitation_emp_id?: string
@@ -9589,7 +9588,10 @@ export type Database = {
               invitation_role: string
               invitation_specialization?: string
             }
-          | {
+            Returns: Json
+          }
+        | {
+            Args: {
               invitation_department?: string
               invitation_email: string
               invitation_first_name: string
@@ -9599,19 +9601,8 @@ export type Database = {
               invitation_phone_number?: string
               invitation_role: string
             }
-          | {
-              invitation_department?: string
-              invitation_email: string
-              invitation_first_name: string
-              invitation_floor?: string
-              invitation_last_name: string
-              invitation_office_number?: string
-              invitation_phone_number?: string
-              invitation_role: string
-              invitation_specialization?: string
-            }
-        Returns: Json
-      }
+            Returns: Json
+          }
       admin_create_user_with_validation: {
         Args: {
           p_department?: string
@@ -9626,16 +9617,10 @@ export type Database = {
         }
         Returns: Json
       }
-      admin_create_vendor: {
-        Args: { vendor_data: Json }
-        Returns: Json
-      }
-      admin_delete_user: {
-        Args: { target_user_id: string }
-        Returns: Json
-      }
+      admin_create_vendor: { Args: { vendor_data: Json }; Returns: Json }
+      admin_delete_user: { Args: { target_user_id: string }; Returns: Json }
       admin_get_approved_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           first_name: string
@@ -9645,7 +9630,7 @@ export type Database = {
         }[]
       }
       admin_get_unassigned_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           first_name: string
@@ -9655,7 +9640,7 @@ export type Database = {
         }[]
       }
       admin_get_vendor_staff_assignments: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           assigned_at: string
           assignment_id: string
@@ -9676,12 +9661,9 @@ export type Database = {
         Args: { approver_id: string; target_user_id: string }
         Returns: boolean
       }
-      assign_and_start_request: {
-        Args:
-          | { p_request_id: string }
-          | { p_request_id: string; p_staff_id: string }
-        Returns: Json
-      }
+      assign_and_start_request:
+        | { Args: { p_request_id: string }; Returns: Json }
+        | { Args: { p_request_id: string; p_staff_id: string }; Returns: Json }
       assign_staff_to_zone: {
         Args: {
           p_department_id: string
@@ -9691,10 +9673,7 @@ export type Database = {
         }
         Returns: string
       }
-      backfill_vendor_analytics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      backfill_vendor_analytics: { Args: never; Returns: undefined }
       broadcast_request_offer: {
         Args: { p_expires_in_minutes?: number; p_request_id: string }
         Returns: Json
@@ -9707,14 +9686,8 @@ export type Database = {
         Args: { end_time: string; start_time: string }
         Returns: number
       }
-      calculate_cross_module_kpis: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      calculate_daily_metrics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      calculate_cross_module_kpis: { Args: never; Returns: undefined }
+      calculate_daily_metrics: { Args: never; Returns: undefined }
       calculate_staff_workload_score: {
         Args: { target_staff_id: string }
         Returns: number
@@ -9723,18 +9696,9 @@ export type Database = {
         Args: { score_date?: string; target_user_id: string }
         Returns: Json
       }
-      calculate_utility_consumption: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      calculate_vendor_daily_analytics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      call_booking_reminders: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      calculate_utility_consumption: { Args: never; Returns: undefined }
+      calculate_vendor_daily_analytics: { Args: never; Returns: undefined }
+      call_booking_reminders: { Args: never; Returns: undefined }
       can_view_profile_sensitive_data: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -9743,18 +9707,12 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
-      check_sla_breaches: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_sla_breaches: { Args: never; Returns: undefined }
       complete_request: {
         Args: { p_closure_reason?: string; p_request_id: string }
         Returns: Json
       }
-      create_amc_alerts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      create_amc_alerts: { Args: never; Returns: undefined }
       create_notification: {
         Args: {
           action_url?: string
@@ -9765,10 +9723,7 @@ export type Database = {
         }
         Returns: string
       }
-      decline_request_offer: {
-        Args: { p_request_id: string }
-        Returns: Json
-      }
+      decline_request_offer: { Args: { p_request_id: string }; Returns: Json }
       decrypt_sensitive_field: {
         Args: { ciphertext: string; field_name: string; profile_id: string }
         Returns: string
@@ -9802,10 +9757,7 @@ export type Database = {
           previous_period: Json
         }[]
       }
-      generate_pickup_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_pickup_code: { Args: never; Returns: string }
       generate_recurring_bookings: {
         Args: {
           base_booking_id: string
@@ -9814,22 +9766,10 @@ export type Database = {
         }
         Returns: number
       }
-      generate_visitor_qr_data: {
-        Args: { visitor_id: string }
-        Returns: Json
-      }
-      get_full_profile: {
-        Args: { profile_id: string }
-        Returns: Json
-      }
-      get_invitation_by_token: {
-        Args: { token: string }
-        Returns: Json
-      }
-      get_invitation_details: {
-        Args: { token: string }
-        Returns: Json
-      }
+      generate_visitor_qr_data: { Args: { visitor_id: string }; Returns: Json }
+      get_full_profile: { Args: { profile_id: string }; Returns: Json }
+      get_invitation_by_token: { Args: { token: string }; Returns: Json }
+      get_invitation_details: { Args: { token: string }; Returns: Json }
       get_public_profile_fields: {
         Args: { profile_id: string }
         Returns: {
@@ -9864,14 +9804,8 @@ export type Database = {
           request_title: string
         }[]
       }
-      get_role_defaults: {
-        Args: { role_slug: string }
-        Returns: Json
-      }
-      get_role_from_title: {
-        Args: { input_role: string }
-        Returns: string
-      }
+      get_role_defaults: { Args: { role_slug: string }; Returns: Json }
+      get_role_from_title: { Args: { input_role: string }; Returns: string }
       get_room_availability_data: {
         Args: { target_date: string }
         Returns: {
@@ -9900,12 +9834,9 @@ export type Database = {
         Args: { setting_category: string; setting_key: string }
         Returns: Json
       }
-      get_user_display_name: {
-        Args: { user_uuid: string }
-        Returns: string
-      }
+      get_user_display_name: { Args: { user_uuid: string }; Returns: string }
       get_user_management_data: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approval_status: string
           approved_at: string
@@ -9927,18 +9858,9 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_user_management_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_user_permissions: {
-        Args: { user_id: string }
-        Returns: Json
-      }
-      get_user_role: {
-        Args: { target_user_id: string }
-        Returns: string
-      }
+      get_user_management_stats: { Args: never; Returns: Json }
+      get_user_permissions: { Args: { user_id: string }; Returns: Json }
+      get_user_role: { Args: { target_user_id: string }; Returns: string }
       get_vendor_cumulative_analytics: {
         Args: { p_period?: string; p_vendor_id: string }
         Returns: {
@@ -9962,54 +9884,21 @@ export type Database = {
         Args: { desc_text: string; title_text: string }
         Returns: string
       }
-      is_admin: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_admin_secure: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_approved_user: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      is_food_vendor: {
-        Args: { uid: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { uid: string }; Returns: boolean }
+      is_admin_secure: { Args: { uid: string }; Returns: boolean }
+      is_approved_user: { Args: { user_id: string }; Returns: boolean }
+      is_food_vendor: { Args: { uid: string }; Returns: boolean }
       is_food_vendor_staff_for_vendor: {
         Args: { target_vendor_id: string; user_id: string }
         Returns: boolean
       }
-      is_l1: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_l2: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_l3: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_l4: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_management: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_ops_staff: {
-        Args: { uid: string }
-        Returns: boolean
-      }
-      is_staff: {
-        Args: { uid: string }
-        Returns: boolean
-      }
+      is_l1: { Args: { uid: string }; Returns: boolean }
+      is_l2: { Args: { uid: string }; Returns: boolean }
+      is_l3: { Args: { uid: string }; Returns: boolean }
+      is_l4: { Args: { uid: string }; Returns: boolean }
+      is_management: { Args: { uid: string }; Returns: boolean }
+      is_ops_staff: { Args: { uid: string }; Returns: boolean }
+      is_staff: { Args: { uid: string }; Returns: boolean }
       is_vendor_staff_for_vendor: {
         Args: { target_vendor_id: string; user_id: string }
         Returns: boolean
@@ -10103,10 +9992,7 @@ export type Database = {
         Args: { deleted_by_user: string; request_ids: string[] }
         Returns: Json
       }
-      start_security_shift: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      start_security_shift: { Args: never; Returns: string }
       suggest_optimal_staff_assignment: {
         Args: {
           priority?: string
@@ -10136,12 +10022,12 @@ export type Database = {
         Args: { auto_offline_minutes?: number; new_status: string }
         Returns: boolean
       }
-      update_user_role: {
-        Args:
-          | { caller_id: string; new_role: string; user_id: string }
-          | { new_role: string; user_id: string }
-        Returns: boolean
-      }
+      update_user_role:
+        | { Args: { new_role: string; user_id: string }; Returns: boolean }
+        | {
+            Args: { caller_id: string; new_role: string; user_id: string }
+            Returns: boolean
+          }
       update_user_role_and_department: {
         Args: {
           department: string
@@ -10187,6 +10073,7 @@ export type Database = {
         | "cxo"
         | "tenant"
         | "super_tenant"
+        | "super_admin"
       approval_status: "pending" | "approved" | "rejected"
       availability_status_type: "available" | "busy" | "offline" | "on_leave"
       request_priority: "low" | "medium" | "high" | "urgent"
@@ -10354,6 +10241,7 @@ export const Constants = {
         "cxo",
         "tenant",
         "super_tenant",
+        "super_admin",
       ],
       approval_status: ["pending", "approved", "rejected"],
       availability_status_type: ["available", "busy", "offline", "on_leave"],
