@@ -83,8 +83,8 @@ export const AITaskDistribution: React.FC<AITaskDistributionProps> = ({ onTaskAs
   const fetchStaffAndTasks = async () => {
     try {
       // Fetch staff data
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+      const { data: profiles, error: profilesError } = await (supabase
+        .from('profiles') as any)
         .select('*')
         .in('role', ['field_staff', 'ops_supervisor']);
 

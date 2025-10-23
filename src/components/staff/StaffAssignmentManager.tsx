@@ -84,8 +84,8 @@ export const StaffAssignmentManager: React.FC = () => {
   const fetchStaff = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase
+        .from('profiles') as any)
         .select(`
           id,
           first_name,

@@ -72,16 +72,16 @@ const StaffWorkloadBalancer: React.FC = () => {
     setLoading(true);
     try {
       // Fetch staff members - get both profiles and auth.users data
-      const { data: profiles } = await supabase
-        .from('profiles')
+      const { data: profiles } = await (supabase
+        .from('profiles') as any)
         .select('*')
         .in('role', ['field_staff', 'ops_supervisor'])
         .eq('approval_status', 'approved');
 
       if (profiles) {
         // Get unique departments
-        const depts = [...new Set(profiles.map(p => p.department).filter(Boolean))];
-        setDepartments(depts);
+        const depts = [...new Set(profiles.map((p: any) => p.department).filter(Boolean))];
+        setDepartments(depts as string[]);
 
         // Fetch workload data for each staff member
         const staffWithWorkload = await Promise.all(
