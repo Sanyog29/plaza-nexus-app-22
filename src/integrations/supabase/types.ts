@@ -26,6 +26,7 @@ export type Database = {
           id: string
           location: string
           metadata: Json | null
+          property_id: string | null
           success: boolean
           timestamp: string
           user_id: string | null
@@ -43,6 +44,7 @@ export type Database = {
           id?: string
           location: string
           metadata?: Json | null
+          property_id?: string | null
           success: boolean
           timestamp?: string
           user_id?: string | null
@@ -60,6 +62,7 @@ export type Database = {
           id?: string
           location?: string
           metadata?: Json | null
+          property_id?: string | null
           success?: boolean
           timestamp?: string
           user_id?: string | null
@@ -72,6 +75,13 @@ export type Database = {
             columns: ["access_point_id"]
             isOneToOne: false
             referencedRelation: "access_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_logs_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
           {
@@ -320,6 +330,7 @@ export type Database = {
           next_service_due: string | null
           notes: string | null
           photo_urls: string[] | null
+          property_id: string | null
           purchase_date: string | null
           serial_number: string | null
           service_frequency_months: number | null
@@ -347,6 +358,7 @@ export type Database = {
           next_service_due?: string | null
           notes?: string | null
           photo_urls?: string[] | null
+          property_id?: string | null
           purchase_date?: string | null
           serial_number?: string | null
           service_frequency_months?: number | null
@@ -374,6 +386,7 @@ export type Database = {
           next_service_due?: string | null
           notes?: string | null
           photo_urls?: string[] | null
+          property_id?: string | null
           purchase_date?: string | null
           serial_number?: string | null
           service_frequency_months?: number | null
@@ -382,7 +395,15 @@ export type Database = {
           warranty_expiry?: string | null
           zone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "assets_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
@@ -881,6 +902,7 @@ export type Database = {
           payment_status: string | null
           pickup_time: string
           preparation_time_minutes: number | null
+          property_id: string | null
           rating: number | null
           scheduled_pickup_time: string | null
           service_type: string | null
@@ -911,6 +933,7 @@ export type Database = {
           payment_status?: string | null
           pickup_time: string
           preparation_time_minutes?: number | null
+          property_id?: string | null
           rating?: number | null
           scheduled_pickup_time?: string | null
           service_type?: string | null
@@ -941,6 +964,7 @@ export type Database = {
           payment_status?: string | null
           pickup_time?: string
           preparation_time_minutes?: number | null
+          property_id?: string | null
           rating?: number | null
           scheduled_pickup_time?: string | null
           service_type?: string | null
@@ -953,6 +977,13 @@ export type Database = {
           vendor_payout_amount?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cafeteria_orders_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cafeteria_orders_vendor_id_fkey"
             columns: ["vendor_id"]
@@ -1535,6 +1566,7 @@ export type Database = {
           pickup_at: string | null
           pickup_by: string | null
           pickup_code: string | null
+          property_id: string | null
           received_by: string | null
           recipient_company: string | null
           recipient_contact: string | null
@@ -1559,6 +1591,7 @@ export type Database = {
           pickup_at?: string | null
           pickup_by?: string | null
           pickup_code?: string | null
+          property_id?: string | null
           received_by?: string | null
           recipient_company?: string | null
           recipient_contact?: string | null
@@ -1583,6 +1616,7 @@ export type Database = {
           pickup_at?: string | null
           pickup_by?: string | null
           pickup_code?: string | null
+          property_id?: string | null
           received_by?: string | null
           recipient_company?: string | null
           recipient_contact?: string | null
@@ -1621,6 +1655,13 @@ export type Database = {
             columns: ["pickup_by"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deliveries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
           {
@@ -3187,6 +3228,7 @@ export type Database = {
           next_escalation_at: string | null
           priority: Database["public"]["Enums"]["request_priority"]
           process_id: string | null
+          property_id: string | null
           reported_by: string | null
           resolution_sla_at: string | null
           response_sla_at: string | null
@@ -3236,6 +3278,7 @@ export type Database = {
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           process_id?: string | null
+          property_id?: string | null
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -3285,6 +3328,7 @@ export type Database = {
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           process_id?: string | null
+          property_id?: string | null
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -3354,6 +3398,13 @@ export type Database = {
             columns: ["process_id"]
             isOneToOne: false
             referencedRelation: "maintenance_processes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
           {
@@ -4486,6 +4537,7 @@ export type Database = {
           onboarding_date: string | null
           phone_number: string | null
           phone_number_encrypted: string | null
+          primary_property_id: string | null
           profile_visibility: string | null
           rejection_reason: string | null
           shift_end: string | null
@@ -4530,6 +4582,7 @@ export type Database = {
           onboarding_date?: string | null
           phone_number?: string | null
           phone_number_encrypted?: string | null
+          primary_property_id?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
           shift_end?: string | null
@@ -4574,6 +4627,7 @@ export type Database = {
           onboarding_date?: string | null
           phone_number?: string | null
           phone_number_encrypted?: string | null
+          primary_property_id?: string | null
           profile_visibility?: string | null
           rejection_reason?: string | null
           shift_end?: string | null
@@ -4603,6 +4657,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "profiles_primary_property_id_fkey"
+            columns: ["primary_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profiles_supervisor_id_fkey"
             columns: ["supervisor_id"]
             isOneToOne: false
@@ -4614,6 +4675,107 @@ export type Database = {
             columns: ["supervisor_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          postal_code: string | null
+          property_type: string | null
+          settings: Json | null
+          state: string | null
+          status: string | null
+          timezone: string | null
+          total_floors: number | null
+          total_units: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          postal_code?: string | null
+          property_type?: string | null
+          settings?: Json | null
+          state?: string | null
+          status?: string | null
+          timezone?: string | null
+          total_floors?: number | null
+          total_units?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          postal_code?: string | null
+          property_type?: string | null
+          settings?: Json | null
+          state?: string | null
+          status?: string | null
+          timezone?: string | null
+          total_floors?: number | null
+          total_units?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      property_assignments: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          is_primary: boolean | null
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          is_primary?: boolean | null
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          is_primary?: boolean | null
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_assignments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -9860,6 +10022,16 @@ export type Database = {
       }
       get_user_management_stats: { Args: never; Returns: Json }
       get_user_permissions: { Args: { user_id: string }; Returns: Json }
+      get_user_primary_property: { Args: { _user_id: string }; Returns: string }
+      get_user_properties: {
+        Args: { _user_id: string }
+        Returns: {
+          is_primary: boolean
+          property_code: string
+          property_id: string
+          property_name: string
+        }[]
+      }
       get_user_role: { Args: { target_user_id: string }; Returns: string }
       get_vendor_cumulative_analytics: {
         Args: { p_period?: string; p_vendor_id: string }
@@ -9873,13 +10045,15 @@ export type Database = {
           total_revenue: number
         }[]
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      has_role:
+        | { Args: { _role: string; _user_id: string }; Returns: boolean }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
       infer_main_category_id: {
         Args: { desc_text: string; title_text: string }
         Returns: string
@@ -10039,6 +10213,10 @@ export type Database = {
       }
       update_user_role_safe: {
         Args: { new_role_text: string; target_user_id: string }
+        Returns: boolean
+      }
+      user_has_property_access: {
+        Args: { _property_id: string; _user_id: string }
         Returns: boolean
       }
       validate_and_create_cafeteria_order: {

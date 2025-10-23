@@ -12,6 +12,7 @@ interface AuthContextType {
   departmentSpecialization: string | null;
   approvalStatus: 'pending' | 'approved' | 'rejected' | null;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isStaff: boolean;
   isTenant: boolean;
   isVendor: boolean;
@@ -36,6 +37,7 @@ const AuthContext = createContext<AuthContextType>({
   departmentSpecialization: null,
   approvalStatus: null,
   isAdmin: false,
+  isSuperAdmin: false,
   isStaff: false,
   isTenant: false,
   isVendor: false,
@@ -67,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [departmentSpecialization, setDepartmentSpecialization] = useState<string | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [isTenant, setIsTenant] = useState(false);
   const [isVendor, setIsVendor] = useState(false);
@@ -83,7 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserRole(role);
     setUserCategory(category);
     setDepartmentSpecialization(specialization || null);
-    setIsAdmin(role === 'admin');
+    setIsAdmin(role === 'admin' || role === 'super_admin');
+    setIsSuperAdmin(role === 'super_admin');
     setIsTenant(role === 'tenant');
     setIsVendor(role === 'vendor');
     setIsFoodVendor(category === 'food_vendor');
@@ -407,6 +411,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setDepartmentSpecialization(null);
     setApprovalStatus(null);
     setIsAdmin(false);
+    setIsSuperAdmin(false);
     setIsStaff(false);
     setIsTenant(false);
     setIsVendor(false);
@@ -553,7 +558,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       userDepartment,
       departmentSpecialization,
       approvalStatus,
-      isAdmin, 
+      isAdmin,
+      isSuperAdmin,
       isStaff, 
       isTenant,
       isVendor,

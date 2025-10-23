@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from "./components/AuthProvider";
+import { PropertyProvider } from "./contexts/PropertyContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import { PWAProvider } from "./components/PWAProvider";
@@ -94,6 +95,7 @@ import { BreadcrumbProvider } from "./contexts/BreadcrumbContext";
 import QualityControlPage from "./pages/admin/QualityControlPage";
 import SystemMonitoringPage from "./pages/admin/SystemMonitoringPage";
 import VisitorManagementPage from "./pages/VisitorManagementPage";
+import PropertyManagementPage from "./pages/admin/PropertyManagementPage";
 
 const queryClient = new QueryClient();
 
@@ -104,11 +106,12 @@ const App = () => (
         <HelmetProvider>
           <ThemeProvider>
             <AuthProvider>
-              <BreadcrumbProvider>
-                <EnhancedNotificationProvider>
-                  <PWANotificationManager>
-                    <PWAProvider>
-                      <TooltipProvider>
+              <PropertyProvider>
+                <BreadcrumbProvider>
+                  <EnhancedNotificationProvider>
+                    <PWANotificationManager>
+                      <PWAProvider>
+                        <TooltipProvider>
                   
                   <Sonner />
             <BrowserRouter>
@@ -153,6 +156,7 @@ const App = () => (
               
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/properties" element={<PropertyManagementPage />} />
               <Route path="/admin/quick-actions" element={<QuickActionsPage />} />
               <Route path="/admin/users" element={<UserManagementPage />} />
               <Route path="/admin/users/new" element={<UserNewPage />} />
@@ -229,11 +233,12 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
             </BrowserRouter>
-                      </TooltipProvider>
-                    </PWAProvider>
-                  </PWANotificationManager>
-                </EnhancedNotificationProvider>
-              </BreadcrumbProvider>
+                        </TooltipProvider>
+                      </PWAProvider>
+                    </PWANotificationManager>
+                  </EnhancedNotificationProvider>
+                </BreadcrumbProvider>
+              </PropertyProvider>
             </AuthProvider>
           </ThemeProvider>
         </HelmetProvider>
