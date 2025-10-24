@@ -77,10 +77,11 @@ export const usePerformanceBenchmarking = () => {
         .gte('visit_date', thirtyDaysAgo.toISOString().split('T')[0]);
 
       // Get staff performance by zone
-      const { data: staff } = await supabase
+      const staffQuery = supabase
         .from('profiles')
         .select('*')
-        .in('role', ['ops_supervisor', 'field_staff']);
+        .in('role', ['ops_supervisor', 'field_staff'] as string[]);
+      const { data: staff, error: staffError } = await staffQuery;
 
       if (!requests) throw new Error('Failed to fetch maintenance data');
 

@@ -134,8 +134,12 @@ export const EnhancedUserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.rpc('get_user_management_data', {
-        caller_id: currentUser?.id
+      if (!currentUser?.id) {
+        setUsers([]);
+        return;
+      }
+      const { data, error } = await supabase.rpc('get_user_management_data' as any, {
+        caller_id: currentUser.id
       });
 
       if (error) throw error;

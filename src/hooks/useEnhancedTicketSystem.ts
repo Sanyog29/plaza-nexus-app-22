@@ -324,14 +324,13 @@ export const useEnhancedTicketSystem = () => {
 
   const escalateTicket = async (ticketId: string, reason: string) => {
     try {
-      // Find supervisor or admin for escalation
-      const result: any = await supabase
+      // Find supervisor or admin for escalation  
+      const supervisorQuery = supabase
         .from('profiles')
         .select('id')
-        .in('role', ['ops_supervisor', 'admin'])
+        .in('role', ['ops_supervisor', 'admin'] as string[])
         .limit(1);
-      
-      const { data: supervisors, error: supervisorError } = result;
+      const { data: supervisors, error: supervisorError } = await supervisorQuery;
 
       if (supervisorError) throw supervisorError;
 
