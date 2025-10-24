@@ -134,13 +134,7 @@ export const EnhancedUserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      if (!currentUser?.id) {
-        setUsers([]);
-        return;
-      }
-      const { data, error } = await supabase.rpc('get_user_management_data' as any, {
-        caller_id: currentUser.id
-      });
+      const { data, error } = await supabase.rpc('get_user_management_data');
 
       if (error) throw error;
       const mappedData = (data || []).map((user: any) => ({
@@ -152,7 +146,7 @@ export const EnhancedUserManagement: React.FC = () => {
       console.error('Error fetching users:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch users: " + error.message,
+        description: `Failed to fetch users: ${error.message}`,
         variant: "destructive",
       });
     } finally {
