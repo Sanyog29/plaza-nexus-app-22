@@ -456,7 +456,7 @@ const RequestsList: React.FC<RequestsListProps> = ({
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-foreground">{request.title}</h3>
                   {isOverdue(request.sla_breach_at) && (
-                    <Badge className="bg-red-900 text-red-300">OVERDUE</Badge>
+                    <Badge variant="status-overdue">OVERDUE</Badge>
                   )}
                 </div>
                 
@@ -472,7 +472,7 @@ const RequestsList: React.FC<RequestsListProps> = ({
                     {request.priority.toUpperCase()}
                   </Badge>
                   
-                  <Badge variant="outline" className="text-gray-300">
+                  <Badge variant="outline" className="text-muted-foreground">
                     🏢 {request.building_floors?.name && request.location
                       ? `${request.building_floors.name} - ${request.location}`
                       : request.building_floors?.name
@@ -481,7 +481,7 @@ const RequestsList: React.FC<RequestsListProps> = ({
                   </Badge>
                 </div>
                 
-                <div className="flex items-center justify-between text-sm text-gray-400">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="space-y-1">
                     <div>Reported by: {formatUserNameFromProfile(request.reporter)}</div>
                     {request.assignee && (

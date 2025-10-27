@@ -85,10 +85,10 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
     
     return (
       <div className={`flex items-center gap-1 text-xs ${
-        color === 'red' ? 'text-red-400' : 
-        color === 'orange' ? 'text-orange-400' : 
-        color === 'yellow' ? 'text-yellow-400' : 
-        'text-green-400'
+        color === 'red' ? 'text-destructive' : 
+        color === 'orange' ? 'text-orange-500 dark:text-orange-400' : 
+        color === 'yellow' ? 'text-yellow-600 dark:text-yellow-500' : 
+        'text-green-600 dark:text-green-500'
       }`}>
         <Clock className="h-3 w-3" />
         {timeInfo}
@@ -145,7 +145,7 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">Service Requests</h2>
+          <h2 className="text-2xl font-bold text-foreground">Service Requests</h2>
           <p className="text-sm text-muted-foreground">
             Unified request management system
           </p>
@@ -210,7 +210,7 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
           <Card className="bg-card/50 backdrop-blur">
             <CardContent className="py-8 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-white font-medium">No requests found</p>
+              <p className="text-foreground font-medium">No requests found</p>
               <p className="text-sm text-muted-foreground">
                 {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all'
                   ? 'Try adjusting your filters'
@@ -226,7 +226,7 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-white">{request.title}</h3>
+                      <h3 className="font-semibold text-foreground">{request.title}</h3>
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
                     </div>
@@ -290,7 +290,7 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => setCancelDialog({ open: true, request, loading: false })}
-                        className="text-yellow-400 hover:text-yellow-300"
+                        className="text-yellow-600 hover:text-yellow-700 dark:text-yellow-500 dark:hover:text-yellow-400"
                       >
                         <XCircle className="h-3 w-3 mr-1" />
                         Cancel
@@ -302,7 +302,7 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => setDeleteDialog({ open: true, request, loading: false })}
-                        className="text-red-400 hover:text-red-300 border-red-400/20 hover:border-red-400/40"
+                        className="text-destructive hover:text-destructive/80 border-destructive/20 hover:border-destructive/40"
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
                         Delete
