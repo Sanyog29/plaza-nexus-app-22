@@ -79,37 +79,40 @@ serve(async (req: Request) => {
       throw new Error("Missing required fields: user_id and action");
     }
 
-    // Get the target user
-    const { data: targetUser, error: userError } = await supabaseAdmin
-      .from("profiles")
-      .select("*")
-      .eq("id", user_id)
-      .single();
-
-    if (userError || !targetUser) {
-      throw new Error("User not found");
+    // Use the database functions that handle property scoping and permission checks
+    let result;
+    if (action === 'approve') {
+      const { data, error } = await supabaseAdmin
+        .rpc('approve_user', {
+          target_user_id: user_id,
+          approver_id: user.id
+        });
+      
+      if (error) {
+        console.error('Error approving user:', error);
+        throw new Error(error.message || 'Failed to approve user');
+      }
+      
+      result = data;
+    } else {
+      const { data, error } = await supabaseAdmin
+        .rpc('reject_user', {
+          target_user_id: user_id,
+          approver_id: user.id,
+          reason: reason || ''
+        });
+      
+      if (error) {
+        console.error('Error rejecting user:', error);
+        throw new Error(error.message || 'Failed to reject user');
+      }
+      
+      result = data;
     }
 
-    // Prepare update data
-    const updateData: any = {
-      approval_status: action === 'approve' ? 'approved' : 'rejected',
-      approved_by: user.id,
-      approved_at: new Date().toISOString(),
-    };
-
-    if (action === 'reject' && reason) {
-      updateData.rejection_reason = reason;
-    }
-
-    // Update user approval status
-    const { error: updateError } = await supabaseAdmin
-      .from("profiles")
-      .update(updateData)
-      .eq("id", user_id);
-
-    if (updateError) {
-      console.error("Update error:", updateError);
-      throw new Error("Failed to update user approval status");
+    // Check if the function returned an error
+    if (result && !result.success) {
+      throw new Error(result.error || 'Operation failed');
     }
 
     console.log(`User ${user_id} ${action}d by admin ${user.id}`);

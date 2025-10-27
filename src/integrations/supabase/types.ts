@@ -10873,7 +10873,7 @@ export type Database = {
       }
       approve_user: {
         Args: { approver_id: string; target_user_id: string }
-        Returns: boolean
+        Returns: Json
       }
       assign_and_start_request:
         | { Args: { p_request_id: string }; Returns: Json }
@@ -11165,7 +11165,7 @@ export type Database = {
       }
       reject_user: {
         Args: { approver_id: string; reason: string; target_user_id: string }
-        Returns: boolean
+        Returns: Json
       }
       request_time_extension: {
         Args: {
