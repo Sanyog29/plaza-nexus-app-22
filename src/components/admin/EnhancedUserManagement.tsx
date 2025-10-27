@@ -29,6 +29,7 @@ import { DepartmentSelector } from './DepartmentSelector';
 import { useInvitationRoles } from '@/hooks/useInvitationRoles';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { VendorStaffAssignmentDialog } from './VendorStaffAssignmentDialog';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface UserData {
   id: string;
@@ -43,17 +44,22 @@ interface UserData {
   created_at: string;
   confirmed_at: string;
   last_sign_in_at: string;
+  property_id?: string;
+  property_name?: string;
+  is_primary?: boolean;
 }
 
 export const EnhancedUserManagement: React.FC = () => {
   const { toast } = useToast();
   const { isAdmin, user: currentUser } = useAuth();
   const { roles, isLoading: rolesLoading, getRoleColor, requiresSpecialization, getRoleDefaults } = useInvitationRoles();
+  const { currentProperty, availableProperties, isSuperAdmin } = usePropertyContext();
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedProperty, setSelectedProperty] = useState<string>('all');
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   
   // Delete confirmation state
@@ -66,6 +72,11 @@ export const EnhancedUserManagement: React.FC = () => {
   const [newRole, setNewRole] = useState<string>('');
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [departmentSelection, setDepartmentSelection] = useState({ department: '', specialization: '' });
+  
+  // Property editing state
+  const [editingPropertyUserId, setEditingPropertyUserId] = useState<string | null>(null);
+  const [newPropertyId, setNewPropertyId] = useState<string>('');
+  const [isUpdatingProperty, setIsUpdatingProperty] = useState(false);
   
   // Vendor staff assignment state
   const [showVendorStaffDialog, setShowVendorStaffDialog] = useState(false);
@@ -92,7 +103,8 @@ export const EnhancedUserManagement: React.FC = () => {
     department: '',
     specialization: '',
     password: '',
-    empId: ''
+    empId: '',
+    propertyId: currentProperty?.id || ''
   });
   
   const [sendInvitation, setSendInvitation] = useState(true);
@@ -103,12 +115,18 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   }, [isAdmin]);
 
-  // Set default role when roles are loaded
+  // Set default role and property when loaded
   useEffect(() => {
     if (roles.length > 0 && !newUser.role) {
       setNewUser(prev => ({ ...prev, role: roles[0].title }));
     }
   }, [roles, newUser.role]);
+
+  useEffect(() => {
+    if (currentProperty && !newUser.propertyId) {
+      setNewUser(prev => ({ ...prev, propertyId: currentProperty.id }));
+    }
+  }, [currentProperty]);
 
   // Update specialization visibility when role changes
   useEffect(() => {
@@ -178,6 +196,16 @@ export const EnhancedUserManagement: React.FC = () => {
       return;
     }
 
+    // Check if property is selected
+    if (!newUser.propertyId) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a property for this user",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // If creating account now, password is required
     if (!sendInvitation && !newUser.password) {
       toast({
@@ -203,6 +231,7 @@ export const EnhancedUserManagement: React.FC = () => {
           invitation_specialization: newUser.specialization || null,
           invitation_password: newUser.password || null,
           invitation_emp_id: newUser.empId || null,
+          invitation_property_id: newUser.propertyId,
         });
 
         if (error) throw error;
@@ -233,6 +262,7 @@ export const EnhancedUserManagement: React.FC = () => {
           specialization: newUser.specialization || undefined,
           password: newUser.password,
           emp_id: newUser.empId || undefined,
+          property_id: newUser.propertyId,
           send_invitation: false
         }
       });
@@ -263,7 +293,8 @@ export const EnhancedUserManagement: React.FC = () => {
         department: '',
         specialization: '',
         password: '',
-        empId: ''
+        empId: '',
+        propertyId: currentProperty?.id || ''
       });
 
       fetchUsers();
@@ -482,6 +513,55 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   };
 
+  const handleStartPropertyEdit = (userId: string, currentPropertyId: string) => {
+    setEditingPropertyUserId(userId);
+    setNewPropertyId(currentPropertyId || '');
+  };
+
+  const handleCancelPropertyEdit = () => {
+    setEditingPropertyUserId(null);
+    setNewPropertyId('');
+  };
+
+  const handleSavePropertyChange = async (userId: string) => {
+    const currentUser = users.find(u => u.id === userId);
+    if (!newPropertyId || newPropertyId === currentUser?.property_id) {
+      handleCancelPropertyEdit();
+      return;
+    }
+
+    setIsUpdatingProperty(true);
+    try {
+      const { data, error } = await supabase.rpc('update_user_property_assignment', {
+        target_user_id: userId,
+        new_property_id: newPropertyId
+      });
+
+      if (error) throw error;
+
+      if (data && typeof data === 'object' && 'success' in data && !data.success) {
+        throw new Error((data as any).error);
+      }
+
+      toast({
+        title: "Success",
+        description: "Property assignment updated successfully",
+      });
+
+      setEditingPropertyUserId(null);
+      setNewPropertyId('');
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update property assignment",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingProperty(false);
+    }
+  };
+
   const getRoleBadgeColor = getRoleColor;
 
   const filteredUsers = users.filter(user => {
@@ -489,8 +569,9 @@ export const EnhancedUserManagement: React.FC = () => {
                          `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.assigned_role_title === selectedRole || user.role === selectedRole;
     const matchesStatus = selectedStatus === 'all' || user.approval_status === selectedStatus;
+    const matchesProperty = selectedProperty === 'all' || user.property_id === selectedProperty;
     
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole && matchesStatus && matchesProperty;
   });
 
   if (!isAdmin) {
@@ -612,6 +693,32 @@ export const EnhancedUserManagement: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="property">Property *</Label>
+              <Select 
+                value={newUser.propertyId} 
+                onValueChange={(value) => setNewUser({ ...newUser, propertyId: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a property" />
+                </SelectTrigger>
+                <SelectContent>
+                  {isSuperAdmin ? (
+                    availableProperties.map(property => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    availableProperties.map(property => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
             {/* Enhanced Department Selector */}
             <div className="md:col-span-2">
               <DepartmentSelector
@@ -673,6 +780,19 @@ export const EnhancedUserManagement: React.FC = () => {
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Filter by property" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Properties</SelectItem>
+                {availableProperties.map(property => (
+                  <SelectItem key={property.id} value={property.id}>
+                    {property.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -689,7 +809,55 @@ export const EnhancedUserManagement: React.FC = () => {
                       <div>
                         <p className="font-medium">{user.first_name} {user.last_name}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {/* Property Badge/Editor */}
+                          {editingPropertyUserId === user.id ? (
+                            <div className="flex items-center gap-2">
+                              <Select value={newPropertyId} onValueChange={setNewPropertyId}>
+                                <SelectTrigger className="w-48">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableProperties.map(property => (
+                                    <SelectItem key={property.id} value={property.id}>
+                                      {property.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleSavePropertyChange(user.id)}
+                                disabled={isUpdatingProperty}
+                              >
+                                <Save className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCancelPropertyEdit}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">
+                                {user.is_primary && '⭐ '}
+                                {user.property_name || 'No Property'}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleStartPropertyEdit(user.id, user.property_id || '')}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                          
                           {/* Role Badge/Editor */}
                           {editingRoleUserId === user.id ? (
                             <div className="flex items-center gap-2">

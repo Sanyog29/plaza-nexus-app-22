@@ -62,6 +62,7 @@ interface CreateUserRequest {
   phone_number?: string;
   office_number?: string;
   floor?: string;
+  property_id?: string;
   send_invitation?: boolean;
 }
 
@@ -129,6 +130,7 @@ const handler = async (req: Request): Promise<Response> => {
       phone_number,
       office_number,
       floor,
+      property_id,
       send_invitation = false
     } = await req.json() as CreateUserRequest;
 
@@ -166,6 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
           phone_number,
           office_number,
           floor,
+          property_id,
           invited_by: user.id
         })
         .select('id')
@@ -374,6 +377,18 @@ const handler = async (req: Request): Promise<Response> => {
           role: role,
           assigned_by: user.id
         });
+
+      // Assign user to property if property_id is provided
+      if (property_id) {
+        await supabase
+          .from('property_assignments')
+          .insert({
+            user_id: newUser.user.id,
+            property_id: property_id,
+            is_primary: true,
+            assigned_by: user.id
+          });
+      }
 
       // Create notification for admin
         await supabase
