@@ -11063,9 +11063,12 @@ export type Database = {
           first_name: string
           has_profile: boolean
           id: string
+          is_primary: boolean
           last_name: string
           last_sign_in_at: string
           phone_number: string
+          property_id: string
+          property_name: string
           rejection_reason: string
           role: string
           specialization: string
@@ -11247,6 +11250,10 @@ export type Database = {
       update_staff_availability: {
         Args: { auto_offline_minutes?: number; new_status: string }
         Returns: boolean
+      }
+      update_user_property_assignment: {
+        Args: { new_property_id: string; target_user_id: string }
+        Returns: Json
       }
       update_user_role:
         | { Args: { new_role: string; user_id: string }; Returns: boolean }

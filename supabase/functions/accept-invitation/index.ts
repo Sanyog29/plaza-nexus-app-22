@@ -126,6 +126,34 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error updating profile:', profileError);
     }
 
+    // Assign user to property if specified in invitation
+    if (invitation.property_id) {
+      const { error: propertyError } = await supabaseAdmin
+        .from('property_assignments')
+        .insert({
+          user_id: newUser.user.id,
+          property_id: invitation.property_id,
+          is_primary: true
+        });
+
+      if (propertyError) {
+        console.error('Error assigning property:', propertyError);
+      }
+    }
+
+    // Insert role into user_roles table
+    const { error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({
+        user_id: newUser.user.id,
+        role: invitation.role,
+        assigned_by: invitation.invited_by
+      });
+
+    if (roleError) {
+      console.error('Error assigning role:', roleError);
+    }
+
     // Mark invitation as accepted
     await supabaseAdmin
       .from('user_invitations')
