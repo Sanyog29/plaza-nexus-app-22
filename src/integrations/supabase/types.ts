@@ -11114,7 +11114,7 @@ export type Database = {
         Returns: string
       }
       is_admin: { Args: { uid: string }; Returns: boolean }
-      is_admin_secure: { Args: { uid: string }; Returns: boolean }
+      is_admin_secure: { Args: { user_id: string }; Returns: boolean }
       is_approved_user: { Args: { user_id: string }; Returns: boolean }
       is_food_vendor: { Args: { uid: string }; Returns: boolean }
       is_food_vendor_staff_for_vendor: {
@@ -11128,6 +11128,7 @@ export type Database = {
       is_management: { Args: { uid: string }; Returns: boolean }
       is_ops_staff: { Args: { uid: string }; Returns: boolean }
       is_staff: { Args: { uid: string }; Returns: boolean }
+      is_super_admin: { Args: { user_id: string }; Returns: boolean }
       is_vendor_staff_for_vendor: {
         Args: { target_vendor_id: string; user_id: string }
         Returns: boolean
