@@ -113,7 +113,7 @@ export const EnhancedUserManagement: React.FC = () => {
     if (isAdmin) {
       fetchUsers();
     }
-  }, [isAdmin]);
+  }, [isAdmin, selectedProperty, currentProperty, isSuperAdmin]);
 
   // Set default role and property when loaded
   useEffect(() => {
@@ -159,7 +159,24 @@ export const EnhancedUserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.rpc('get_user_management_data');
+      
+      // Determine property filter based on user role and current selection
+      let propertyFilter: string | null = null;
+      
+      if (isSuperAdmin) {
+        // Super admins: respect their property dropdown selection
+        if (selectedProperty !== 'all' && selectedProperty !== 'unassigned') {
+          propertyFilter = selectedProperty;
+        }
+        // If 'all' or 'unassigned', pass null to see all users
+      } else {
+        // Regular admins: always filter by their current property
+        propertyFilter = currentProperty?.id || null;
+      }
+
+      const { data, error } = await supabase.rpc('get_user_management_data', {
+        filter_property_id: propertyFilter
+      });
 
       if (error) throw error;
       const mappedData = (data || []).map((user: any) => ({
@@ -576,8 +593,11 @@ export const EnhancedUserManagement: React.FC = () => {
                          `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.assigned_role_title === selectedRole || user.role === selectedRole;
     const matchesStatus = selectedStatus === 'all' || user.approval_status === selectedStatus;
+    
+    // Property filtering is now handled at the database level for most cases
+    // Frontend only handles 'unassigned' filter
     const matchesProperty = selectedProperty === 'all' || 
-                           (selectedProperty === 'unassigned' ? !user.property_id : user.property_id === selectedProperty);
+                           (selectedProperty === 'unassigned' ? !user.property_id : true);
     
     return matchesSearch && matchesRole && matchesStatus && matchesProperty;
   });

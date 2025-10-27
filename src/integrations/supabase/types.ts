@@ -11050,7 +11050,7 @@ export type Database = {
       }
       get_user_display_name: { Args: { user_uuid: string }; Returns: string }
       get_user_management_data: {
-        Args: never
+        Args: { filter_property_id?: string }
         Returns: {
           approval_status: string
           approved_at: string
