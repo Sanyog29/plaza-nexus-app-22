@@ -34,11 +34,11 @@ const DashboardTile: React.FC<DashboardTileProps> = ({
         <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" />
         
         {/* Glass overlay */}
-        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-4">
-            <div className="bg-white/20 dark:bg-white/10 p-3 rounded-lg backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white/30 dark:group-hover:bg-white/20 group-hover:shadow-lg">
+            <div className="bg-card/20 p-3 rounded-lg backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-card/30 group-hover:shadow-lg">
               <div className="transition-transform duration-300 group-hover:rotate-12">
                 {icon}
               </div>

@@ -246,7 +246,7 @@ export const IndividualUserPerformance: React.FC = () => {
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="text-center py-12">
             <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">User Not Found</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">User Not Found</h3>
             <p className="text-muted-foreground mb-4">Could not load user performance data.</p>
             <Button onClick={() => navigate('/admin/users')} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -279,7 +279,7 @@ export const IndividualUserPerformance: React.FC = () => {
             <User className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{userPerformance.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{userPerformance.name}</h1>
             <p className="text-muted-foreground capitalize">{userPerformance.role.replace('_', ' ')}</p>
           </div>
         </div>
@@ -375,7 +375,7 @@ export const IndividualUserPerformance: React.FC = () => {
             {/* Performance Radar */}
             <Card className="bg-card/50 backdrop-blur">
               <CardHeader>
-                <CardTitle className="text-white">Performance Radar</CardTitle>
+                <CardTitle className="text-foreground">Performance Radar</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -405,17 +405,17 @@ export const IndividualUserPerformance: React.FC = () => {
             {/* Key Metrics */}
             <Card className="bg-card/50 backdrop-blur">
               <CardHeader>
-                <CardTitle className="text-white">Key Metrics</CardTitle>
+                <CardTitle className="text-foreground">Key Metrics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Tasks Completed</span>
-                  <span className="text-white font-medium">{userPerformance.metrics.completedTasks}</span>
+                  <span className="text-foreground font-medium">{userPerformance.metrics.completedTasks}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Avg Response Time</span>
-                  <span className="text-white font-medium">{userPerformance.metrics.avgResponseTime.toFixed(1)}h</span>
+                  <span className="text-foreground font-medium">{userPerformance.metrics.avgResponseTime.toFixed(1)}h</span>
                 </div>
                 
                 <div className="space-y-2">
@@ -445,7 +445,7 @@ export const IndividualUserPerformance: React.FC = () => {
         <TabsContent value="trends" className="space-y-6">
           <Card className="bg-card/50 backdrop-blur">
             <CardHeader>
-              <CardTitle className="text-white">Performance Trends</CardTitle>
+              <CardTitle className="text-foreground">Performance Trends</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>

@@ -45,7 +45,7 @@ const MaintenanceHeatmap = () => {
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-6">
           <div className="h-[300px] flex items-center justify-center">
-            <p className="text-gray-400">Loading heatmap data...</p>
+            <p className="text-muted-foreground">Loading heatmap data...</p>
           </div>
         </CardContent>
       </Card>
@@ -55,14 +55,14 @@ const MaintenanceHeatmap = () => {
   return (
     <Card className="bg-card/50 backdrop-blur">
       <CardHeader>
-        <CardTitle className="text-white text-lg">Maintenance Request Heatmap</CardTitle>
+        <CardTitle className="text-foreground text-lg">Maintenance Request Heatmap</CardTitle>
         <CardDescription>Distribution of requests by location</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-3">
           {heatmapData && Object.entries(heatmapData).map(([floor, zones]) => (
             <div key={floor} className="mb-4">
-              <div className="text-sm font-medium text-white mb-2">{floor}</div>
+              <div className="text-sm font-medium text-foreground mb-2">{floor}</div>
               <div className="grid grid-cols-4 gap-2">
                 {Object.entries(zones as Record<string, number>).map(([zone, count]) => (
                   <div 
@@ -72,8 +72,8 @@ const MaintenanceHeatmap = () => {
                       backgroundColor: `rgba(30, 64, 175, ${getColorIntensity(count) / 100})`
                     }}
                   >
-                    <span className="block text-xs text-white/70 mb-1">{zone}</span>
-                    <span className="text-white font-medium">{count}</span>
+                    <span className="block text-xs text-primary-foreground/70 mb-1">{zone}</span>
+                    <span className="text-primary-foreground font-medium">{count}</span>
                   </div>
                 ))}
               </div>
@@ -81,11 +81,11 @@ const MaintenanceHeatmap = () => {
           ))}
         </div>
         <div className="flex items-center justify-between mt-6 px-2">
-          <div className="text-xs text-gray-400">Lower</div>
+          <div className="text-xs text-muted-foreground">Lower</div>
           <div className="h-2 w-full mx-2 rounded-full bg-gradient-to-r from-blue-900/20 to-blue-600"></div>
-          <div className="text-xs text-gray-400">Higher</div>
+          <div className="text-xs text-muted-foreground">Higher</div>
         </div>
-        <div className="text-center mt-2 text-xs text-gray-400">Complaint Density</div>
+        <div className="text-center mt-2 text-xs text-muted-foreground">Complaint Density</div>
       </CardContent>
     </Card>
   );

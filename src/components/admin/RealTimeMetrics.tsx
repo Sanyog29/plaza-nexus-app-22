@@ -176,7 +176,7 @@ const RealTimeMetrics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.activeRequests}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics.activeRequests}</div>
             <p className="text-xs text-muted-foreground">
               {metrics.urgentRequests} urgent priority
             </p>
@@ -192,7 +192,7 @@ const RealTimeMetrics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.avgResponseTime}m</div>
+            <div className="text-2xl font-bold text-foreground">{metrics.avgResponseTime}m</div>
             <p className="text-xs text-muted-foreground">
               Target: &lt;30m
             </p>
@@ -208,7 +208,7 @@ const RealTimeMetrics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.staffUtilization}%</div>
+            <div className="text-2xl font-bold text-foreground">{metrics.staffUtilization}%</div>
             <Progress value={metrics.staffUtilization} className="mt-2 h-2" />
           </CardContent>
         </Card>
@@ -222,7 +222,7 @@ const RealTimeMetrics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.todayCompletions}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics.todayCompletions}</div>
             <p className="text-xs text-muted-foreground">
               Peak: {metrics.peakHours}
             </p>

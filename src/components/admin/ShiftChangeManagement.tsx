@@ -155,7 +155,7 @@ export const ShiftChangeManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+          <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
             <Clock className="h-6 w-6 text-primary" />
             Shift Change Management
           </h3>
@@ -173,7 +173,7 @@ export const ShiftChangeManagement: React.FC = () => {
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 text-center">
             <AlertCircle className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-foreground">
               {requests.filter(r => r.status === 'pending').length}
             </p>
             <p className="text-sm text-muted-foreground">Pending Requests</p>
@@ -183,7 +183,7 @@ export const ShiftChangeManagement: React.FC = () => {
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 text-center">
             <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-foreground">
               {requests.filter(r => r.status === 'approved').length}
             </p>
             <p className="text-sm text-muted-foreground">Approved This Month</p>
@@ -193,7 +193,7 @@ export const ShiftChangeManagement: React.FC = () => {
         <Card className="bg-card/50 backdrop-blur">
           <CardContent className="p-4 text-center">
             <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-foreground">
               {requests.filter(r => r.status === 'rejected').length}
             </p>
             <p className="text-sm text-muted-foreground">Rejected This Month</p>
@@ -207,7 +207,7 @@ export const ShiftChangeManagement: React.FC = () => {
           <Card className="bg-card/50 backdrop-blur">
             <CardContent className="p-8 text-center">
               <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No Shift Change Requests</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">No Shift Change Requests</h3>
               <p className="text-muted-foreground">All shift change requests will appear here.</p>
             </CardContent>
           </Card>
@@ -219,7 +219,7 @@ export const ShiftChangeManagement: React.FC = () => {
               <Card key={request.id} className="bg-card/50 backdrop-blur">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-foreground flex items-center gap-2">
                       <User className="h-5 w-5" />
                       {request.requester_name}
                     </CardTitle>
@@ -233,7 +233,7 @@ export const ShiftChangeManagement: React.FC = () => {
                   {/* Request Details */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h5 className="text-sm font-medium text-white">Original Shift</h5>
+                      <h5 className="text-sm font-medium text-foreground">Original Shift</h5>
                       <div className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
@@ -248,7 +248,7 @@ export const ShiftChangeManagement: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <h5 className="text-sm font-medium text-white">Requested Shift</h5>
+                      <h5 className="text-sm font-medium text-foreground">Requested Shift</h5>
                       <div className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
@@ -265,7 +265,7 @@ export const ShiftChangeManagement: React.FC = () => {
 
                   {/* Reason */}
                   <div>
-                    <h5 className="text-sm font-medium text-white mb-2">Reason</h5>
+                    <h5 className="text-sm font-medium text-foreground mb-2">Reason</h5>
                     <p className="text-sm text-muted-foreground bg-background/20 p-3 rounded-lg">
                       {request.reason}
                     </p>
@@ -275,7 +275,7 @@ export const ShiftChangeManagement: React.FC = () => {
                   {request.status === 'pending' && (
                     <div className="space-y-3 border-t border-border pt-4">
                       <div>
-                        <label className="text-sm font-medium text-white mb-2 block">
+                        <label className="text-sm font-medium text-foreground mb-2 block">
                           Review Notes (Optional)
                         </label>
                         <Textarea
@@ -313,7 +313,7 @@ export const ShiftChangeManagement: React.FC = () => {
                   {request.status !== 'pending' && (
                     <div className="border-t border-border pt-4">
                       <div className="flex items-center justify-between mb-2">
-                        <h5 className="text-sm font-medium text-white">Review Details</h5>
+                        <h5 className="text-sm font-medium text-foreground">Review Details</h5>
                         <span className="text-xs text-muted-foreground">
                           {request.reviewed_at && format(new Date(request.reviewed_at), 'MMM d, yyyy HH:mm')}
                         </span>

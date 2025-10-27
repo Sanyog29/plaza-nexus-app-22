@@ -125,7 +125,7 @@ const LandingPage: React.FC = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="rounded-full px-8 py-6 text-lg border-2 hover:scale-105 hover:bg-white/10 transition-all"
+                className="rounded-full px-8 py-6 text-lg border-2 hover:scale-105 hover:bg-card/10 transition-all"
               >
                 Request Demo
               </Button>
@@ -167,7 +167,7 @@ const LandingPage: React.FC = () => {
             {features.map((feature, index) => (
               <Card 
                 key={index} 
-                className="rounded-2xl border-2 border-white/10 bg-card/50 backdrop-blur-sm hover-lift overflow-hidden group p-6"
+                className="rounded-2xl border-2 border-border/40 bg-card/50 backdrop-blur-sm hover-lift overflow-hidden group p-6"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -188,18 +188,18 @@ const LandingPage: React.FC = () => {
         <section className="gradient-dark py-24">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-4xl md:text-5xl font-bold mb-12 text-white">
+              <h2 className="text-4xl md:text-5xl font-bold mb-12 text-primary-foreground">
                 Why Choose AUTOPILOT?
               </h2>
               <div className="space-y-6">
                 <div className="glass-card-enhanced rounded-2xl p-8 hover-lift">
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="h-8 w-8 text-white" />
+                      <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl mb-3 text-white">Real-time Monitoring</h3>
-                      <p className="text-white/90 font-semibold text-lg">
+                      <h3 className="font-bold text-xl mb-3 text-primary-foreground">Real-time Monitoring</h3>
+                      <p className="text-primary-foreground/90 font-semibold text-lg">
                         Stay informed with instant updates on all building systems
                       </p>
                     </div>
@@ -208,11 +208,11 @@ const LandingPage: React.FC = () => {
                 <div className="glass-card-enhanced rounded-2xl p-8 hover-lift">
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="h-8 w-8 text-white" />
+                      <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl mb-3 text-white">AI-Powered Insights</h3>
-                      <p className="text-white/90 font-semibold text-lg">
+                      <h3 className="font-bold text-xl mb-3 text-primary-foreground">AI-Powered Insights</h3>
+                      <p className="text-primary-foreground/90 font-semibold text-lg">
                         Get smart recommendations based on historical data
                       </p>
                     </div>
@@ -221,11 +221,11 @@ const LandingPage: React.FC = () => {
                 <div className="glass-card-enhanced rounded-2xl p-8 hover-lift">
                   <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="h-8 w-8 text-white" />
+                      <CheckCircle2 className="h-8 w-8 text-primary-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl mb-3 text-white">Easy Integration</h3>
-                      <p className="text-white/90 font-semibold text-lg">
+                      <h3 className="font-bold text-xl mb-3 text-primary-foreground">Easy Integration</h3>
+                      <p className="text-primary-foreground/90 font-semibold text-lg">
                         Connect with your existing building management systems
                       </p>
                     </div>
@@ -241,10 +241,10 @@ const LandingPage: React.FC = () => {
           <div className="relative rounded-ultra overflow-hidden gradient-blue-purple p-16 text-center">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"></div>
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground">
                 Ready to Transform Your Building Management?
               </h2>
-              <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              <p className="text-xl text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
                 Join thousands of satisfied customers already using AUTOPILOT
               </p>
               <Link to="/auth">
@@ -260,7 +260,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-white/10 bg-gradient-to-b from-background to-background/50 py-12">
+        <footer className="border-t border-border/40 bg-gradient-to-b from-background to-background/50 py-12">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-2">

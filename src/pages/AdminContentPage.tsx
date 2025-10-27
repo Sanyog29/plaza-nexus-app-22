@@ -665,12 +665,12 @@ const AdminContentPage = () => {
         
         <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Content Management</h1>
-          <p className="text-gray-400">Manage all application content and settings</p>
+          <h1 className="text-2xl font-bold text-foreground">Content Management</h1>
+          <p className="text-muted-foreground">Manage all application content and settings</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search content..."
               value={searchTerm}
@@ -704,7 +704,7 @@ const AdminContentPage = () => {
                       Add Category
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-card text-white">
+                  <DialogContent className="bg-card text-foreground">
                     <DialogHeader>
                       <DialogTitle>
                         {selectedServiceCategory?.id ? 'Edit Service Category' : 'Add Service Category'}
@@ -763,8 +763,8 @@ const AdminContentPage = () => {
                   ).map((category) => (
                     <div key={category.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                       <div>
-                        <h4 className="font-medium text-white">{category.name}</h4>
-                        <p className="text-sm text-gray-400">{category.description}</p>
+                        <h4 className="font-medium text-foreground">{category.name}</h4>
+                        <p className="text-sm text-muted-foreground">{category.description}</p>
                         <Badge variant={category.is_active ? 'default' : 'secondary'}>
                           {category.is_active ? 'Active' : 'Inactive'}
                         </Badge>
@@ -799,7 +799,7 @@ const AdminContentPage = () => {
                       Add Service
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-card text-white">
+                  <DialogContent className="bg-card text-foreground">
                     <DialogHeader>
                       <DialogTitle>
                         {selectedServiceItem?.id ? 'Edit Service Item' : 'Add Service Item'}
@@ -871,8 +871,8 @@ const AdminContentPage = () => {
                   ).map((item) => (
                     <div key={item.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                       <div>
-                        <h4 className="font-medium text-white">{item.name}</h4>
-                        <p className="text-sm text-gray-400">{item.description}</p>
+                        <h4 className="font-medium text-foreground">{item.name}</h4>
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
                         <div className="flex gap-2 mt-1">
                           <Badge>₹{item.price}</Badge>
                           <Badge variant="outline">{item.duration_minutes}min</Badge>
@@ -914,7 +914,7 @@ const AdminContentPage = () => {
                     Create Alert
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-card text-white">
+                <DialogContent className="bg-card text-foreground">
                   <DialogHeader>
                     <DialogTitle>
                       {selectedAlert?.id ? 'Edit Alert' : 'Create Alert'}
@@ -991,7 +991,7 @@ const AdminContentPage = () => {
                   <div key={alert.id} className="flex items-start justify-between p-4 bg-gray-800 rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium text-white">{alert.title}</h4>
+                        <h4 className="font-medium text-foreground">{alert.title}</h4>
                         <Badge variant={getSeverityColor(alert.severity)}>
                           {alert.severity.toUpperCase()}
                         </Badge>
@@ -999,8 +999,8 @@ const AdminContentPage = () => {
                           {alert.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-400 mb-2">{alert.message}</p>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <p className="text-sm text-muted-foreground mb-2">{alert.message}</p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>Created: {format(new Date(alert.created_at), 'MMM d, yyyy')}</span>
                         {alert.expires_at && (
                           <span>Expires: {format(new Date(alert.expires_at), 'MMM d, yyyy')}</span>
@@ -1042,7 +1042,7 @@ const AdminContentPage = () => {
                       Add Category
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-card text-white">
+                  <DialogContent className="bg-card text-foreground">
                     <DialogHeader>
                       <DialogTitle>
                         {selectedMenuCategory?.id ? 'Edit Menu Category' : 'Add Menu Category'}
@@ -1084,8 +1084,8 @@ const AdminContentPage = () => {
                           <img src={category.image_url} alt={category.name} className="w-10 h-10 rounded object-cover" />
                         )}
                         <div>
-                          <h4 className="font-medium text-white">{category.name}</h4>
-                          <p className="text-sm text-gray-400">{category.description}</p>
+                          <h4 className="font-medium text-foreground">{category.name}</h4>
+                          <p className="text-sm text-muted-foreground">{category.description}</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -1118,7 +1118,7 @@ const AdminContentPage = () => {
                       Add Item
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-card text-white">
+                  <DialogContent className="bg-card text-foreground">
                     <DialogHeader>
                       <DialogTitle>
                         {selectedMenuItem?.id ? 'Edit Menu Item' : 'Add Menu Item'}
@@ -1189,8 +1189,8 @@ const AdminContentPage = () => {
                   ).map((item) => (
                     <div key={item.id} className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                       <div>
-                        <h4 className="font-medium text-white">{item.name}</h4>
-                        <p className="text-sm text-gray-400">{item.description}</p>
+                        <h4 className="font-medium text-foreground">{item.name}</h4>
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
                         <div className="flex gap-2 mt-1">
                           <Badge>₹{item.price}</Badge>
                           {item.is_vegetarian && <Badge variant="outline">Veg</Badge>}
@@ -1233,7 +1233,7 @@ const AdminContentPage = () => {
                     Add Room
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-card text-white">
+                <DialogContent className="bg-card text-foreground">
                   <DialogHeader>
                     <DialogTitle>
                       {selectedRoom?.id ? 'Edit Room' : 'Add Room'}
@@ -1302,8 +1302,8 @@ const AdminContentPage = () => {
                       />
                     )}
                     <div className="space-y-2">
-                      <h4 className="font-medium text-white">{room.name}</h4>
-                      <p className="text-sm text-gray-400">{room.description}</p>
+                      <h4 className="font-medium text-foreground">{room.name}</h4>
+                      <p className="text-sm text-muted-foreground">{room.description}</p>
                       <div className="flex gap-2 flex-wrap">
                         <Badge variant="outline">{room.location}</Badge>
                         <Badge>{room.capacity} people</Badge>
@@ -1335,7 +1335,7 @@ const AdminContentPage = () => {
                 ))}
               </div>
               {rooms.length === 0 && (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-muted-foreground">
                   No rooms available. Create your first room to get started.
                 </div>
               )}
@@ -1355,7 +1355,7 @@ const AdminContentPage = () => {
                     Add Equipment
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-card text-white max-w-2xl">
+                <DialogContent className="bg-card text-foreground max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>
                       {selectedEquipment?.id ? 'Edit Equipment' : 'Add Equipment'}
@@ -1477,7 +1477,7 @@ const AdminContentPage = () => {
                   <div key={item.id} className="bg-gray-800 rounded-lg p-4">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
-                        <h4 className="font-medium text-white">{item.name}</h4>
+                        <h4 className="font-medium text-foreground">{item.name}</h4>
                         <Badge variant={
                           item.status === 'operational' ? 'default' :
                           item.status === 'maintenance' ? 'secondary' :
@@ -1494,19 +1494,19 @@ const AdminContentPage = () => {
                         </div>
                         
                         {item.last_maintenance_date && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted-foreground">
                             Last maintenance: {format(new Date(item.last_maintenance_date), 'MMM d, yyyy')}
                           </p>
                         )}
                         
                         {item.next_maintenance_date && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted-foreground">
                             Next maintenance: {format(new Date(item.next_maintenance_date), 'MMM d, yyyy')}
                           </p>
                         )}
                         
                         {item.warranty_expiry && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-muted-foreground">
                             Warranty expires: {format(new Date(item.warranty_expiry), 'MMM d, yyyy')}
                           </p>
                         )}
@@ -1536,7 +1536,7 @@ const AdminContentPage = () => {
                 ))}
               </div>
               {equipment.length === 0 && (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-muted-foreground">
                   No equipment available. Create your first equipment entry to get started.
                 </div>
               )}
