@@ -29,6 +29,8 @@ const PropertyManagementPage: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -96,6 +98,64 @@ const PropertyManagementPage: React.FC = () => {
     } catch (error: any) {
       console.error('Error creating property:', error);
       toast.error(error.message || 'Failed to create property');
+    }
+  };
+
+  const handleEditProperty = (property: Property) => {
+    setEditingProperty(property);
+    setFormData({
+      name: property.name,
+      code: property.code,
+      address: property.address || '',
+      city: property.city || '',
+      state: property.state || '',
+      country: property.country || '',
+      property_type: property.property_type || 'mixed',
+      total_units: property.total_units?.toString() || '',
+      total_floors: property.total_floors?.toString() || '',
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateProperty = async () => {
+    if (!editingProperty) return;
+
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .update({
+          name: formData.name,
+          code: formData.code.toUpperCase(),
+          address: formData.address || null,
+          city: formData.city || null,
+          state: formData.state || null,
+          country: formData.country || null,
+          property_type: formData.property_type,
+          total_units: formData.total_units ? parseInt(formData.total_units) : null,
+          total_floors: formData.total_floors ? parseInt(formData.total_floors) : null,
+        })
+        .eq('id', editingProperty.id);
+
+      if (error) throw error;
+
+      toast.success('Property updated successfully');
+      setIsEditDialogOpen(false);
+      setEditingProperty(null);
+      setFormData({
+        name: '',
+        code: '',
+        address: '',
+        city: '',
+        state: '',
+        country: '',
+        property_type: 'mixed',
+        total_units: '',
+        total_floors: '',
+      });
+      fetchProperties();
+    } catch (error: any) {
+      console.error('Error updating property:', error);
+      toast.error(error.message || 'Failed to update property');
     }
   };
 
@@ -228,6 +288,113 @@ const PropertyManagementPage: React.FC = () => {
           </Dialog>
         </div>
 
+        {/* Edit Property Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Property</DialogTitle>
+              <DialogDescription>Update property information</DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Property Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Downtown Plaza"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-code">Property Code *</Label>
+                <Input
+                  id="edit-code"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  placeholder="DTP1"
+                />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="edit-address">Address</Label>
+                <Input
+                  id="edit-address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="123 Main Street"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-city">City</Label>
+                <Input
+                  id="edit-city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  placeholder="New York"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-state">State/Province</Label>
+                <Input
+                  id="edit-state"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  placeholder="NY"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-country">Country</Label>
+                <Input
+                  id="edit-country"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  placeholder="USA"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-property_type">Property Type</Label>
+                <Select value={formData.property_type} onValueChange={(value) => setFormData({ ...formData, property_type: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="residential">Residential</SelectItem>
+                    <SelectItem value="commercial">Commercial</SelectItem>
+                    <SelectItem value="mixed">Mixed Use</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-total_units">Total Units</Label>
+                <Input
+                  id="edit-total_units"
+                  type="number"
+                  value={formData.total_units}
+                  onChange={(e) => setFormData({ ...formData, total_units: e.target.value })}
+                  placeholder="50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-total_floors">Total Floors</Label>
+                <Input
+                  id="edit-total_floors"
+                  type="number"
+                  value={formData.total_floors}
+                  onChange={(e) => setFormData({ ...formData, total_floors: e.target.value })}
+                  placeholder="10"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateProperty} disabled={!formData.name || !formData.code}>
+                Update Property
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {properties.map((property) => (
             <Card key={property.id} className="hover:shadow-lg transition-shadow">
@@ -242,9 +409,18 @@ const PropertyManagementPage: React.FC = () => {
                       <CardDescription>Code: {property.code}</CardDescription>
                     </div>
                   </div>
-                  <Badge variant={property.status === 'active' ? 'default' : 'secondary'}>
-                    {property.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleEditProperty(property)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Badge variant={property.status === 'active' ? 'default' : 'secondary'}>
+                      {property.status}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
