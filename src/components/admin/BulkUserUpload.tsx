@@ -22,6 +22,7 @@ interface UserRecord {
   role: string;
   department?: string;
   specialization?: string;
+  property_code?: string;
   password?: string;
 }
 
@@ -43,6 +44,7 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
         role: "Multi Skilled Technician",
         department: "Operations",
         specialization: "Multi Skilled Technician",
+        property_code: "PROP001",
         password: "TempPassword123"
       },
       {
@@ -54,6 +56,7 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
         role: "Tenant Manager",
         department: "",
         specialization: "",
+        property_code: "PROP001",
         password: ""
       },
       {
@@ -65,6 +68,7 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
         role: "Front desk and Facility Executive",
         department: "Administration",
         specialization: "Facility Management",
+        property_code: "PROP002",
         password: "SecurePass456"
       }
     ];
@@ -281,7 +285,7 @@ export function BulkUserUpload({ onSuccess }: BulkUserUploadProps) {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            Supported formats: .xlsx, .xls. Maximum 500 users per upload.
+            Supported formats: .xlsx, .xls. Maximum 500 users per upload. Include property_code column to assign users to properties.
           </p>
         </div>
 

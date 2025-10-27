@@ -128,6 +128,13 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   }, [currentProperty]);
 
+  // Default property filter for non-super admins
+  useEffect(() => {
+    if (!isSuperAdmin && currentProperty && selectedProperty === 'all') {
+      setSelectedProperty(currentProperty.id);
+    }
+  }, [isSuperAdmin, currentProperty]);
+
   // Update specialization visibility when role changes
   useEffect(() => {
     const shouldShow = requiresSpecialization(newUser.role);
@@ -569,10 +576,13 @@ export const EnhancedUserManagement: React.FC = () => {
                          `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.assigned_role_title === selectedRole || user.role === selectedRole;
     const matchesStatus = selectedStatus === 'all' || user.approval_status === selectedStatus;
-    const matchesProperty = selectedProperty === 'all' || user.property_id === selectedProperty;
+    const matchesProperty = selectedProperty === 'all' || 
+                           (selectedProperty === 'unassigned' ? !user.property_id : user.property_id === selectedProperty);
     
     return matchesSearch && matchesRole && matchesStatus && matchesProperty;
   });
+
+  const unassignedCount = users.filter(u => !u.property_id).length;
 
   if (!isAdmin) {
     return (
@@ -786,6 +796,12 @@ export const EnhancedUserManagement: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Properties</SelectItem>
+                <SelectItem value="unassigned">
+                  <span className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                    Unassigned ({unassignedCount})
+                  </span>
+                </SelectItem>
                 {availableProperties.map(property => (
                   <SelectItem key={property.id} value={property.id}>
                     {property.name}
@@ -841,22 +857,30 @@ export const EnhancedUserManagement: React.FC = () => {
                                 <X className="h-3 w-3" />
                               </Button>
                             </div>
-                          ) : (
+                           ) : (
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline">
-                                {user.is_primary && '⭐ '}
-                                {user.property_name || 'No Property'}
-                              </Badge>
+                              {user.property_id ? (
+                                <Badge variant="outline">
+                                  {user.is_primary && '⭐ '}
+                                  {user.property_name}
+                                </Badge>
+                              ) : (
+                                <Badge variant="destructive" className="flex items-center gap-1">
+                                  <AlertCircle className="h-3 w-3" />
+                                  No Property
+                                </Badge>
+                              )}
                               <Button
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => handleStartPropertyEdit(user.id, user.property_id || '')}
                                 className="h-6 w-6 p-0"
+                                title={!user.property_id ? "Assign property to enable access" : "Change property"}
                               >
                                 <Edit3 className="h-3 w-3" />
                               </Button>
                             </div>
-                          )}
+                           )}
                           
                           {/* Role Badge/Editor */}
                           {editingRoleUserId === user.id ? (
@@ -944,6 +968,8 @@ export const EnhancedUserManagement: React.FC = () => {
                           size="sm"
                           variant="default"
                           onClick={() => handleApproveUser(user.id)}
+                          disabled={!user.property_id}
+                          title={!user.property_id ? "Assign property before approving" : "Approve user"}
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Approve
