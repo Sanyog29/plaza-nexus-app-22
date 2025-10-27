@@ -557,6 +557,33 @@ export type Database = {
         }
         Relationships: []
       }
+      bill_auditor_roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          permissions: Json | null
+          role_code: string
+          role_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          permissions?: Json | null
+          role_code: string
+          role_name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          permissions?: Json | null
+          role_code?: string
+          role_name?: string
+        }
+        Relationships: []
+      }
       booking_templates: {
         Row: {
           buffer_time_minutes: number | null
@@ -3671,6 +3698,74 @@ export type Database = {
           },
         ]
       }
+      meters: {
+        Row: {
+          account_number: string | null
+          connection_type: string | null
+          created_at: string | null
+          id: string
+          installation_date: string | null
+          last_reading_date: string | null
+          metadata: Json | null
+          meter_location: string | null
+          meter_number: string
+          meter_type: string
+          sanctioned_load: number | null
+          site_id: string
+          status: string | null
+          tariff_category: string | null
+          updated_at: string | null
+          utility_provider: string | null
+          voltage_level: string | null
+        }
+        Insert: {
+          account_number?: string | null
+          connection_type?: string | null
+          created_at?: string | null
+          id?: string
+          installation_date?: string | null
+          last_reading_date?: string | null
+          metadata?: Json | null
+          meter_location?: string | null
+          meter_number: string
+          meter_type: string
+          sanctioned_load?: number | null
+          site_id: string
+          status?: string | null
+          tariff_category?: string | null
+          updated_at?: string | null
+          utility_provider?: string | null
+          voltage_level?: string | null
+        }
+        Update: {
+          account_number?: string | null
+          connection_type?: string | null
+          created_at?: string | null
+          id?: string
+          installation_date?: string | null
+          last_reading_date?: string | null
+          metadata?: Json | null
+          meter_location?: string | null
+          meter_number?: string
+          meter_type?: string
+          sanctioned_load?: number | null
+          site_id?: string
+          status?: string | null
+          tariff_category?: string | null
+          updated_at?: string | null
+          utility_provider?: string | null
+          voltage_level?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meters_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ml_models: {
         Row: {
           accuracy_score: number | null
@@ -4220,6 +4315,150 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      organization_users: {
+        Row: {
+          approved_at: string | null
+          created_at: string | null
+          email: string
+          first_name: string | null
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          is_active: boolean | null
+          last_login_at: string | null
+          last_name: string | null
+          organization_id: string
+          phone_number: string | null
+          role_id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string | null
+          email: string
+          first_name?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          last_login_at?: string | null
+          last_name?: string | null
+          organization_id: string
+          phone_number?: string | null
+          role_id: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          is_active?: boolean | null
+          last_login_at?: string | null
+          last_name?: string | null
+          organization_id?: string
+          phone_number?: string | null
+          role_id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_users_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_users_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "bill_auditor_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          address: string | null
+          billing_email: string | null
+          city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string | null
+          id: string
+          industry: string | null
+          is_active: boolean | null
+          logo_url: string | null
+          max_sites: number | null
+          max_users: number | null
+          name: string
+          org_code: string
+          postal_code: string | null
+          settings: Json | null
+          state: string | null
+          subscription_status: string | null
+          subscription_tier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          billing_email?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          max_sites?: number | null
+          max_users?: number | null
+          name: string
+          org_code: string
+          postal_code?: string | null
+          settings?: Json | null
+          state?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          billing_email?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          max_sites?: number | null
+          max_users?: number | null
+          name?: string
+          org_code?: string
+          postal_code?: string | null
+          settings?: Json | null
+          state?: string | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       parking_requests: {
         Row: {
@@ -6936,6 +7175,119 @@ export type Database = {
         }
         Relationships: []
       }
+      site_access: {
+        Row: {
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          organization_user_id: string
+          site_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          organization_user_id: string
+          site_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          organization_user_id?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_access_organization_user_id_fkey"
+            columns: ["organization_user_id"]
+            isOneToOne: false
+            referencedRelation: "organization_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_access_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          address: string | null
+          area_sqft: number | null
+          city: string | null
+          contact_email: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          latitude: number | null
+          longitude: number | null
+          organization_id: string
+          postal_code: string | null
+          site_code: string
+          site_name: string
+          site_type: string | null
+          state: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          area_sqft?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          organization_id: string
+          postal_code?: string | null
+          site_code: string
+          site_name: string
+          site_type?: string | null
+          state?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          area_sqft?: number | null
+          city?: string | null
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          organization_id?: string
+          postal_code?: string | null
+          site_code?: string
+          site_name?: string
+          site_type?: string | null
+          state?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       skills_master: {
         Row: {
           category: string | null
@@ -8420,6 +8772,7 @@ export type Database = {
           office_number: string | null
           password: string | null
           phone_number: string | null
+          property_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           role_title: string | null
           specialization: string | null
@@ -8442,6 +8795,7 @@ export type Database = {
           office_number?: string | null
           password?: string | null
           phone_number?: string | null
+          property_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           role_title?: string | null
           specialization?: string | null
@@ -8464,6 +8818,7 @@ export type Database = {
           office_number?: string | null
           password?: string | null
           phone_number?: string | null
+          property_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           role_title?: string | null
           specialization?: string | null
@@ -8490,6 +8845,13 @@ export type Database = {
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "profiles_with_role"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -10420,6 +10782,23 @@ export type Database = {
               invitation_office_number?: string
               invitation_password?: string
               invitation_phone_number?: string
+              invitation_role: string
+              invitation_specialization?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              invitation_department?: string
+              invitation_email: string
+              invitation_emp_id?: string
+              invitation_first_name: string
+              invitation_floor?: string
+              invitation_last_name: string
+              invitation_office_number?: string
+              invitation_password?: string
+              invitation_phone_number?: string
+              invitation_property_id?: string
               invitation_role: string
               invitation_specialization?: string
             }
