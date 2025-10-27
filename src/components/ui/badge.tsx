@@ -23,6 +23,20 @@ const badgeVariants = cva(
           "border-transparent bg-red-600 text-white hover:bg-red-700",
         info:
           "border-transparent bg-blue-500 text-white hover:bg-blue-600",
+        'status-pending':
+          "border-transparent bg-status-pending text-status-pending-foreground hover:bg-status-pending/80",
+        'status-in-progress':
+          "border-transparent bg-status-in-progress text-status-in-progress-foreground hover:bg-status-in-progress/80",
+        'status-completed':
+          "border-transparent bg-status-completed text-status-completed-foreground hover:bg-status-completed/80",
+        'status-overdue':
+          "border-transparent bg-status-overdue text-status-overdue-foreground hover:bg-status-overdue/80",
+        'priority-high':
+          "border-transparent bg-priority-high text-priority-high-foreground hover:bg-priority-high/80",
+        'priority-medium':
+          "border-transparent bg-priority-medium text-priority-medium-foreground hover:bg-priority-medium/80",
+        'priority-low':
+          "border-transparent bg-priority-low text-priority-low-foreground hover:bg-priority-low/80",
       },
     },
     defaultVariants: {

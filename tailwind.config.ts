@@ -73,6 +73,35 @@ export default {
 					DEFAULT: 'hsl(var(--warning))',
 					foreground: 'hsl(var(--warning-foreground))'
 				},
+				// Maintenance Request Status Colors
+				'status-pending': {
+					DEFAULT: 'hsl(var(--status-pending))',
+					foreground: 'hsl(var(--status-pending-foreground))'
+				},
+				'status-in-progress': {
+					DEFAULT: 'hsl(var(--status-in-progress))',
+					foreground: 'hsl(var(--status-in-progress-foreground))'
+				},
+				'status-completed': {
+					DEFAULT: 'hsl(var(--status-completed))',
+					foreground: 'hsl(var(--status-completed-foreground))'
+				},
+				'status-overdue': {
+					DEFAULT: 'hsl(var(--status-overdue))',
+					foreground: 'hsl(var(--status-overdue-foreground))'
+				},
+				'priority-high': {
+					DEFAULT: 'hsl(var(--priority-high))',
+					foreground: 'hsl(var(--priority-high-foreground))'
+				},
+				'priority-medium': {
+					DEFAULT: 'hsl(var(--priority-medium))',
+					foreground: 'hsl(var(--priority-medium-foreground))'
+				},
+				'priority-low': {
+					DEFAULT: 'hsl(var(--priority-low))',
+					foreground: 'hsl(var(--priority-low-foreground))'
+				},
 				// Semantic design tokens for app-specific colors
 				surface: {
 					DEFAULT: 'hsl(var(--card))',

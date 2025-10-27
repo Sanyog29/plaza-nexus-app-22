@@ -15,8 +15,7 @@ const SLATimerPreview: React.FC<SLATimerPreviewProps> = ({ estimatedTime }) => {
       <div className="flex justify-between items-center">
         <Label>Estimated Resolution Time</Label>
         <Badge 
-          variant="outline" 
-          className={estimatedTime > 60 ? "bg-green-900/20 text-green-400" : "bg-yellow-900/20 text-yellow-400"}
+          variant={estimatedTime > 60 ? "status-completed" : "priority-medium"}
         >
           {estimatedTime > 60 ? (
             <CheckCircle size={14} className="mr-1" />

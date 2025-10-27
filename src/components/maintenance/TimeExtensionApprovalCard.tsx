@@ -56,12 +56,18 @@ export const TimeExtensionApprovalCard: React.FC<TimeExtensionApprovalCardProps>
   };
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'destructive';
-      case 'high': return 'default';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'secondary';
+    switch (priority?.toLowerCase()) {
+      case 'urgent':
+      case 'high':
+      case 'critical':
+        return 'priority-high';
+      case 'medium':
+      case 'normal':
+        return 'priority-medium';
+      case 'low':
+        return 'priority-low';
+      default:
+        return 'outline';
     }
   };
 

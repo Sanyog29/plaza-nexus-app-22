@@ -137,6 +137,28 @@
     --error-subtle: 0 84 60 / 0.1;
     --info-subtle: 213 94 68 / 0.1;
 
+    /* Maintenance Request Status Colors */
+    --status-pending: 216 70 52;           /* Deep blue #1E3A8A equivalent */
+    --status-pending-foreground: 0 0 100;  /* White */
+    
+    --status-in-progress: 28 87 67;        /* Rich orange #FB923C equivalent */
+    --status-in-progress-foreground: 215 28 17;  /* Dark gray #1F2937 equivalent */
+    
+    --status-completed: 152 69 46;         /* Strong green #10B981 equivalent */
+    --status-completed-foreground: 0 0 100;  /* White */
+    
+    --status-overdue: 0 72 51;             /* Bold red #DC2626 equivalent */
+    --status-overdue-foreground: 0 0 100;  /* White */
+    
+    --priority-high: 330 79 38;            /* Vivid magenta #BE185D equivalent */
+    --priority-high-foreground: 0 0 100;   /* White */
+    
+    --priority-medium: 28 87 67;           /* Orange #FB923C equivalent */
+    --priority-medium-foreground: 215 28 17;  /* Dark gray */
+    
+    --priority-low: 220 9 46;              /* Gray #6B7280 equivalent */
+    --priority-low-foreground: 0 0 100;    /* White */
+
     /* UI elements */
     --border: 214 32 91;
     --input: 214 32 91;
@@ -209,6 +231,28 @@
     --success-subtle: 142 76 36 / 0.2;
     --error-subtle: 0 91 71 / 0.2;
     --info-subtle: 213 94 68 / 0.2;
+
+    /* Maintenance Request Status Colors - Dark Mode */
+    --status-pending: 221 83 53;           /* Brighter blue #2563EB equivalent */
+    --status-pending-foreground: 0 0 100;
+    
+    --status-in-progress: 28 87 67;        /* Same orange (good contrast) */
+    --status-in-progress-foreground: 220 26 14;  /* Darker text */
+    
+    --status-completed: 142 70 49;         /* Brighter green #22C55E equivalent */
+    --status-completed-foreground: 0 0 100;
+    
+    --status-overdue: 0 84 69;             /* Brighter red #EF4444 equivalent */
+    --status-overdue-foreground: 0 0 100;
+    
+    --priority-high: 330 81 60;            /* Brighter magenta #DB2777 equivalent */
+    --priority-high-foreground: 0 0 100;
+    
+    --priority-medium: 28 87 67;           /* Same orange */
+    --priority-medium-foreground: 220 26 14;
+    
+    --priority-low: 220 13 60;             /* Lighter gray #9CA3AF equivalent */
+    --priority-low-foreground: 220 26 14;
 
     /* UI elements - more visible borders */
     --border: 220 13 24;
