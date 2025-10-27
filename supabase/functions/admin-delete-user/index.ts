@@ -56,12 +56,12 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if the user is an admin (using user_roles table)
+    // Check if the user is an admin or super_admin (using user_roles table)
     const { data: adminRole, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .eq('role', 'admin')
+      .in('role', ['admin', 'super_admin'])
       .maybeSingle();
 
     if (roleError) {
@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!adminRole) {
       console.error('Permission denied for user:', user.id);
       return new Response(
-        JSON.stringify({ error: 'Insufficient permissions. Admin access required.' }),
+        JSON.stringify({ error: 'Insufficient permissions. Admin or Super Admin access required.' }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -121,6 +121,70 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
+    }
+
+    // Property scoping validation (only for regular admins, not super_admins)
+    const isSuperAdmin = adminRole.role === 'super_admin';
+    
+    if (!isSuperAdmin) {
+      // Regular admins can only delete users within their assigned properties
+      // Get the target user's primary property
+      const { data: targetProperty, error: targetPropError } = await supabaseAdmin
+        .from('property_assignments')
+        .select('property_id')
+        .eq('user_id', user_id)
+        .eq('is_primary', true)
+        .maybeSingle();
+
+      if (targetPropError) {
+        console.error('Error fetching target user property:', targetPropError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to verify property access', details: targetPropError.message }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      if (!targetProperty) {
+        return new Response(
+          JSON.stringify({ error: 'Cannot delete user: No property assignment found' }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      // Check if the admin has access to the target property
+      const { data: hasAccess, error: accessError } = await supabaseAdmin
+        .rpc('user_has_property_access', { 
+          check_user_id: user.id, 
+          check_property_id: targetProperty.property_id 
+        });
+
+      if (accessError) {
+        console.error('Error checking property access:', accessError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to verify property access', details: accessError.message }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      if (!hasAccess) {
+        console.error(`Admin ${user.id} attempted to delete user ${user_id} outside their property scope`);
+        return new Response(
+          JSON.stringify({ error: 'Admins can only delete users within their assigned properties' }),
+          { 
+            status: 403, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
     }
 
     // First, cascade delete all user data using our comprehensive function
@@ -198,6 +262,8 @@ const handler = async (req: Request): Promise<Response> => {
         new_values: {
           deleted_user_id: user_id,
           deleted_by_admin_id: user.id,
+          deleting_user_role: adminRole.role,
+          property_scope_bypassed: isSuperAdmin,
           deletion_timestamp: new Date().toISOString(),
           cascade_summary: cascadeResult.cleanup_summary
         }
