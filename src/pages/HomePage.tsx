@@ -60,24 +60,24 @@ const HomePage = () => {
         
         {/* Primary Action Grid - 4 Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <DashboardTile title="Helpdesk & Ticketing" description="Report issues, track requests & get support" icon={<MessageSquare size={28} className="text-white" strokeWidth={1.5} />} to="/requests/new" bgColor="bg-blue-600" count={newMetrics.totalRequests} status={{
+          <DashboardTile title="Helpdesk & Ticketing" description="Report issues, track requests & get support" icon={<MessageSquare size={28} className="text-primary-foreground" strokeWidth={1.5} />} to="/requests/new" bgColor="bg-blue-600" count={newMetrics.totalRequests} status={{
           text: `${newMetrics.pendingRequests} Active Tickets`,
-          color: "bg-white/20 text-white"
+          color: "bg-background/20 text-primary-foreground"
         }} />
           
-          <DashboardTile title="Visitor Management" description="Check-in visitors & manage access control" icon={<UserCheck size={28} className="text-white" strokeWidth={1.5} />} to="/security" bgColor="bg-indigo-600" count={newMetrics.totalVisitors} status={{
+          <DashboardTile title="Visitor Management" description="Check-in visitors & manage access control" icon={<UserCheck size={28} className="text-primary-foreground" strokeWidth={1.5} />} to="/security" bgColor="bg-indigo-600" count={newMetrics.totalVisitors} status={{
           text: `${newMetrics.activeVisitors} Active Visitors`,
-          color: "bg-white/20 text-white"
+          color: "bg-background/20 text-primary-foreground"
         }} />
           
-          <DashboardTile title="Room Bookings" description="Reserve meeting spaces & conference rooms" icon={<Calendar size={28} className="text-white" strokeWidth={1.5} />} to="/bookings" bgColor="bg-purple-600" count={newMetrics.upcomingBookings} status={{
+          <DashboardTile title="Room Bookings" description="Reserve meeting spaces & conference rooms" icon={<Calendar size={28} className="text-primary-foreground" strokeWidth={1.5} />} to="/bookings" bgColor="bg-purple-600" count={newMetrics.upcomingBookings} status={{
           text: `Available Today`,
-          color: "bg-white/20 text-white"
+          color: "bg-background/20 text-primary-foreground"
         }} />
 
-          <DashboardTile title="Cafe & Loyalty" description="Order via app • Earn points • Pay via UPI" icon={<Coffee size={28} className="text-white" strokeWidth={1.5} />} to="/cafeteria" bgColor="bg-amber-600" status={{
+          <DashboardTile title="Cafe & Loyalty" description="Order via app • Earn points • Pay via UPI" icon={<Coffee size={28} className="text-primary-foreground" strokeWidth={1.5} />} to="/cafeteria" bgColor="bg-amber-600" status={{
           text: "Order & Earn Points",
-          color: "bg-white/20 text-white"
+          color: "bg-background/20 text-primary-foreground"
         }} />
         </div>
       </div>
@@ -100,7 +100,7 @@ const HomePage = () => {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="bg-blue-600 dark:bg-blue-700 p-2 rounded-lg">
-                  <Building size={24} className="text-white dark:text-blue-50" />
+                  <Building size={24} className="text-primary-foreground" />
                 </div>
                 <div>
                   <h4 className="text-foreground font-medium text-base text-left">AUTOPILOT Directory</h4>
@@ -114,7 +114,7 @@ const HomePage = () => {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="bg-emerald-600 dark:bg-emerald-700 p-2 rounded-lg">
-                  <Shield size={24} className="text-white dark:text-emerald-50" />
+                  <Shield size={24} className="text-primary-foreground" />
                 </div>
                 <div>
                   <h4 className="font-medium text-foreground text-base text-left">Safety & Security</h4>

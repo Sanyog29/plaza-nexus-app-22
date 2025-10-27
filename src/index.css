@@ -96,73 +96,73 @@
     --apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     
     /* Light theme - Apple Style */
-    --background: 0 0 100;
-    --foreground: 210 11 15;
+    --background: 0 0% 100%;
+    --foreground: 210 11% 15%;
 
     /* Card and surface colors */
-    --card: 0 0 100;
-    --card-foreground: 210 11 15;
-    --card-glass: 0 0 100 / 0.8;
+    --card: 0 0% 100%;
+    --card-foreground: 210 11% 15%;
+    --card-glass: 0 0% 100% / 0.8;
 
-    --popover: 0 0 100;
-    --popover-foreground: 210 11 15;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 15%;
 
     /* Primary brand colors - Apple Blue */
-    --primary: 213 94 68;
-    --primary-foreground: 0 0 100;
-    --primary-glow: 213 94 78;
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 213 94% 78%;
     
     /* Secondary colors - Apple Light Gray */
-    --secondary: 210 20 96;
-    --secondary-foreground: 210 11 15;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 11% 15%;
 
     /* Muted colors - Apple Gray */
-    --muted: 210 20 96;
-    --muted-foreground: 210 9 45;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 9% 45%;
 
     /* Accent colors - Apple System Blue */
-    --accent: 213 94 68;
-    --accent-foreground: 0 0 100;
+    --accent: 213 94% 68%;
+    --accent-foreground: 0 0% 100%;
 
     /* Status colors - Apple System Colors */
-    --destructive: 0 84 60;
-    --destructive-foreground: 0 0 100;
-    --success: 142 76 36;
-    --success-foreground: 0 0 100;
-    --warning: 32 95 44;
-    --warning-foreground: 0 0 100;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 44%;
+    --warning-foreground: 0 0% 100%;
     
     /* Enhanced UI colors */
-    --success-subtle: 142 76 36 / 0.1;
-    --error-subtle: 0 84 60 / 0.1;
-    --info-subtle: 213 94 68 / 0.1;
+    --success-subtle: 142 76% 36% / 0.1;
+    --error-subtle: 0 84% 60% / 0.1;
+    --info-subtle: 213 94% 68% / 0.1;
 
     /* Maintenance Request Status Colors */
-    --status-pending: 216 70 52;           /* Deep blue #1E3A8A equivalent */
-    --status-pending-foreground: 0 0 100;  /* White */
+    --status-pending: 216 70% 52%;           /* Deep blue #1E3A8A equivalent */
+    --status-pending-foreground: 0 0% 100%;  /* White */
     
-    --status-in-progress: 28 87 67;        /* Rich orange #FB923C equivalent */
-    --status-in-progress-foreground: 215 28 17;  /* Dark gray #1F2937 equivalent */
+    --status-in-progress: 28 87% 67%;        /* Rich orange #FB923C equivalent */
+    --status-in-progress-foreground: 215 28% 17%;  /* Dark gray #1F2937 equivalent */
     
-    --status-completed: 152 69 46;         /* Strong green #10B981 equivalent */
-    --status-completed-foreground: 0 0 100;  /* White */
+    --status-completed: 152 69% 46%;         /* Strong green #10B981 equivalent */
+    --status-completed-foreground: 0 0% 100%;  /* White */
     
-    --status-overdue: 0 72 51;             /* Bold red #DC2626 equivalent */
-    --status-overdue-foreground: 0 0 100;  /* White */
+    --status-overdue: 0 72% 51%;             /* Bold red #DC2626 equivalent */
+    --status-overdue-foreground: 0 0% 100%;  /* White */
     
-    --priority-high: 330 79 38;            /* Vivid magenta #BE185D equivalent */
-    --priority-high-foreground: 0 0 100;   /* White */
+    --priority-high: 330 79% 38%;            /* Vivid magenta #BE185D equivalent */
+    --priority-high-foreground: 0 0% 100%;   /* White */
     
-    --priority-medium: 28 87 67;           /* Orange #FB923C equivalent */
-    --priority-medium-foreground: 215 28 17;  /* Dark gray */
+    --priority-medium: 28 87% 67%;           /* Orange #FB923C equivalent */
+    --priority-medium-foreground: 215 28% 17%;  /* Dark gray */
     
-    --priority-low: 220 9 46;              /* Gray #6B7280 equivalent */
-    --priority-low-foreground: 0 0 100;    /* White */
+    --priority-low: 220 9% 46%;              /* Gray #6B7280 equivalent */
+    --priority-low-foreground: 0 0% 100%;    /* White */
 
     /* UI elements */
-    --border: 214 32 91;
-    --input: 214 32 91;
-    --ring: 213 94 68;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 213 94% 68%;
     
     /* New gradient colors */
     --gradient-start: 221 83% 70%;
@@ -191,73 +191,73 @@
 
   .dark {
     /* Dark theme - Apple Style with proper contrast */
-    --background: 220 13 9;
-    --foreground: 0 0 100;
+    --background: 220 13% 9%;
+    --foreground: 0 0% 100%;
 
     /* Card and surface colors - darker for better contrast */
-    --card: 220 13 14;
-    --card-foreground: 0 0 98;
-    --card-glass: 220 13 14 / 0.8;
+    --card: 220 13% 14%;
+    --card-foreground: 0 0% 98%;
+    --card-glass: 220 13% 14% / 0.8;
 
-    --popover: 220 13 14;
-    --popover-foreground: 0 0 98;
+    --popover: 220 13% 14%;
+    --popover-foreground: 0 0% 98%;
 
     /* Primary brand colors - Apple Blue (adjusted for dark) */
-    --primary: 213 94 68;
-    --primary-foreground: 0 0 100;
-    --primary-glow: 213 94 78;
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 213 94% 78%;
     
     /* Secondary colors - Apple Dark Gray */
-    --secondary: 220 13 18;
-    --secondary-foreground: 0 0 98;
+    --secondary: 220 13% 18%;
+    --secondary-foreground: 0 0% 98%;
 
     /* Muted colors - lighter for better readability */
-    --muted: 220 13 18;
-    --muted-foreground: 210 11 85;
+    --muted: 220 13% 18%;
+    --muted-foreground: 210 11% 85%;
 
     /* Accent colors - more visible in dark mode */
-    --accent: 220 13 21;
-    --accent-foreground: 0 0 98;
+    --accent: 220 13% 21%;
+    --accent-foreground: 0 0% 98%;
 
     /* Status colors - Apple System Colors (dark mode) */
-    --destructive: 0 91 71;
-    --destructive-foreground: 0 0 100;
-    --success: 142 71 45;
-    --success-foreground: 0 0 100;
-    --warning: 38 92 50;
-    --warning-foreground: 0 0 0;
+    --destructive: 0 91% 71%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
     
     /* Enhanced UI colors */
-    --success-subtle: 142 76 36 / 0.2;
-    --error-subtle: 0 91 71 / 0.2;
-    --info-subtle: 213 94 68 / 0.2;
+    --success-subtle: 142 76% 36% / 0.2;
+    --error-subtle: 0 91% 71% / 0.2;
+    --info-subtle: 213 94% 68% / 0.2;
 
     /* Maintenance Request Status Colors - Dark Mode */
-    --status-pending: 221 83 53;           /* Brighter blue #2563EB equivalent */
-    --status-pending-foreground: 0 0 100;
+    --status-pending: 221 83% 53%;           /* Brighter blue #2563EB equivalent */
+    --status-pending-foreground: 0 0% 100%;
     
-    --status-in-progress: 28 87 67;        /* Same orange (good contrast) */
-    --status-in-progress-foreground: 220 26 14;  /* Darker text */
+    --status-in-progress: 28 87% 67%;        /* Same orange (good contrast) */
+    --status-in-progress-foreground: 220 26% 14%;  /* Darker text */
     
-    --status-completed: 142 70 49;         /* Brighter green #22C55E equivalent */
-    --status-completed-foreground: 0 0 100;
+    --status-completed: 142 70% 49%;         /* Brighter green #22C55E equivalent */
+    --status-completed-foreground: 0 0% 100%;
     
-    --status-overdue: 0 84 69;             /* Brighter red #EF4444 equivalent */
-    --status-overdue-foreground: 0 0 100;
+    --status-overdue: 0 84% 69%;             /* Brighter red #EF4444 equivalent */
+    --status-overdue-foreground: 0 0% 100%;
     
-    --priority-high: 330 81 60;            /* Brighter magenta #DB2777 equivalent */
-    --priority-high-foreground: 0 0 100;
+    --priority-high: 330 81% 60%;            /* Brighter magenta #DB2777 equivalent */
+    --priority-high-foreground: 0 0% 100%;
     
-    --priority-medium: 28 87 67;           /* Same orange */
-    --priority-medium-foreground: 220 26 14;
+    --priority-medium: 28 87% 67%;           /* Same orange */
+    --priority-medium-foreground: 220 26% 14%;
     
-    --priority-low: 220 13 60;             /* Lighter gray #9CA3AF equivalent */
-    --priority-low-foreground: 220 26 14;
+    --priority-low: 220 13% 60%;             /* Lighter gray #9CA3AF equivalent */
+    --priority-low-foreground: 220 26% 14%;
 
     /* UI elements - more visible borders */
-    --border: 220 13 24;
-    --input: 220 13 18;
-    --ring: 213 94 68;
+    --border: 220 13% 24%;
+    --input: 220 13% 18%;
+    --ring: 213 94% 68%;
     
     /* New gradient colors */
     --gradient-start: 221 83% 70%;

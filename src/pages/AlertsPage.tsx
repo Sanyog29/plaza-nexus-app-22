@@ -29,8 +29,8 @@ const AlertStats = ({ alerts }: { alerts: Alert[] }) => {
             <AlertTriangle size={20} className="text-red-500" />
           </div>
           <div>
-            <p className="text-sm text-gray-400">Critical</p>
-            <p className="text-lg font-semibold text-white">{criticalCount}</p>
+            <p className="text-sm text-muted-foreground">Critical</p>
+            <p className="text-lg font-semibold text-foreground">{criticalCount}</p>
           </div>
         </CardContent>
       </Card>
@@ -41,8 +41,8 @@ const AlertStats = ({ alerts }: { alerts: Alert[] }) => {
             <Bell size={20} className="text-yellow-500" />
           </div>
           <div>
-            <p className="text-sm text-gray-400">Warnings</p>
-            <p className="text-lg font-semibold text-white">{warningCount}</p>
+            <p className="text-sm text-muted-foreground">Warnings</p>
+            <p className="text-lg font-semibold text-foreground">{warningCount}</p>
           </div>
         </CardContent>
       </Card>
@@ -53,8 +53,8 @@ const AlertStats = ({ alerts }: { alerts: Alert[] }) => {
             <Bell size={20} className="text-blue-500" />
           </div>
           <div>
-            <p className="text-sm text-gray-400">Info</p>
-            <p className="text-lg font-semibold text-white">{infoCount}</p>
+            <p className="text-sm text-muted-foreground">Info</p>
+            <p className="text-lg font-semibold text-foreground">{infoCount}</p>
           </div>
         </CardContent>
       </Card>
@@ -115,10 +115,10 @@ const AlertItem = ({ alert }: { alert: Alert }) => {
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h4 className="font-medium text-white">{alert.title}</h4>
+                <h4 className="font-medium text-foreground">{alert.title}</h4>
                 {getSeverityBadge()}
               </div>
-              <p className="text-sm text-gray-400">{alert.message}</p>
+              <p className="text-sm text-muted-foreground">{alert.message}</p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 <span>{new Date(alert.created_at).toLocaleString()}</span>
                 {alert.expires_at && (
@@ -153,8 +153,8 @@ const AlertFilters = ({
           onClick={() => onSeverityChange(severity)}
           className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
             selectedSeverity === severity
-              ? 'bg-plaza-blue text-white'
-              : 'bg-card/50 text-gray-400 hover:bg-card'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-card/50 text-muted-foreground hover:bg-card'
           }`}
         >
           {severity.charAt(0).toUpperCase() + severity.slice(1)}
@@ -219,8 +219,8 @@ const AlertsPage = () => {
     <div className="px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-white">Facility Alerts</h2>
-          <p className="text-sm text-gray-400 mt-1">Monitor and track building alerts</p>
+          <h2 className="text-2xl font-bold text-foreground">Facility Alerts</h2>
+          <p className="text-sm text-muted-foreground mt-1">Monitor and track building alerts</p>
         </div>
       </div>
       
@@ -234,7 +234,7 @@ const AlertsPage = () => {
         {filteredAlerts.length === 0 ? (
           <Card className="bg-card/50 backdrop-blur">
             <CardContent className="p-8 text-center">
-              <p className="text-gray-400">No active alerts found</p>
+              <p className="text-muted-foreground">No active alerts found</p>
             </CardContent>
           </Card>
         ) : (

@@ -227,7 +227,7 @@ const UnifiedAdminDashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Unified Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold text-foreground">Unified Admin Dashboard</h1>
             <p className="text-muted-foreground">
               Complete system management and monitoring hub
             </p>
@@ -284,34 +284,34 @@ const UnifiedAdminDashboard = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-10 bg-card/50">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="health" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="health" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Health
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="executive" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="executive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Executive
             </TabsTrigger>
-            <TabsTrigger value="quality" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="quality" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Quality
             </TabsTrigger>
-            <TabsTrigger value="bulk" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="bulk" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Bulk Ops
             </TabsTrigger>
-            <TabsTrigger value="audit" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="audit" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Audit
             </TabsTrigger>
-            <TabsTrigger value="visitors" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="visitors" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Visitors
             </TabsTrigger>
-            <TabsTrigger value="properties" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="properties" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Properties
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-primary">
+            <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Settings
             </TabsTrigger>
           </TabsList>
@@ -325,9 +325,9 @@ const UnifiedAdminDashboard = () => {
                   <Card key={stat.title} className="bg-card/50 backdrop-blur">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
-                        <div className="space-y-1">
+                      <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">{stat.title}</p>
-                          <p className="text-2xl font-bold text-white">{stat.value}</p>
+                          <p className="text-2xl font-bold text-foreground">{stat.value}</p>
                           <p className="text-xs text-muted-foreground">{stat.change}</p>
                         </div>
                         <IconComponent className={`h-8 w-8 ${stat.color}`} />
@@ -340,7 +340,7 @@ const UnifiedAdminDashboard = () => {
 
             {/* Featured Tools Grid */}
             <div>
-              <h2 className="text-xl font-bold text-white mb-4">Admin Tools</h2>
+              <h2 className="text-xl font-bold text-foreground mb-4">Admin Tools</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {featuredTools.map((tool) => {
                   const IconComponent = tool.icon;
@@ -359,7 +359,7 @@ const UnifiedAdminDashboard = () => {
                             </Badge>
                           )}
                         </div>
-                        <CardTitle className="text-lg text-white group-hover:text-primary transition-colors">
+                        <CardTitle className="text-lg text-foreground group-hover:text-primary transition-colors">
                           {tool.title}
                         </CardTitle>
                       </CardHeader>

@@ -7,9 +7,9 @@ const RequestFormHeader = () => {
   return (
     <div className="flex items-center mb-6">
       <Link to="/requests" className="mr-4">
-        <ArrowLeft size={24} className="text-white" />
+        <ArrowLeft size={24} className="text-foreground" />
       </Link>
-      <h2 className="text-2xl font-bold text-white">New Request</h2>
+      <h2 className="text-2xl font-bold text-foreground">New Request</h2>
     </div>
   );
 };
