@@ -55,12 +55,12 @@ serve(async (req: Request) => {
       throw new Error("Authentication failed");
     }
 
-    // Check if user is admin (using user_roles table)
+    // Check if user is admin or super_admin (using user_roles table)
     const { data: adminRole, error: roleError } = await supabaseAdmin
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .eq("role", "admin")
+      .in("role", ["admin", "super_admin"])
       .maybeSingle();
 
     if (roleError) {
@@ -70,7 +70,7 @@ serve(async (req: Request) => {
 
     if (!adminRole) {
       console.error("Permission denied for user:", user.id);
-      throw new Error("Only administrators can approve/reject users");
+      throw new Error("Only administrators and super administrators can approve/reject users");
     }
 
     const { user_id, action, reason }: ApprovalRequest = await req.json();
