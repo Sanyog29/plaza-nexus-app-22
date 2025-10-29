@@ -10727,6 +10727,59 @@ export type Database = {
           },
         ]
       }
+      v_index_health: {
+        Row: {
+          idx_scan: number | null
+          idx_tup_fetch: number | null
+          idx_tup_read: number | null
+          index_size: string | null
+          indexname: unknown
+          schemaname: unknown
+          tablename: unknown
+          usage_status: string | null
+        }
+        Relationships: []
+      }
+      v_query_performance: {
+        Row: {
+          idx_scan: number | null
+          idx_tup_fetch: number | null
+          index_usage_pct: number | null
+          modifications: number | null
+          schemaname: unknown
+          seq_scan: number | null
+          seq_tup_read: number | null
+          tablename: unknown
+        }
+        Relationships: []
+      }
+      v_slow_queries: {
+        Row: {
+          avg_rows_per_scan: number | null
+          index_scans: number | null
+          recommendation: string | null
+          rows_read_sequentially: number | null
+          schemaname: unknown
+          sequential_scans: number | null
+          table_rows: number | null
+          tablename: unknown
+        }
+        Relationships: []
+      }
+      v_table_stats: {
+        Row: {
+          bloat_pct: number | null
+          dead_rows: number | null
+          last_analyze: string | null
+          last_autovacuum: string | null
+          last_vacuum: string | null
+          live_rows: number | null
+          schemaname: unknown
+          tablename: unknown
+          total_size: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_request_offer: { Args: { p_request_id: string }; Returns: Json }
@@ -10870,6 +10923,15 @@ export type Database = {
       admin_reject_vendor: {
         Args: { reason: string; target_vendor_id: string }
         Returns: Json
+      }
+      analyze_query_performance: {
+        Args: never
+        Returns: {
+          impact: string
+          issue_type: string
+          recommendation: string
+          table_name: string
+        }[]
       }
       approve_user: {
         Args: { approver_id: string; target_user_id: string }
