@@ -42,24 +42,28 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email: email.trim() }
       });
 
       if (error) throw error;
 
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to send reset email");
+      }
+
       setIsSuccess(true);
       
       toast({
-        title: "Reset email sent",
-        description: "Check your email for password reset instructions.",
+        title: "Check your email",
+        description: "If your email is registered, you'll receive a password reset link shortly.",
       });
 
     } catch (error: any) {
       console.error('Password reset error:', error);
       toast({
-        title: "Reset failed",
-        description: error.message || "Failed to send reset email. Please try again.",
+        title: "Request failed",
+        description: "Unable to process your request. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -93,8 +97,8 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             {isSuccess 
-              ? "We've sent a password reset link to your email address."
-              : "Enter your email address and we'll send you a link to reset your password."
+              ? "If your email is registered with us, you'll receive a password reset link shortly."
+              : "Enter your email address and we'll send you a link to reset your password if it's registered."
             }
           </DialogDescription>
         </DialogHeader>

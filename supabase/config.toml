@@ -2,3 +2,6 @@ project_id = "mukqpwinqhdfffdkthcg"
 
 [functions.flush-maintenance-requests]
 verify_jwt = true
+
+[functions.send-password-reset]
+verify_jwt = false
