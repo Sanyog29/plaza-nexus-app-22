@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { X, Mail, Loader2 } from 'lucide-react';
+import { X, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { validateAndFormatPhone } from "@/utils/phoneUtils";
+import { PasswordResetModal } from './PasswordResetModal';
 
 interface ModernAuthModalProps {
   isOpen: boolean;
@@ -27,6 +28,8 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const { toast } = useToast();
 
   // Reset form when modal opens/closes
@@ -288,15 +291,36 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
             )}
 
             {/* Password field */}
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full p-3 bg-white bg-opacity-5 border-0 rounded-full !text-white placeholder:!text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all"
-              style={{ color: '#ffffff' }}
-            />
+            <div>
+              {activeTab === 'signin' && (
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordReset(true)}
+                  className="text-xs text-white/80 hover:text-white hover:underline transition-all mb-2 float-right"
+                >
+                  Forgot password?
+                </button>
+              )}
+              <div className="relative clear-both">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full p-3 pr-12 bg-white bg-opacity-5 border-0 rounded-full !text-white placeholder:!text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all"
+                  style={{ color: '#ffffff' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white/100 transition-all p-2"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
 
             {/* Submit button */}
             <button
@@ -347,6 +371,12 @@ export const ModernAuthModal: React.FC<ModernAuthModalProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Password Reset Modal */}
+      <PasswordResetModal 
+        isOpen={showPasswordReset} 
+        onClose={() => setShowPasswordReset(false)} 
+      />
     </div>
   );
 };
