@@ -57,29 +57,39 @@ const handler = async (req: Request): Promise<Response> => {
 
     const userExists = users.some(u => u.email?.toLowerCase() === email.toLowerCase());
 
-    if (userExists) {
-      // Send password reset email using Supabase's built-in email system
-      const origin = req.headers.get("origin") || supabaseUrl;
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${origin}/auth?reset=true`,
-      });
-
-      if (resetError) {
-        console.error("Error sending reset email:", resetError);
-        throw new Error("Failed to send reset email");
-      }
-
-      console.log(`Password reset email sent successfully to: ${email}`);
-    } else {
-      // Log attempt for security monitoring but don't reveal user doesn't exist
+    if (!userExists) {
+      // Return clear error for non-existent email
       console.log(`Password reset attempted for non-existent email: ${email}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "This email is not registered in our system." 
+        }),
+        { 
+          status: 404, 
+          headers: { "Content-Type": "application/json", ...corsHeaders } 
+        }
+      );
     }
 
-    // Always return success to prevent email enumeration
+    // Send password reset email using Supabase's built-in email system
+    const origin = req.headers.get("origin") || supabaseUrl;
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/auth?reset=true`,
+    });
+
+    if (resetError) {
+      console.error("Error sending reset email:", resetError);
+      throw new Error("Failed to send reset email");
+    }
+
+    console.log(`Password reset email sent successfully to: ${email}`);
+
+    // Return success for valid email
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "If your email is registered, you'll receive a password reset link shortly." 
+        message: "Password reset email sent successfully. Check your inbox." 
       }),
       { 
         status: 200, 

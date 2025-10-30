@@ -49,14 +49,19 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
       if (error) throw error;
 
       if (!data?.success) {
-        throw new Error(data?.error || "Failed to send reset email");
+        toast({
+          title: "Email not found",
+          description: data?.message || "This email is not registered in our system.",
+          variant: "destructive",
+        });
+        return;
       }
 
       setIsSuccess(true);
       
       toast({
-        title: "Check your email",
-        description: "If your email is registered, you'll receive a password reset link shortly.",
+        title: "Email sent",
+        description: data?.message || "Password reset email sent successfully. Check your inbox.",
       });
 
     } catch (error: any) {
