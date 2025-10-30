@@ -15,41 +15,16 @@ import { normalizeToE164, validateAndFormatPhone } from "@/utils/phoneUtils";
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const invitation = searchParams.get('invitation');
-  const reset = searchParams.get('reset');
   const [showModal, setShowModal] = React.useState(true);
-  const [hasValidResetSession, setHasValidResetSession] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   const from = location.state?.from?.pathname || "/dashboard";
 
-  // Check for valid password reset session
-  React.useEffect(() => {
-    if (reset === 'true') {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          setHasValidResetSession(true);
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Invalid or expired reset link",
-            description: "Please request a new password reset link.",
-          });
-          navigate('/auth');
-        }
-      });
-    }
-  }, [reset, navigate, toast]);
-
   // If there's an invitation token, show the invitation acceptance form
   if (invitation) {
     return <InvitationAcceptance />;
-  }
-
-  // If there's a valid password reset session, show the update password form
-  if (reset === 'true' && hasValidResetSession) {
-    return <UpdatePasswordForm />;
   }
 
   const handleModalClose = () => {

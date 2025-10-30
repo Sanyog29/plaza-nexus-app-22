@@ -14,6 +14,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { GlobalErrorProvider } from "./components/common/GlobalErrorProvider";
 
 import AuthPage from "./pages/AuthPage";
+import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import RequestsPage from "./pages/RequestsPage";
@@ -119,6 +120,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             <Route element={
               <ProtectedRoute>

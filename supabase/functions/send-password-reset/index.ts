@@ -75,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send password reset email using Supabase's built-in email system
     const origin = req.headers.get("origin") || supabaseUrl;
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/auth?reset=true`,
+      redirectTo: `${origin}/reset-password`,
     });
 
     if (resetError) {
