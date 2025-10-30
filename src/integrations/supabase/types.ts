@@ -11138,6 +11138,12 @@ export type Database = {
         }[]
       }
       get_user_management_stats: { Args: never; Returns: Json }
+      get_user_organizations: {
+        Args: { _user_id: string }
+        Returns: {
+          organization_id: string
+        }[]
+      }
       get_user_permissions: { Args: { user_id: string }; Returns: Json }
       get_user_primary_property: { Args: { _user_id: string }; Returns: string }
       get_user_properties: {
@@ -11339,6 +11345,14 @@ export type Database = {
       }
       user_has_property_access: {
         Args: { _property_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_site_access: {
+        Args: { _site_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_in_organization: {
+        Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
       validate_and_create_cafeteria_order: {
