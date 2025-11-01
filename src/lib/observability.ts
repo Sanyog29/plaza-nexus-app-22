@@ -54,7 +54,7 @@ export class Tracer {
     metadata?: Record<string, any>
   ) {
     try {
-      await supabase.from('traces').insert({
+      await supabase.from('microservice_traces').insert({
         trace_id: context.trace_id,
         span_id: context.span_id,
         parent_span_id: context.parent_span_id,
@@ -104,7 +104,7 @@ export class Logger {
 
     // Persist to database for analysis
     try {
-      await supabase.from('service_logs').insert(logEntry);
+      await supabase.from('microservice_logs').insert(logEntry);
     } catch (error) {
       console.error('[Logger] Failed to persist log:', error);
     }
@@ -139,7 +139,7 @@ export class PerformanceMonitor {
     tags?: Record<string, string>
   ) {
     try {
-      await supabase.from('performance_metrics').insert({
+      await supabase.from('microservice_metrics').insert({
         service_name: service,
         metric_name,
         value,
@@ -176,7 +176,7 @@ export class HealthCheck {
     metadata?: Record<string, any>
   ) {
     try {
-      await supabase.from('service_health').insert({
+      await supabase.from('microservice_health').insert({
         service_name: service,
         status,
         checks,

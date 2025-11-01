@@ -5,3 +5,9 @@ verify_jwt = true
 
 [functions.send-password-reset]
 verify_jwt = false
+
+[functions.api-gateway]
+verify_jwt = false
+
+[functions.event-bus]
+verify_jwt = false

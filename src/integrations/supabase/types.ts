@@ -1952,6 +1952,39 @@ export type Database = {
           },
         ]
       }
+      domain_events: {
+        Row: {
+          aggregate_id: string
+          created_at: string | null
+          domain: string
+          event_id: string
+          event_type: string
+          id: string
+          metadata: Json
+          payload: Json
+        }
+        Insert: {
+          aggregate_id: string
+          created_at?: string | null
+          domain: string
+          event_id: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          payload?: Json
+        }
+        Update: {
+          aggregate_id?: string
+          created_at?: string | null
+          domain?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          payload?: Json
+        }
+        Relationships: []
+      }
       enhanced_staff_availability: {
         Row: {
           auto_offline_at: string | null
@@ -2426,6 +2459,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gateway_logs: {
+        Row: {
+          created_at: string | null
+          error: string | null
+          id: string
+          latency_ms: number | null
+          method: string
+          path: string
+          request_id: string
+          service: string
+          status_code: number | null
+          timestamp: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error?: string | null
+          id?: string
+          latency_ms?: number | null
+          method: string
+          path: string
+          request_id: string
+          service: string
+          status_code?: number | null
+          timestamp?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error?: string | null
+          id?: string
+          latency_ms?: number | null
+          method?: string
+          path?: string
+          request_id?: string
+          service?: string
+          status_code?: number | null
+          timestamp?: string | null
+        }
+        Relationships: []
       }
       hot_desk_bookings: {
         Row: {
@@ -3765,6 +3837,144 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      microservice_health: {
+        Row: {
+          checks: Json
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          service_name: string
+          status: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          checks?: Json
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          service_name: string
+          status?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          checks?: Json
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          service_name?: string
+          status?: string | null
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
+      microservice_logs: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          id: string
+          level: string | null
+          message: string
+          service_name: string
+          timestamp: string | null
+          trace_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          level?: string | null
+          message: string
+          service_name: string
+          timestamp?: string | null
+          trace_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          level?: string | null
+          message?: string
+          service_name?: string
+          timestamp?: string | null
+          trace_id?: string | null
+        }
+        Relationships: []
+      }
+      microservice_metrics: {
+        Row: {
+          created_at: string | null
+          id: string
+          metric_name: string
+          service_name: string
+          tags: Json | null
+          timestamp: string | null
+          unit: string
+          value: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metric_name: string
+          service_name: string
+          tags?: Json | null
+          timestamp?: string | null
+          unit: string
+          value: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metric_name?: string
+          service_name?: string
+          tags?: Json | null
+          timestamp?: string | null
+          unit?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      microservice_traces: {
+        Row: {
+          created_at: string | null
+          duration_ms: number
+          id: string
+          metadata: Json | null
+          operation: string
+          parent_span_id: string | null
+          service_name: string
+          span_id: string
+          status: string | null
+          timestamp: string | null
+          trace_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_ms: number
+          id?: string
+          metadata?: Json | null
+          operation: string
+          parent_span_id?: string | null
+          service_name: string
+          span_id: string
+          status?: string | null
+          timestamp?: string | null
+          trace_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_ms?: number
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          parent_span_id?: string | null
+          service_name?: string
+          span_id?: string
+          status?: string | null
+          timestamp?: string | null
+          trace_id?: string
+        }
+        Relationships: []
       }
       ml_models: {
         Row: {
