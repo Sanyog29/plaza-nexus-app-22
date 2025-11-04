@@ -200,6 +200,88 @@ export const assetSchema = z.object({
     .or(z.literal('')),
 });
 
+// ============ Requisition Schemas ============
+
+export const requisitionItemMasterSchema = z.object({
+  item_name: z.string()
+    .trim()
+    .min(2, 'Item name must be at least 2 characters')
+    .max(200, 'Item name must be less than 200 characters'),
+  
+  category_id: z.string()
+    .uuid('Invalid category ID'),
+  
+  unit: z.string()
+    .trim()
+    .min(1, 'Unit is required')
+    .max(20, 'Unit must be less than 20 characters'),
+  
+  unit_limit: z.number()
+    .int('Unit limit must be a whole number')
+    .min(1, 'Unit limit must be at least 1')
+    .max(9999, 'Unit limit cannot exceed 9999'),
+  
+  description: z.string()
+    .trim()
+    .max(500, 'Description must be less than 500 characters')
+    .optional()
+    .or(z.literal('')),
+});
+
+export const requisitionCategorySchema = z.object({
+  name: z.string()
+    .trim()
+    .min(2, 'Category name must be at least 2 characters')
+    .max(100, 'Category name must be less than 100 characters'),
+  
+  description: z.string()
+    .trim()
+    .max(500, 'Description must be less than 500 characters')
+    .optional()
+    .or(z.literal('')),
+  
+  icon: z.string()
+    .trim()
+    .max(50, 'Icon name must be less than 50 characters')
+    .optional()
+    .or(z.literal('')),
+  
+  sort_order: z.number()
+    .int('Sort order must be a whole number')
+    .min(0)
+    .optional(),
+});
+
+export const requisitionListSchema = z.object({
+  property_id: z.string()
+    .uuid('Invalid property ID'),
+  
+  priority: z.enum(['low', 'normal', 'high', 'urgent'], {
+    errorMap: () => ({ message: 'Priority must be low, normal, high, or urgent' }),
+  }),
+  
+  expected_delivery_date: z.string()
+    .optional()
+    .refine(
+      (date) => !date || new Date(date) > new Date(),
+      { message: 'Expected delivery date must be in the future' }
+    ),
+  
+  notes: z.string()
+    .trim()
+    .max(2000, 'Notes must be less than 2000 characters')
+    .optional()
+    .or(z.literal('')),
+  
+  items: z.array(z.object({
+    item_master_id: z.string().uuid('Invalid item ID'),
+    quantity: z.number()
+      .int('Quantity must be a whole number')
+      .min(1, 'Quantity must be at least 1')
+      .max(9999, 'Quantity cannot exceed 9999'),
+  })).min(1, 'At least one item must be selected'),
+});
+
 // ============ Type Exports ============
 
 export type SignUpInput = z.infer<typeof signUpSchema>;
@@ -209,3 +291,6 @@ export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 export type VendorInput = z.infer<typeof vendorSchema>;
 export type OrderInput = z.infer<typeof orderSchema>;
 export type AssetInput = z.infer<typeof assetSchema>;
+export type RequisitionItemMasterInput = z.infer<typeof requisitionItemMasterSchema>;
+export type RequisitionCategoryInput = z.infer<typeof requisitionCategorySchema>;
+export type RequisitionListInput = z.infer<typeof requisitionListSchema>;

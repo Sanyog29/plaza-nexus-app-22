@@ -76,6 +76,11 @@ import VendorManagementPage from "./pages/procurement/VendorManagementPage";
 import PurchaseOrdersPage from "./pages/procurement/PurchaseOrdersPage";
 import BudgetTrackingPage from "./pages/procurement/BudgetTrackingPage";
 
+const CreateRequisitionPage = React.lazy(() => import("./pages/procurement/CreateRequisitionPage"));
+const MyRequisitionsPage = React.lazy(() => import("./pages/procurement/MyRequisitionsPage"));
+const RequisitionDetailPage = React.lazy(() => import("./pages/procurement/RequisitionDetailPage"));
+const RequisitionItemMasterPage = React.lazy(() => import("./pages/admin/RequisitionItemMasterPage"));
+
 // New simplified pages
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
 import AssetsPage from "./pages/admin/AssetsPage";
@@ -235,10 +240,16 @@ const App = () => (
               
               {/* Procurement Portal Routes */}
               <Route path="/procurement" element={<ProcurementDashboard />} />
+              <Route path="/procurement/create-requisition" element={<CreateRequisitionPage />} />
+              <Route path="/procurement/my-requisitions" element={<MyRequisitionsPage />} />
+              <Route path="/procurement/requisition/:id" element={<RequisitionDetailPage />} />
               <Route path="/procurement/requisitions" element={<RequisitionListPage />} />
               <Route path="/procurement/vendors" element={<VendorManagementPage />} />
               <Route path="/procurement/orders" element={<PurchaseOrdersPage />} />
               <Route path="/procurement/budget" element={<BudgetTrackingPage />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/requisition-master" element={<RequisitionItemMasterPage />} />
               
               {/* Special Access Routes */}
               <Route path="/security-guard" element={<SecurityGuardPage />} />
