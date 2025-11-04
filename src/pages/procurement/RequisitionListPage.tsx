@@ -140,7 +140,7 @@ const RequisitionListPage = () => {
                 : 'View and manage all requisition lists'}
             </p>
           </div>
-          <Button onClick={() => navigate('/procurement/my-requisitions/new')}>
+          <Button onClick={() => navigate('/procurement/create-requisition')}>
             <Plus className="mr-2 h-4 w-4" />
             Create Requisition
           </Button>
@@ -206,7 +206,7 @@ const RequisitionListPage = () => {
                 <Button
                   variant="outline"
                   className="mt-4"
-                  onClick={() => navigate('/procurement/my-requisitions/new')}
+                  onClick={() => navigate('/procurement/create-requisition')}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create Requisition
