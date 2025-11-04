@@ -11598,6 +11598,9 @@ export type Database = {
         | "tenant"
         | "super_tenant"
         | "super_admin"
+        | "procurement_manager"
+        | "purchase_executive"
+        | "property_manager"
       approval_status: "pending" | "approved" | "rejected"
       availability_status_type: "available" | "busy" | "offline" | "on_leave"
       request_priority: "low" | "medium" | "high" | "urgent"
@@ -11608,6 +11611,18 @@ export type Database = {
         | "cancelled"
         | "assigned"
         | "en_route"
+      requisition_priority: "low" | "normal" | "high" | "urgent"
+      requisition_status:
+        | "draft"
+        | "pending_manager_approval"
+        | "manager_approved"
+        | "manager_rejected"
+        | "assigned_to_procurement"
+        | "po_raised"
+        | "in_transit"
+        | "received"
+        | "closed"
+        | "cancelled"
       sla_priority_type: "critical" | "high" | "medium" | "low"
       staff_group_type: "mst_field" | "housekeeping" | "security"
       user_category_type: "tenant" | "food_vendor" | "staff" | "admin"
@@ -11618,6 +11633,13 @@ export type Database = {
         | "internet"
         | "hvac"
         | "waste_management"
+      vendor_document_type:
+        | "gst_certificate"
+        | "tds_certificate"
+        | "address_proof"
+        | "identity_proof_front"
+        | "identity_proof_back"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -11766,6 +11788,9 @@ export const Constants = {
         "tenant",
         "super_tenant",
         "super_admin",
+        "procurement_manager",
+        "purchase_executive",
+        "property_manager",
       ],
       approval_status: ["pending", "approved", "rejected"],
       availability_status_type: ["available", "busy", "offline", "on_leave"],
@@ -11778,6 +11803,19 @@ export const Constants = {
         "assigned",
         "en_route",
       ],
+      requisition_priority: ["low", "normal", "high", "urgent"],
+      requisition_status: [
+        "draft",
+        "pending_manager_approval",
+        "manager_approved",
+        "manager_rejected",
+        "assigned_to_procurement",
+        "po_raised",
+        "in_transit",
+        "received",
+        "closed",
+        "cancelled",
+      ],
       sla_priority_type: ["critical", "high", "medium", "low"],
       staff_group_type: ["mst_field", "housekeeping", "security"],
       user_category_type: ["tenant", "food_vendor", "staff", "admin"],
@@ -11788,6 +11826,14 @@ export const Constants = {
         "internet",
         "hvac",
         "waste_management",
+      ],
+      vendor_document_type: [
+        "gst_certificate",
+        "tds_certificate",
+        "address_proof",
+        "identity_proof_front",
+        "identity_proof_back",
+        "other",
       ],
     },
   },
