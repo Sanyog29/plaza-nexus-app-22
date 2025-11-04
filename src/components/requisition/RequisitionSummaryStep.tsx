@@ -18,21 +18,18 @@ import { PrioritySelector } from './PrioritySelector';
 export const RequisitionSummaryStep = () => {
   const { formData, setFormData } = useCreateRequisition();
 
-  const propertiesQuery = useQuery({
+  const { data: properties } = useQuery<Array<{ id: string; name: string }>>({
     queryKey: ['properties'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('properties')
         .select('id, name')
-        .eq('is_active', true)
-        .order('name');
+        .eq('is_active', true);
       
       if (error) throw error;
-      return data;
+      return data as Array<{ id: string; name: string }>;
     },
   });
-  
-  const properties = propertiesQuery.data;
 
   return (
     <Card>

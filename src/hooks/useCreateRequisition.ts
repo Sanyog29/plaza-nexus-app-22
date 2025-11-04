@@ -93,9 +93,13 @@ export const useCreateRequisition = () => {
       if (!user) throw new Error('User not authenticated');
       if (!validateForm()) throw new Error('Validation failed');
       
+      const orderNumber = await generateOrderNumber();
+      
       const { data: requisition, error: reqError } = await supabase
         .from('requisition_lists')
         .insert({
+          order_number: orderNumber,
+          property_id: formData.property_id,
           created_by: user.id,
           created_by_name: user.email || '',
           status: 'draft',
@@ -148,9 +152,13 @@ export const useCreateRequisition = () => {
       if (!user) throw new Error('User not authenticated');
       if (!validateForm()) throw new Error('Validation failed');
       
+      const orderNumber = await generateOrderNumber();
+      
       const { data: requisition, error: reqError } = await supabase
         .from('requisition_lists')
         .insert({
+          order_number: orderNumber,
+          property_id: formData.property_id,
           created_by: user.id,
           created_by_name: user.email || '',
           status: 'pending_manager_approval',

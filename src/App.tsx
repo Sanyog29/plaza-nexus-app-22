@@ -80,6 +80,9 @@ const CreateRequisitionPage = React.lazy(() => import("./pages/procurement/Creat
 const MyRequisitionsPage = React.lazy(() => import("./pages/procurement/MyRequisitionsPage"));
 const RequisitionDetailPage = React.lazy(() => import("./pages/procurement/RequisitionDetailPage"));
 const RequisitionItemMasterPage = React.lazy(() => import("./pages/admin/RequisitionItemMasterPage"));
+const ManagerDashboard = React.lazy(() => import("./pages/procurement/ManagerDashboard"));
+const PendingApprovalsPage = React.lazy(() => import("./pages/procurement/PendingApprovalsPage"));
+const ApprovalHistoryPage = React.lazy(() => import("./pages/procurement/ApprovalHistoryPage"));
 
 // New simplified pages
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
@@ -242,8 +245,11 @@ const App = () => (
               <Route path="/procurement" element={<ProcurementDashboard />} />
               <Route path="/procurement/create-requisition" element={<CreateRequisitionPage />} />
               <Route path="/procurement/my-requisitions" element={<MyRequisitionsPage />} />
-              <Route path="/procurement/requisition/:id" element={<RequisitionDetailPage />} />
+              <Route path="/procurement/requisitions/:id" element={<RequisitionDetailPage />} />
               <Route path="/procurement/requisitions" element={<RequisitionListPage />} />
+              <Route path="/procurement/manager-dashboard" element={<ManagerDashboard />} />
+              <Route path="/procurement/pending-approvals" element={<PendingApprovalsPage />} />
+              <Route path="/procurement/approval-history" element={<ApprovalHistoryPage />} />
               <Route path="/procurement/vendors" element={<VendorManagementPage />} />
               <Route path="/procurement/orders" element={<PurchaseOrdersPage />} />
               <Route path="/procurement/budget" element={<BudgetTrackingPage />} />
