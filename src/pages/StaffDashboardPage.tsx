@@ -257,15 +257,6 @@ const StaffDashboardPage = () => {
               <GraduationCap className="h-6 w-6 text-primary mb-2" />
               <span className="text-sm">Training</span>
             </Button>
-            
-            <Button 
-              onClick={() => navigate('/staff/create-requisition')} 
-              className={`h-20 flex flex-col bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover-scale-lift ${visibleActions.has(5) ? 'animate-stagger' : 'opacity-0'}`}
-              style={{ animationDelay: '0.40s' }}
-            >
-              <ClipboardList className="h-6 w-6 text-amber-500 mb-2" />
-              <span className="text-sm">Create Requisition</span>
-            </Button>
           </div>
         </CardContent>
       </Card>

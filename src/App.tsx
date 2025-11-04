@@ -238,18 +238,6 @@ const App = () => (
               <Route path="/staff/security" element={<AdminSecurityPage />} />
               <Route path="/staff/services" element={<StaffServicesPage />} />
               
-              {/* Staff Requisition Routes */}
-              <Route path="/staff/create-requisition" element={
-                <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
-                  {React.createElement(React.lazy(() => import("./pages/staff/CreateRequisitionPage")))}
-                </React.Suspense>
-              } />
-              <Route path="/staff/my-requisitions" element={
-                <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
-                  {React.createElement(React.lazy(() => import("./pages/staff/MyRequisitionsPage")))}
-                </React.Suspense>
-              } />
-              
               {/* Operations Center */}
               <Route path="/operations" element={<OperationsPage />} />
               
