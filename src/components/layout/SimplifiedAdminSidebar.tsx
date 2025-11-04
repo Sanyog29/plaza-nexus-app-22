@@ -83,6 +83,7 @@ const adminMenuGroups = [
       { title: "Cafeteria Management", url: "/admin/cafeteria", icon: Coffee },
       { title: "Maintenance", url: "/admin/maintenance", icon: Wrench },
       { title: "Booking Management", url: "/admin/bookings", icon: Calendar },
+      { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
     ]
   },
   {
@@ -187,6 +188,31 @@ const tenantMenuGroups = [
   }
 ];
 
+const procurementMenuGroups = [
+  {
+    label: "My Work",
+    items: [
+      { title: "Dashboard", url: "/procurement", icon: Home },
+      { title: "Requisition List", url: "/procurement/requisitions", icon: ClipboardList },
+    ]
+  },
+  {
+    label: "Procurement Operations",
+    items: [
+      { title: "Vendor Management", url: "/procurement/vendors", icon: Store },
+      { title: "Purchase Orders", url: "/procurement/orders", icon: ShoppingCart },
+      { title: "Budget Tracking", url: "/procurement/budget", icon: TrendingUp },
+    ]
+  },
+  {
+    label: "Personal",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
 interface SimplifiedAdminSidebarProps {
   userRole: string;
 }
@@ -214,6 +240,11 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'assistant_vice_president':
       case 'assistant_general_manager':
         return adminMenuGroups;
+
+      // Procurement roles - Specialized procurement access
+      case 'procurement_manager':
+      case 'purchase_executive':
+        return procurementMenuGroups;
         
       // Management, Staff, Operations & Vendors - Staff level access with requests
       case 'assistant_manager':
@@ -222,11 +253,14 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'ops_l1':
       case 'ops_l2':
       case 'mst':
-      case 'fe':
       case 'hk':
       case 'se':
       case 'vendor':
       case 'food_vendor':
+        return staffMenuGroups;
+      
+      // Field Expert (FE) - Staff access but no requisition list
+      case 'fe':
         return staffMenuGroups;
         
       // Tenants - Limited access

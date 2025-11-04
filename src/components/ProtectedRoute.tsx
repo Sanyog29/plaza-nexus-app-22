@@ -53,6 +53,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // Procurement staff access control - STRICT RESTRICTIONS
+  if (userRole === 'procurement_manager' || userRole === 'purchase_executive') {
+    const allowedProcurementPaths = ['/procurement', '/profile', '/auth'];
+    const isAllowedPath = allowedProcurementPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      console.warn(`Procurement staff attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/procurement" replace />;
+    }
+  }
+
 return (
   <>
     <Helmet>

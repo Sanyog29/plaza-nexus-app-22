@@ -40,3 +40,7 @@ export const getRoleColor = (roleValue: string): string => {
 export const requiresSpecialization = (role: string): boolean => {
   return ['mst', 'fe', 'hk', 'se'].includes(role);
 };
+
+export const isProcurementRole = (role: string): boolean => {
+  return ['procurement_manager', 'purchase_executive', 'property_manager'].includes(role);
+};

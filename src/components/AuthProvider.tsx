@@ -17,6 +17,7 @@ interface AuthContextType {
   isTenant: boolean;
   isVendor: boolean;
   isFoodVendor: boolean;
+  isProcurementStaff: boolean;
   // Internal role level checks (not exposed in UI)
   isL1: boolean;
   isL2: boolean;
@@ -42,6 +43,7 @@ const AuthContext = createContext<AuthContextType>({
   isTenant: false,
   isVendor: false,
   isFoodVendor: false,
+  isProcurementStaff: false,
   isL1: false,
   isL2: false,
   isL3: false,
@@ -79,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isL3, setIsL3] = useState(false);
   const [isL4, setIsL4] = useState(false);
   const [isManagement, setIsManagement] = useState(false);
+  const [isProcurementStaff, setIsProcurementStaff] = useState(false);
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -103,6 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsL3(l3Roles.includes(role));
     setIsL4(l4Roles.includes(role));
     setIsManagement(l2Roles.includes(role) || l3Roles.includes(role) || l4Roles.includes(role));
+    
+    // Procurement staff roles
+    const procurementRoles = ['procurement_manager', 'purchase_executive'];
+    setIsProcurementStaff(procurementRoles.includes(role));
     
     // Staff includes admin and L1/L2/L3 roles (operational and management staff)
     setIsStaff(['admin', ...l1Roles, ...l2Roles, ...l3Roles].includes(role));
@@ -313,6 +320,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_view_own_orders: true,
         can_print_receipts: true,
       },
+      // Procurement Manager - Full procurement access
+      procurement_manager: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: true,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+        // Procurement-specific permissions
+        can_manage_requisitions: true,
+        can_approve_purchase_orders: true,
+        can_view_procurement_reports: true,
+      },
+      // Purchase Executive - Limited procurement access
+      purchase_executive: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+        // Procurement-specific permissions
+        can_manage_requisitions: true,
+        can_approve_purchase_orders: false,
+        can_view_procurement_reports: false,
+      },
+      // Property Manager - Can create requisitions
+      property_manager: {
+        can_manage_users: false,
+        can_view_all_requests: true,
+        can_assign_requests: true,
+        can_configure_sla: false,
+        can_view_analytics: true,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: true,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: false,
+        can_configure_auto_assign: false,
+        // Procurement-specific permissions
+        can_manage_requisitions: true,
+        can_approve_purchase_orders: false,
+        can_view_procurement_reports: true,
+      },
     };
 
     // For food vendors, use food_vendor permissions regardless of their role
@@ -416,6 +474,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsTenant(false);
     setIsVendor(false);
     setIsFoodVendor(false);
+    setIsProcurementStaff(false);
     setIsL1(false);
     setIsL2(false);
     setIsL3(false);
@@ -564,6 +623,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isTenant,
       isVendor,
       isFoodVendor,
+      isProcurementStaff,
       isL1,
       isL2,
       isL3,

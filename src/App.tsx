@@ -69,6 +69,13 @@ import AccessDeniedPage from "./components/auth/AccessDeniedPage";
 import VendorInvoicePageNew from "./components/vendor/VendorInvoicePageNew";
 import FoodPOSPage from "./pages/FoodPOSPage";
 
+// Procurement pages
+import ProcurementDashboard from "./pages/procurement/ProcurementDashboard";
+import RequisitionListPage from "./pages/procurement/RequisitionListPage";
+import VendorManagementPage from "./pages/procurement/VendorManagementPage";
+import PurchaseOrdersPage from "./pages/procurement/PurchaseOrdersPage";
+import BudgetTrackingPage from "./pages/procurement/BudgetTrackingPage";
+
 // New simplified pages
 import QuickActionsPage from "./pages/admin/QuickActionsPage";
 import AssetsPage from "./pages/admin/AssetsPage";
@@ -225,6 +232,13 @@ const App = () => (
               
               {/* Operations Center */}
               <Route path="/operations" element={<OperationsPage />} />
+              
+              {/* Procurement Portal Routes */}
+              <Route path="/procurement" element={<ProcurementDashboard />} />
+              <Route path="/procurement/requisitions" element={<RequisitionListPage />} />
+              <Route path="/procurement/vendors" element={<VendorManagementPage />} />
+              <Route path="/procurement/orders" element={<PurchaseOrdersPage />} />
+              <Route path="/procurement/budget" element={<BudgetTrackingPage />} />
               
               {/* Special Access Routes */}
               <Route path="/security-guard" element={<SecurityGuardPage />} />
