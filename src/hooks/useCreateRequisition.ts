@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 export interface SelectedItem {
   item_master_id: string;
@@ -23,8 +24,9 @@ export interface RequisitionFormData {
 }
 
 export const useCreateRequisition = () => {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState<RequisitionFormData>({
     property_id: '',
@@ -200,6 +202,12 @@ export const useCreateRequisition = () => {
         expected_delivery_date: null,
         notes: '',
       });
+      
+      // Redirect based on user role
+      const redirectPath = userRole === 'fe' 
+        ? '/staff/my-requisitions' 
+        : '/procurement/my-requisitions';
+      navigate(redirectPath);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to submit requisition');
