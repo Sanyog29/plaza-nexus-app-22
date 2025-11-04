@@ -66,6 +66,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // Field Expert (FE) access control - Access to requisitions
+  if (userRole === 'fe') {
+    const allowedFEPaths = ['/procurement/requisitions', '/procurement/my-requisitions', '/profile', '/auth', '/dashboard', '/staff'];
+    const isAllowedPath = allowedFEPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      console.warn(`FE user attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
 return (
   <>
     <Helmet>

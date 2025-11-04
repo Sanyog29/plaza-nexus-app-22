@@ -122,6 +122,25 @@ const adminMenuGroups = [
   }
 ];
 
+const fieldExpertMenuGroups = [
+  {
+    label: "My Work",
+    items: [
+      { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+      { title: "My Requisitions", url: "/procurement/my-requisitions", icon: ClipboardList },
+      { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
+      { title: "Alerts", url: "/staff/alerts", icon: Bell },
+    ]
+  },
+  {
+    label: "Personal",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
 const staffMenuGroups = [
   {
     label: "Daily Work",
@@ -299,9 +318,9 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'food_vendor':
         return staffMenuGroups;
       
-      // Field Expert (FE) - Staff access but no requisition list
+      // Field Expert (FE) - Special menu with requisition access
       case 'fe':
-        return staffMenuGroups;
+        return fieldExpertMenuGroups;
         
       // Tenants - Limited access
       default:

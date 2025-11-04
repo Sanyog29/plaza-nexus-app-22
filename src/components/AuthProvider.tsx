@@ -18,6 +18,7 @@ interface AuthContextType {
   isVendor: boolean;
   isFoodVendor: boolean;
   isProcurementStaff: boolean;
+  isFieldExpert: boolean;
   // Internal role level checks (not exposed in UI)
   isL1: boolean;
   isL2: boolean;
@@ -44,6 +45,7 @@ const AuthContext = createContext<AuthContextType>({
   isVendor: false,
   isFoodVendor: false,
   isProcurementStaff: false,
+  isFieldExpert: false,
   isL1: false,
   isL2: false,
   isL3: false,
@@ -76,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isTenant, setIsTenant] = useState(false);
   const [isVendor, setIsVendor] = useState(false);
   const [isFoodVendor, setIsFoodVendor] = useState(false);
+  const [isFieldExpert, setIsFieldExpert] = useState(false);
   const [isL1, setIsL1] = useState(false);
   const [isL2, setIsL2] = useState(false);
   const [isL3, setIsL3] = useState(false);
@@ -94,6 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsTenant(role === 'tenant');
     setIsVendor(role === 'vendor');
     setIsFoodVendor(category === 'food_vendor');
+    setIsFieldExpert(role === 'fe');
     
     // Set internal level flags (not exposed in UI)
     const l1Roles = ['mst', 'fe', 'hk', 'se'];
@@ -474,6 +478,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsTenant(false);
     setIsVendor(false);
     setIsFoodVendor(false);
+    setIsFieldExpert(false);
     setIsProcurementStaff(false);
     setIsL1(false);
     setIsL2(false);
@@ -623,6 +628,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isTenant,
       isVendor,
       isFoodVendor,
+      isFieldExpert,
       isProcurementStaff,
       isL1,
       isL2,
