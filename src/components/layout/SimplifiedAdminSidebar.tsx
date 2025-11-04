@@ -38,7 +38,9 @@ import {
   Plus,
   Filter,
   Command,
-  Network
+  Network,
+  Clock,
+  CheckCircle
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -193,12 +195,47 @@ const procurementMenuGroups = [
     label: "My Work",
     items: [
       { title: "Dashboard", url: "/procurement", icon: Home },
-      { title: "Requisition List", url: "/procurement/requisitions", icon: ClipboardList },
+      { title: "My Requisitions", url: "/procurement/my-requisitions", icon: ClipboardList },
     ]
   },
   {
     label: "Procurement Operations",
     items: [
+      { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
+      { title: "Vendor Management", url: "/procurement/vendors", icon: Store },
+      { title: "Purchase Orders", url: "/procurement/orders", icon: ShoppingCart },
+      { title: "Budget Tracking", url: "/procurement/budget", icon: TrendingUp },
+    ]
+  },
+  {
+    label: "Personal",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
+// Manager menu groups for those with approval permissions
+const managerMenuGroups = [
+  {
+    label: "Manager Dashboard",
+    items: [
+      { title: "Dashboard", url: "/procurement/manager-dashboard", icon: Home },
+      { title: "Pending Approvals", url: "/procurement/pending-approvals", icon: Clock },
+      { title: "Approval History", url: "/procurement/approval-history", icon: CheckCircle },
+    ]
+  },
+  {
+    label: "My Work",
+    items: [
+      { title: "My Requisitions", url: "/procurement/my-requisitions", icon: ClipboardList },
+    ]
+  },
+  {
+    label: "Procurement Operations",
+    items: [
+      { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
       { title: "Vendor Management", url: "/procurement/vendors", icon: Store },
       { title: "Purchase Orders", url: "/procurement/orders", icon: ShoppingCart },
       { title: "Budget Tracking", url: "/procurement/budget", icon: TrendingUp },
@@ -241,8 +278,11 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'assistant_general_manager':
         return adminMenuGroups;
 
-      // Procurement roles - Specialized procurement access
+      // Manager roles with approval permissions
       case 'procurement_manager':
+        return managerMenuGroups;
+      
+      // Purchase executives - regular procurement access
       case 'purchase_executive':
         return procurementMenuGroups;
         

@@ -15,19 +15,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { DeliveryDatePicker } from './DeliveryDatePicker';
 import { PrioritySelector } from './PrioritySelector';
 
+interface PropertyItem {
+  id: string;
+  name: string;
+}
+
 export const RequisitionSummaryStep = () => {
   const { formData, setFormData } = useCreateRequisition();
 
-  const { data: properties } = useQuery<Array<{ id: string; name: string }>>({
-    queryKey: ['properties'],
+  const { data: properties } = useQuery<PropertyItem[]>({
+    queryKey: ['active-properties'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Type assertion to bypass deep type instantiation issue
+      const response = await (supabase as any)
         .from('properties')
         .select('id, name')
         .eq('is_active', true);
       
-      if (error) throw error;
-      return data as Array<{ id: string; name: string }>;
+      if (response.error) throw response.error;
+      
+      return (response.data ?? []) as PropertyItem[];
     },
   });
 
