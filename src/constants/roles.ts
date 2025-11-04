@@ -15,7 +15,12 @@ export const ALLOWED_ROLES = [
   { value: 'assistant_vice_president', label: 'Assistant Vice President', color: 'bg-rose-100 text-rose-800 border-rose-200' },
   { value: 'vp', label: 'VP', color: 'bg-amber-100 text-amber-800 border-amber-200' },
   { value: 'ceo', label: 'CEO', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  { value: 'cxo', label: 'CXO', color: 'bg-teal-100 text-teal-800 border-teal-200' }
+  { value: 'cxo', label: 'CXO', color: 'bg-teal-100 text-teal-800 border-teal-200' },
+  
+  // Procurement & Operations Roles
+  { value: 'procurement_manager', label: 'Procurement Manager', color: 'bg-sky-100 text-sky-800 border-sky-200' },
+  { value: 'purchase_executive', label: 'Purchase Executive', color: 'bg-lime-100 text-lime-800 border-lime-200' },
+  { value: 'property_manager', label: 'Property Manager', color: 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200' }
 ] as const;
 
 export const DEFAULT_ROLE = 'tenant';

@@ -5095,6 +5095,50 @@ export type Database = {
           },
         ]
       }
+      procurement_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          notification_type: string
+          read_at: string | null
+          requisition_list_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          notification_type: string
+          read_at?: string | null
+          requisition_list_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          read_at?: string | null
+          requisition_list_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procurement_notifications_requisition_list_id_fkey"
+            columns: ["requisition_list_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_audit_logs: {
         Row: {
           action_type: string
@@ -6135,6 +6179,276 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisition_categories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      requisition_items_master: {
+        Row: {
+          category_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          item_name: string
+          unit: string
+          unit_limit: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          item_name: string
+          unit?: string
+          unit_limit?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          item_name?: string
+          unit?: string
+          unit_limit?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisition_items_master_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisition_list_items: {
+        Row: {
+          category_name: string
+          created_at: string
+          description: string | null
+          id: string
+          item_master_id: string
+          item_name: string
+          quantity: number
+          requisition_list_id: string
+          unit: string
+          unit_limit: number
+        }
+        Insert: {
+          category_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_master_id: string
+          item_name: string
+          quantity: number
+          requisition_list_id: string
+          unit: string
+          unit_limit: number
+        }
+        Update: {
+          category_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          item_master_id?: string
+          item_name?: string
+          quantity?: number
+          requisition_list_id?: string
+          unit?: string
+          unit_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisition_list_items_item_master_id_fkey"
+            columns: ["item_master_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_items_master"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisition_list_items_requisition_list_id_fkey"
+            columns: ["requisition_list_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisition_lists: {
+        Row: {
+          accepted_at: string | null
+          assigned_at: string | null
+          assigned_by: string | null
+          assigned_to: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          created_by_name: string
+          expected_delivery_date: string | null
+          grn_document_url: string | null
+          id: string
+          manager_approved_at: string | null
+          manager_id: string | null
+          manager_remarks: string | null
+          notes: string | null
+          order_number: string
+          po_number: string | null
+          priority: Database["public"]["Enums"]["requisition_priority"]
+          property_id: string
+          received_at: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["requisition_status"]
+          total_items: number | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by: string
+          created_by_name: string
+          expected_delivery_date?: string | null
+          grn_document_url?: string | null
+          id?: string
+          manager_approved_at?: string | null
+          manager_id?: string | null
+          manager_remarks?: string | null
+          notes?: string | null
+          order_number: string
+          po_number?: string | null
+          priority?: Database["public"]["Enums"]["requisition_priority"]
+          property_id: string
+          received_at?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["requisition_status"]
+          total_items?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          assigned_at?: string | null
+          assigned_by?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          expected_delivery_date?: string | null
+          grn_document_url?: string | null
+          id?: string
+          manager_approved_at?: string | null
+          manager_id?: string | null
+          manager_remarks?: string | null
+          notes?: string | null
+          order_number?: string
+          po_number?: string | null
+          priority?: Database["public"]["Enums"]["requisition_priority"]
+          property_id?: string
+          received_at?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["requisition_status"]
+          total_items?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisition_lists_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisition_status_history: {
+        Row: {
+          changed_by: string
+          changed_by_role: Database["public"]["Enums"]["app_role"] | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_status: Database["public"]["Enums"]["requisition_status"]
+          old_status: Database["public"]["Enums"]["requisition_status"] | null
+          remarks: string | null
+          requisition_list_id: string
+        }
+        Insert: {
+          changed_by: string
+          changed_by_role?: Database["public"]["Enums"]["app_role"] | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status: Database["public"]["Enums"]["requisition_status"]
+          old_status?: Database["public"]["Enums"]["requisition_status"] | null
+          remarks?: string | null
+          requisition_list_id: string
+        }
+        Update: {
+          changed_by?: string
+          changed_by_role?: Database["public"]["Enums"]["app_role"] | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: Database["public"]["Enums"]["requisition_status"]
+          old_status?: Database["public"]["Enums"]["requisition_status"] | null
+          remarks?: string | null
+          requisition_list_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisition_status_history_requisition_list_id_fkey"
+            columns: ["requisition_list_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_lists"
             referencedColumns: ["id"]
           },
         ]
@@ -9365,6 +9679,47 @@ export type Database = {
           },
         ]
       }
+      vendor_documents: {
+        Row: {
+          document_type: Database["public"]["Enums"]["vendor_document_type"]
+          document_url: string
+          id: string
+          uploaded_at: string
+          vendor_id: string
+          verified: boolean
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          document_type: Database["public"]["Enums"]["vendor_document_type"]
+          document_url: string
+          id?: string
+          uploaded_at?: string
+          vendor_id: string
+          verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          document_type?: Database["public"]["Enums"]["vendor_document_type"]
+          document_url?: string
+          id?: string
+          uploaded_at?: string
+          vendor_id?: string
+          verified?: boolean
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_documents_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_financial_reports: {
         Row: {
           commission_amount: number | null
@@ -9837,6 +10192,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendor_profiles: {
+        Row: {
+          business_address: string
+          contact_person: string
+          created_at: string
+          email: string
+          gst_number: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          pan_number: string | null
+          phone: string
+          updated_at: string
+          vendor_name: string
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          business_address: string
+          contact_person: string
+          created_at?: string
+          email: string
+          gst_number?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          pan_number?: string | null
+          phone: string
+          updated_at?: string
+          vendor_name: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          business_address?: string
+          contact_person?: string
+          created_at?: string
+          email?: string
+          gst_number?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          pan_number?: string | null
+          phone?: string
+          updated_at?: string
+          vendor_name?: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
       }
       vendor_staff: {
         Row: {
@@ -11394,6 +11803,7 @@ export type Database = {
       is_admin: { Args: { uid: string }; Returns: boolean }
       is_admin_secure: { Args: { user_id: string }; Returns: boolean }
       is_approved_user: { Args: { user_id: string }; Returns: boolean }
+      is_field_executive: { Args: { user_id: string }; Returns: boolean }
       is_food_vendor: { Args: { uid: string }; Returns: boolean }
       is_food_vendor_staff_for_vendor: {
         Args: { target_vendor_id: string; user_id: string }
@@ -11405,6 +11815,8 @@ export type Database = {
       is_l4: { Args: { uid: string }; Returns: boolean }
       is_management: { Args: { uid: string }; Returns: boolean }
       is_ops_staff: { Args: { uid: string }; Returns: boolean }
+      is_procurement_staff: { Args: { user_id: string }; Returns: boolean }
+      is_property_manager: { Args: { user_id: string }; Returns: boolean }
       is_staff: { Args: { uid: string }; Returns: boolean }
       is_super_admin: { Args: { user_id: string }; Returns: boolean }
       is_vendor_staff_for_vendor: {
@@ -11551,6 +11963,10 @@ export type Database = {
       }
       update_user_role_safe: {
         Args: { new_role_text: string; target_user_id: string }
+        Returns: boolean
+      }
+      user_belongs_to_property: {
+        Args: { property_id: string; user_id: string }
         Returns: boolean
       }
       user_has_property_access: {
