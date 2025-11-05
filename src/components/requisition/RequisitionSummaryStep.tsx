@@ -1,42 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateRequisition } from '@/hooks/useCreateRequisition';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { DeliveryDatePicker } from './DeliveryDatePicker';
 import { PrioritySelector } from './PrioritySelector';
 
-interface PropertyItem {
-  id: string;
-  name: string;
-}
-
 export const RequisitionSummaryStep = () => {
   const { formData, setFormData } = useCreateRequisition();
+  const { currentProperty } = usePropertyContext();
 
-  const { data: properties } = useQuery<PropertyItem[]>({
-    queryKey: ['active-properties'],
-    queryFn: async () => {
-      // Type assertion to bypass deep type instantiation issue
-      const response = await (supabase as any)
-        .from('properties')
-        .select('id, name')
-        .eq('is_active', true);
-      
-      if (response.error) throw response.error;
-      
-      return (response.data ?? []) as PropertyItem[];
-    },
-  });
+  // Auto-populate property from user's current property
+  useEffect(() => {
+    if (currentProperty && !formData.property_id) {
+      setFormData({ ...formData, property_id: currentProperty.id });
+    }
+  }, [currentProperty, formData.property_id]);
 
   return (
     <Card>
@@ -46,23 +26,16 @@ export const RequisitionSummaryStep = () => {
       <CardContent className="space-y-6">
         <div>
           <Label>Property</Label>
-          <Select
-            value={formData.property_id}
-            onValueChange={(value) =>
-              setFormData({ ...formData, property_id: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select property" />
-            </SelectTrigger>
-            <SelectContent>
-              {properties?.map((property) => (
-                <SelectItem key={property.id} value={property.id}>
-                  {property.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="p-3 bg-muted rounded-md border">
+            <p className="font-medium text-foreground">
+              {currentProperty?.name || 'Loading...'}
+            </p>
+            {currentProperty?.code && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {currentProperty.code}
+              </p>
+            )}
+          </div>
         </div>
 
         <PrioritySelector
