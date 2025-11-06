@@ -1,7 +1,7 @@
 import React, { startTransition } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useCreateRequisition } from '@/hooks/useCreateRequisition';
+import { CreateRequisitionProvider, useCreateRequisition } from '@/hooks/useCreateRequisition';
 import { ItemSelectionStep } from './ItemSelectionStep';
 import { RequisitionSummaryStep } from './RequisitionSummaryStep';
 import { RequisitionReviewStep } from './RequisitionReviewStep';
@@ -15,7 +15,7 @@ const steps = [
   { id: 3, name: 'Review', description: 'Submit requisition' },
 ];
 
-export const RequisitionWizard = () => {
+const RequisitionWizardInner = () => {
   const { navigate } = useNavigationTransition();
   const {
     currentStep,
@@ -155,5 +155,13 @@ export const RequisitionWizard = () => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+export const RequisitionWizard = () => {
+  return (
+    <CreateRequisitionProvider>
+      <RequisitionWizardInner />
+    </CreateRequisitionProvider>
   );
 };

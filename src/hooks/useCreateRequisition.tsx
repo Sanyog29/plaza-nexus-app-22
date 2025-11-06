@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -22,7 +22,11 @@ export interface RequisitionFormData {
   notes: string;
 }
 
-export const useCreateRequisition = () => {
+type CreateRequisitionContextType = ReturnType<typeof useProvideCreateRequisition>;
+
+const CreateRequisitionContext = createContext<CreateRequisitionContextType | null>(null);
+
+function useProvideCreateRequisition() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
@@ -154,6 +158,7 @@ export const useCreateRequisition = () => {
         expected_delivery_date: null,
         notes: '',
       });
+      setCurrentStep(1);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to save draft');
@@ -213,6 +218,7 @@ export const useCreateRequisition = () => {
         expected_delivery_date: null,
         notes: '',
       });
+      setCurrentStep(1);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to submit requisition');
@@ -233,4 +239,21 @@ export const useCreateRequisition = () => {
     validateForm,
     calculateTotalItems,
   };
+}
+
+export const CreateRequisitionProvider = ({ children }: { children: React.ReactNode }) => {
+  const value = useProvideCreateRequisition();
+  return (
+    <CreateRequisitionContext.Provider value={value}>
+      {children}
+    </CreateRequisitionContext.Provider>
+  );
+};
+
+export const useCreateRequisition = () => {
+  const context = useContext(CreateRequisitionContext);
+  if (!context) {
+    throw new Error('useCreateRequisition must be used within CreateRequisitionProvider');
+  }
+  return context;
 };
