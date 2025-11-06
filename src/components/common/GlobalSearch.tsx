@@ -189,7 +189,7 @@ export function GlobalSearch({ className, placeholder = "Search across all modul
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative z-[1000] ${className}`}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -215,7 +215,7 @@ export function GlobalSearch({ className, placeholder = "Search across all modul
       </div>
 
       {isOpen && (
-        <Card className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur border-border/50 z-50 max-h-96 overflow-hidden">
+        <Card className="absolute top-full left-0 right-0 mt-2 bg-card backdrop-blur-md border-border/50 shadow-2xl z-[1050] max-h-96 overflow-hidden">
           <CardContent className="p-0">
             {/* Filters */}
             <div className="p-3 border-b border-border/50">
