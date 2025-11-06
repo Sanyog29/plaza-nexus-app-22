@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Package, Store, FileText, TrendingUp } from 'lucide-react';
+import { Plus, Package, Store, FileText, TrendingUp, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const QuickActions = () => {
@@ -40,6 +40,10 @@ export const QuickActions = () => {
         <DropdownMenuItem onClick={() => navigate('/procurement/budget')}>
           <TrendingUp className="mr-2 h-4 w-4" />
           <span>Budget Report</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/admin/requisition-master')}>
+          <Database className="mr-2 h-4 w-4" />
+          <span>Item Master</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

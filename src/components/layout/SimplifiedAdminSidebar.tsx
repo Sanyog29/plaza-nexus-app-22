@@ -86,6 +86,7 @@ const adminMenuGroups = [
       { title: "Maintenance", url: "/admin/maintenance", icon: Wrench },
       { title: "Booking Management", url: "/admin/bookings", icon: Calendar },
       { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
+      { title: "Item Master", url: "/admin/requisition-master", icon: Database },
     ]
   },
   {
