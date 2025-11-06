@@ -589,10 +589,25 @@ export const EnhancedUserManagement: React.FC = () => {
   const getRoleBadgeColor = getRoleColor;
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === 'all' || user.assigned_role_title === selectedRole || user.role === selectedRole;
-    const matchesStatus = selectedStatus === 'all' || user.approval_status === selectedStatus;
+    // Null-safe search matching
+    const email = (user.email || '').toLowerCase();
+    const firstName = (user.first_name || '').toLowerCase();
+    const lastName = (user.last_name || '').toLowerCase();
+    const fullName = `${firstName} ${lastName}`.trim();
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    const matchesSearch = !searchLower || 
+                         email.includes(searchLower) ||
+                         fullName.includes(searchLower) ||
+                         firstName.includes(searchLower) ||
+                         lastName.includes(searchLower);
+    
+    const matchesRole = selectedRole === 'all' || 
+                       user.assigned_role_title === selectedRole || 
+                       user.role === selectedRole;
+    
+    const matchesStatus = selectedStatus === 'all' || 
+                         user.approval_status === selectedStatus;
     
     // Property filtering is now handled at the database level for most cases
     // Frontend only handles 'unassigned' filter
@@ -776,11 +791,11 @@ export const EnhancedUserManagement: React.FC = () => {
       </Card>
 
       {/* User Management Section */}
-      <Card>
+      <Card className="relative">
         <CardHeader>
           <CardTitle>User Management</CardTitle>
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+            <div className="flex-1 relative z-10">
               <Input
                 placeholder="Search users..."
                 value={searchTerm}
