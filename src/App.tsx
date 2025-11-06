@@ -253,6 +253,7 @@ const App = () => (
               <Route path="/procurement/vendors" element={<VendorManagementPage />} />
               <Route path="/procurement/orders" element={<PurchaseOrdersPage />} />
               <Route path="/procurement/budget" element={<BudgetTrackingPage />} />
+              <Route path="/procurement/item-master" element={<RequisitionItemMasterPage />} />
               
               {/* Admin Routes */}
               <Route path="/admin/requisition-master" element={<RequisitionItemMasterPage />} />

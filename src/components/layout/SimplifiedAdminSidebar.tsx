@@ -222,7 +222,7 @@ const procurementMenuGroups = [
     label: "Procurement Operations",
     items: [
       { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
-      { title: "Item Master", url: "/admin/requisition-master", icon: Database },
+      { title: "Item Master", url: "/procurement/item-master", icon: Database },
       { title: "Vendor Management", url: "/procurement/vendors", icon: Store },
       { title: "Purchase Orders", url: "/procurement/orders", icon: ShoppingCart },
       { title: "Budget Tracking", url: "/procurement/budget", icon: TrendingUp },
@@ -257,6 +257,7 @@ const managerMenuGroups = [
     label: "Procurement Operations",
     items: [
       { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
+      { title: "Item Master", url: "/procurement/item-master", icon: Database },
       { title: "Vendor Management", url: "/procurement/vendors", icon: Store },
       { title: "Purchase Orders", url: "/procurement/orders", icon: ShoppingCart },
       { title: "Budget Tracking", url: "/procurement/budget", icon: TrendingUp },

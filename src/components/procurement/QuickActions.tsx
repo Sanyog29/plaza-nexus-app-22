@@ -41,7 +41,7 @@ export const QuickActions = () => {
           <TrendingUp className="mr-2 h-4 w-4" />
           <span>Budget Report</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/admin/requisition-master')}>
+        <DropdownMenuItem onClick={() => navigate('/procurement/item-master')}>
           <Database className="mr-2 h-4 w-4" />
           <span>Item Master</span>
         </DropdownMenuItem>
