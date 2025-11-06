@@ -10,10 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ClipboardList, UserPlus, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { useSimplifiedTasks } from '@/hooks/useSimplifiedTasks';
 import { useProfile } from '@/hooks/useProfile';
+import { useTabTransition } from '@/hooks/useTransitionState';
 import { format } from 'date-fns';
 
 export const SimplifiedTaskSystem: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('create');
+  const [activeTab, setActiveTab] = useTabTransition('create');
   const [newRequest, setNewRequest] = useState({
     category: '',
     location: '',

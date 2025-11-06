@@ -34,6 +34,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
+import { useFilterTransition } from '@/hooks/useTransitionState';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Notification {
@@ -50,7 +51,7 @@ export function NotificationCenter() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [filter, setFilter] = useFilterTransition<'all' | 'unread' | 'read'>('all');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

@@ -16,10 +16,11 @@ import AccessPointStatus from './AccessPointStatus';
 import { EnhancedQRScanner } from '@/components/qr/EnhancedQRScanner';
 import { StaffAttendanceSystem } from '@/components/operations/StaffAttendanceSystem';
 import { useAuth } from '@/components/AuthProvider';
+import { useTabTransition } from '@/hooks/useTransitionState';
 
 export const UnifiedSecurityDashboard: React.FC = () => {
   const { user, permissions } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useTabTransition('overview');
   const [showQRScanner, setShowQRScanner] = useState(false);
 
   const securityMetrics = {

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSearchTransition, useFilterTransition } from "@/hooks/useTransitionState";
 import { Package, Calendar, AlertTriangle, Wrench, Plus, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
 
@@ -46,8 +47,8 @@ export const AssetManagement = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [amcAlerts, setAmcAlerts] = useState<AMCAlert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useSearchTransition("");
+  const [statusFilter, setStatusFilter] = useFilterTransition("all");
   const { toast } = useToast();
 
   useEffect(() => {

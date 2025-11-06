@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
+import { useTabTransition } from '@/hooks/useTransitionState';
 import { 
   Clock, 
   MapPin, 
@@ -99,7 +100,7 @@ export function ConditionalAccessManager() {
   const [locationRestrictions, setLocationRestrictions] = useState<LocationRestriction[]>([]);
   const [conditionalRules, setConditionalRules] = useState<ConditionalRule[]>([]);
   const [emergencyAccess, setEmergencyAccess] = useState<EmergencyAccess[]>([]);
-  const [activeTab, setActiveTab] = useState('time');
+  const [activeTab, setActiveTab] = useTabTransition('time');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
