@@ -6227,9 +6227,13 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          item_code: string | null
           item_name: string
+          max_order_limit: number | null
           unit: string
           unit_limit: number
+          unit_of_measurement: string | null
+          unit_price: number | null
           updated_at: string
         }
         Insert: {
@@ -6239,9 +6243,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          item_code?: string | null
           item_name: string
+          max_order_limit?: number | null
           unit?: string
           unit_limit?: number
+          unit_of_measurement?: string | null
+          unit_price?: number | null
           updated_at?: string
         }
         Update: {
@@ -6251,9 +6259,13 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          item_code?: string | null
           item_name?: string
+          max_order_limit?: number | null
           unit?: string
           unit_limit?: number
+          unit_of_measurement?: string | null
+          unit_price?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -6262,6 +6274,54 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "requisition_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requisition_limit_tracking: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_id: string
+          period_end: string
+          period_start: string
+          property_id: string
+          total_ordered: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_id: string
+          period_end: string
+          period_start: string
+          property_id: string
+          total_ordered?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          period_end?: string
+          period_start?: string
+          property_id?: string
+          total_ordered?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requisition_limit_tracking_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_items_master"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requisition_limit_tracking_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -11749,6 +11809,15 @@ export type Database = {
       get_full_profile: { Args: { profile_id: string }; Returns: Json }
       get_invitation_by_token: { Args: { token: string }; Returns: Json }
       get_invitation_details: { Args: { token: string }; Returns: Json }
+      get_item_limit_status: {
+        Args: {
+          p_item_id: string
+          p_period_end?: string
+          p_period_start?: string
+          p_property_id: string
+        }
+        Returns: Json
+      }
       get_public_profile_fields: {
         Args: { profile_id: string }
         Returns: {
