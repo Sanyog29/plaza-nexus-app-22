@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Download, Upload, BarChart3, Package, FileSpreadsheet } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTabTransition } from '@/hooks/useTransitionState';
 import MenuItemForm from './menu/MenuItemForm';
 import MenuItemsList from './menu/MenuItemsList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -17,7 +18,7 @@ const VendorMenuManagement: React.FC<VendorMenuManagementProps> = ({ vendorId })
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [activeTab, setActiveTab] = useState('items');
+  const [activeTab, setActiveTab] = useTabTransition('items');
 
   const handleSuccess = () => {
     setShowAddForm(false);

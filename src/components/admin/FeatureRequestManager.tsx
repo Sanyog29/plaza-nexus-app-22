@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useSearchTransition, useFilterTransition, useTabTransition } from '@/hooks/useTransitionState';
 import { 
   Settings, 
   CheckCircle, 
@@ -41,8 +42,8 @@ interface FeatureUsageAnalytics {
 export const FeatureRequestManager: React.FC = () => {
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [analytics, setAnalytics] = useState<FeatureUsageAnalytics[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useSearchTransition('');
+  const [statusFilter, setStatusFilter] = useFilterTransition<string>('all');
   const [selectedRequest, setSelectedRequest] = useState<FeatureRequest | null>(null);
   const [adminComment, setAdminComment] = useState('');
   const [confirmDialog, setConfirmDialog] = useState<{

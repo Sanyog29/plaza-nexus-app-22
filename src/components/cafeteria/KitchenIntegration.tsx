@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useTabTransition } from '@/hooks/useTransitionState';
 import { 
   Clock, 
   ChefHat, 
@@ -43,7 +44,7 @@ interface KitchenOrder {
 }
 
 export const KitchenIntegration: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeTab, setActiveTab] = useTabTransition('pending');
   const [preparationTimers, setPreparationTimers] = useState<Record<string, number>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();

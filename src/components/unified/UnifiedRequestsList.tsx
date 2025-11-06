@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock, MapPin, User, AlertCircle, Search, Filter, Plus, Trash2, XCircle } from 'lucide-react';
+import { useSearchTransition, useFilterTransition } from '@/hooks/useTransitionState';
 import { useUnifiedRequests, UnifiedRequest } from '@/hooks/useUnifiedRequests';
 import { useSLAMonitoring } from '@/hooks/useSLAMonitoring';
 import { useAuth } from '@/components/AuthProvider';
@@ -20,9 +21,9 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
   onViewRequest,
 }) => {
   const { isStaff, permissions, user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useSearchTransition('');
+  const [statusFilter, setStatusFilter] = useFilterTransition<string>('all');
+  const [priorityFilter, setPriorityFilter] = useFilterTransition<string>('all');
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; request: UnifiedRequest | null; loading: boolean }>({
     open: false,
     request: null,

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useSearchTransition, useFilterTransition } from '@/hooks/useTransitionState';
 import { 
   Plus, 
   Search, 
@@ -51,9 +52,9 @@ export function TaskManagement() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useSearchTransition('');
+  const [statusFilter, setStatusFilter] = useFilterTransition('all');
+  const [priorityFilter, setPriorityFilter] = useFilterTransition('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [timerStartTime, setTimerStartTime] = useState<Date | null>(null);

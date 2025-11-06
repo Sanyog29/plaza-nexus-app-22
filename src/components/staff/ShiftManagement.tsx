@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useTabTransition } from '@/hooks/useTransitionState';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { format, addDays, startOfWeek, endOfWeek } from 'date-fns';
@@ -56,7 +57,7 @@ const ShiftManagement: React.FC = () => {
   const [shifts, setShifts] = useState<ShiftSchedule[]>([]);
   const [changeRequests, setChangeRequests] = useState<ShiftChangeRequest[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('schedule');
+  const [activeTab, setActiveTab] = useTabTransition('schedule');
 
   // Form states
   const [newShift, setNewShift] = useState({

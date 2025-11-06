@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useTabTransition, useSearchTransition, useFilterTransition } from '@/hooks/useTransitionState';
 import OrderCard from './OrderCard';
 import OrderFilters from './OrderFilters';
 
@@ -27,12 +28,12 @@ const VendorOrderQueue: React.FC<VendorOrderQueueProps> = ({ vendorId }) => {
   const [orderTimelines, setOrderTimelines] = useState<{ [key: string]: any[] }>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useTabTransition('active');
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useSearchTransition('');
+  const [statusFilter, setStatusFilter] = useFilterTransition('all');
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [amountRange, setAmountRange] = useState({ min: '', max: '' });
 

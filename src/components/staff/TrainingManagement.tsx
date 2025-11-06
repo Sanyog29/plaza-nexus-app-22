@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useTabTransition } from '@/hooks/useTransitionState';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { 
@@ -68,7 +69,7 @@ const TrainingManagement: React.FC = () => {
   const [progress, setProgress] = useState<TrainingProgress[]>([]);
   const [skills, setSkills] = useState<StaffSkill[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('programs');
+  const [activeTab, setActiveTab] = useTabTransition('programs');
 
   // Form states
   const [newProgram, setNewProgram] = useState({

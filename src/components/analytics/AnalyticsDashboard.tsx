@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTabTransition } from '@/hooks/useTransitionState';
 import PerformanceCharts from './PerformanceCharts';
 import { MetricsOverview } from './MetricsOverview';
 import { AnalyticsLoadingSkeleton } from './AnalyticsLoadingSkeleton';
 import { EmptyAnalyticsState } from './EmptyAnalyticsState';
 
 const AnalyticsDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useTabTransition('overview');
 
   return (
     <div className="space-y-6">

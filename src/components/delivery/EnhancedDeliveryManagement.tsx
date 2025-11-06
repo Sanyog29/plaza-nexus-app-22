@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSearchTransition, useFilterTransition } from '@/hooks/useTransitionState';
 import { 
   Package, 
   Search, 
@@ -52,8 +53,8 @@ interface Delivery {
 export const EnhancedDeliveryManagement = () => {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useSearchTransition('');
+  const [statusFilter, setStatusFilter] = useFilterTransition<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
   const [showQRModal, setShowQRModal] = useState(false);
