@@ -21,9 +21,11 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { CheckCircle, XCircle, MessageCircle } from 'lucide-react';
+import { CheckCircle, XCircle, MessageCircle, ArrowRightLeft } from 'lucide-react';
 import { useRequisitionApproval } from '@/hooks/useRequisitionApproval';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { RerouteRequisitionDialog } from './RerouteRequisitionDialog';
+import { useAuth } from '@/components/AuthProvider';
 
 interface ApprovalDetailModalProps {
   requisitionId: string;
@@ -38,8 +40,10 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
 }) => {
   const [action, setAction] = useState<'approve' | 'reject' | 'clarify' | null>(null);
   const [remarks, setRemarks] = useState('');
+  const [showRerouteDialog, setShowRerouteDialog] = useState(false);
   const { approveRequisition, rejectRequisition, requestClarification } =
     useRequisitionApproval();
+  const { userRole } = useAuth();
 
   const { data: requisition } = useQuery({
     queryKey: ['requisition-detail', requisitionId],
@@ -111,12 +115,16 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
     urgent: 'destructive',
   } as const;
 
+  const isProcurementManager = userRole === 'procurement_manager';
+  const canReroute = isProcurementManager && requisition?.status === 'manager_approved';
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Review Requisition</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Review Requisition</DialogTitle>
+          </DialogHeader>
 
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-6 pr-4">
@@ -222,6 +230,18 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
+              {canReroute && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    onOpenChange(false);
+                    setShowRerouteDialog(true);
+                  }}
+                >
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  Reroute
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => setAction('clarify')}
@@ -266,5 +286,17 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Reroute Dialog */}
+    {canReroute && requisition && (
+      <RerouteRequisitionDialog
+        requisitionId={requisitionId}
+        currentAssigneeId={requisition.assigned_to}
+        currentStatus={requisition.status}
+        open={showRerouteDialog}
+        onOpenChange={setShowRerouteDialog}
+      />
+    )}
+    </>
   );
 };
