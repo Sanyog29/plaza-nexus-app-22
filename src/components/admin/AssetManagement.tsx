@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSearchTransition, useFilterTransition } from "@/hooks/useTransitionState";
+import { useDebouncedSearch } from "@/hooks/useDebounce";
+import { useFilterTransition } from "@/hooks/useTransitionState";
+import { searchFilter } from "@/utils/searchUtils";
 import { Package, Calendar, AlertTriangle, Wrench, Plus, Search, Filter } from "lucide-react";
 import { format } from "date-fns";
 
@@ -47,7 +49,7 @@ export const AssetManagement = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [amcAlerts, setAmcAlerts] = useState<AMCAlert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useSearchTransition("");
+  const [searchTerm, debouncedSearchTerm, setSearchTerm] = useDebouncedSearch("", 300);
   const [statusFilter, setStatusFilter] = useFilterTransition("all");
   const { toast } = useToast();
 
@@ -119,13 +121,25 @@ export const AssetManagement = () => {
     }
   };
 
-  const filteredAssets = assets.filter(asset => {
-    const matchesSearch = asset.asset_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         asset.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         asset.asset_type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredAssets = (() => {
+    let filtered = assets;
+    
+    // Apply search filter using optimized utility
+    if (debouncedSearchTerm) {
+      filtered = searchFilter(
+        filtered,
+        debouncedSearchTerm,
+        ['asset_name', 'location', 'asset_type']
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(asset => asset.status === statusFilter);
+    }
+    
+    return filtered;
+  })();
 
   const upcomingMaintenanceAssets = assets.filter(asset => 
     asset.next_service_due && new Date(asset.next_service_due) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)

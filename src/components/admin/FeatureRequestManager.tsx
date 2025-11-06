@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useSearchTransition, useFilterTransition, useTabTransition } from '@/hooks/useTransitionState';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
+import { useFilterTransition, useTabTransition } from '@/hooks/useTransitionState';
+import { searchFilter } from '@/utils/searchUtils';
 import { 
   Settings, 
   CheckCircle, 
@@ -42,7 +44,7 @@ interface FeatureUsageAnalytics {
 export const FeatureRequestManager: React.FC = () => {
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [analytics, setAnalytics] = useState<FeatureUsageAnalytics[]>([]);
-  const [searchQuery, setSearchQuery] = useSearchTransition('');
+  const [searchQuery, debouncedSearchQuery, setSearchQuery] = useDebouncedSearch('', 300);
   const [statusFilter, setStatusFilter] = useFilterTransition<string>('all');
   const [selectedRequest, setSelectedRequest] = useState<FeatureRequest | null>(null);
   const [adminComment, setAdminComment] = useState('');
@@ -99,16 +101,25 @@ export const FeatureRequestManager: React.FC = () => {
     setConfirmDialog({ open: false, type: 'approve', request: null });
   };
 
-  const filteredRequests = requests.filter(request => {
-    const matchesSearch = !searchQuery || 
-      request.feature.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.userRole.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (request.reason && request.reason.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredRequests = (() => {
+    let filtered = requests;
     
-    const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+    // Apply search filter
+    if (debouncedSearchQuery) {
+      filtered = searchFilter(
+        filtered,
+        debouncedSearchQuery,
+        ['feature', 'userRole', 'reason']
+      );
+    }
     
-    return matchesSearch && matchesStatus;
-  });
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(req => req.status === statusFilter);
+    }
+    
+    return filtered;
+  })();
 
   const pendingCount = requests.filter(req => req.status === 'pending').length;
   const approvedCount = requests.filter(req => req.status === 'approved').length;

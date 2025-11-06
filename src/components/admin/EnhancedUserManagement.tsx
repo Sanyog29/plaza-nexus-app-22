@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
+import { advancedSearchFilter } from '@/utils/searchUtils';
 import { 
   UserPlus, 
   Mail, 
@@ -56,7 +58,7 @@ export const EnhancedUserManagement: React.FC = () => {
   const { currentProperty, availableProperties, isSuperAdmin } = usePropertyContext();
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, debouncedSearchTerm, setSearchTerm] = useDebouncedSearch('', 300);
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedProperty, setSelectedProperty] = useState<string>('all');
