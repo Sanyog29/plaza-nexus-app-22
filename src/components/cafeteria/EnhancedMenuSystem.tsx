@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
 import { Search, Filter, Heart, Clock, Star, MapPin, ChefHat } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ interface EnhancedMenuSystemProps {
 }
 
 export const EnhancedMenuSystem: React.FC<EnhancedMenuSystemProps> = ({ onOrderComplete }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, debouncedSearchTerm, setSearchTerm] = useDebouncedSearch('', 300);
   const [selectedItem, setSelectedItem] = useState(null);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
@@ -318,7 +319,7 @@ export const EnhancedMenuSystem: React.FC<EnhancedMenuSystemProps> = ({ onOrderC
       {/* Menu Content */}
       <MenuData
         onSelectItem={handleItemSelect}
-        searchTerm={searchTerm}
+        searchTerm={debouncedSearchTerm}
         filters={activeFilters}
       />
 

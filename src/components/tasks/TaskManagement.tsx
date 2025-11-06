@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { searchFilter } from '@/utils/searchUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -132,31 +133,32 @@ export function TaskManagement() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    filterTasks();
-  }, [tasks, searchTerm, statusFilter, priorityFilter]);
-
-  const filterTasks = () => {
+  // Use memoized filtering instead of useEffect
+  const filteredTasksComputed = useMemo(() => {
     let filtered = tasks;
 
+    // Apply search with null-safe utility
     if (searchTerm) {
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      filtered = searchFilter(filtered, searchTerm, ['title', 'location', 'category', 'description']);
     }
 
+    // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(task => task.status === statusFilter);
     }
 
+    // Apply priority filter
     if (priorityFilter !== 'all') {
       filtered = filtered.filter(task => task.priority === priorityFilter);
     }
 
-    setFilteredTasks(filtered);
-  };
+    return filtered;
+  }, [tasks, searchTerm, statusFilter, priorityFilter]);
+
+  // Update state when computed value changes
+  useEffect(() => {
+    setFilteredTasks(filteredTasksComputed);
+  }, [filteredTasksComputed]);
 
   const handleAddTask = () => {
     const task: Task = {

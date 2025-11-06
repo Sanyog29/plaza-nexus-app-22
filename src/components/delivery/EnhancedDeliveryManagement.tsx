@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { advancedSearchFilter } from '@/utils/searchUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -186,16 +187,31 @@ export const EnhancedDeliveryManagement = () => {
     });
   };
 
-  const filteredDeliveries = deliveries.filter(delivery => {
-    const matchesSearch = 
-      delivery.recipient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      delivery.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      delivery.pickup_code?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredDeliveries = useMemo(() => {
+    let filtered = deliveries;
     
-    const matchesStatus = statusFilter === 'all' || delivery.status === statusFilter;
+    // Apply search filter with null safety
+    if (searchTerm) {
+      filtered = advancedSearchFilter(
+        filtered,
+        searchTerm,
+        [
+          (d) => d.recipient_name,
+          (d) => d.tracking_number,
+          (d) => d.pickup_code,
+          (d) => d.recipient_company,
+          (d) => d.sender_name,
+        ]
+      );
+    }
     
-    return matchesSearch && matchesStatus;
-  });
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(d => d.status === statusFilter);
+    }
+    
+    return filtered;
+  }, [deliveries, searchTerm, statusFilter]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

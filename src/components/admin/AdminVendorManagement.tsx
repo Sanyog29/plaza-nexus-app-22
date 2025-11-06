@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
+import { searchFilter } from '@/utils/searchUtils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +29,7 @@ import {
 } from 'lucide-react';
 
 const AdminVendorManagement = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, debouncedSearchTerm, setSearchTerm] = useDebouncedSearch('', 300);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [financialDialogVendor, setFinancialDialogVendor] = useState<any>(null);
   const [assignStaffVendor, setAssignStaffVendor] = useState<any>(null);
@@ -128,10 +130,11 @@ const AdminVendorManagement = () => {
     },
   });
 
-  const filteredVendors = vendors.filter(vendor =>
-    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    vendor.cuisine_type?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredVendors = useMemo(() => {
+    if (!debouncedSearchTerm) return vendors;
+    
+    return searchFilter(vendors, debouncedSearchTerm, ['name', 'cuisine_type', 'stall_location', 'contact_email']);
+  }, [vendors, debouncedSearchTerm]);
 
   const getMenuItemsCount = (vendor: any) => {
     return vendor.vendor_menu_items?.[0]?.count || 0;

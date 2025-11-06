@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { advancedSearchFilter } from '@/utils/searchUtils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,11 +43,21 @@ export const UnifiedRequestsList: React.FC<UnifiedRequestsListProps> = ({
   
   const { getSLAStatusColor, formatTimeRemaining } = useSLAMonitoring();
 
-  const filteredRequests = requests.filter(request =>
-    request.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRequests = useMemo(() => {
+    if (!searchTerm) return requests;
+    
+    return advancedSearchFilter(
+      requests,
+      searchTerm,
+      [
+        (r) => r.title,
+        (r) => r.description,
+        (r) => r.location,
+        (r) => r.reported_by_profile?.first_name,
+        (r) => r.reported_by_profile?.last_name,
+      ]
+    );
+  }, [requests, searchTerm]);
 
   const getPriorityBadge = (priority: string) => {
     const variants = {
