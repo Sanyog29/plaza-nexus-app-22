@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { startTransition } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCreateRequisition } from '@/hooks/useCreateRequisition';
@@ -7,7 +7,7 @@ import { RequisitionSummaryStep } from './RequisitionSummaryStep';
 import { RequisitionReviewStep } from './RequisitionReviewStep';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 const steps = [
   { id: 1, name: 'Basic Info', description: 'Property & details' },
@@ -16,7 +16,7 @@ const steps = [
 ];
 
 export const RequisitionWizard = () => {
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
   const {
     currentStep,
     setCurrentStep,
@@ -34,6 +34,18 @@ export const RequisitionWizard = () => {
   const handleSubmit = async () => {
     await submitForApproval.mutateAsync();
     navigate('/procurement/my-requisitions');
+  };
+
+  const handleNext = () => {
+    startTransition(() => {
+      setCurrentStep(currentStep + 1);
+    });
+  };
+
+  const handlePrevious = () => {
+    startTransition(() => {
+      setCurrentStep(Math.max(1, currentStep - 1));
+    });
   };
 
   return (
@@ -88,41 +100,55 @@ export const RequisitionWizard = () => {
           <div className="flex items-center justify-between">
             <Button
               variant="outline"
-              onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
+              onClick={handlePrevious}
               disabled={currentStep === 1}
             >
               Previous
             </Button>
 
-            <div className="flex gap-2">
-              {currentStep < 3 && (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handleSaveDraft}
-                    disabled={saveDraft.isPending || selectedItems.length === 0}
-                  >
-                    Save Draft
-                  </Button>
-                  <Button
-                    onClick={() => setCurrentStep(currentStep + 1)}
-                    disabled={
-                      (currentStep === 1 && !formData.property_id) ||
-                      (currentStep === 2 && selectedItems.length === 0)
-                    }
-                  >
-                    Next
-                  </Button>
-                </>
-              )}
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex gap-2">
+                {currentStep < 3 && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleSaveDraft}
+                      disabled={saveDraft.isPending || selectedItems.length === 0}
+                    >
+                      Save Draft
+                    </Button>
+                    <Button
+                      onClick={handleNext}
+                      disabled={
+                        (currentStep === 1 && !formData.property_id) ||
+                        (currentStep === 2 && selectedItems.length === 0)
+                      }
+                    >
+                      Next
+                    </Button>
+                  </>
+                )}
 
-              {currentStep === 3 && (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={submitForApproval.isPending}
-                >
-                  {submitForApproval.isPending ? 'Submitting...' : 'Submit for Approval'}
-                </Button>
+                {currentStep === 3 && (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={submitForApproval.isPending}
+                  >
+                    {submitForApproval.isPending ? 'Submitting...' : 'Submit for Approval'}
+                  </Button>
+                )}
+              </div>
+              
+              {/* Helper text for disabled buttons */}
+              {currentStep === 1 && !formData.property_id && (
+                <p className="text-sm text-muted-foreground">
+                  Loading property information...
+                </p>
+              )}
+              {currentStep === 2 && selectedItems.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Add at least one item to continue
+                </p>
               )}
             </div>
           </div>

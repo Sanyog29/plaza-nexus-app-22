@@ -6,17 +6,65 @@ import { useCreateRequisition } from '@/hooks/useCreateRequisition';
 import { usePropertyContext } from '@/contexts/PropertyContext';
 import { DeliveryDatePicker } from './DeliveryDatePicker';
 import { PrioritySelector } from './PrioritySelector';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export const RequisitionSummaryStep = () => {
   const { formData, setFormData } = useCreateRequisition();
-  const { currentProperty } = usePropertyContext();
+  const { currentProperty, isLoadingProperties } = usePropertyContext();
 
   // Auto-populate property from user's current property
   useEffect(() => {
     if (currentProperty && !formData.property_id) {
-      setFormData({ ...formData, property_id: currentProperty.id });
+      setFormData(prev => ({ ...prev, property_id: currentProperty.id }));
     }
-  }, [currentProperty, formData.property_id]);
+  }, [currentProperty, formData.property_id, setFormData]);
+
+  // Show loading state while properties are being fetched
+  if (isLoadingProperties) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Basic Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Handle case where no property is available
+  if (!currentProperty) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Basic Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>No Property Available</AlertTitle>
+            <AlertDescription>
+              No property has been assigned to your account. Please contact your administrator to assign a property before creating a requisition.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
