@@ -52,10 +52,15 @@ export const RequisitionCart = () => {
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        Max: {item.unit_limit} {item.unit}
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground">
+                          Limit: {item.unit_limit} {item.unit}
+                        </p>
+                        <p className="text-xs font-medium">
+                          Current: {item.quantity}/{item.unit_limit}
+                        </p>
+                      </div>
                       <QuantityInput
                         value={item.quantity}
                         onChange={(value) =>

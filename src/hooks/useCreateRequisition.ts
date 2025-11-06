@@ -52,11 +52,14 @@ export const useCreateRequisition = () => {
   };
 
   const updateQuantity = (itemMasterId: string, quantity: number) => {
-    setSelectedItems(selectedItems.map(item => 
-      item.item_master_id === itemMasterId 
-        ? { ...item, quantity }
-        : item
-    ));
+    setSelectedItems(selectedItems.map(item => {
+      if (item.item_master_id === itemMasterId) {
+        // Ensure quantity doesn't exceed unit_limit
+        const constrainedQuantity = Math.min(Math.max(quantity, 1), item.unit_limit);
+        return { ...item, quantity: constrainedQuantity };
+      }
+      return item;
+    }));
   };
 
   const generateOrderNumber = async (): Promise<string> => {
@@ -81,6 +84,16 @@ export const useCreateRequisition = () => {
       toast.error('Please add at least one item');
       return false;
     }
+    
+    // Validate each item quantity against unit_limit
+    const invalidItems = selectedItems.filter(item => item.quantity > item.unit_limit);
+    if (invalidItems.length > 0) {
+      toast.error(
+        `Some items exceed their limit: ${invalidItems.map(i => i.item_name).join(', ')}`
+      );
+      return false;
+    }
+    
     return true;
   };
 
