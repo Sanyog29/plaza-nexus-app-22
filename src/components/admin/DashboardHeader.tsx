@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ServerCog, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 const DashboardHeader = () => {
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
 
   return (
     <div className="flex items-center justify-between">

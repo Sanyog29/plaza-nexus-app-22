@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, Clock, MapPin } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 interface Vendor {
   id: string;
@@ -29,7 +29,7 @@ interface VendorCardProps {
 }
 
 export const VendorCard: React.FC<VendorCardProps> = ({ vendor, onSelect }) => {
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
 
   // Check if vendor is currently open
   const isOpen = () => {

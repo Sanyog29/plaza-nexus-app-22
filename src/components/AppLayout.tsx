@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import BottomNavigation from './BottomNavigation';
 import Header from './Header';
 import { useAuth } from './AuthProvider';
@@ -13,11 +13,12 @@ import ErrorBoundary from './common/ErrorBoundary';
 import { usePWA } from '@/hooks/usePWA';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 const AppLayout: React.FC = () => {
   const { user, isAdmin, isStaff, isLoading, userRole, isFoodVendor } = useAuth(); // Use role states from AuthProvider
   const location = useLocation();
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
   const { requestNotificationPermission } = usePWA();
   const isMobile = useIsMobile();
   

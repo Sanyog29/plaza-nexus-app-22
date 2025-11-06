@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 import {
   Plus,
   AlertTriangle,
@@ -31,7 +31,7 @@ interface QuickAction {
 
 export const QuickActionsWidget = () => {
   const { userRole, isAdmin, isStaff } = useAuth();
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
 
   const quickActions: QuickAction[] = [
     {

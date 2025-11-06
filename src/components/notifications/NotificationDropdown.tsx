@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
 import { CheckCheck, Bell } from 'lucide-react';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 interface NotificationDropdownProps {
   onClose: () => void;
@@ -15,7 +15,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   onClose,
 }) => {
   const { notifications, loading, markAsRead, markAllAsRead } = useNotifications();
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {

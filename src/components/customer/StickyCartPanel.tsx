@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 interface StickyCartPanelProps {
   onOpenCart?: () => void;
@@ -16,7 +16,7 @@ export const StickyCartPanel: React.FC<StickyCartPanelProps> = ({
   showCheckout = true 
 }) => {
   const { cart } = useCart();
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
 
   // Don't show if cart is empty
   if (cart.itemCount === 0) return null;

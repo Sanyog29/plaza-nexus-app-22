@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Outlet, useLocation, NavLink } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from './AdminSidebar';
@@ -125,7 +125,13 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
             <main className="flex-1 overflow-auto">
               <div className="w-full h-full p-4 md:p-6 lg:p-8">
                 <ErrorBoundary>
-                  <Outlet />
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-[400px]">
+                      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                  }>
+                    <Outlet />
+                  </Suspense>
                 </ErrorBoundary>
               </div>
             </main>

@@ -15,16 +15,16 @@ import {
   Settings,
   FileSpreadsheet
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { ProcessManagementDialog } from '@/components/maintenance/ProcessManagementDialog';
 import { BulkRequestImport } from '@/components/maintenance/BulkRequestImport';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 interface QuickActionsProps {
   userRole: 'admin' | 'staff' | 'tenant';
 }
 
 export function QuickActions({ userRole }: QuickActionsProps) {
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
   const [showProcessDialog, setShowProcessDialog] = useState(false);
   const [showBulkImportDialog, setShowBulkImportDialog] = useState(false);
 

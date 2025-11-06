@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from './AuthProvider';
 import { PageLoader } from './LoadingSpinner';
+
+// Move lazy import to top level to prevent conditional suspension
+const PendingApprovalPage = React.lazy(() => import('./auth/PendingApprovalPage'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading, approvalStatus, isAdmin, userRole, userCategory, isFoodVendor } = useAuth();
@@ -19,11 +22,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // Check approval status - only admins bypass this check
   if (user && !isAdmin && approvalStatus !== 'approved') {
-    const PendingApprovalPage = React.lazy(() => import('./auth/PendingApprovalPage'));
     return (
-      <React.Suspense fallback={<PageLoader />}>
+      <Suspense fallback={<PageLoader />}>
         <PendingApprovalPage />
-      </React.Suspense>
+      </Suspense>
     );
   }
 
@@ -79,14 +81,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-return (
-  <>
-    <Helmet>
-      <meta name="robots" content="noindex,nofollow" />
-    </Helmet>
-    {children}
-  </>
-);
+  return (
+    <>
+      <Helmet>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
+      <Suspense fallback={<PageLoader />}>
+        {children}
+      </Suspense>
+    </>
+  );
 };
 
 export default ProtectedRoute;

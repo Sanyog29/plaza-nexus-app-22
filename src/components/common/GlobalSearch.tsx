@@ -4,9 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 interface SearchResult {
   id: string;
@@ -28,7 +28,7 @@ export function GlobalSearch({ className, placeholder = "Search across all modul
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const navigate = useNavigate();
+  const { navigate } = useNavigationTransition();
   const { user } = useAuth();
 
   const searchFilters = [
