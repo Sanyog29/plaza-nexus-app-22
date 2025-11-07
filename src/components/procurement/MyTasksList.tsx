@@ -69,15 +69,23 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
 
       // Role-based filtering - Procurement roles only see approved and later stages
       if (userRole === 'purchase_executive' || userRole === 'procurement_manager') {
+        console.log('[MyTasksList] Applying procurement role filter');
         query = query.in('status', [
           'manager_approved',
           'assigned_to_procurement',
+          'po_created',  // FIXED: Added missing status
           'po_raised',
           'in_transit',
           'received',
           'closed'
         ]);
       }
+      
+      console.log('[MyTasksList] Query filters:', {
+        userRole,
+        filter,
+        timestamp: new Date().toISOString()
+      });
 
       // Apply additional filter if specified
       if (filter !== 'all') {
@@ -85,7 +93,16 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('[MyTasksList] Query error:', error);
+        throw error;
+      }
+
+      console.log('[MyTasksList] Query results:', {
+        count: data?.length || 0,
+        statuses: data?.map(r => r.status) || [],
+        orderNumbers: data?.map(r => r.order_number) || []
+      });
 
       return data;
     }
