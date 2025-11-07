@@ -7,6 +7,35 @@ export const useRequisitionApproval = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Validate if user is an active approver for the requisition's property
+  const validateApprover = async (requisitionId: string) => {
+    if (!user?.id) throw new Error('User not authenticated');
+
+    // Get requisition's property_id
+    const { data: requisition, error: reqError } = await supabase
+      .from('requisition_lists')
+      .select('property_id')
+      .eq('id', requisitionId)
+      .single();
+
+    if (reqError || !requisition) {
+      throw new Error('Requisition not found');
+    }
+
+    // Check if user is an active approver for that property
+    const { data: approver, error: approverError } = await supabase
+      .from('property_approvers')
+      .select('id')
+      .eq('property_id', requisition.property_id)
+      .eq('approver_user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (approverError || !approver) {
+      throw new Error('You are not authorized to approve requisitions for this property');
+    }
+  };
+
   const approveRequisition = useMutation({
     mutationFn: async ({
       requisitionId,
@@ -15,7 +44,8 @@ export const useRequisitionApproval = () => {
       requisitionId: string;
       remarks?: string;
     }) => {
-      if (!user) throw new Error('User not authenticated');
+      // Validate approver permissions
+      await validateApprover(requisitionId);
 
       const { error } = await supabase
         .from('requisition_lists')
@@ -58,7 +88,9 @@ export const useRequisitionApproval = () => {
       requisitionId: string;
       reason: string;
     }) => {
-      if (!user) throw new Error('User not authenticated');
+      // Validate approver permissions
+      await validateApprover(requisitionId);
+      
       if (!reason.trim()) throw new Error('Rejection reason is required');
 
       const { error } = await supabase
@@ -101,7 +133,9 @@ export const useRequisitionApproval = () => {
       requisitionId: string;
       message: string;
     }) => {
-      if (!user) throw new Error('User not authenticated');
+      // Validate approver permissions
+      await validateApprover(requisitionId);
+      
       if (!message.trim()) throw new Error('Clarification message is required');
 
       const { error } = await supabase
@@ -139,6 +173,9 @@ export const useRequisitionApproval = () => {
   const bulkApprove = useMutation({
     mutationFn: async (requisitionIds: string[]) => {
       if (!user) throw new Error('User not authenticated');
+
+      // Validate approver permissions for all requisitions
+      await Promise.all(requisitionIds.map(id => validateApprover(id)));
 
       const updates = requisitionIds.map((id) =>
         supabase

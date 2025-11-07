@@ -26,6 +26,9 @@ import { useRequisitionApproval } from '@/hooks/useRequisitionApproval';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RerouteRequisitionDialog } from './RerouteRequisitionDialog';
 import { useAuth } from '@/components/AuthProvider';
+import { useApproverPermissions } from '@/hooks/useApproverPermissions';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface ApprovalDetailModalProps {
   requisitionId: string;
@@ -44,6 +47,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
   const { approveRequisition, rejectRequisition, requestClarification } =
     useRequisitionApproval();
   const { userRole } = useAuth();
+  const { canApprove, isLoading: isCheckingPermissions } = useApproverPermissions(requisitionId);
 
   const { data: requisition } = useQuery({
     queryKey: ['requisition-detail', requisitionId],
@@ -199,6 +203,16 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
               </Table>
             </div>
 
+            {/* Authorization Alert */}
+            {!isCheckingPermissions && !canApprove && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You are not authorized to approve requisitions for this property. Only assigned property approvers can take action.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Action Form */}
             {action && (
               <div className="space-y-4 border-t pt-4">
@@ -245,6 +259,7 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
               <Button
                 variant="outline"
                 onClick={() => setAction('clarify')}
+                disabled={!canApprove || isCheckingPermissions}
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Request Clarification
@@ -252,11 +267,15 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
               <Button
                 variant="destructive"
                 onClick={() => setAction('reject')}
+                disabled={!canApprove || isCheckingPermissions}
               >
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
               </Button>
-              <Button onClick={() => setAction('approve')}>
+              <Button 
+                onClick={() => setAction('approve')}
+                disabled={!canApprove || isCheckingPermissions}
+              >
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve
               </Button>

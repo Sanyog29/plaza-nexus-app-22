@@ -18,27 +18,51 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, MessageCircle } from 'lucide-react';
 import { useRequisitionApproval } from '@/hooks/useRequisitionApproval';
 import { ApprovalDetailModal } from '@/components/requisition/ApprovalDetailModal';
+import { useAuth } from '@/components/AuthProvider';
 
 const PendingApprovalsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] = useState<string | null>(null);
   const { bulkApprove } = useRequisitionApproval();
 
   const { data: requisitions, isLoading } = useQuery({
-    queryKey: ['pending-approvals'],
+    queryKey: ['pending-approvals', user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
+
+      // First, get property IDs where user is an active approver
+      const { data: approverProperties, error: approverError } = await supabase
+        .from('property_approvers')
+        .select('property_id')
+        .eq('approver_user_id', user.id)
+        .eq('is_active', true);
+
+      if (approverError) throw approverError;
+      if (!approverProperties || approverProperties.length === 0) return [];
+
+      const propertyIds = approverProperties.map(ap => ap.property_id);
+
+      // Fetch requisitions for those properties
       const { data, error } = await supabase
         .from('requisition_lists')
-        .select('*')
+        .select(`
+          *,
+          properties:property_id (
+            name
+          )
+        `)
         .eq('status', 'pending_manager_approval')
+        .in('property_id', propertyIds)
         .order('priority', { ascending: false })
         .order('created_at', { ascending: true });
 
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const toggleSelection = (id: string) => {
@@ -118,6 +142,7 @@ const PendingApprovalsPage = () => {
                     />
                   </TableHead>
                   <TableHead>Order Number</TableHead>
+                  <TableHead>Property</TableHead>
                   <TableHead>Requested By</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Items</TableHead>
@@ -142,6 +167,9 @@ const PendingApprovalsPage = () => {
                       onClick={() => handleRowClick(req.id)}
                     >
                       {req.order_number}
+                    </TableCell>
+                    <TableCell onClick={() => handleRowClick(req.id)}>
+                      {req.properties?.name || 'N/A'}
                     </TableCell>
                     <TableCell onClick={() => handleRowClick(req.id)}>
                       {req.created_by_name}
