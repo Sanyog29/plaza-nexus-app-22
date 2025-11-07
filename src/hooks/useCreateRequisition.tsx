@@ -26,7 +26,7 @@ type CreateRequisitionContextType = ReturnType<typeof useProvideCreateRequisitio
 
 const CreateRequisitionContext = createContext<CreateRequisitionContextType | null>(null);
 
-function useProvideCreateRequisition() {
+function useProvideCreateRequisition(onComplete?: () => void) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
@@ -253,8 +253,11 @@ function useProvideCreateRequisition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
       toast.success(editMode ? 'Requisition updated successfully' : 'Draft saved successfully');
-      if (!editMode) {
+      if (onComplete) {
+        onComplete();
+      } else if (!editMode) {
         setSelectedItems([]);
         setFormData({
           property_id: '',
@@ -359,8 +362,11 @@ function useProvideCreateRequisition() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
       toast.success('Requisition submitted for approval');
-      if (!editMode) {
+      if (onComplete) {
+        onComplete();
+      } else if (!editMode) {
         setSelectedItems([]);
         setFormData({
           property_id: '',
@@ -396,8 +402,14 @@ function useProvideCreateRequisition() {
   };
 }
 
-export const CreateRequisitionProvider = ({ children }: { children: React.ReactNode }) => {
-  const value = useProvideCreateRequisition();
+export const CreateRequisitionProvider = ({ 
+  children, 
+  onComplete 
+}: { 
+  children: React.ReactNode;
+  onComplete?: () => void;
+}) => {
+  const value = useProvideCreateRequisition(onComplete);
   return (
     <CreateRequisitionContext.Provider value={value}>
       {children}

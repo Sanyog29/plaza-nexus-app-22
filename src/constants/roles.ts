@@ -55,3 +55,20 @@ export const isProcurementRole = (role: string): boolean => {
 export const isOperationsRole = (role: string): boolean => {
   return ['fe', 'ops_supervisor'].includes(role);
 };
+
+/**
+ * Check if a role is eligible to approve requisitions (management L2+ only)
+ * Operational roles like FE, MST, HK, SE cannot be approvers
+ */
+export const isApproverEligibleRole = (role: string): boolean => {
+  return [
+    'assistant_manager',
+    'assistant_floor_manager',
+    'assistant_general_manager',
+    'assistant_vice_president',
+    'vp',
+    'ceo',
+    'cxo',
+    'admin'
+  ].includes(role);
+};

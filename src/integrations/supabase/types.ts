@@ -12003,6 +12003,10 @@ export type Database = {
       is_admin: { Args: { uid: string }; Returns: boolean }
       is_admin_secure: { Args: { user_id: string }; Returns: boolean }
       is_approved_user: { Args: { user_id: string }; Returns: boolean }
+      is_approver_eligible_role: {
+        Args: { check_role: string }
+        Returns: boolean
+      }
       is_field_executive: { Args: { user_id: string }; Returns: boolean }
       is_food_vendor: { Args: { uid: string }; Returns: boolean }
       is_food_vendor_staff_for_vendor: {

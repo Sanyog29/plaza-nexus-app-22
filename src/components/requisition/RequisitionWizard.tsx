@@ -15,7 +15,7 @@ const steps = [
   { id: 3, name: 'Review', description: 'Submit requisition' },
 ];
 
-const RequisitionWizardInner = ({ requisitionId }: { requisitionId?: string }) => {
+const RequisitionWizardInner = ({ requisitionId, onComplete }: { requisitionId?: string; onComplete?: () => void }) => {
   const { navigate } = useNavigationTransition();
   const {
     currentStep,
@@ -37,12 +37,16 @@ const RequisitionWizardInner = ({ requisitionId }: { requisitionId?: string }) =
 
   const handleSaveDraft = async () => {
     await saveDraft.mutateAsync();
-    navigate('/procurement/my-requisitions');
+    if (!onComplete) {
+      navigate('/procurement/my-requisitions');
+    }
   };
 
   const handleSubmit = async () => {
     await submitForApproval.mutateAsync();
-    navigate('/procurement/my-requisitions');
+    if (!onComplete) {
+      navigate('/procurement/my-requisitions');
+    }
   };
 
   const handleNext = () => {
@@ -178,10 +182,10 @@ const RequisitionWizardInner = ({ requisitionId }: { requisitionId?: string }) =
   );
 };
 
-export const RequisitionWizard = ({ requisitionId }: { requisitionId?: string }) => {
+export const RequisitionWizard = ({ requisitionId, onComplete }: { requisitionId?: string; onComplete?: () => void }) => {
   return (
-    <CreateRequisitionProvider>
-      <RequisitionWizardInner requisitionId={requisitionId} />
+    <CreateRequisitionProvider onComplete={onComplete}>
+      <RequisitionWizardInner requisitionId={requisitionId} onComplete={onComplete} />
     </CreateRequisitionProvider>
   );
 };
