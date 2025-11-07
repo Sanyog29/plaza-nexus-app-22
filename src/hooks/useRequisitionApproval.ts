@@ -73,6 +73,8 @@ export const useRequisitionApproval = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       queryClient.invalidateQueries({ queryKey: ['pending-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['procurement-stats'] });
       toast.success('Requisition approved successfully');
     },
     onError: (error: any) => {
@@ -118,6 +120,8 @@ export const useRequisitionApproval = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       queryClient.invalidateQueries({ queryKey: ['pending-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['procurement-stats'] });
       toast.success('Requisition rejected');
     },
     onError: (error: any) => {
@@ -163,6 +167,8 @@ export const useRequisitionApproval = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       queryClient.invalidateQueries({ queryKey: ['pending-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['procurement-stats'] });
       toast.success('Clarification request sent');
     },
     onError: (error: any) => {
@@ -206,6 +212,8 @@ export const useRequisitionApproval = () => {
     onSuccess: (ids) => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       queryClient.invalidateQueries({ queryKey: ['pending-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
+      queryClient.invalidateQueries({ queryKey: ['procurement-stats'] });
       toast.success(`${ids.length} requisitions approved successfully`);
     },
     onError: (error: any) => {
