@@ -4,15 +4,32 @@ import { Package, Clock, CheckCircle, TrendingUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/components/AuthProvider';
 
 export const ProcurementStats = () => {
+  const { userRole } = useAuth();
+  
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['procurement-stats'],
+    queryKey: ['procurement-stats', userRole],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('requisition_lists')
         .select('status', { count: 'exact' });
 
+      // Role-based filtering
+      if (userRole === 'purchase_executive') {
+        // Purchase executives only see approved or later stage requisitions
+        query = query.in('status', [
+          'manager_approved',
+          'assigned_to_procurement',
+          'po_raised',
+          'in_transit',
+          'received',
+          'closed'
+        ]);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       const statusCounts = {
@@ -25,7 +42,7 @@ export const ProcurementStats = () => {
       data?.forEach(item => {
         if (item.status === 'pending_manager_approval') statusCounts.pending++;
         else if (item.status === 'manager_approved') statusCounts.approved++;
-        else statusCounts.active++;
+        else if (item.status === 'assigned_to_procurement' || item.status === 'po_raised') statusCounts.active++;
       });
 
       return statusCounts;

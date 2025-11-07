@@ -37,37 +37,79 @@ const ProcurementDashboard = () => {
         <ProcurementStats />
 
         {/* Main Content */}
-        <Tabs defaultValue="tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="tasks">
-              <Clock className="h-4 w-4 mr-2" />
-              My Tasks
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              <Package className="h-4 w-4 mr-2" />
-              Pending
-            </TabsTrigger>
-            <TabsTrigger value="approved">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Approved
-            </TabsTrigger>
-            <TabsTrigger value="reports">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Reports
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue={userRole === 'procurement_manager' ? 'pending' : 'approved'} className="w-full">
+          {userRole === 'procurement_manager' ? (
+            <>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="pending">
+                  <Clock className="h-4 w-4 mr-2" />
+                  Pending Approval
+                </TabsTrigger>
+                <TabsTrigger value="approved">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Approved
+                </TabsTrigger>
+                <TabsTrigger value="reports">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Reports
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="tasks" className="space-y-4">
-            <MyTasksList filter="draft" />
-          </TabsContent>
+              <TabsContent value="pending" className="space-y-4">
+                <MyTasksList filter="pending_manager_approval" />
+              </TabsContent>
 
-          <TabsContent value="pending" className="space-y-4">
-            <MyTasksList filter="pending_manager_approval" />
-          </TabsContent>
+              <TabsContent value="approved" className="space-y-4">
+                <MyTasksList filter="manager_approved" />
+              </TabsContent>
+            </>
+          ) : (
+            <>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="approved">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Approved
+                </TabsTrigger>
+                <TabsTrigger value="assigned">
+                  <Package className="h-4 w-4 mr-2" />
+                  Assigned
+                </TabsTrigger>
+                <TabsTrigger value="orders">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Orders
+                </TabsTrigger>
+                <TabsTrigger value="reports">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Reports
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="approved" className="space-y-4">
-            <MyTasksList filter="manager_approved" />
-          </TabsContent>
+              <TabsContent value="approved" className="space-y-4">
+                <MyTasksList filter="manager_approved" />
+              </TabsContent>
+
+              <TabsContent value="assigned" className="space-y-4">
+                <MyTasksList filter="all" />
+              </TabsContent>
+
+              <TabsContent value="orders" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Purchase Orders</CardTitle>
+                    <CardDescription>
+                      View and manage purchase orders
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Purchase order management coming soon</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </>
+          )}
 
           <TabsContent value="reports" className="space-y-4">
             <Card>

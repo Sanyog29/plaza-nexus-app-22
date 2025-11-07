@@ -8,11 +8,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Package, Store, FileText, TrendingUp, Database } from 'lucide-react';
+import { Plus, Package, Store, FileText, TrendingUp, Database, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/components/AuthProvider';
 
 export const QuickActions = () => {
   const navigate = useNavigate();
+  const { userRole } = useAuth();
 
   return (
     <DropdownMenu>
@@ -23,8 +25,18 @@ export const QuickActions = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Procurement Actions</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {userRole === 'procurement_manager' ? 'Manager Actions' : 'Procurement Actions'}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        {userRole === 'procurement_manager' && (
+          <DropdownMenuItem onClick={() => navigate('/procurement/pending-approvals')}>
+            <CheckCircle className="mr-2 h-4 w-4" />
+            <span>Pending Approvals</span>
+          </DropdownMenuItem>
+        )}
+        
         <DropdownMenuItem onClick={() => navigate('/procurement/requisitions')}>
           <Package className="mr-2 h-4 w-4" />
           <span>View Requisitions</span>

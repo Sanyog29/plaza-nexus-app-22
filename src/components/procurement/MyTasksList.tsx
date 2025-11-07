@@ -7,20 +7,42 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Calendar, User, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAuth } from '@/components/AuthProvider';
 
 interface MyTasksListProps {
   filter?: 'draft' | 'pending_manager_approval' | 'manager_approved' | 'all';
 }
 
 export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
+  const { userRole } = useAuth();
+  
   const { data: requisitions, isLoading } = useQuery({
-    queryKey: ['my-requisitions', filter],
+    queryKey: ['my-requisitions', filter, userRole],
     queryFn: async () => {
       let query = supabase
         .from('requisition_lists')
         .select('*')
         .order('created_at', { ascending: false });
 
+      // Role-based filtering
+      if (userRole === 'purchase_executive') {
+        // Purchase executives should only see approved or later stage requisitions
+        query = query.in('status', [
+          'manager_approved',
+          'assigned_to_procurement',
+          'po_raised',
+          'in_transit',
+          'received',
+          'closed'
+        ]);
+      } else if (userRole === 'procurement_manager') {
+        // Procurement managers see pending approvals
+        if (filter === 'all') {
+          query = query.eq('status', 'pending_manager_approval');
+        }
+      }
+
+      // Apply additional filter if specified
       if (filter !== 'all') {
         query = query.eq('status', filter);
       }
