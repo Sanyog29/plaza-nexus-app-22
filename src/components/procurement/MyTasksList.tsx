@@ -19,6 +19,7 @@ import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 import { useRequisitionActions } from '@/hooks/useRequisitionActions';
 import { useRequisitionApproval } from '@/hooks/useRequisitionApproval';
 import { useApproverPermissions } from '@/hooks/useApproverPermissions';
+import { usePurchaseOrders } from '@/hooks/usePurchaseOrders';
 import { RequisitionWizard } from '@/components/requisition/RequisitionWizard';
 import {
   AlertDialog,
@@ -56,6 +57,7 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
   // Action hooks
   const { submitRequisition, cancelSubmission, deleteRequisition } = useRequisitionActions();
   const { approveRequisition, rejectRequisition, requestClarification } = useRequisitionApproval();
+  const { acceptRequisition, isAccepting } = usePurchaseOrders();
   
   const { data: requisitions, isLoading, isError, error } = useQuery({
     queryKey: ['my-requisitions', filter, userRole],
@@ -277,6 +279,8 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
           const isCreator = user?.id === req.created_by;
           const isDraft = req.status === 'draft';
           const isPending = req.status === 'pending_manager_approval';
+          const isManagerApproved = req.status === 'manager_approved';
+          const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
           
           // Check if user can approve this requisition (from bulk query)
           const canApprove = approverPermissions?.[req.id] || false;
@@ -409,6 +413,22 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
                           Approve
                         </Button>
                       </>
+                    )}
+
+                    {/* Procurement Actions - Manager Approved Status */}
+                    {isProcurementRole && isManagerApproved && (
+                      <Button 
+                        size="sm"
+                        onClick={() => acceptRequisition(req.id)}
+                        disabled={isProcessing || isAccepting}
+                      >
+                        {isAccepting ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        )}
+                        Accept & Create PO
+                      </Button>
                     )}
 
                     {/* Always show View Details as secondary action */}

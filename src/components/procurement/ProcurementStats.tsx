@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Clock, CheckCircle, TrendingUp, AlertCircle } from 'lucide-react';
+import { Package, Clock, CheckCircle, TrendingUp, AlertCircle, ShoppingCart } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/components/AuthProvider';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 export const ProcurementStats = () => {
   const { userRole } = useAuth();
+  const { navigate } = useNavigationTransition();
   const queryClient = useQueryClient();
   
   const { data: stats, isLoading, isError, error } = useQuery({
@@ -25,6 +27,7 @@ export const ProcurementStats = () => {
           'manager_approved',
           'assigned_to_procurement',
           'po_raised',
+          'po_created',
           'in_transit',
           'received',
           'closed'
@@ -40,17 +43,23 @@ export const ProcurementStats = () => {
         statuses: data?.map(d => d.status) 
       });
 
+      // Get PO count
+      const { count: poCount } = await supabase
+        .from('purchase_orders')
+        .select('*', { count: 'exact', head: true });
+
       const statusCounts = {
         active: 0,
         pending: 0,
         approved: 0,
-        total: data?.length || 0
+        total: data?.length || 0,
+        poCreated: poCount || 0
       };
 
       data?.forEach(item => {
         if (item.status === 'pending_manager_approval') statusCounts.pending++;
         else if (item.status === 'manager_approved') statusCounts.approved++;
-        else if (item.status === 'assigned_to_procurement' || item.status === 'po_raised') statusCounts.active++;
+        else if (item.status === 'assigned_to_procurement' || item.status === 'po_raised' || item.status === 'po_created') statusCounts.active++;
       });
 
       return statusCounts;
@@ -130,28 +139,32 @@ export const ProcurementStats = () => {
       value: stats?.total || 0,
       description: 'All requisition lists',
       icon: Package,
-      color: 'text-blue-600'
+      color: 'text-blue-600',
+      onClick: undefined
     },
     {
       title: 'Pending Approval',
       value: stats?.pending || 0,
       description: 'Awaiting review',
       icon: Clock,
-      color: 'text-orange-600'
+      color: 'text-orange-600',
+      onClick: undefined
     },
     {
       title: 'Approved',
       value: stats?.approved || 0,
       description: 'Ready for purchase',
       icon: CheckCircle,
-      color: 'text-green-600'
+      color: 'text-green-600',
+      onClick: undefined
     },
     {
-      title: 'In Progress',
-      value: stats?.active || 0,
-      description: 'Active requisitions',
-      icon: TrendingUp,
-      color: 'text-purple-600'
+      title: 'POs Created',
+      value: stats?.poCreated || 0,
+      description: 'Purchase orders',
+      icon: ShoppingCart,
+      color: 'text-indigo-600',
+      onClick: () => navigate('/procurement/orders')
     }
   ];
 
@@ -160,7 +173,11 @@ export const ProcurementStats = () => {
       {statCards.map((stat) => {
         const Icon = stat.icon;
         return (
-          <Card key={stat.title} className="hover:shadow-lg transition-shadow">
+          <Card 
+            key={stat.title} 
+            className={`hover:shadow-lg transition-shadow ${stat.onClick ? 'cursor-pointer' : ''}`}
+            onClick={stat.onClick}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {stat.title}

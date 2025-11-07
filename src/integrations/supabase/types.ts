@@ -5551,6 +5551,141 @@ export type Database = {
           },
         ]
       }
+      purchase_order_items: {
+        Row: {
+          created_at: string
+          estimated_total_price: number | null
+          estimated_unit_price: number | null
+          id: string
+          item_name: string
+          notes: string | null
+          po_id: string
+          quantity: number
+          requisition_list_item_id: string | null
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_total_price?: number | null
+          estimated_unit_price?: number | null
+          id?: string
+          item_name: string
+          notes?: string | null
+          po_id: string
+          quantity: number
+          requisition_list_item_id?: string | null
+          unit: string
+        }
+        Update: {
+          created_at?: string
+          estimated_total_price?: number | null
+          estimated_unit_price?: number | null
+          id?: string
+          item_name?: string
+          notes?: string | null
+          po_id?: string
+          quantity?: number
+          requisition_list_item_id?: string | null
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_requisition_list_item_id_fkey"
+            columns: ["requisition_list_item_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_list_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          accepted_at: string
+          accepted_by: string
+          created_at: string
+          expected_delivery_date: string | null
+          id: string
+          notes: string | null
+          po_number: string
+          property_id: string
+          requisition_list_id: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_by: string
+          created_at?: string
+          expected_delivery_date?: string | null
+          id?: string
+          notes?: string | null
+          po_number: string
+          property_id: string
+          requisition_list_id: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string
+          accepted_by?: string
+          created_at?: string
+          expected_delivery_date?: string | null
+          id?: string
+          notes?: string | null
+          po_number?: string
+          property_id?: string
+          requisition_list_id?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_with_role"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_requisition_list_id_fkey"
+            columns: ["requisition_list_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       real_time_events: {
         Row: {
           created_at: string
@@ -12243,6 +12378,7 @@ export type Database = {
         | "received"
         | "closed"
         | "cancelled"
+        | "po_created"
       sla_priority_type: "critical" | "high" | "medium" | "low"
       staff_group_type: "mst_field" | "housekeeping" | "security"
       user_category_type: "tenant" | "food_vendor" | "staff" | "admin"
@@ -12435,6 +12571,7 @@ export const Constants = {
         "received",
         "closed",
         "cancelled",
+        "po_created",
       ],
       sla_priority_type: ["critical", "high", "medium", "low"],
       staff_group_type: ["mst_field", "housekeeping", "security"],

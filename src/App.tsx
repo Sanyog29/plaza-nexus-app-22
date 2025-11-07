@@ -253,6 +253,7 @@ const App = () => (
               <Route path="/procurement/approval-history" element={<ApprovalHistoryPage />} />
               <Route path="/procurement/vendors" element={<VendorManagementPage />} />
               <Route path="/procurement/orders" element={<PurchaseOrdersPage />} />
+              <Route path="/procurement/orders/:poId" element={React.createElement(React.lazy(() => import("./pages/procurement/PurchaseOrderDetailPage")))} />
               <Route path="/procurement/budget" element={<BudgetTrackingPage />} />
               <Route path="/procurement/item-master" element={<RequisitionItemMasterPage />} />
               

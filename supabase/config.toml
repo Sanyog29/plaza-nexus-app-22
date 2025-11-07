@@ -11,3 +11,10 @@ verify_jwt = false
 
 [functions.event-bus]
 verify_jwt = false
+
+[functions.generate-po-number]
+verify_jwt = false
+
+[functions.accept-requisition]
+verify_jwt = true
+
