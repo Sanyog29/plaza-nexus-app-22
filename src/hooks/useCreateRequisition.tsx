@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { format } from 'date-fns';
+import { generateRequisitionIdempotencyKey } from '@/lib/idempotency';
+import { handleSupabaseError } from '@/lib/errorHandler';
 
 export interface SelectedItem {
   item_master_id: string;
@@ -182,7 +184,10 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           })
           .eq('id', requisitionId);
         
-        if (reqError) throw reqError;
+        if (reqError) {
+          handleSupabaseError(reqError, { action: 'update_draft', requisition_id: requisitionId });
+          throw reqError;
+        }
 
         // Delete existing items
         const { error: deleteError } = await supabase
@@ -190,7 +195,10 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           .delete()
           .eq('requisition_list_id', requisitionId);
         
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          handleSupabaseError(deleteError, { action: 'delete_items', requisition_id: requisitionId });
+          throw deleteError;
+        }
 
         // Insert updated items
         const items = selectedItems.map(item => ({
@@ -207,12 +215,31 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           .from('requisition_list_items')
           .insert(items);
         
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          handleSupabaseError(itemsError, { action: 'insert_items', requisition_id: requisitionId });
+          throw itemsError;
+        }
 
         return requisitionId;
       } else {
-        // Create new requisition
+        // Create new requisition with idempotency
         const orderNumber = await generateOrderNumber();
+        
+        // Get property code for idempotency key
+        const { data: property } = await supabase
+          .from('properties')
+          .select('code, name')
+          .eq('id', formData.property_id)
+          .single();
+        
+        const propertyCode = property?.code || 
+          property?.name?.replace(/[^a-zA-Z]/g, '').substring(0, 5).toUpperCase() || 
+          'GEN';
+        
+        // Generate idempotency key
+        const idempotencyKey = generateRequisitionIdempotencyKey(propertyCode);
+        
+        console.log('Creating requisition with idempotency key:', idempotencyKey);
         
         const { data: requisition, error: reqError } = await supabase
           .from('requisition_lists')
@@ -226,11 +253,31 @@ function useProvideCreateRequisition(onComplete?: () => void) {
             expected_delivery_date: formData.expected_delivery_date,
             notes: formData.notes,
             total_items: calculateTotalItems(),
+            idempotency_key: idempotencyKey,
           })
           .select()
           .single();
         
-        if (reqError) throw reqError;
+        if (reqError) {
+          // Check if it's a duplicate key violation
+          if (reqError.code === '23505' && reqError.message?.includes('idempotency_key')) {
+            toast.warning('This requisition was already created. Redirecting...');
+            // Try to find the existing requisition
+            const { data: existing } = await supabase
+              .from('requisition_lists')
+              .select('id')
+              .eq('idempotency_key', idempotencyKey)
+              .single();
+            
+            return existing?.id || null;
+          }
+          
+          handleSupabaseError(reqError, { 
+            action: 'create_requisition', 
+            idempotency_key: idempotencyKey 
+          });
+          throw reqError;
+        }
 
         const items = selectedItems.map(item => ({
           requisition_list_id: requisition.id,
@@ -246,7 +293,13 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           .from('requisition_list_items')
           .insert(items);
         
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          handleSupabaseError(itemsError, { 
+            action: 'insert_items', 
+            requisition_id: requisition.id 
+          });
+          throw itemsError;
+        }
 
         return requisition.id;
       }
@@ -291,7 +344,10 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           })
           .eq('id', requisitionId);
         
-        if (reqError) throw reqError;
+        if (reqError) {
+          handleSupabaseError(reqError, { action: 'submit_for_approval', requisition_id: requisitionId });
+          throw reqError;
+        }
 
         // Delete existing items
         const { error: deleteError } = await supabase
@@ -299,7 +355,10 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           .delete()
           .eq('requisition_list_id', requisitionId);
         
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          handleSupabaseError(deleteError, { action: 'delete_items', requisition_id: requisitionId });
+          throw deleteError;
+        }
 
         // Insert updated items
         const items = selectedItems.map(item => ({
@@ -316,12 +375,31 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           .from('requisition_list_items')
           .insert(items);
         
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          handleSupabaseError(itemsError, { action: 'insert_items', requisition_id: requisitionId });
+          throw itemsError;
+        }
 
         return requisitionId;
       } else {
-        // Create new requisition
+        // Create new requisition with idempotency
         const orderNumber = await generateOrderNumber();
+        
+        // Get property code for idempotency key
+        const { data: property } = await supabase
+          .from('properties')
+          .select('code, name')
+          .eq('id', formData.property_id)
+          .single();
+        
+        const propertyCode = property?.code || 
+          property?.name?.replace(/[^a-zA-Z]/g, '').substring(0, 5).toUpperCase() || 
+          'GEN';
+        
+        // Generate idempotency key
+        const idempotencyKey = generateRequisitionIdempotencyKey(propertyCode);
+        
+        console.log('Submitting requisition with idempotency key:', idempotencyKey);
         
         const { data: requisition, error: reqError } = await supabase
           .from('requisition_lists')
@@ -335,11 +413,31 @@ function useProvideCreateRequisition(onComplete?: () => void) {
             expected_delivery_date: formData.expected_delivery_date,
             notes: formData.notes,
             total_items: calculateTotalItems(),
+            idempotency_key: idempotencyKey,
           })
           .select()
           .single();
         
-        if (reqError) throw reqError;
+        if (reqError) {
+          // Check if it's a duplicate key violation
+          if (reqError.code === '23505' && reqError.message?.includes('idempotency_key')) {
+            toast.warning('This requisition was already submitted. Redirecting...');
+            // Try to find the existing requisition
+            const { data: existing } = await supabase
+              .from('requisition_lists')
+              .select('id')
+              .eq('idempotency_key', idempotencyKey)
+              .single();
+            
+            return existing?.id || null;
+          }
+          
+          handleSupabaseError(reqError, { 
+            action: 'submit_requisition', 
+            idempotency_key: idempotencyKey 
+          });
+          throw reqError;
+        }
 
         const items = selectedItems.map(item => ({
           requisition_list_id: requisition.id,
@@ -355,7 +453,13 @@ function useProvideCreateRequisition(onComplete?: () => void) {
           .from('requisition_list_items')
           .insert(items);
         
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          handleSupabaseError(itemsError, { 
+            action: 'insert_items', 
+            requisition_id: requisition.id 
+          });
+          throw itemsError;
+        }
 
         return requisition.id;
       }
