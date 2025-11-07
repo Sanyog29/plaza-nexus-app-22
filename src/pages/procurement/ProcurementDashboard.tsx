@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProcurementStats } from '@/components/procurement/ProcurementStats';
 import { MyTasksList } from '@/components/procurement/MyTasksList';
 import { QuickActions } from '@/components/procurement/QuickActions';
-import { WaitingForApprovalList } from '@/components/procurement/WaitingForApprovalList';
 import { useAuth } from '@/components/AuthProvider';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { Package, TrendingUp, Clock, CheckCircle } from 'lucide-react';
@@ -41,14 +40,10 @@ const ProcurementDashboard = () => {
         <Tabs defaultValue="approved" className="w-full">
           {userRole === 'procurement_manager' ? (
             <>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="approved">
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Approved Requisitions
-                </TabsTrigger>
-                <TabsTrigger value="waiting">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Waiting for Approval
                 </TabsTrigger>
                 <TabsTrigger value="assigned">
                   <Package className="h-4 w-4 mr-2" />
@@ -64,31 +59,23 @@ const ProcurementDashboard = () => {
                 <MyTasksList filter="manager_approved" />
               </TabsContent>
 
-              <TabsContent value="waiting" className="space-y-4">
-                <WaitingForApprovalList />
-              </TabsContent>
-
               <TabsContent value="assigned" className="space-y-4">
                 <MyTasksList filter="all" />
               </TabsContent>
             </>
           ) : (
             <>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="approved">
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Approved
-                </TabsTrigger>
-                <TabsTrigger value="waiting">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Waiting
                 </TabsTrigger>
                 <TabsTrigger value="assigned">
                   <Package className="h-4 w-4 mr-2" />
                   Assigned
                 </TabsTrigger>
                 <TabsTrigger value="orders">
-                  <TrendingUp className="h-4 w-4 mr-2" />
+                  <Package className="h-4 w-4 mr-2" />
                   Orders
                 </TabsTrigger>
                 <TabsTrigger value="reports">
@@ -99,10 +86,6 @@ const ProcurementDashboard = () => {
 
               <TabsContent value="approved" className="space-y-4">
                 <MyTasksList filter="manager_approved" />
-              </TabsContent>
-
-              <TabsContent value="waiting" className="space-y-4">
-                <WaitingForApprovalList />
               </TabsContent>
 
               <TabsContent value="assigned" className="space-y-4">
