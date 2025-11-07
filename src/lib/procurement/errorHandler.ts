@@ -1,15 +1,16 @@
-import { toast } from "@/hooks/use-toast";
+import { AppErrorHandler, AppError } from "@/lib/errorHandler";
 import { PostgrestError } from "@supabase/supabase-js";
 
 /**
  * Procurement-specific error types
+ * Extends the unified AppError with domain-specific patterns
  */
-export interface ProcurementError {
+export interface ProcurementError extends AppError {
   code: string;
   message: string;
   details?: string;
   retryable: boolean;
-  severity: 'error' | 'warning' | 'info';
+  severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
 /**
@@ -124,6 +125,7 @@ const ERROR_PATTERNS = {
 
 /**
  * Parse error from various sources into ProcurementError
+ * Leverages unified AppError system with procurement-specific patterns
  */
 export function parseProcurementError(error: unknown): ProcurementError {
   // Handle Supabase PostgrestError
@@ -133,7 +135,7 @@ export function parseProcurementError(error: unknown): ProcurementError {
     const errorDetails = pgError.details || '';
     const fullError = `${errorMessage} ${errorDetails}`;
     
-    // Check against patterns
+    // Check against procurement-specific patterns
     for (const [key, pattern] of Object.entries(ERROR_PATTERNS)) {
       if (pattern.pattern.test(fullError)) {
         return {
@@ -141,7 +143,8 @@ export function parseProcurementError(error: unknown): ProcurementError {
           message: pattern.message,
           details: pattern.details,
           retryable: pattern.retryable,
-          severity: pattern.severity
+          severity: pattern.severity === 'error' ? 'high' : pattern.severity === 'warning' ? 'medium' : 'low',
+          originalError: error instanceof Error ? error : new Error(String(error)),
         };
       }
     }
@@ -152,7 +155,8 @@ export function parseProcurementError(error: unknown): ProcurementError {
       message: 'Database operation failed',
       details: errorMessage,
       retryable: false,
-      severity: 'error'
+      severity: 'high',
+      originalError: error instanceof Error ? error : new Error(errorMessage),
     };
   }
   
@@ -168,7 +172,8 @@ export function parseProcurementError(error: unknown): ProcurementError {
           message: pattern.message,
           details: pattern.details,
           retryable: pattern.retryable,
-          severity: pattern.severity
+          severity: pattern.severity === 'error' ? 'high' : pattern.severity === 'warning' ? 'medium' : 'low',
+          originalError: error,
         };
       }
     }
@@ -178,7 +183,8 @@ export function parseProcurementError(error: unknown): ProcurementError {
       message: 'An unexpected error occurred',
       details: errorMessage,
       retryable: false,
-      severity: 'error'
+      severity: 'high',
+      originalError: error,
     };
   }
   
@@ -191,7 +197,7 @@ export function parseProcurementError(error: unknown): ProcurementError {
           message: pattern.message,
           details: pattern.details,
           retryable: pattern.retryable,
-          severity: pattern.severity
+          severity: pattern.severity === 'error' ? 'high' : pattern.severity === 'warning' ? 'medium' : 'low',
         };
       }
     }
@@ -201,7 +207,7 @@ export function parseProcurementError(error: unknown): ProcurementError {
       message: error,
       details: undefined,
       retryable: false,
-      severity: 'error'
+      severity: 'high',
     };
   }
   
@@ -211,60 +217,13 @@ export function parseProcurementError(error: unknown): ProcurementError {
     message: 'An unexpected error occurred',
     details: 'Please try again or contact support',
     retryable: false,
-    severity: 'error'
+    severity: 'high',
   };
 }
 
 /**
- * Display error toast with appropriate styling
- */
-export function showErrorToast(error: ProcurementError): void {
-  const variant = error.severity === 'error' ? 'destructive' : 'default';
-  
-  toast({
-    variant,
-    title: error.message,
-    description: error.details,
-  });
-}
-
-/**
- * Retry with exponential backoff
- */
-export async function retryWithBackoff<T>(
-  operation: () => Promise<T>,
-  maxRetries: number = 3,
-  initialDelay: number = 1000
-): Promise<T> {
-  let lastError: ProcurementError | undefined;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = parseProcurementError(error);
-      
-      // Don't retry if error is not retryable
-      if (!lastError.retryable || attempt === maxRetries) {
-        throw lastError;
-      }
-      
-      // Calculate delay with exponential backoff and jitter
-      const delay = initialDelay * Math.pow(2, attempt);
-      const jitter = Math.random() * 0.3 * delay; // Add 0-30% jitter
-      
-      console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay + jitter}ms`);
-      
-      await new Promise(resolve => setTimeout(resolve, delay + jitter));
-    }
-  }
-  
-  // This should never be reached, but TypeScript needs it
-  throw lastError!;
-}
-
-/**
- * Wrap async operation with error handling and display
+ * Wrap async operation with procurement-specific error handling
+ * Delegates to unified AppErrorHandler with procurement-specific parsing
  */
 export async function withErrorHandling<T>(
   operation: () => Promise<T>,
@@ -280,15 +239,12 @@ export async function withErrorHandling<T>(
   } catch (error) {
     const procError = parseProcurementError(error);
     
-    if (showToast) {
-      showErrorToast(procError);
-    }
+    // Use unified error handler
+    AppErrorHandler.handle(procError, { showToast });
     
     if (onError) {
       onError(procError);
     }
-    
-    console.error('[ProcurementError]', procError);
     
     return null;
   }
@@ -296,6 +252,7 @@ export async function withErrorHandling<T>(
 
 /**
  * Combined retry + error handling wrapper
+ * Leverages unified AppErrorHandler retry mechanism with procurement patterns
  */
 export async function withRetry<T>(
   operation: () => Promise<T>,
@@ -308,32 +265,20 @@ export async function withRetry<T>(
 ): Promise<T | null> {
   const { maxRetries = 3, initialDelay = 1000, showToast = true, onError } = options;
   
-  try {
-    return await retryWithBackoff(operation, maxRetries, initialDelay);
-  } catch (error) {
-    const procError = error as ProcurementError;
-    
-    if (showToast) {
-      showErrorToast(procError);
-    }
-    
-    if (onError) {
-      onError(procError);
-    }
-    
-    console.error('[ProcurementError]', procError);
-    
-    return null;
-  }
+  return AppErrorHandler.withRetry(operation, {
+    maxRetries,
+    initialDelay,
+    showToast,
+    onError: onError ? (err) => onError(err as ProcurementError) : undefined,
+  });
 }
 
 /**
  * Procurement Error Handler - Main API
+ * Now unified with AppErrorHandler for consistency
  */
 export const ProcurementErrorHandler = {
   parse: parseProcurementError,
-  showToast: showErrorToast,
-  retry: retryWithBackoff,
   handle: withErrorHandling,
   withRetry,
 };

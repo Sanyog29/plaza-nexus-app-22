@@ -68,7 +68,7 @@ export const useCreateOrder = () => {
 
         // Return the order ID for further processing
         return { id: response.order_id!, status: orderData.status || 'pending' };
-      }, { context: 'creating_vendor_order' });
+      }, { context: { operation: 'creating_vendor_order' } });
     },
     onSuccess: (order) => {
       const isCompleted = order?.status === 'completed';

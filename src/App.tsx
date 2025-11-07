@@ -11,7 +11,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import { PWAProvider } from "./components/PWAProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { GlobalErrorProvider } from "./components/common/GlobalErrorProvider";
 
 import AuthPage from "./pages/AuthPage";
 import ResetPassword from "./pages/ResetPassword";
@@ -118,8 +117,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
-      <GlobalErrorProvider>
-        <HelmetProvider>
+      <HelmetProvider>
           <ThemeProvider>
             <AuthProvider>
               <PropertyProvider>
@@ -278,7 +276,6 @@ const App = () => (
             </AuthProvider>
           </ThemeProvider>
         </HelmetProvider>
-      </GlobalErrorProvider>
     </ErrorBoundary>
   </QueryClientProvider>
 );

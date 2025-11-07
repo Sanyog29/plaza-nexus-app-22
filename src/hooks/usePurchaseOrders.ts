@@ -74,7 +74,11 @@ export const usePurchaseOrders = () => {
     onError: (error: unknown) => {
       console.error('Mutation error:', error);
       const procError = ProcurementErrorHandler.parse(error);
-      ProcurementErrorHandler.showToast(procError);
+      toast({
+        title: procError.message,
+        description: procError.details,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -116,7 +120,11 @@ export const usePurchaseOrders = () => {
     },
     onError: (error: unknown) => {
       const procError = ProcurementErrorHandler.parse(error);
-      ProcurementErrorHandler.showToast(procError);
+      toast({
+        title: procError.message,
+        description: procError.details,
+        variant: 'destructive',
+      });
     },
   });
 

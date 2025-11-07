@@ -1,4 +1,5 @@
 import { toast } from '@/hooks/use-toast';
+import { PostgrestError } from '@supabase/supabase-js';
 
 export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
 
@@ -8,8 +9,14 @@ export interface AppError {
   severity: ErrorSeverity;
   context?: Record<string, any>;
   originalError?: Error;
+  retryable?: boolean;
+  details?: string;
 }
 
+/**
+ * Unified Error Handler for all application errors
+ * Consolidates general app errors, Supabase errors, and domain-specific errors
+ */
 export class AppErrorHandler {
   private static logError(error: AppError) {
     // SECURITY: Sanitize context to avoid logging sensitive data
@@ -32,37 +39,38 @@ export class AppErrorHandler {
     // Log to console in development only
     if (process.env.NODE_ENV === 'development') {
       console.error('[AppError]', logData);
-      // Log original error separately (may contain stack trace)
       if (error.originalError) {
-        console.error('[Original Error]', error.originalError.message);
+        console.error('[Original Error]', error.originalError);
       }
     }
   }
 
-  static handle(error: AppError) {
+  static handle(error: AppError, options: { showToast?: boolean } = {}) {
+    const { showToast = true } = options;
+    
     this.logError(error);
 
+    if (!showToast) return;
+
     // Show user-friendly toast based on severity
+    const variant = error.severity === 'high' || error.severity === 'critical' 
+      ? 'destructive' 
+      : 'default';
+
     switch (error.severity) {
       case 'critical':
         toast({
           title: 'System Error',
-          description: 'A critical error occurred. Please refresh and try again.',
+          description: error.details || 'A critical error occurred. Please refresh and try again.',
           variant: 'destructive',
         });
         break;
       case 'high':
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-        break;
       case 'medium':
         toast({
-          title: 'Warning',
-          description: error.message,
-          variant: 'default',
+          title: error.message,
+          description: error.details,
+          variant,
         });
         break;
       case 'low':
@@ -78,6 +86,7 @@ export class AppErrorHandler {
       severity: this.getSupabaseErrorSeverity(error),
       context: { ...context, supabaseError: error },
       originalError: error,
+      retryable: this.isRetryableError(error),
     };
 
     this.handle(appError);
@@ -107,22 +116,104 @@ export class AppErrorHandler {
     return 'medium';
   }
 
+  private static isRetryableError(error: any): boolean {
+    const retryablePatterns = [
+      /network|fetch.*failed|ECONNREFUSED|timeout/i,
+      /connection.*timeout|timed out/i,
+      /version.*mismatch|concurrent update/i,
+    ];
+    
+    const errorMessage = error.message || '';
+    return retryablePatterns.some(pattern => pattern.test(errorMessage));
+  }
+
   static async withErrorHandling<T>(
     operation: () => Promise<T>,
-    context?: Record<string, any>
+    options: {
+      context?: Record<string, any>;
+      showToast?: boolean;
+      onError?: (error: AppError) => void;
+    } = {}
   ): Promise<T | null> {
+    const { context, showToast = true, onError } = options;
+    
     try {
       return await operation();
     } catch (error: any) {
-      this.handleSupabaseError(error, context);
+      const appError = this.handleSupabaseError(error, context);
+      
+      if (!showToast) {
+        this.logError(appError);
+      }
+      
+      if (onError) {
+        onError(appError);
+      }
+      
       return null;
     }
+  }
+
+  static async withRetry<T>(
+    operation: () => Promise<T>,
+    options: {
+      maxRetries?: number;
+      initialDelay?: number;
+      showToast?: boolean;
+      onError?: (error: AppError) => void;
+    } = {}
+  ): Promise<T | null> {
+    const { maxRetries = 3, initialDelay = 1000, showToast = true, onError } = options;
+    let lastError: AppError | undefined;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        lastError = this.handleSupabaseError(error, { attempt });
+        
+        // Don't retry if error is not retryable or max retries reached
+        if (!lastError.retryable || attempt === maxRetries) {
+          if (showToast) {
+            this.handle(lastError);
+          }
+          
+          if (onError) {
+            onError(lastError);
+          }
+          
+          return null;
+        }
+        
+        // Exponential backoff with jitter
+        const delay = initialDelay * Math.pow(2, attempt);
+        const jitter = Math.random() * 0.3 * delay;
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${Math.round(delay + jitter)}ms`);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, delay + jitter));
+      }
+    }
+    
+    return null;
   }
 }
 
 // Convenience functions
-export const handleError = (error: AppError) => AppErrorHandler.handle(error);
+export const handleError = (error: AppError, options?: { showToast?: boolean }) => 
+  AppErrorHandler.handle(error, options);
+
 export const handleSupabaseError = (error: any, context?: Record<string, any>) => 
   AppErrorHandler.handleSupabaseError(error, context);
-export const withErrorHandling = <T>(operation: () => Promise<T>, context?: Record<string, any>) => 
-  AppErrorHandler.withErrorHandling(operation, context);
+
+export const withErrorHandling = <T>(
+  operation: () => Promise<T>, 
+  options?: { context?: Record<string, any>; showToast?: boolean; onError?: (error: AppError) => void }
+) => AppErrorHandler.withErrorHandling(operation, options);
+
+export const withRetry = <T>(
+  operation: () => Promise<T>,
+  options?: { maxRetries?: number; initialDelay?: number; showToast?: boolean; onError?: (error: AppError) => void }
+) => AppErrorHandler.withRetry(operation, options);
