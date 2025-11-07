@@ -6,8 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useRequisitionList } from '@/hooks/useRequisitionList';
 import { useAuth } from '@/components/AuthProvider';
-import { Package, Search, Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { Package, Search, Eye, Edit, Trash2, Plus, Send, X, CheckCircle, XCircle, MessageCircle, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useRequisitionActions } from '@/hooks/useRequisitionActions';
+import { useRequisitionApproval } from '@/hooks/useRequisitionApproval';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import {
   Table,
   TableBody,
@@ -27,6 +32,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { RequisitionWizard } from '@/components/requisition/RequisitionWizard';
 
 const RequisitionListPage = () => {
   const navigate = useNavigate();
@@ -34,16 +48,116 @@ const RequisitionListPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingRequisitionId, setEditingRequisitionId] = useState<string | null>(null);
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+  const [approvalAction, setApprovalAction] = useState<{id: string, type: 'approve' | 'reject' | 'clarify'} | null>(null);
+  const [approvalRemarks, setApprovalRemarks] = useState('');
+
+  const queryClient = useQueryClient();
+  const { submitRequisition, cancelSubmission } = useRequisitionActions();
+  const { approveRequisition, rejectRequisition, requestClarification } = useRequisitionApproval();
 
   const { requisitions, isLoading, deleteRequisition } = useRequisitionList({
     status: statusFilter.length > 0 ? statusFilter : undefined,
     search: searchQuery || undefined,
   });
 
+  // Bulk fetch approver permissions for all requisitions
+  const requisitionIds = requisitions.map(r => r.id);
+  const { data: approverPermissionsMap } = useQuery({
+    queryKey: ['approver-permissions-bulk', requisitionIds, user?.id],
+    queryFn: async () => {
+      if (!user?.id || requisitionIds.length === 0) return {};
+      
+      const permissions: Record<string, boolean> = {};
+      
+      for (const id of requisitionIds) {
+        const { data: requisition } = await supabase
+          .from('requisition_lists')
+          .select('property_id')
+          .eq('id', id)
+          .single();
+        
+        if (requisition) {
+          const { data: approver } = await supabase
+            .from('property_approvers')
+            .select('id')
+            .eq('property_id', requisition.property_id)
+            .eq('approver_user_id', user.id)
+            .eq('is_active', true)
+            .maybeSingle();
+          
+          permissions[id] = !!approver;
+        }
+      }
+      
+      return permissions;
+    },
+    enabled: !!user?.id && requisitionIds.length > 0
+  });
+
   const handleDelete = async () => {
     if (deleteId) {
       await deleteRequisition(deleteId);
       setDeleteId(null);
+    }
+  };
+
+  const handleSubmit = async (requisitionId: string) => {
+    setActionInProgress(requisitionId);
+    try {
+      await submitRequisition.mutateAsync(requisitionId);
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const handleCancelRequest = async (requisitionId: string) => {
+    setActionInProgress(requisitionId);
+    try {
+      await cancelSubmission.mutateAsync(requisitionId);
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const handleApprovalClick = (requisitionId: string, type: 'approve' | 'reject' | 'clarify') => {
+    setApprovalAction({ id: requisitionId, type });
+    setApprovalRemarks('');
+  };
+
+  const handleConfirmApproval = async () => {
+    if (!approvalAction) return;
+    
+    if (approvalAction.type !== 'approve' && !approvalRemarks.trim()) {
+      toast.error('Remarks are required');
+      return;
+    }
+    
+    setActionInProgress(approvalAction.id);
+    
+    try {
+      if (approvalAction.type === 'approve') {
+        await approveRequisition.mutateAsync({ 
+          requisitionId: approvalAction.id, 
+          remarks: approvalRemarks 
+        });
+      } else if (approvalAction.type === 'reject') {
+        await rejectRequisition.mutateAsync({ 
+          requisitionId: approvalAction.id, 
+          reason: approvalRemarks 
+        });
+      } else {
+        await requestClarification.mutateAsync({ 
+          requisitionId: approvalAction.id, 
+          message: approvalRemarks 
+        });
+      }
+      
+      setApprovalAction(null);
+      setApprovalRemarks('');
+    } finally {
+      setActionInProgress(null);
     }
   };
 
@@ -250,7 +364,8 @@ const RequisitionListPage = () => {
                           {new Date(requisition.created_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-1 flex-wrap">
+                            {/* Always show view */}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -258,23 +373,99 @@ const RequisitionListPage = () => {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {canEdit(requisition) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/procurement/my-requisitions/edit/${requisition.id}`)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
+
+                            {/* Creator actions */}
+                            {user?.id === requisition.created_by && (
+                              <>
+                                {requisition.status === 'draft' && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setEditingRequisitionId(requisition.id)}
+                                      disabled={actionInProgress === requisition.id}
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setDeleteId(requisition.id)}
+                                      disabled={actionInProgress === requisition.id}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleSubmit(requisition.id)}
+                                      disabled={actionInProgress === requisition.id}
+                                    >
+                                      {actionInProgress === requisition.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <Send className="h-4 w-4 mr-1" />
+                                          Submit
+                                        </>
+                                      )}
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                {requisition.status === 'pending_manager_approval' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleCancelRequest(requisition.id)}
+                                    disabled={actionInProgress === requisition.id}
+                                  >
+                                    {actionInProgress === requisition.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <>
+                                        <X className="h-4 w-4 mr-1" />
+                                        Cancel
+                                      </>
+                                    )}
+                                  </Button>
+                                )}
+                              </>
                             )}
-                            {canDelete(requisition) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDeleteId(requisition.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
+
+                            {/* Approver actions */}
+                            {approverPermissionsMap?.[requisition.id] && 
+                             requisition.status === 'pending_manager_approval' && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApprovalClick(requisition.id, 'clarify')}
+                                  disabled={actionInProgress === requisition.id}
+                                  title="Request Clarification"
+                                >
+                                  <MessageCircle className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApprovalClick(requisition.id, 'reject')}
+                                  disabled={actionInProgress === requisition.id}
+                                  title="Reject"
+                                >
+                                  <XCircle className="h-4 w-4 text-destructive" />
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleApprovalClick(requisition.id, 'approve')}
+                                  disabled={actionInProgress === requisition.id}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Approve
+                                </Button>
+                              </>
                             )}
                           </div>
                         </TableCell>
@@ -288,6 +479,60 @@ const RequisitionListPage = () => {
         </Card>
       </div>
 
+      {/* Inline Edit Sheet */}
+      <Sheet 
+        open={editingRequisitionId !== null} 
+        onOpenChange={(open) => !open && setEditingRequisitionId(null)}
+      >
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Edit Requisition</SheetTitle>
+          </SheetHeader>
+          {editingRequisitionId && (
+            <RequisitionWizard 
+              requisitionId={editingRequisitionId}
+              onComplete={() => {
+                setEditingRequisitionId(null);
+                queryClient.invalidateQueries({ queryKey: ['requisition-lists'] });
+              }}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Approval Confirmation Dialog */}
+      <AlertDialog open={!!approvalAction} onOpenChange={() => setApprovalAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {approvalAction?.type === 'approve' && 'Approve Requisition'}
+              {approvalAction?.type === 'reject' && 'Reject Requisition'}
+              {approvalAction?.type === 'clarify' && 'Request Clarification'}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <Label className="text-foreground">
+                  Remarks {approvalAction?.type !== 'approve' && '(required)'}
+                </Label>
+                <Textarea
+                  value={approvalRemarks}
+                  onChange={(e) => setApprovalRemarks(e.target.value)}
+                  placeholder="Enter your remarks..."
+                  className="mt-2"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmApproval}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
