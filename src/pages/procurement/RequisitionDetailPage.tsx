@@ -8,6 +8,7 @@ import { RequisitionHeader } from '@/components/requisition/RequisitionHeader';
 import { RequisitionItemsTable } from '@/components/requisition/RequisitionItemsTable';
 import { RequisitionTimeline } from '@/components/requisition/RequisitionTimeline';
 import { RequisitionActions } from '@/components/requisition/RequisitionActions';
+import { RequisitionApprovalActions } from '@/components/requisition/RequisitionApprovalActions';
 import { Card, CardContent } from '@/components/ui/card';
 
 const RequisitionDetailPage = () => {
@@ -88,6 +89,8 @@ const RequisitionDetailPage = () => {
         <RequisitionTimeline requisitionId={requisition.id} />
         
         <RequisitionActions requisition={requisition} />
+        
+        <RequisitionApprovalActions requisition={requisition} />
       </div>
     </>
   );
