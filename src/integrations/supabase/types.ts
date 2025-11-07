@@ -5095,6 +5095,51 @@ export type Database = {
           },
         ]
       }
+      procurement_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          is_authorized: boolean | null
+          new_values: Json | null
+          old_values: Json | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+          user_id: string | null
+          violation_reason: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_authorized?: boolean | null
+          new_values?: Json | null
+          old_values?: Json | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+          user_id?: string | null
+          violation_reason?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_authorized?: boolean | null
+          new_values?: Json | null
+          old_values?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+          violation_reason?: string | null
+        }
+        Relationships: []
+      }
       procurement_notifications: {
         Row: {
           created_at: string
@@ -5612,6 +5657,7 @@ export type Database = {
           created_at: string
           expected_delivery_date: string | null
           id: string
+          idempotency_key: string | null
           notes: string | null
           po_number: string
           property_id: string
@@ -5619,6 +5665,7 @@ export type Database = {
           status: string
           total_amount: number
           updated_at: string
+          version: number
         }
         Insert: {
           accepted_at?: string
@@ -5626,6 +5673,7 @@ export type Database = {
           created_at?: string
           expected_delivery_date?: string | null
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           po_number: string
           property_id: string
@@ -5633,6 +5681,7 @@ export type Database = {
           status?: string
           total_amount?: number
           updated_at?: string
+          version?: number
         }
         Update: {
           accepted_at?: string
@@ -5640,6 +5689,7 @@ export type Database = {
           created_at?: string
           expected_delivery_date?: string | null
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           po_number?: string
           property_id?: string
@@ -5647,6 +5697,7 @@ export type Database = {
           status?: string
           total_amount?: number
           updated_at?: string
+          version?: number
         }
         Relationships: [
           {
@@ -11979,6 +12030,10 @@ export type Database = {
         }[]
       }
       generate_pickup_code: { Args: never; Returns: string }
+      generate_po_number_enhanced: {
+        Args: { p_property_id: string }
+        Returns: string
+      }
       generate_recurring_bookings: {
         Args: {
           base_booking_id: string
@@ -12171,6 +12226,15 @@ export type Database = {
           resource_type: string
         }
         Returns: string
+      }
+      log_unauthorized_access: {
+        Args: {
+          p_action: string
+          p_resource_id: string
+          p_resource_type: string
+          p_violation_reason: string
+        }
+        Returns: undefined
       }
       log_unauthorized_access_attempt: {
         Args: {
