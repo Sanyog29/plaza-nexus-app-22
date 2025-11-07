@@ -25,17 +25,8 @@ export const QuickActions = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-          {userRole === 'procurement_manager' ? 'Manager Actions' : 'Procurement Actions'}
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>Procurement Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        {userRole === 'procurement_manager' && (
-          <DropdownMenuItem onClick={() => navigate('/procurement/pending-approvals')}>
-            <CheckCircle className="mr-2 h-4 w-4" />
-            <span>Pending Approvals</span>
-          </DropdownMenuItem>
-        )}
         
         <DropdownMenuItem onClick={() => navigate('/procurement/requisitions')}>
           <Package className="mr-2 h-4 w-4" />

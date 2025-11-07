@@ -78,9 +78,9 @@ const PendingApprovalsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Pending Approvals</h1>
+          <h1 className="text-3xl font-bold">Operations Requisition Approvals</h1>
           <p className="text-muted-foreground">
-            Review and approve requisition requests
+            Review and approve operational requisition requests
           </p>
         </div>
         {selectedIds.length > 0 && (

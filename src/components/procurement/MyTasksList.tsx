@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Calendar, User, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/components/AuthProvider';
+import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
 interface MyTasksListProps {
   filter?: 'draft' | 'pending_manager_approval' | 'manager_approved' | 'all';
@@ -15,6 +16,7 @@ interface MyTasksListProps {
 
 export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
   const { userRole } = useAuth();
+  const { navigate } = useNavigationTransition();
   
   const { data: requisitions, isLoading } = useQuery({
     queryKey: ['my-requisitions', filter, userRole],
@@ -24,9 +26,9 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Role-based filtering
-      if (userRole === 'purchase_executive') {
-        // Purchase executives should only see approved or later stage requisitions
+      // Role-based filtering - Procurement roles only see approved and later stages
+      if (userRole === 'purchase_executive' || userRole === 'procurement_manager') {
+        // Both procurement roles should only see approved or later stage requisitions
         query = query.in('status', [
           'manager_approved',
           'assigned_to_procurement',
@@ -35,11 +37,6 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
           'received',
           'closed'
         ]);
-      } else if (userRole === 'procurement_manager') {
-        // Procurement managers see pending approvals
-        if (filter === 'all') {
-          query = query.eq('status', 'pending_manager_approval');
-        }
       }
 
       // Apply additional filter if specified
@@ -151,7 +148,11 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
                 </div>
               )}
               <div className="flex justify-end md:col-span-3">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate(`/procurement/requisitions/${req.id}`)}
+                >
                   View Details
                 </Button>
               </div>

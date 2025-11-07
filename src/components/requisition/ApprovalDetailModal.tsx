@@ -115,8 +115,8 @@ export const ApprovalDetailModal: React.FC<ApprovalDetailModalProps> = ({
     urgent: 'destructive',
   } as const;
 
-  const isProcurementManager = userRole === 'procurement_manager';
-  const canReroute = isProcurementManager && requisition?.status === 'manager_approved';
+  const isOpsSupervisor = userRole === 'ops_supervisor';
+  const canReroute = isOpsSupervisor && requisition?.status === 'manager_approved';
 
   return (
     <>

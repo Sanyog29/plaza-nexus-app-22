@@ -81,6 +81,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  // Operations Supervisor access control - Access to approvals
+  if (userRole === 'ops_supervisor') {
+    const allowedOpsPaths = ['/procurement/pending-approvals', '/procurement/approval-history', '/operations', '/dashboard', '/profile', '/auth', '/admin'];
+    const isAllowedPath = allowedOpsPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      console.warn(`Operations supervisor attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
   return (
     <>
       <Helmet>

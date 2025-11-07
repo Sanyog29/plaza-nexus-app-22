@@ -16,9 +16,9 @@ export const ProcurementStats = () => {
         .from('requisition_lists')
         .select('status', { count: 'exact' });
 
-      // Role-based filtering
-      if (userRole === 'purchase_executive') {
-        // Purchase executives only see approved or later stage requisitions
+      // Role-based filtering - Procurement roles only see approved and later stages
+      if (userRole === 'purchase_executive' || userRole === 'procurement_manager') {
+        // Both procurement roles should only see approved or later stage requisitions
         query = query.in('status', [
           'manager_approved',
           'assigned_to_procurement',

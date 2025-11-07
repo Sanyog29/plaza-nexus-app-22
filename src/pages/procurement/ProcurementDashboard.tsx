@@ -37,17 +37,17 @@ const ProcurementDashboard = () => {
         <ProcurementStats />
 
         {/* Main Content */}
-        <Tabs defaultValue={userRole === 'procurement_manager' ? 'pending' : 'approved'} className="w-full">
+        <Tabs defaultValue="approved" className="w-full">
           {userRole === 'procurement_manager' ? (
             <>
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="pending">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Pending Approval
-                </TabsTrigger>
                 <TabsTrigger value="approved">
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Approved
+                  Approved Requisitions
+                </TabsTrigger>
+                <TabsTrigger value="assigned">
+                  <Package className="h-4 w-4 mr-2" />
+                  In Progress
                 </TabsTrigger>
                 <TabsTrigger value="reports">
                   <TrendingUp className="h-4 w-4 mr-2" />
@@ -55,12 +55,12 @@ const ProcurementDashboard = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="pending" className="space-y-4">
-                <MyTasksList filter="pending_manager_approval" />
-              </TabsContent>
-
               <TabsContent value="approved" className="space-y-4">
                 <MyTasksList filter="manager_approved" />
+              </TabsContent>
+
+              <TabsContent value="assigned" className="space-y-4">
+                <MyTasksList filter="all" />
               </TabsContent>
             </>
           ) : (

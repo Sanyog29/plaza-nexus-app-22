@@ -237,30 +237,21 @@ const procurementMenuGroups = [
   }
 ];
 
-// Manager menu groups for those with approval permissions
-const managerMenuGroups = [
+// Operations supervisor menu - approval access
+const opsSupervisorMenuGroups = [
   {
-    label: "Manager Dashboard",
+    label: "Operations Approvals",
     items: [
-      { title: "Dashboard", url: "/procurement/manager-dashboard", icon: Home },
+      { title: "Dashboard", url: "/dashboard", icon: Home },
       { title: "Pending Approvals", url: "/procurement/pending-approvals", icon: Clock },
       { title: "Approval History", url: "/procurement/approval-history", icon: CheckCircle },
     ]
   },
   {
-    label: "My Work",
+    label: "Operations",
     items: [
-      { title: "My Requisitions", url: "/procurement/my-requisitions", icon: ClipboardList },
-    ]
-  },
-  {
-    label: "Procurement Operations",
-    items: [
+      { title: "Operations Center", url: "/operations", icon: Monitor },
       { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
-      { title: "Item Master", url: "/procurement/item-master", icon: Database },
-      { title: "Vendor Management", url: "/procurement/vendors", icon: Store },
-      { title: "Purchase Orders", url: "/procurement/orders", icon: ShoppingCart },
-      { title: "Budget Tracking", url: "/procurement/budget", icon: TrendingUp },
     ]
   },
   {
@@ -292,7 +283,6 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       // Executive/Admin Level - Full admin access
       case 'super_admin':
       case 'admin':
-      case 'ops_supervisor':
       case 'ceo':
       case 'cxo':
       case 'vp':
@@ -300,9 +290,13 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'assistant_general_manager':
         return adminMenuGroups;
 
-      // Manager roles with approval permissions
+      // Operations Supervisor - approval access
+      case 'ops_supervisor':
+        return opsSupervisorMenuGroups;
+
+      // Procurement manager - execution only, no approvals
       case 'procurement_manager':
-        return managerMenuGroups;
+        return procurementMenuGroups;
       
       // Purchase executives - regular procurement access
       case 'purchase_executive':
