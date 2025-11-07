@@ -1,4 +1,4 @@
-import React, { startTransition } from 'react';
+import React, { startTransition, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreateRequisitionProvider, useCreateRequisition } from '@/hooks/useCreateRequisition';
@@ -15,7 +15,7 @@ const steps = [
   { id: 3, name: 'Review', description: 'Submit requisition' },
 ];
 
-const RequisitionWizardInner = () => {
+const RequisitionWizardInner = ({ requisitionId }: { requisitionId?: string }) => {
   const { navigate } = useNavigationTransition();
   const {
     currentStep,
@@ -24,7 +24,16 @@ const RequisitionWizardInner = () => {
     selectedItems,
     saveDraft,
     submitForApproval,
+    editMode,
+    isLoadingRequisition,
+    loadRequisition,
   } = useCreateRequisition();
+
+  useEffect(() => {
+    if (requisitionId && !editMode) {
+      loadRequisition(requisitionId);
+    }
+  }, [requisitionId]);
 
   const handleSaveDraft = async () => {
     await saveDraft.mutateAsync();
@@ -47,6 +56,17 @@ const RequisitionWizardInner = () => {
       setCurrentStep(Math.max(1, currentStep - 1));
     });
   };
+
+  if (isLoadingRequisition) {
+    return (
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="mt-4 text-muted-foreground">Loading requisition...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -158,10 +178,10 @@ const RequisitionWizardInner = () => {
   );
 };
 
-export const RequisitionWizard = () => {
+export const RequisitionWizard = ({ requisitionId }: { requisitionId?: string }) => {
   return (
     <CreateRequisitionProvider>
-      <RequisitionWizardInner />
+      <RequisitionWizardInner requisitionId={requisitionId} />
     </CreateRequisitionProvider>
   );
 };

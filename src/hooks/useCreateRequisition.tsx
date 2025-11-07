@@ -30,6 +30,10 @@ function useProvideCreateRequisition() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
+  const [editMode, setEditMode] = useState(false);
+  const [requisitionId, setRequisitionId] = useState<string | null>(null);
+  const [isLoadingRequisition, setIsLoadingRequisition] = useState(false);
+  
   const [formData, setFormData] = useState<RequisitionFormData>({
     property_id: '',
     priority: 'normal',
@@ -39,6 +43,62 @@ function useProvideCreateRequisition() {
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
+
+  const loadRequisition = async (id: string) => {
+    setIsLoadingRequisition(true);
+    try {
+      const { data: requisition, error: reqError } = await supabase
+        .from('requisition_lists')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (reqError) throw reqError;
+
+      if (requisition.status !== 'draft') {
+        toast.error('Only draft requisitions can be edited');
+        return false;
+      }
+
+      if (requisition.created_by !== user?.id) {
+        toast.error('You can only edit your own requisitions');
+        return false;
+      }
+
+      setFormData({
+        property_id: requisition.property_id,
+        priority: requisition.priority,
+        expected_delivery_date: requisition.expected_delivery_date,
+        notes: requisition.notes || '',
+      });
+
+      const { data: items, error: itemsError } = await supabase
+        .from('requisition_list_items')
+        .select('*')
+        .eq('requisition_list_id', id);
+
+      if (itemsError) throw itemsError;
+
+      setSelectedItems(items.map(item => ({
+        item_master_id: item.item_master_id,
+        item_name: item.item_name,
+        category_name: item.category_name,
+        unit: item.unit,
+        unit_limit: item.unit_limit,
+        quantity: item.quantity,
+        description: item.description,
+      })));
+
+      setEditMode(true);
+      setRequisitionId(id);
+      return true;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to load requisition');
+      return false;
+    } finally {
+      setIsLoadingRequisition(false);
+    }
+  };
 
   const addItem = (item: SelectedItem) => {
     const exists = selectedItems.find(i => i.item_master_id === item.item_master_id);
@@ -110,55 +170,100 @@ function useProvideCreateRequisition() {
       if (!user) throw new Error('User not authenticated');
       if (!validateForm()) throw new Error('Validation failed');
       
-      const orderNumber = await generateOrderNumber();
-      
-      const { data: requisition, error: reqError } = await supabase
-        .from('requisition_lists')
-        .insert({
-          order_number: orderNumber,
-          property_id: formData.property_id,
-          created_by: user.id,
-          created_by_name: user.email || '',
-          status: 'draft',
-          priority: formData.priority,
-          expected_delivery_date: formData.expected_delivery_date,
-          notes: formData.notes,
-          total_items: calculateTotalItems(),
-        })
-        .select()
-        .single();
-      
-      if (reqError) throw reqError;
+      if (editMode && requisitionId) {
+        // Update existing requisition
+        const { error: reqError } = await supabase
+          .from('requisition_lists')
+          .update({
+            priority: formData.priority,
+            expected_delivery_date: formData.expected_delivery_date,
+            notes: formData.notes,
+            total_items: calculateTotalItems(),
+          })
+          .eq('id', requisitionId);
+        
+        if (reqError) throw reqError;
 
-      const items = selectedItems.map(item => ({
-        requisition_list_id: requisition.id,
-        item_master_id: item.item_master_id,
-        item_name: item.item_name,
-        category_name: item.category_name,
-        unit: item.unit,
-        unit_limit: item.unit_limit,
-        quantity: item.quantity,
-      }));
+        // Delete existing items
+        const { error: deleteError } = await supabase
+          .from('requisition_list_items')
+          .delete()
+          .eq('requisition_list_id', requisitionId);
+        
+        if (deleteError) throw deleteError;
 
-      const { error: itemsError } = await supabase
-        .from('requisition_list_items')
-        .insert(items);
-      
-      if (itemsError) throw itemsError;
+        // Insert updated items
+        const items = selectedItems.map(item => ({
+          requisition_list_id: requisitionId,
+          item_master_id: item.item_master_id,
+          item_name: item.item_name,
+          category_name: item.category_name,
+          unit: item.unit,
+          unit_limit: item.unit_limit,
+          quantity: item.quantity,
+        }));
 
-      return requisition.id;
+        const { error: itemsError } = await supabase
+          .from('requisition_list_items')
+          .insert(items);
+        
+        if (itemsError) throw itemsError;
+
+        return requisitionId;
+      } else {
+        // Create new requisition
+        const orderNumber = await generateOrderNumber();
+        
+        const { data: requisition, error: reqError } = await supabase
+          .from('requisition_lists')
+          .insert({
+            order_number: orderNumber,
+            property_id: formData.property_id,
+            created_by: user.id,
+            created_by_name: user.email || '',
+            status: 'draft',
+            priority: formData.priority,
+            expected_delivery_date: formData.expected_delivery_date,
+            notes: formData.notes,
+            total_items: calculateTotalItems(),
+          })
+          .select()
+          .single();
+        
+        if (reqError) throw reqError;
+
+        const items = selectedItems.map(item => ({
+          requisition_list_id: requisition.id,
+          item_master_id: item.item_master_id,
+          item_name: item.item_name,
+          category_name: item.category_name,
+          unit: item.unit,
+          unit_limit: item.unit_limit,
+          quantity: item.quantity,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('requisition_list_items')
+          .insert(items);
+        
+        if (itemsError) throw itemsError;
+
+        return requisition.id;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
-      toast.success('Draft saved successfully');
-      setSelectedItems([]);
-      setFormData({
-        property_id: '',
-        priority: 'normal',
-        expected_delivery_date: null,
-        notes: '',
-      });
-      setCurrentStep(1);
+      toast.success(editMode ? 'Requisition updated successfully' : 'Draft saved successfully');
+      if (!editMode) {
+        setSelectedItems([]);
+        setFormData({
+          property_id: '',
+          priority: 'normal',
+          expected_delivery_date: null,
+          notes: '',
+        });
+        setCurrentStep(1);
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to save draft');
@@ -170,55 +275,101 @@ function useProvideCreateRequisition() {
       if (!user) throw new Error('User not authenticated');
       if (!validateForm()) throw new Error('Validation failed');
       
-      const orderNumber = await generateOrderNumber();
-      
-      const { data: requisition, error: reqError } = await supabase
-        .from('requisition_lists')
-        .insert({
-          order_number: orderNumber,
-          property_id: formData.property_id,
-          created_by: user.id,
-          created_by_name: user.email || '',
-          status: 'pending_manager_approval',
-          priority: formData.priority,
-          expected_delivery_date: formData.expected_delivery_date,
-          notes: formData.notes,
-          total_items: calculateTotalItems(),
-        })
-        .select()
-        .single();
-      
-      if (reqError) throw reqError;
+      if (editMode && requisitionId) {
+        // Update existing requisition to pending
+        const { error: reqError } = await supabase
+          .from('requisition_lists')
+          .update({
+            status: 'pending_manager_approval',
+            priority: formData.priority,
+            expected_delivery_date: formData.expected_delivery_date,
+            notes: formData.notes,
+            total_items: calculateTotalItems(),
+          })
+          .eq('id', requisitionId);
+        
+        if (reqError) throw reqError;
 
-      const items = selectedItems.map(item => ({
-        requisition_list_id: requisition.id,
-        item_master_id: item.item_master_id,
-        item_name: item.item_name,
-        category_name: item.category_name,
-        unit: item.unit,
-        unit_limit: item.unit_limit,
-        quantity: item.quantity,
-      }));
+        // Delete existing items
+        const { error: deleteError } = await supabase
+          .from('requisition_list_items')
+          .delete()
+          .eq('requisition_list_id', requisitionId);
+        
+        if (deleteError) throw deleteError;
 
-      const { error: itemsError } = await supabase
-        .from('requisition_list_items')
-        .insert(items);
-      
-      if (itemsError) throw itemsError;
+        // Insert updated items
+        const items = selectedItems.map(item => ({
+          requisition_list_id: requisitionId,
+          item_master_id: item.item_master_id,
+          item_name: item.item_name,
+          category_name: item.category_name,
+          unit: item.unit,
+          unit_limit: item.unit_limit,
+          quantity: item.quantity,
+        }));
 
-      return requisition.id;
+        const { error: itemsError } = await supabase
+          .from('requisition_list_items')
+          .insert(items);
+        
+        if (itemsError) throw itemsError;
+
+        return requisitionId;
+      } else {
+        // Create new requisition
+        const orderNumber = await generateOrderNumber();
+        
+        const { data: requisition, error: reqError } = await supabase
+          .from('requisition_lists')
+          .insert({
+            order_number: orderNumber,
+            property_id: formData.property_id,
+            created_by: user.id,
+            created_by_name: user.email || '',
+            status: 'pending_manager_approval',
+            priority: formData.priority,
+            expected_delivery_date: formData.expected_delivery_date,
+            notes: formData.notes,
+            total_items: calculateTotalItems(),
+          })
+          .select()
+          .single();
+        
+        if (reqError) throw reqError;
+
+        const items = selectedItems.map(item => ({
+          requisition_list_id: requisition.id,
+          item_master_id: item.item_master_id,
+          item_name: item.item_name,
+          category_name: item.category_name,
+          unit: item.unit,
+          unit_limit: item.unit_limit,
+          quantity: item.quantity,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('requisition_list_items')
+          .insert(items);
+        
+        if (itemsError) throw itemsError;
+
+        return requisition.id;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       toast.success('Requisition submitted for approval');
-      setSelectedItems([]);
-      setFormData({
-        property_id: '',
-        priority: 'normal',
-        expected_delivery_date: null,
-        notes: '',
-      });
-      setCurrentStep(1);
+      if (!editMode) {
+        setSelectedItems([]);
+        setFormData({
+          property_id: '',
+          priority: 'normal',
+          expected_delivery_date: null,
+          notes: '',
+        });
+        setCurrentStep(1);
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to submit requisition');
@@ -238,6 +389,10 @@ function useProvideCreateRequisition() {
     submitForApproval,
     validateForm,
     calculateTotalItems,
+    editMode,
+    requisitionId,
+    isLoadingRequisition,
+    loadRequisition,
   };
 }
 

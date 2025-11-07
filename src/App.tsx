@@ -245,6 +245,7 @@ const App = () => (
               <Route path="/procurement" element={<ProcurementDashboard />} />
               <Route path="/procurement/create-requisition" element={<CreateRequisitionPage />} />
               <Route path="/procurement/my-requisitions" element={<MyRequisitionsPage />} />
+              <Route path="/procurement/my-requisitions/edit/:id" element={React.createElement(React.lazy(() => import("./pages/procurement/EditRequisitionPage")))} />
               <Route path="/procurement/requisitions/:id" element={<RequisitionDetailPage />} />
               <Route path="/procurement/requisitions" element={<RequisitionListPage />} />
               <Route path="/procurement/manager-dashboard" element={<ManagerDashboard />} />
