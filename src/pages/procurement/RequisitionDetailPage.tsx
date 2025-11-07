@@ -9,6 +9,8 @@ import { RequisitionItemsTable } from '@/components/requisition/RequisitionItems
 import { RequisitionTimeline } from '@/components/requisition/RequisitionTimeline';
 import { RequisitionActions } from '@/components/requisition/RequisitionActions';
 import { RequisitionApprovalActions } from '@/components/requisition/RequisitionApprovalActions';
+import { ApprovalStatusCard } from '@/components/procurement/ApprovalStatusCard';
+import { WorkflowTimeline } from '@/components/procurement/WorkflowTimeline';
 import { Card, CardContent } from '@/components/ui/card';
 
 const RequisitionDetailPage = () => {
@@ -83,6 +85,21 @@ const RequisitionDetailPage = () => {
         </div>
 
         <RequisitionHeader requisition={requisition} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ApprovalStatusCard 
+            requisitionId={requisition.id}
+            propertyId={requisition.property_id}
+            status={requisition.status}
+            createdAt={requisition.created_at}
+          />
+          
+          <WorkflowTimeline 
+            requisitionId={requisition.id}
+            currentStatus={requisition.status}
+            createdAt={requisition.created_at}
+          />
+        </div>
         
         <RequisitionItemsTable items={requisition.items} />
         
