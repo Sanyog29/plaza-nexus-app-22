@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Clock, CheckCircle, TrendingUp } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Package, Clock, CheckCircle, TrendingUp, AlertCircle } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/components/AuthProvider';
 
 export const ProcurementStats = () => {
   const { userRole } = useAuth();
+  const queryClient = useQueryClient();
   
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ['procurement-stats', userRole],
     queryFn: async () => {
       let query = supabase
@@ -32,6 +34,12 @@ export const ProcurementStats = () => {
       const { data, error } = await query;
       if (error) throw error;
 
+      console.debug('[ProcurementStats] Query result:', { 
+        userRole, 
+        dataCount: data?.length || 0,
+        statuses: data?.map(d => d.status) 
+      });
+
       const statusCounts = {
         active: 0,
         pending: 0,
@@ -49,6 +57,30 @@ export const ProcurementStats = () => {
     }
   });
 
+  // Realtime subscription for live updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('procurement-stats-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'requisition_lists',
+          filter: `status=in.(manager_approved,assigned_to_procurement,po_raised,in_transit,received,closed)`
+        },
+        (payload) => {
+          console.debug('[ProcurementStats] Realtime update:', payload);
+          queryClient.invalidateQueries({ queryKey: ['procurement-stats'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-4">
@@ -65,6 +97,30 @@ export const ProcurementStats = () => {
           </Card>
         ))}
       </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error loading procurement statistics: {error?.message || 'Unknown error'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Show helpful message if no data for procurement roles
+  if ((userRole === 'purchase_executive' || userRole === 'procurement_manager') && stats?.total === 0) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          No requisitions visible. You might not have permission to view approved requisitions. 
+          Ask an admin to grant procurement read access for approved/later statuses.
+        </AlertDescription>
+      </Alert>
     );
   }
 

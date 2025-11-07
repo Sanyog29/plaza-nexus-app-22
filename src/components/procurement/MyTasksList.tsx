@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Package, Calendar, User, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/components/AuthProvider';
@@ -17,8 +18,9 @@ interface MyTasksListProps {
 export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
   const { userRole } = useAuth();
   const { navigate } = useNavigationTransition();
+  const queryClient = useQueryClient();
   
-  const { data: requisitions, isLoading } = useQuery({
+  const { data: requisitions, isLoading, isError, error } = useQuery({
     queryKey: ['my-requisitions', filter, userRole],
     queryFn: async () => {
       let query = supabase
@@ -46,9 +48,40 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
 
       const { data, error } = await query;
       if (error) throw error;
+
+      console.debug('[MyTasksList] Query result:', { 
+        userRole, 
+        filter,
+        dataCount: data?.length || 0,
+        statuses: data?.map(d => d.status) 
+      });
+
       return data;
     }
   });
+
+  // Realtime subscription for live updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('my-requisitions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'requisition_lists'
+        },
+        (payload) => {
+          console.debug('[MyTasksList] Realtime update:', payload);
+          queryClient.invalidateQueries({ queryKey: ['my-requisitions'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -102,12 +135,31 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
     );
   }
 
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Error loading requisitions: {error?.message || 'Unknown error'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   if (!requisitions || requisitions.length === 0) {
+    const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
+    
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Package className="h-12 w-12 text-muted-foreground/50 mb-4" />
-          <p className="text-muted-foreground">No requisitions found</p>
+          <p className="text-muted-foreground mb-2">No requisitions found</p>
+          {isProcurementRole && (
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              You might not have permission to view approved requisitions. 
+              Ask an admin to grant procurement read access for approved/later statuses.
+            </p>
+          )}
         </CardContent>
       </Card>
     );
