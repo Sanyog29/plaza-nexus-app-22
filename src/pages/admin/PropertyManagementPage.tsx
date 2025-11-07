@@ -3,12 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Building2, Edit, Users, MapPin } from 'lucide-react';
+import { Plus, Building2, Edit, Users, MapPin, UserCheck, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AssignApproverDialog } from '@/components/property/AssignApproverDialog';
+import { usePropertyApprovers } from '@/hooks/usePropertyApprovers';
 
 interface Property {
   id: string;
@@ -31,6 +34,10 @@ const PropertyManagementPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [isApproverDialogOpen, setIsApproverDialogOpen] = useState(false);
+  const [selectedPropertyForApprover, setSelectedPropertyForApprover] = useState<Property | null>(null);
+  const [approvers, setApprovers] = useState<Record<string, any>>({});
+  const { getPropertyApprover } = usePropertyApprovers();
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -52,12 +59,52 @@ const PropertyManagementPage: React.FC = () => {
 
       if (error) throw error;
       setProperties(data || []);
+      
+      // Fetch approvers for all properties
+      await fetchApprovers();
     } catch (error) {
       console.error('Error fetching properties:', error);
       toast.error('Failed to load properties');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchApprovers = async () => {
+    try {
+      const { data: approverData } = await supabase
+        .from('property_approvers')
+        .select('*')
+        .eq('is_active', true);
+
+      if (!approverData) return;
+
+      // Fetch profiles for all approvers
+      const userIds = approverData.map(a => a.approver_user_id);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url')
+        .in('id', userIds);
+
+      // Map approvers by property_id with profile data
+      const approverMap: Record<string, any> = {};
+      approverData.forEach(approver => {
+        const profile = profiles?.find(p => p.id === approver.approver_user_id);
+        approverMap[approver.property_id] = {
+          ...approver,
+          approver: profile
+        };
+      });
+      
+      setApprovers(approverMap);
+    } catch (error) {
+      console.error('Error fetching approvers:', error);
+    }
+  };
+
+  const openAssignApproverDialog = (property: Property) => {
+    setSelectedPropertyForApprover(property);
+    setIsApproverDialogOpen(true);
   };
 
   useEffect(() => {
@@ -440,10 +487,53 @@ const PropertyManagementPage: React.FC = () => {
                     <span>{property.total_floors || 0} floors</span>
                   </div>
                 </div>
-                <div className="pt-3 border-t">
-                  <Badge variant="outline" className="capitalize">
-                    {property.property_type || 'mixed'}
-                  </Badge>
+                
+                {/* Approver Section */}
+                <div className="pt-3 border-t space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="capitalize">
+                      {property.property_type || 'mixed'}
+                    </Badge>
+                    {approvers[property.id] ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Approver Set
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        No Approver
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {approvers[property.id] && (
+                    <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={approvers[property.id].approver?.avatar_url} />
+                        <AvatarFallback className="text-xs">
+                          {approvers[property.id].approver?.first_name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">
+                          {approvers[property.id].approver?.first_name} {approvers[property.id].approver?.last_name}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {approvers[property.id].approver_role_title}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => openAssignApproverDialog(property)}
+                  >
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    {approvers[property.id] ? 'Change Approver' : 'Assign Approver'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -465,6 +555,20 @@ const PropertyManagementPage: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Assign Approver Dialog */}
+        <AssignApproverDialog
+          open={isApproverDialogOpen}
+          onOpenChange={(open) => {
+            setIsApproverDialogOpen(open);
+            if (!open) {
+              setSelectedPropertyForApprover(null);
+              fetchApprovers();
+            }
+          }}
+          property={selectedPropertyForApprover}
+          currentApproverId={selectedPropertyForApprover ? approvers[selectedPropertyForApprover.id]?.approver_user_id : undefined}
+        />
       </div>
     </div>
   );

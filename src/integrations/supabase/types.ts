@@ -5469,6 +5469,53 @@ export type Database = {
         }
         Relationships: []
       }
+      property_approvers: {
+        Row: {
+          approver_role_title: string | null
+          approver_user_id: string
+          assigned_at: string | null
+          assigned_by: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          property_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          approver_role_title?: string | null
+          approver_user_id: string
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          property_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          approver_role_title?: string | null
+          approver_user_id?: string
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          property_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_approvers_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_assignments: {
         Row: {
           assigned_at: string | null
