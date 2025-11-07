@@ -38,9 +38,13 @@ export const usePurchaseOrders = () => {
       queryClient.invalidateQueries({ queryKey: ['requisitions'] });
       queryClient.invalidateQueries({ queryKey: ['procurement-stats'] });
       
+      const message = data.message 
+        ? `${data.message}: ${data.purchase_order.po_number}`
+        : `PO ${data.purchase_order.po_number} created successfully`;
+      
       toast({
         title: 'Purchase Order Created',
-        description: `PO ${data.purchase_order.po_number} created successfully`,
+        description: message,
       });
     },
     onError: (error: Error) => {

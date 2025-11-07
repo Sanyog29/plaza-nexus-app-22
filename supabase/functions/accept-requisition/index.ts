@@ -55,6 +55,30 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Idempotency check: Check if PO already exists for this requisition
+    const { data: existingPO, error: existingPOError } = await supabase
+      .from('purchase_orders')
+      .select('id, po_number, status, total_amount')
+      .eq('requisition_list_id', requisition_id)
+      .maybeSingle();
+
+    if (existingPOError) {
+      console.error('Error checking for existing PO:', existingPOError);
+      throw new Error(`Failed to check existing PO: ${existingPOError.message}`);
+    }
+
+    if (existingPO) {
+      console.log('PO already exists for requisition:', existingPO.po_number);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          purchase_order: existingPO,
+          message: 'Purchase order already exists for this requisition'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get requisition details
     const { data: requisition, error: reqError } = await supabase
       .from('requisition_lists')
@@ -76,20 +100,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate PO number
-    const poNumberResponse = await fetch(`${supabaseUrl}/functions/v1/generate-po-number`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // Generate PO number using Supabase function invoke
+    const { data: poData, error: poError } = await supabase.functions.invoke('generate-po-number');
 
-    const { po_number, error: poError } = await poNumberResponse.json();
-    if (poError) {
-      throw new Error(`Failed to generate PO number: ${poError}`);
+    if (poError || !poData?.po_number) {
+      throw new Error(`Failed to generate PO number: ${poError?.message || 'No PO number returned'}`);
     }
 
+    const po_number = poData.po_number;
     console.log('Generated PO number:', po_number);
 
     // Get requisition items
@@ -108,77 +126,93 @@ Deno.serve(async (req) => {
       return sum + itemTotal;
     }, 0);
 
-    // Create purchase order
-    const { data: purchaseOrder, error: poCreateError } = await supabase
-      .from('purchase_orders')
-      .insert({
-        po_number,
-        requisition_list_id: requisition_id,
-        property_id: requisition.property_id,
-        status: 'accepted',
-        total_amount: totalAmount,
-        accepted_by: user.id,
-        accepted_at: new Date().toISOString(),
-        expected_delivery_date: requisition.expected_delivery_date,
-        notes: `Generated from requisition ${requisition.order_number}`,
-      })
-      .select()
-      .single();
+    let purchaseOrder;
+    let poItems;
 
-    if (poCreateError) {
-      console.error('Error creating PO:', poCreateError);
-      throw new Error(`Failed to create purchase order: ${poCreateError.message}`);
-    }
+    try {
+      // Create purchase order
+      const { data: poData, error: poCreateError } = await supabase
+        .from('purchase_orders')
+        .insert({
+          po_number,
+          requisition_list_id: requisition_id,
+          property_id: requisition.property_id,
+          status: 'accepted',
+          total_amount: totalAmount,
+          accepted_by: user.id,
+          accepted_at: new Date().toISOString(),
+          expected_delivery_date: requisition.expected_delivery_date,
+          notes: `Generated from requisition ${requisition.order_number}`,
+        })
+        .select()
+        .single();
 
-    console.log('Created purchase order:', purchaseOrder.id);
+      if (poCreateError) {
+        console.error('Error creating PO:', poCreateError);
+        throw new Error(`Failed to create purchase order: ${poCreateError.message}`);
+      }
 
-    // Create PO items
-    const poItems = items.map(item => ({
-      po_id: purchaseOrder.id,
-      requisition_list_item_id: item.id,
-      item_name: item.item_name,
-      quantity: item.quantity,
-      unit: item.unit,
-      estimated_unit_price: item.estimated_unit_price || 0,
-      estimated_total_price: (item.estimated_unit_price || 0) * item.quantity,
-      notes: item.description,
-    }));
+      purchaseOrder = poData;
+      console.log('Created purchase order:', purchaseOrder.id);
 
-    const { error: itemsCreateError } = await supabase
-      .from('purchase_order_items')
-      .insert(poItems);
+      // Create PO items
+      poItems = items.map(item => ({
+        po_id: purchaseOrder.id,
+        requisition_list_item_id: item.id,
+        item_name: item.item_name,
+        quantity: item.quantity,
+        unit: item.unit,
+        estimated_unit_price: item.estimated_unit_price || 0,
+        estimated_total_price: (item.estimated_unit_price || 0) * item.quantity,
+        notes: item.description,
+      }));
 
-    if (itemsCreateError) {
-      console.error('Error creating PO items:', itemsCreateError);
-      throw new Error(`Failed to create PO items: ${itemsCreateError.message}`);
-    }
+      const { error: itemsCreateError } = await supabase
+        .from('purchase_order_items')
+        .insert(poItems);
 
-    console.log('Created PO items:', poItems.length);
+      if (itemsCreateError) {
+        console.error('Error creating PO items:', itemsCreateError);
+        throw new Error(`Failed to create PO items: ${itemsCreateError.message}`);
+      }
 
-    // Update requisition status to po_created
-    const { error: updateError } = await supabase
-      .from('requisition_lists')
-      .update({ status: 'po_created', updated_at: new Date().toISOString() })
-      .eq('id', requisition_id);
+      console.log('Created PO items:', poItems.length);
 
-    if (updateError) {
-      console.error('Error updating requisition status:', updateError);
-      throw new Error(`Failed to update requisition: ${updateError.message}`);
-    }
+      // Update requisition status using authenticated client (for trigger)
+      // This will populate changed_by via the database trigger
+      const { error: updateError } = await supabaseClient
+        .from('requisition_lists')
+        .update({ status: 'po_created', updated_at: new Date().toISOString() })
+        .eq('id', requisition_id);
 
-    // Log status history
-    const { error: historyError } = await supabase
-      .from('requisition_status_history')
-      .insert({
-        requisition_list_id: requisition_id,
-        old_status: 'manager_approved',
-        new_status: 'po_created',
-        changed_by: user.id,
-        remarks: `Purchase Order ${po_number} created`,
-      });
+      if (updateError) {
+        console.error('Error updating requisition status:', updateError);
+        throw new Error(`Failed to update requisition: ${updateError.message}`);
+      }
 
-    if (historyError) {
-      console.error('Error logging status history:', historyError);
+      console.log('Requisition status updated. Status history will be created by trigger.');
+
+    } catch (error) {
+      // Rollback: Clean up PO and items if any step fails
+      if (purchaseOrder?.id) {
+        console.log('Attempting rollback: deleting PO items and PO');
+        
+        // Delete PO items first
+        await supabase
+          .from('purchase_order_items')
+          .delete()
+          .eq('po_id', purchaseOrder.id);
+        
+        // Delete PO
+        await supabase
+          .from('purchase_orders')
+          .delete()
+          .eq('id', purchaseOrder.id);
+        
+        console.log('Rollback completed');
+      }
+      
+      throw error;
     }
 
     console.log('Requisition acceptance complete');
