@@ -6626,6 +6626,7 @@ export type Database = {
           expected_delivery_date: string | null
           grn_document_url: string | null
           id: string
+          idempotency_key: string | null
           manager_approved_at: string | null
           manager_id: string | null
           manager_remarks: string | null
@@ -6652,6 +6653,7 @@ export type Database = {
           expected_delivery_date?: string | null
           grn_document_url?: string | null
           id?: string
+          idempotency_key?: string | null
           manager_approved_at?: string | null
           manager_id?: string | null
           manager_remarks?: string | null
@@ -6678,6 +6680,7 @@ export type Database = {
           expected_delivery_date?: string | null
           grn_document_url?: string | null
           id?: string
+          idempotency_key?: string | null
           manager_approved_at?: string | null
           manager_id?: string | null
           manager_remarks?: string | null
@@ -9081,6 +9084,69 @@ export type Database = {
             columns: ["main_category_id"]
             isOneToOne: false
             referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      super_admin_audit_log: {
+        Row: {
+          accessed_property_id: string | null
+          action: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          property_id: string | null
+          resource_id: string | null
+          resource_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          accessed_property_id?: string | null
+          action: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          property_id?: string | null
+          resource_id?: string | null
+          resource_type: string
+          user_agent?: string | null
+        }
+        Update: {
+          accessed_property_id?: string | null
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          property_id?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "super_admin_audit_log_accessed_property_id_fkey"
+            columns: ["accessed_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "super_admin_audit_log_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
