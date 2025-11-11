@@ -120,7 +120,7 @@ const StaffDashboardPage = () => {
                             </AvatarFallback>
                           </Avatar>
                           <span className="text-sm text-success">Assigned to you</span>
-                          <Button size="sm" variant="outline" onClick={() => navigate(`/requests/${offer.request_id}`)}>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/staff/requests/${offer.request_id}`)}>
                             View
                           </Button>
                         </div> : <Button size="sm" onClick={async () => {
@@ -142,7 +142,7 @@ const StaffDashboardPage = () => {
                           {new Date(request.created_at).toLocaleDateString()}
                         </p>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/requests/${request.id}`)}>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/staff/requests/${request.id}`)}>
                         View
                       </Button>
                     </div>)}
