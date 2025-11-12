@@ -84,6 +84,12 @@ const AppLayout: React.FC = () => {
         return;
       }
       
+      // Redirect generic dashboard routes for admin/staff
+      if (['/dashboard', '/home', '/tenant-portal'].includes(location.pathname)) {
+        navigate(isAdmin ? '/admin/dashboard' : '/staff/dashboard', { replace: true });
+        return;
+      }
+      
       // Redirect to appropriate dashboard from home page
       if (location.pathname === '/') {
         const dashboardPath = isAdmin ? '/admin/dashboard' : '/staff/dashboard';

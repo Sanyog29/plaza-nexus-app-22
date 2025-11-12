@@ -242,7 +242,7 @@ const opsSupervisorMenuGroups = [
   {
     label: "Operations Approvals",
     items: [
-      { title: "Dashboard", url: "/dashboard", icon: Home },
+      { title: "Dashboard", url: "/admin/dashboard", icon: Home },
       { title: "Pending Approvals", url: "/procurement/pending-approvals", icon: Clock },
       { title: "Approval History", url: "/procurement/approval-history", icon: CheckCircle },
     ]
@@ -465,9 +465,9 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
               <div className="flex-1">
                 <h2 className="font-bold text-foreground text-lg">AUTOPILOT</h2>
                 <p className="text-xs text-muted-foreground/80 capitalize font-medium">
-                  {userRole === 'admin' ? 'Admin' : 
+                  {['super_admin', 'admin', 'assistant_vice_president', 'assistant_general_manager', 'vp', 'ceo', 'cxo'].includes(userRole) ? 'Admin' : 
                    userRole === 'ops_supervisor' ? 'Supervisor' :
-                   userRole.includes('staff') ? 'Staff' :
+                   ['assistant_manager', 'assistant_floor_manager', 'field_staff', 'ops_l1', 'ops_l2', 'mst', 'hk', 'se', 'vendor', 'food_vendor', 'fe'].includes(userRole) || userRole.includes('staff') ? 'Staff' :
                    'Tenant'} Portal
                 </p>
               </div>
