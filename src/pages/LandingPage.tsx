@@ -19,14 +19,24 @@ import { useAuth } from '@/components/AuthProvider';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin, isStaff, userRole } = useAuth();
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to appropriate dashboard based on role
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else if (isStaff) {
+        navigate('/staff/dashboard');
+      } else if (userRole === 'vendor') {
+        navigate('/vendor-portal');
+      } else if (userRole === 'procurement_manager' || userRole === 'purchase_executive') {
+        navigate('/procurement');
+      } else {
+        navigate('/dashboard'); // Tenants go to tenant portal
+      }
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, isStaff, userRole, navigate]);
   const features = [
     {
       icon: Wrench,
