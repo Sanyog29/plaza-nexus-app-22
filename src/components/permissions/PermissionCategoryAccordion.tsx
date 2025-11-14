@@ -11,7 +11,9 @@ interface PermissionCategoryAccordionProps {
   roleTemplates: any[];
   userOverrides: any[];
   userRole: string;
-  onPermissionChange: (action: PermissionAction, granted: boolean, reason?: string) => void;
+  pendingChanges: Map<PermissionAction, boolean>;
+  onPermissionChange: (action: PermissionAction, granted: boolean) => void;
+  disabled?: boolean;
 }
 
 export const PermissionCategoryAccordion = ({
@@ -20,7 +22,9 @@ export const PermissionCategoryAccordion = ({
   roleTemplates,
   userOverrides,
   userRole,
-  onPermissionChange
+  pendingChanges,
+  onPermissionChange,
+  disabled = false
 }: PermissionCategoryAccordionProps) => {
   const IconComponent = (Icons as any)[category.icon] || Icons.HelpCircle;
 
@@ -72,6 +76,10 @@ export const PermissionCategoryAccordion = ({
                   t => t.role === userRole && t.permission_action === permission.action
                 );
 
+                const pendingValue = pendingChanges.has(permission.action) 
+                  ? pendingChanges.get(permission.action)! 
+                  : null;
+
                 return (
                   <PermissionRow
                     key={permission.action}
@@ -82,7 +90,9 @@ export const PermissionCategoryAccordion = ({
                     isDangerous={permission.is_dangerous}
                     defaultGranted={template?.is_granted_by_default || false}
                     overrideGranted={override ? override.is_granted : null}
+                    pendingValue={pendingValue}
                     onOverrideChange={onPermissionChange}
+                    disabled={disabled}
                   />
                 );
               })}
