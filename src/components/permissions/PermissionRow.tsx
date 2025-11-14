@@ -14,6 +14,7 @@ interface PermissionRowProps {
   isDangerous: boolean;
   defaultGranted: boolean;
   overrideGranted: boolean | null;
+  pendingValue: boolean | null;
   onOverrideChange: (action: PermissionAction, granted: boolean) => void;
   disabled?: boolean;
 }
@@ -26,12 +27,16 @@ export const PermissionRow = ({
   isDangerous,
   defaultGranted,
   overrideGranted,
+  pendingValue,
   onOverrideChange,
   disabled = false
 }: PermissionRowProps) => {
   const handleOverrideChange = (checked: boolean) => {
     onOverrideChange(action, checked);
   };
+
+  const hasPendingChange = pendingValue !== null;
+  const displayValue = hasPendingChange ? pendingValue : (overrideGranted !== null ? overrideGranted : defaultGranted);
 
   const getStatus = (): 'active' | 'denied' | 'tier' | 'admin' | 'override' => {
     if (overrideGranted !== null) return 'override';
@@ -44,7 +49,13 @@ export const PermissionRow = ({
   const isGranted = overrideGranted !== null ? overrideGranted : defaultGranted;
 
   return (
-    <TableRow className={isDangerous ? 'bg-red-50/30 dark:bg-red-950/10' : undefined}>
+    <TableRow className={
+      isDangerous 
+        ? 'bg-red-50/30 dark:bg-red-950/10' 
+        : hasPendingChange 
+          ? 'bg-yellow-50/50 dark:bg-yellow-950/20 border-l-2 border-yellow-500' 
+          : undefined
+    }>
       <TableCell className="font-medium">
         <div className="flex items-start gap-2">
           <div>
@@ -73,11 +84,18 @@ export const PermissionRow = ({
       </TableCell>
       
       <TableCell className="text-center">
-        <Checkbox
-          checked={overrideGranted !== null ? overrideGranted : defaultGranted}
-          onCheckedChange={handleOverrideChange}
-          disabled={disabled}
-        />
+        <div className="flex items-center justify-center gap-2">
+          <Checkbox
+            checked={displayValue}
+            onCheckedChange={handleOverrideChange}
+            disabled={disabled}
+          />
+          {hasPendingChange && (
+            <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/30">
+              Pending
+            </Badge>
+          )}
+        </div>
       </TableCell>
       
       <TableCell>

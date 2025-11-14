@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -8,8 +8,10 @@ import { PermissionCategoryAccordion } from '@/components/permissions/Permission
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Save, Shield, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Save, Shield, User, X } from 'lucide-react';
 import { getRoleLabel } from '@/constants/roles';
+import { toast } from '@/hooks/use-toast';
 import type { PermissionAction } from '@/hooks/usePropertyPermissions';
 
 const PermissionManagementPage = () => {
@@ -17,9 +19,17 @@ const PermissionManagementPage = () => {
   const { currentProperty, availableProperties } = usePropertyContext();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>(currentProperty?.id || '');
+  const [pendingChanges, setPendingChanges] = useState<Map<PermissionAction, boolean>>(new Map());
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const { categories, definitions, isLoading: permissionsLoading } = usePropertyPermissions();
   const { overrides, roleTemplates, togglePermission, removeOverride } = usePermissionManagement(selectedUserId);
+
+  // Reset pending changes when user or property changes
+  useEffect(() => {
+    setPendingChanges(new Map());
+    setHasUnsavedChanges(false);
+  }, [selectedUserId, selectedPropertyId]);
 
   // Check if current user is super admin
   const isSuperAdmin = userRole === 'super_admin' || userRole === 'admin';
@@ -43,15 +53,50 @@ const PermissionManagementPage = () => {
   // Get selected user's role
   const selectedUser = users.find(u => u.id === selectedUserId);
 
-  const handlePermissionChange = async (action: PermissionAction, granted: boolean) => {
+  const handlePermissionChange = (action: PermissionAction, granted: boolean) => {
     if (!selectedUserId || !selectedPropertyId) return;
 
-    await togglePermission.mutateAsync({
-      userId: selectedUserId,
-      propertyId: selectedPropertyId,
-      action,
-      isGranted: granted
+    setPendingChanges(prev => {
+      const newMap = new Map(prev);
+      newMap.set(action, granted);
+      return newMap;
     });
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSaveAllChanges = async () => {
+    if (!selectedUserId || !selectedPropertyId || pendingChanges.size === 0) return;
+
+    try {
+      // Save all pending changes sequentially
+      for (const [action, granted] of pendingChanges.entries()) {
+        await togglePermission.mutateAsync({
+          userId: selectedUserId,
+          propertyId: selectedPropertyId,
+          action,
+          isGranted: granted
+        });
+      }
+
+      // Clear pending changes after successful save
+      setPendingChanges(new Map());
+      setHasUnsavedChanges(false);
+      toast({
+        title: "Success",
+        description: `${pendingChanges.size} permission(s) updated successfully`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save some permissions",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCancelChanges = () => {
+    setPendingChanges(new Map());
+    setHasUnsavedChanges(false);
   };
 
   if (!isSuperAdmin) {
@@ -96,6 +141,37 @@ const PermissionManagementPage = () => {
               Configure user permissions for specific properties
             </p>
           </div>
+          {hasUnsavedChanges && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20">
+                {pendingChanges.size} unsaved change{pendingChanges.size !== 1 ? 's' : ''}
+              </Badge>
+              <Button
+                onClick={handleCancelChanges}
+                variant="outline"
+                disabled={togglePermission.isPending}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveAllChanges}
+                disabled={togglePermission.isPending}
+              >
+                {togglePermission.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* User Selection Card */}
@@ -175,7 +251,9 @@ const PermissionManagementPage = () => {
                   roleTemplates={roleTemplates}
                   userOverrides={overrides}
                   userRole={selectedUser?.role || ''}
+                  pendingChanges={pendingChanges}
                   onPermissionChange={handlePermissionChange}
+                  disabled={togglePermission.isPending}
                 />
               );
             })}
