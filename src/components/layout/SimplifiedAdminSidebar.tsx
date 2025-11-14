@@ -78,6 +78,7 @@ const adminMenuGroups = [
     label: "Management Hub",
     items: [
       { title: "User Management", url: "/admin/users", icon: Users },
+      { title: "Permission Management", url: "/admin/permissions", icon: Shield },
       { title: "Assets", url: "/admin/assets", icon: Building },
       { title: "Visitor Management", url: "/admin/visitors", icon: UserCheck },
       { title: "Security", url: "/admin/security", icon: Shield },
