@@ -16,9 +16,7 @@ const PermissionManagementPage = () => {
   const { user, userRole } = useAuth();
   const { currentProperty, availableProperties } = usePropertyContext();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [selectedUserRole, setSelectedUserRole] = useState<string>('');
-  
-  const selectedPropertyId = currentProperty?.id;
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>(currentProperty?.id || '');
 
   const { categories, definitions, isLoading: permissionsLoading } = usePropertyPermissions();
   const { overrides, roleTemplates, togglePermission, removeOverride } = usePermissionManagement(selectedUserId);
@@ -45,15 +43,14 @@ const PermissionManagementPage = () => {
   // Get selected user's role
   const selectedUser = users.find(u => u.id === selectedUserId);
 
-  const handlePermissionChange = async (action: PermissionAction, granted: boolean, reason?: string) => {
+  const handlePermissionChange = async (action: PermissionAction, granted: boolean) => {
     if (!selectedUserId || !selectedPropertyId) return;
 
     await togglePermission.mutateAsync({
       userId: selectedUserId,
       propertyId: selectedPropertyId,
       action,
-      isGranted: granted,
-      reason
+      isGranted: granted
     });
   };
 
@@ -132,9 +129,18 @@ const PermissionManagementPage = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Property</label>
-                <div className="h-10 px-3 py-2 border rounded-md bg-muted">
-                  {selectedProperty?.name || 'No property selected'}
-                </div>
+                <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProperties.map(property => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

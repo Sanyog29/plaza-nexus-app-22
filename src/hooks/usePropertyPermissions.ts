@@ -4,6 +4,43 @@ import { useAuth } from '@/components/AuthProvider';
 import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from 'sonner';
 
+// Type workarounds for new tables not yet in generated types
+type PermissionCategoryRow = {
+  id: string;
+  name: string;
+  display_order: number;
+  icon: string;
+  description: string;
+};
+
+type PermissionDefinitionRow = {
+  action: PermissionAction;
+  name: string;
+  description: string;
+  minimum_tier: number;
+  display_order: number;
+  is_dangerous: boolean;
+  category_id: string;
+};
+
+type UserPermissionRow = {
+  id?: string;
+  user_id: string;
+  property_id: string;
+  permission_action: PermissionAction;
+  is_granted: boolean;
+  granted_by?: string;
+  override_reason?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type RolePermissionTemplateRow = {
+  role: string;
+  permission_action: PermissionAction;
+  is_granted: boolean;
+};
+
 export type PermissionAction = 
   | 'view_tickets' | 'create_ticket' | 'close_ticket' | 'assign_ticket' | 'escalate_ticket' | 'approve_ticket_closure'
   | 'view_requisitions' | 'create_requisition' | 'approve_requisition' | 'reject_requisition'
@@ -49,12 +86,12 @@ export const usePropertyPermissions = () => {
     queryKey: ['permission-categories'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('permission_categories')
+        .from('permission_categories' as any)
         .select('*')
         .order('display_order');
       
       if (error) throw error;
-      return data as PermissionCategory[];
+      return (data || []) as unknown as PermissionCategoryRow[];
     }
   });
 
@@ -63,12 +100,12 @@ export const usePropertyPermissions = () => {
     queryKey: ['permission-definitions'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('permission_definitions')
+        .from('permission_definitions' as any)
         .select('*')
         .order('category_id, display_order');
       
       if (error) throw error;
-      return data as PermissionDefinition[];
+      return (data || []) as unknown as PermissionDefinitionRow[];
     }
   });
 
@@ -78,13 +115,13 @@ export const usePropertyPermissions = () => {
     queryFn: async () => {
       if (!user?.id || !selectedPropertyId) return [];
 
-      const { data, error } = await supabase.rpc('get_user_permissions_for_property', {
+      const { data, error } = await supabase.rpc('get_user_permissions_for_property' as any, {
         _user_id: user.id,
         _property_id: selectedPropertyId
       });
 
       if (error) throw error;
-      return data as UserPermission[];
+      return (data || []) as UserPermission[];
     },
     enabled: !!user?.id && !!selectedPropertyId
   });
@@ -130,13 +167,13 @@ export const usePermissionManagement = (targetUserId?: string) => {
       if (!targetUserId || !selectedPropertyId) return [];
 
       const { data, error } = await supabase
-        .from('user_permissions')
+        .from('user_permissions' as any)
         .select('*')
         .eq('user_id', targetUserId)
         .eq('property_id', selectedPropertyId);
 
       if (error) throw error;
-      return data;
+      return (data || []) as unknown as UserPermissionRow[];
     },
     enabled: !!targetUserId && !!selectedPropertyId
   });
@@ -146,11 +183,11 @@ export const usePermissionManagement = (targetUserId?: string) => {
     queryKey: ['role-permission-templates'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('role_permission_templates')
+        .from('role_permission_templates' as any)
         .select('*');
 
       if (error) throw error;
-      return data;
+      return (data || []) as unknown as RolePermissionTemplateRow[];
     }
   });
 
@@ -160,17 +197,15 @@ export const usePermissionManagement = (targetUserId?: string) => {
       userId,
       propertyId,
       action,
-      isGranted,
-      reason
+      isGranted
     }: {
       userId: string;
       propertyId: string;
       action: PermissionAction;
       isGranted: boolean;
-      reason?: string;
     }) => {
       const { data: existing } = await supabase
-        .from('user_permissions')
+        .from('user_permissions' as any)
         .select('id')
         .eq('user_id', userId)
         .eq('property_id', propertyId)
@@ -180,39 +215,36 @@ export const usePermissionManagement = (targetUserId?: string) => {
       if (existing) {
         // Update existing
         const { error } = await supabase
-          .from('user_permissions')
+          .from('user_permissions' as any)
           .update({
             is_granted: isGranted,
-            override_reason: reason,
             updated_at: new Date().toISOString()
           })
-          .eq('id', existing.id);
+          .eq('id', (existing as any).id);
 
         if (error) throw error;
       } else {
         // Insert new
         const { error } = await supabase
-          .from('user_permissions')
+          .from('user_permissions' as any)
           .insert({
             user_id: userId,
             property_id: propertyId,
             permission_action: action,
             is_granted: isGranted,
-            granted_by: (await supabase.auth.getUser()).data.user?.id,
-            override_reason: reason
+            granted_by: (await supabase.auth.getUser()).data.user?.id
           });
 
         if (error) throw error;
       }
 
       // Log audit trail
-      await supabase.from('permission_audit_log').insert({
+      await supabase.from('permission_audit_log' as any).insert({
         user_id: userId,
         property_id: propertyId,
         permission_action: action,
         action_type: isGranted ? 'granted' : 'revoked',
-        performed_by: (await supabase.auth.getUser()).data.user?.id,
-        reason
+        performed_by: (await supabase.auth.getUser()).data.user?.id
       });
     },
     onSuccess: () => {
@@ -238,7 +270,7 @@ export const usePermissionManagement = (targetUserId?: string) => {
       action: PermissionAction;
     }) => {
       const { error } = await supabase
-        .from('user_permissions')
+        .from('user_permissions' as any)
         .delete()
         .eq('user_id', userId)
         .eq('property_id', propertyId)
@@ -247,7 +279,7 @@ export const usePermissionManagement = (targetUserId?: string) => {
       if (error) throw error;
 
       // Log audit trail
-      await supabase.from('permission_audit_log').insert({
+      await supabase.from('permission_audit_log' as any).insert({
         user_id: userId,
         property_id: propertyId,
         permission_action: action,
