@@ -33,6 +33,7 @@ import MaintenancePage from "./pages/MaintenancePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminContentPage from "./pages/AdminContentPage";
 import UserManagementPage from "./pages/UserManagementPage";
+import PermissionManagementPage from "./pages/PermissionManagementPage";
 import AdminRequestsPage from "./pages/AdminRequestsPage";
 import UnifiedAnalyticsPage from "./pages/UnifiedAnalyticsPage";
 import EnhancedAnalyticsPage from "./pages/EnhancedAnalyticsPage";
@@ -207,6 +208,7 @@ const App = () => (
                <Route path="/admin/operational-excellence" element={<OperationalExcellencePage />} />
                <Route path="/admin/advanced-features" element={<AdvancedFeaturesPage />} />
                <Route path="/admin/security-guard" element={<SecurityGuardPage />} />
+               <Route path="/admin/permissions" element={<PermissionManagementPage />} />
                <Route path="/architecture" element={<ArchitecturePage />} />
                
                {/* Staff Routes */}
