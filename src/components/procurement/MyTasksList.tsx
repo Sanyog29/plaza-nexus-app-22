@@ -34,9 +34,10 @@ import {
 
 interface MyTasksListProps {
   filter?: 'draft' | 'pending_manager_approval' | 'manager_approved' | 'all';
+  propertyId?: string | null;
 }
 
-export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
+export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) => {
   const { user, userRole } = useAuth();
   const { navigate } = useNavigationTransition();
   const queryClient = useQueryClient();
@@ -60,12 +61,17 @@ export const MyTasksList = ({ filter = 'all' }: MyTasksListProps) => {
   const { acceptRequisition, isAccepting } = usePurchaseOrders();
   
   const { data: requisitions, isLoading, isError, error } = useQuery({
-    queryKey: ['my-requisitions', filter, userRole],
+    queryKey: ['my-requisitions', filter, userRole, propertyId],
     queryFn: async () => {
       let query = supabase
         .from('requisition_lists')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Apply property filter
+      if (propertyId) {
+        query = query.eq('property_id', propertyId);
+      }
 
       // Role-based filtering - Procurement roles only see approved and later stages
       if (userRole === 'purchase_executive' || userRole === 'procurement_manager') {
