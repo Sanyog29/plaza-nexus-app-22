@@ -11,7 +11,7 @@ interface RequestCounts {
   inProgressRequests: number;
 }
 
-export const useRequestCounts = () => {
+export const useRequestCounts = (propertyId?: string | null) => {
   const { user, isStaff, isAdmin } = useAuth();
   const [counts, setCounts] = useState<RequestCounts>({
     totalRequests: 0,
@@ -32,6 +32,11 @@ export const useRequestCounts = () => {
         .from('maintenance_requests')
         .select('status')
         .is('deleted_at', null);
+      
+      // Apply property filter if specified
+      if (propertyId) {
+        query = query.eq('property_id', propertyId);
+      }
       
       // Non-staff/admin users see only their own requests
       if (!isStaff && !isAdmin && user?.id) {
@@ -84,7 +89,7 @@ export const useRequestCounts = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [propertyId]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };
