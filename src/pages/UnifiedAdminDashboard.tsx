@@ -63,9 +63,10 @@ const UnifiedAdminDashboard = () => {
   
   // Property selection state
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
-    if (roleLevel === 'L4+') return null; // Super admin: default to "All Properties"
-    if (roleLevel === 'L3') return currentProperty?.id || null; // L3: default to primary property
-    return currentProperty?.id || null; // L2/L1: locked to assigned property
+    // L4+ and L3: Default to "All Properties" view
+    if (roleLevel === 'L4+' || roleLevel === 'L3') return null;
+    // L2/L1: Locked to assigned property
+    return currentProperty?.id || null;
   });
 
   // For L2/L1, always use their assigned property (ignore state)

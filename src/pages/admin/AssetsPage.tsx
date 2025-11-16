@@ -14,7 +14,8 @@ export default function AssetsPage() {
   const roleLevel = getRoleLevel(userRole);
 
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
-    if (roleLevel === 'L4+') return null;
+    // L4+ and L3: Default to "All Properties" view
+    if (roleLevel === 'L4+' || roleLevel === 'L3') return null;
     return currentProperty?.id || null;
   });
 
