@@ -4741,6 +4741,129 @@ export type Database = {
         }
         Relationships: []
       }
+      permission_audit_log: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          id: string
+          performed_by: string
+          permission_action: Database["public"]["Enums"]["permission_action"]
+          property_id: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          id?: string
+          performed_by: string
+          permission_action: Database["public"]["Enums"]["permission_action"]
+          property_id?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          performed_by?: string
+          permission_action?: Database["public"]["Enums"]["permission_action"]
+          property_id?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_audit_log_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permission_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number
+          icon: string | null
+          id: string
+          name: string
+          parent_category_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order: number
+          icon?: string | null
+          id?: string
+          name: string
+          parent_category_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_category_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "permission_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permission_definitions: {
+        Row: {
+          action: Database["public"]["Enums"]["permission_action"]
+          category_id: string
+          created_at: string | null
+          description: string | null
+          display_order: number
+          id: string
+          is_dangerous: boolean | null
+          minimum_tier: number
+          name: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["permission_action"]
+          category_id: string
+          created_at?: string | null
+          description?: string | null
+          display_order: number
+          id?: string
+          is_dangerous?: boolean | null
+          minimum_tier: number
+          name: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["permission_action"]
+          category_id?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_dangerous?: boolean | null
+          minimum_tier?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_definitions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "permission_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_redemptions: {
         Row: {
           fulfilled_at: string | null
@@ -5589,6 +5712,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_assignments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          property_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          property_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          property_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_user_roles_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
@@ -6832,6 +6999,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_permission_templates: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_granted_by_default: boolean | null
+          permission_action: Database["public"]["Enums"]["permission_action"]
+          role: Database["public"]["Enums"]["app_role"]
+          tier: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_granted_by_default?: boolean | null
+          permission_action: Database["public"]["Enums"]["permission_action"]
+          role: Database["public"]["Enums"]["app_role"]
+          tier: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_granted_by_default?: boolean | null
+          permission_action?: Database["public"]["Enums"]["permission_action"]
+          role?: Database["public"]["Enums"]["app_role"]
+          tier?: number
+        }
+        Relationships: []
       }
       room_bookings: {
         Row: {
@@ -9896,6 +10090,59 @@ export type Database = {
           },
         ]
       }
+      user_permissions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string
+          id: string
+          is_granted: boolean | null
+          notes: string | null
+          override_reason: string | null
+          permission_action: Database["public"]["Enums"]["permission_action"]
+          property_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by: string
+          id?: string
+          is_granted?: boolean | null
+          notes?: string | null
+          override_reason?: string | null
+          permission_action: Database["public"]["Enums"]["permission_action"]
+          property_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string
+          id?: string
+          is_granted?: boolean | null
+          notes?: string | null
+          override_reason?: string | null
+          permission_action?: Database["public"]["Enums"]["permission_action"]
+          property_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permissions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -12220,6 +12467,14 @@ export type Database = {
         }[]
       }
       get_user_permissions: { Args: { user_id: string }; Returns: Json }
+      get_user_permissions_for_property: {
+        Args: { _property_id: string; _user_id: string }
+        Returns: {
+          action: Database["public"]["Enums"]["permission_action"]
+          is_granted: boolean
+          source: string
+        }[]
+      }
       get_user_primary_property: { Args: { _user_id: string }; Returns: string }
       get_user_properties: {
         Args: { _user_id: string }
@@ -12242,6 +12497,14 @@ export type Database = {
           total_orders: number
           total_revenue: number
         }[]
+      }
+      has_permission: {
+        Args: {
+          _action: Database["public"]["Enums"]["permission_action"]
+          _property_id: string
+          _user_id: string
+        }
+        Returns: boolean
       }
       has_role:
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
@@ -12488,6 +12751,41 @@ export type Database = {
         | "property_manager"
       approval_status: "pending" | "approved" | "rejected"
       availability_status_type: "available" | "busy" | "offline" | "on_leave"
+      permission_action:
+        | "view_tickets"
+        | "create_ticket"
+        | "close_ticket"
+        | "assign_ticket"
+        | "escalate_ticket"
+        | "approve_ticket_closure"
+        | "view_requisitions"
+        | "create_requisition"
+        | "approve_requisition"
+        | "reject_requisition"
+        | "view_procurement"
+        | "create_purchase_order"
+        | "approve_purchase"
+        | "manage_vendors"
+        | "view_maintenance_reports"
+        | "view_financial_reports"
+        | "view_executive_reports"
+        | "view_vendor_reports"
+        | "generate_reports"
+        | "schedule_reports"
+        | "export_reports"
+        | "delete_report_history"
+        | "view_basic_analytics"
+        | "view_advanced_analytics"
+        | "view_financial_analytics"
+        | "view_users"
+        | "create_users"
+        | "edit_users"
+        | "delete_users"
+        | "assign_roles"
+        | "manage_properties"
+        | "configure_system"
+        | "view_audit_logs"
+        | "manage_integrations"
       request_priority: "low" | "medium" | "high" | "urgent"
       request_status:
         | "pending"
@@ -12680,6 +12978,42 @@ export const Constants = {
       ],
       approval_status: ["pending", "approved", "rejected"],
       availability_status_type: ["available", "busy", "offline", "on_leave"],
+      permission_action: [
+        "view_tickets",
+        "create_ticket",
+        "close_ticket",
+        "assign_ticket",
+        "escalate_ticket",
+        "approve_ticket_closure",
+        "view_requisitions",
+        "create_requisition",
+        "approve_requisition",
+        "reject_requisition",
+        "view_procurement",
+        "create_purchase_order",
+        "approve_purchase",
+        "manage_vendors",
+        "view_maintenance_reports",
+        "view_financial_reports",
+        "view_executive_reports",
+        "view_vendor_reports",
+        "generate_reports",
+        "schedule_reports",
+        "export_reports",
+        "delete_report_history",
+        "view_basic_analytics",
+        "view_advanced_analytics",
+        "view_financial_analytics",
+        "view_users",
+        "create_users",
+        "edit_users",
+        "delete_users",
+        "assign_roles",
+        "manage_properties",
+        "configure_system",
+        "view_audit_logs",
+        "manage_integrations",
+      ],
       request_priority: ["low", "medium", "high", "urgent"],
       request_status: [
         "pending",
