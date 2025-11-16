@@ -5,11 +5,26 @@ import { ProcurementStats } from '@/components/procurement/ProcurementStats';
 import { MyTasksList } from '@/components/procurement/MyTasksList';
 import { QuickActions } from '@/components/procurement/QuickActions';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
+import { getRoleLevel } from '@/constants/roles';
+import { PropertySelector } from '@/components/analytics/PropertySelector';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { Package, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const ProcurementDashboard = () => {
   const { userRole, permissions } = useAuth();
+  const { currentProperty } = usePropertyContext();
+  const roleLevel = getRoleLevel(userRole);
+
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
+    if (roleLevel === 'L4+') return null;
+    return currentProperty?.id || null;
+  });
+
+  const effectivePropertyId = (roleLevel === 'L2' || roleLevel === 'L1')
+    ? currentProperty?.id || null
+    : selectedPropertyId;
 
   return (
     <>
@@ -30,11 +45,22 @@ const ProcurementDashboard = () => {
               Streamlined procurement operations for {userRole === 'procurement_manager' ? 'managers' : 'executives'}
             </p>
           </div>
-          <QuickActions />
+          
+          <div className="flex items-center gap-3">
+            {/* Property Selector for L3, L4+, and procurement_manager */}
+            {(roleLevel === 'L3' || roleLevel === 'L4+' || userRole === 'procurement_manager') && (
+              <PropertySelector
+                value={selectedPropertyId}
+                onChange={setSelectedPropertyId}
+                variant="header"
+              />
+            )}
+            <QuickActions />
+          </div>
         </div>
 
         {/* Stats Overview */}
-        <ProcurementStats />
+        <ProcurementStats propertyId={effectivePropertyId} />
 
         {/* Main Content */}
         <Tabs defaultValue="approved" className="w-full">
@@ -56,11 +82,11 @@ const ProcurementDashboard = () => {
               </TabsList>
 
               <TabsContent value="approved" className="space-y-4">
-                <MyTasksList filter="manager_approved" />
+                <MyTasksList filter="manager_approved" propertyId={effectivePropertyId} />
               </TabsContent>
 
               <TabsContent value="assigned" className="space-y-4">
-                <MyTasksList filter="all" />
+                <MyTasksList filter="all" propertyId={effectivePropertyId} />
               </TabsContent>
             </>
           ) : (
@@ -85,11 +111,11 @@ const ProcurementDashboard = () => {
               </TabsList>
 
               <TabsContent value="approved" className="space-y-4">
-                <MyTasksList filter="manager_approved" />
+                <MyTasksList filter="manager_approved" propertyId={effectivePropertyId} />
               </TabsContent>
 
               <TabsContent value="assigned" className="space-y-4">
-                <MyTasksList filter="all" />
+                <MyTasksList filter="all" propertyId={effectivePropertyId} />
               </TabsContent>
 
               <TabsContent value="orders" className="space-y-4">

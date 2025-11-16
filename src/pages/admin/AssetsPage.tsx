@@ -1,16 +1,46 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Wrench, AlertTriangle, CheckCircle } from "lucide-react";
 import { AssetManagement } from "@/components/assets/AssetManagement";
+import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
+import { getRoleLevel } from '@/constants/roles';
+import { PropertySelector } from '@/components/analytics/PropertySelector';
+import { useState } from 'react';
 
 export default function AssetsPage() {
+  const { user } = useAuth();
+  const { currentProperty } = usePropertyContext();
+  const userRole = user?.user_metadata?.role;
+  const roleLevel = getRoleLevel(userRole);
+
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
+    if (roleLevel === 'L4+') return null;
+    return currentProperty?.id || null;
+  });
+
+  const effectivePropertyId = (roleLevel === 'L2' || roleLevel === 'L1')
+    ? currentProperty?.id || null
+    : selectedPropertyId;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Asset Management</h1>
-          <p className="text-muted-foreground mt-2">
-            Monitor and manage all facility assets and equipment
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Asset Management</h1>
+            <p className="text-muted-foreground mt-2">
+              Monitor and manage all facility assets and equipment
+            </p>
+          </div>
+
+          {/* Property Selector for L3 and L4+ */}
+          {(roleLevel === 'L3' || roleLevel === 'L4+') && (
+            <PropertySelector
+              value={selectedPropertyId}
+              onChange={setSelectedPropertyId}
+              variant="header"
+            />
+          )}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -59,7 +89,7 @@ export default function AssetsPage() {
           </Card>
         </div>
 
-        <AssetManagement />
+        <AssetManagement propertyId={effectivePropertyId} />
       </div>
     </div>
   );

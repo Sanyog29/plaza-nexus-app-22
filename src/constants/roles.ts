@@ -1,5 +1,6 @@
 // Centralized role definitions for the new role system
 export const ALLOWED_ROLES = [
+  { value: 'super_admin', label: 'Super Admin', color: 'bg-purple-100 text-purple-800 border-purple-200' },
   { value: 'admin', label: 'Admin', color: 'bg-red-100 text-red-800 border-red-200' },
   { value: 'tenant', label: 'Tenant', color: 'bg-gray-100 text-gray-800 border-gray-200' },
   { value: 'super_tenant', label: 'Super Tenant', color: 'bg-violet-100 text-violet-800 border-violet-200' },
@@ -9,6 +10,7 @@ export const ALLOWED_ROLES = [
   { value: 'fe', label: 'Field Expert', color: 'bg-green-100 text-green-800 border-green-200' },
   { value: 'hk', label: 'House Keeping', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
   { value: 'se', label: 'Security Executive', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+  { value: 'field_staff', label: 'Field Staff', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
   { value: 'assistant_manager', label: 'Assistant Manager', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
   { value: 'assistant_floor_manager', label: 'Assistant Floor Manager', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
   { value: 'assistant_general_manager', label: 'Assistant General Manager', color: 'bg-pink-100 text-pink-800 border-pink-200' },
@@ -16,8 +18,6 @@ export const ALLOWED_ROLES = [
   { value: 'vp', label: 'VP', color: 'bg-amber-100 text-amber-800 border-amber-200' },
   { value: 'ceo', label: 'CEO', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
   { value: 'cxo', label: 'CXO', color: 'bg-teal-100 text-teal-800 border-teal-200' },
-  
-  // Procurement & Operations Roles
   { value: 'ops_supervisor', label: 'Operations Supervisor', color: 'bg-blue-100 text-blue-800 border-blue-200' },
   { value: 'procurement_manager', label: 'Procurement Manager', color: 'bg-sky-100 text-sky-800 border-sky-200' },
   { value: 'purchase_executive', label: 'Purchase Executive', color: 'bg-lime-100 text-lime-800 border-lime-200' },
@@ -71,4 +71,52 @@ export const isApproverEligibleRole = (role: string): boolean => {
     'cxo',
     'admin'
   ].includes(role);
+};
+
+// ==================== ROLE HIERARCHY ====================
+export const ROLE_HIERARCHY = {
+  'L4+': {
+    label: 'Multi-Property Access',
+    description: 'View all properties, full system access',
+    roles: ['super_admin']
+  },
+  L3: {
+    label: 'Property-Level Management',
+    description: 'View assigned properties, senior management',
+    roles: ['admin', 'ceo', 'cxo', 'vp', 'assistant_vice_president', 'assistant_general_manager']
+  },
+  L2: {
+    label: 'Department-Level',
+    description: 'Department-specific access within property',
+    roles: ['assistant_manager', 'assistant_floor_manager', 'ops_supervisor', 'property_manager', 'procurement_manager']
+  },
+  L1: {
+    label: 'Field-Level',
+    description: 'Operational field staff',
+    roles: ['mst', 'fe', 'hk', 'se', 'field_staff', 'purchase_executive']
+  }
+} as const;
+
+// Helper functions for role hierarchy
+export const getRoleLevel = (role: string): 'L4+' | 'L3' | 'L2' | 'L1' | null => {
+  for (const [level, config] of Object.entries(ROLE_HIERARCHY)) {
+    if ((config.roles as readonly string[]).includes(role)) {
+      return level as 'L4+' | 'L3' | 'L2' | 'L1';
+    }
+  }
+  return null;
+};
+
+export const canSwitchProperties = (role: string): boolean => {
+  const level = getRoleLevel(role);
+  return level === 'L4+' || level === 'L3';
+};
+
+export const canViewAllProperties = (role: string): boolean => {
+  return getRoleLevel(role) === 'L4+';
+};
+
+export const isRestrictedToSingleProperty = (role: string): boolean => {
+  const level = getRoleLevel(role);
+  return level === 'L1' || level === 'L2';
 };

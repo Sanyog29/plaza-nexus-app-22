@@ -8,6 +8,9 @@ import { LoadingWrapper } from '@/components/common/LoadingWrapper';
 import { useOptimizedAdminMetrics } from '@/hooks/useOptimizedAdminMetrics';
 import { useRequestCounts } from '@/hooks/useRequestCounts';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
+import { getRoleLevel } from '@/constants/roles';
+import { PropertySelector } from '@/components/analytics/PropertySelector';
 import { useNavigate } from 'react-router-dom';
 import { 
   Activity, 
@@ -54,7 +57,21 @@ const PropertyManagementPage = lazy(() => import('@/pages/admin/PropertyManageme
 const UnifiedAdminDashboard = () => {
   const navigate = useNavigate();
   const { isAdmin, userRole } = useAuth();
+  const { currentProperty } = usePropertyContext();
+  const roleLevel = getRoleLevel(userRole);
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Property selection state
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
+    if (roleLevel === 'L4+') return null; // Super admin: default to "All Properties"
+    if (roleLevel === 'L3') return currentProperty?.id || null; // L3: default to primary property
+    return currentProperty?.id || null; // L2/L1: locked to assigned property
+  });
+
+  // For L2/L1, always use their assigned property (ignore state)
+  const effectivePropertyId = (roleLevel === 'L2' || roleLevel === 'L1')
+    ? currentProperty?.id || null
+    : selectedPropertyId;
   
   const { 
     metrics, 
@@ -64,9 +81,9 @@ const UnifiedAdminDashboard = () => {
     lastFetch,
     refreshMetrics,
     getHealthSummary 
-  } = useOptimizedAdminMetrics();
+  } = useOptimizedAdminMetrics(effectivePropertyId);
   
-  const { counts: requestCounts } = useRequestCounts();
+  const { counts: requestCounts } = useRequestCounts(effectivePropertyId);
 
   if (!isAdmin) {
     return (
@@ -237,17 +254,43 @@ const UnifiedAdminDashboard = () => {
             <Badge variant={isRealTimeActive ? "default" : "secondary"}>
               {isRealTimeActive ? "Live" : "Offline"}
             </Badge>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={refreshMetrics}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+            
+            {/* Property Selector for L3 and L4+ roles */}
+            {(roleLevel === 'L3' || roleLevel === 'L4+') && (
+              <PropertySelector
+                value={selectedPropertyId}
+                onChange={setSelectedPropertyId}
+                variant="header"
+              />
+            )}
+            
+            {/* Refresh button for L2/L1 or as icon for others */}
+            {(roleLevel === 'L2' || roleLevel === 'L1') && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshMetrics}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+            )}
           </div>
         </div>
+
+        {/* Property Context Indicator for L2/L1 */}
+        {effectivePropertyId && (roleLevel === 'L2' || roleLevel === 'L1') && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-lg border border-border/50">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {currentProperty?.name}
+            </span>
+            <Badge variant="outline" className="ml-auto text-xs">
+              {roleLevel === 'L2' ? 'Department View' : 'Field View'}
+            </Badge>
+          </div>
+        )}
 
         {/* Critical Alerts */}
         {(metrics.urgentRequests > 0 || metrics.slaBreaches > 0 || metrics.criticalAlerts > 0) && (

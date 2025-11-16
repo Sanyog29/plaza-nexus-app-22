@@ -55,7 +55,11 @@ interface Asset {
   updated_at: string;
 }
 
-export function AssetManagement() {
+interface AssetManagementProps {
+  propertyId?: string | null;
+}
+
+export function AssetManagement({ propertyId }: AssetManagementProps) {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +92,7 @@ export function AssetManagement() {
 
   useEffect(() => {
     fetchAssets();
-  }, []);
+  }, [propertyId]);
 
   useEffect(() => {
     filterAssets();
@@ -96,10 +100,17 @@ export function AssetManagement() {
 
   const fetchAssets = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('assets')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Apply property filter
+      if (propertyId) {
+        query = query.eq('property_id', propertyId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAssets(data || []);

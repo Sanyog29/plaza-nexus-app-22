@@ -43,7 +43,7 @@ interface OptimizedAdminData {
   lastFetch: string | null;
 }
 
-export const useOptimizedAdminMetrics = () => {
+export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
   const { user, isAdmin } = useAuth();
   const [data, setData] = useState<OptimizedAdminData>({
     metrics: {
@@ -85,11 +85,18 @@ export const useOptimizedAdminMetrics = () => {
       const now = new Date();
 
       // Single optimized query for maintenance requests - exclude soft-deleted
-      const { data: requests, error: requestsError } = await supabase
+      let requestsQuery = supabase
         .from('maintenance_requests')
         .select('id, status, priority, created_at, completed_at, sla_breach_at')
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
+
+      // Apply property filter if specified
+      if (propertyId) {
+        requestsQuery = requestsQuery.eq('property_id', propertyId);
+      }
+
+      const { data: requests, error: requestsError } = await requestsQuery;
 
       if (requestsError) throw requestsError;
 
@@ -175,7 +182,7 @@ export const useOptimizedAdminMetrics = () => {
         variant: "destructive",
       });
     }
-  }, [user, isAdmin]);
+  }, [user, isAdmin, propertyId]);
 
   // Smart real-time updates - only when tab is visible
   const setupRealTimeUpdates = useCallback(() => {
