@@ -145,6 +145,20 @@ export default {
 				'pulse-gentle': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.8' },
+				},
+				'cell-ripple': {
+					'0%': { 
+						transform: 'scale(1)',
+						opacity: '0.4'
+					},
+					'50%': { 
+						transform: 'scale(1.1)',
+						opacity: '1'
+					},
+					'100%': { 
+						transform: 'scale(1)',
+						opacity: '0.4'
+					}
 				}
 			},
 			animation: {
@@ -152,6 +166,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
 				'pulse-gentle': 'pulse-gentle 2s infinite ease-in-out',
+				'cell-ripple': 'cell-ripple var(--duration, 400ms) ease-out var(--delay, 0ms) 1'
 			}
 		}
 	},
