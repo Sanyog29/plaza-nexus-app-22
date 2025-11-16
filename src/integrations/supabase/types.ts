@@ -296,6 +296,7 @@ export type Database = {
           id: string
           metric_category: string
           metric_data: Json
+          property_id: string | null
           summary_date: string
           summary_type: string
         }
@@ -304,6 +305,7 @@ export type Database = {
           id?: string
           metric_category: string
           metric_data?: Json
+          property_id?: string | null
           summary_date: string
           summary_type: string
         }
@@ -312,10 +314,19 @@ export type Database = {
           id?: string
           metric_category?: string
           metric_data?: Json
+          property_id?: string | null
           summary_date?: string
           summary_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "analytics_summaries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       assets: {
         Row: {
@@ -12356,6 +12367,18 @@ export type Database = {
         Returns: number
       }
       generate_visitor_qr_data: { Args: { visitor_id: string }; Returns: Json }
+      get_all_properties_requests_metrics: {
+        Args: { _end_date: string; _start_date: string }
+        Returns: {
+          active_requests: number
+          avg_response_minutes: number
+          completed_requests: number
+          pending_requests: number
+          sla_breaches: number
+          total_requests: number
+          urgent_requests: number
+        }[]
+      }
       get_full_profile: { Args: { profile_id: string }; Returns: Json }
       get_invitation_by_token: { Args: { token: string }; Returns: Json }
       get_invitation_details: { Args: { token: string }; Returns: Json }
@@ -12367,6 +12390,18 @@ export type Database = {
           p_property_id: string
         }
         Returns: Json
+      }
+      get_property_requests_metrics: {
+        Args: { _end_date: string; _property_id: string; _start_date: string }
+        Returns: {
+          active_requests: number
+          avg_response_minutes: number
+          completed_requests: number
+          pending_requests: number
+          sla_breaches: number
+          total_requests: number
+          urgent_requests: number
+        }[]
       }
       get_public_profile_fields: {
         Args: { profile_id: string }

@@ -8,17 +8,22 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/components/AuthProvider';
 import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 
-export const ProcurementStats = () => {
+export const ProcurementStats = ({ propertyId }: { propertyId?: string | null }) => {
   const { userRole } = useAuth();
   const { navigate } = useNavigationTransition();
   const queryClient = useQueryClient();
   
   const { data: stats, isLoading, isError, error } = useQuery({
-    queryKey: ['procurement-stats', userRole],
+    queryKey: ['procurement-stats', userRole, propertyId],
     queryFn: async () => {
       let query = supabase
         .from('requisition_lists')
         .select('status', { count: 'exact' });
+
+      // Apply property filter
+      if (propertyId) {
+        query = query.eq('property_id', propertyId);
+      }
 
       // Role-based filtering - Procurement roles only see approved and later stages
       if (userRole === 'purchase_executive' || userRole === 'procurement_manager') {
