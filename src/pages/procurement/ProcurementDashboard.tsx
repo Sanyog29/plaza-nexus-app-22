@@ -18,7 +18,9 @@ const ProcurementDashboard = () => {
   const roleLevel = getRoleLevel(userRole);
 
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
-    if (roleLevel === 'L4+') return null;
+    // L4+ and L3: Default to "All Properties" view
+    // Special case: procurement_manager (L2) also gets property switching
+    if (roleLevel === 'L4+' || roleLevel === 'L3' || userRole === 'procurement_manager') return null;
     return currentProperty?.id || null;
   });
 

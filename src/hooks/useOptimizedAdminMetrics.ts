@@ -92,8 +92,9 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         .order('created_at', { ascending: false });
 
       // Apply property filter if specified
+      // Include NULL property_id (legacy requests) in all property views
       if (propertyId) {
-        requestsQuery = requestsQuery.eq('property_id', propertyId);
+        requestsQuery = requestsQuery.or(`property_id.eq.${propertyId},property_id.is.null`);
       }
 
       const { data: requests, error: requestsError } = await requestsQuery;

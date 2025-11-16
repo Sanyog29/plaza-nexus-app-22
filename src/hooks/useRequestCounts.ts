@@ -34,8 +34,9 @@ export const useRequestCounts = (propertyId?: string | null) => {
         .is('deleted_at', null);
       
       // Apply property filter if specified
+      // Include NULL property_id (legacy requests) in all property views
       if (propertyId) {
-        query = query.eq('property_id', propertyId);
+        query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
       }
       
       // Non-staff/admin users see only their own requests
