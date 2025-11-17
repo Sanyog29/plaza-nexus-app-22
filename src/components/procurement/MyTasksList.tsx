@@ -69,9 +69,8 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
         .order('created_at', { ascending: false });
 
       // Apply property filter
-      // Include NULL property_id (legacy requisitions) in all property views
       if (propertyId) {
-        query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
+        query = query.eq('property_id', propertyId);
       }
 
       // Role-based filtering - Procurement roles only see approved and later stages
