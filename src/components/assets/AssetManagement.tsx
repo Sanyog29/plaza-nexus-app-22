@@ -106,9 +106,8 @@ export function AssetManagement({ propertyId }: AssetManagementProps) {
         .order('created_at', { ascending: false });
 
       // Apply property filter
-      // Include NULL property_id (legacy assets) in all property views
       if (propertyId) {
-        query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
+        query = query.eq('property_id', propertyId);
       }
 
       const { data, error } = await query;

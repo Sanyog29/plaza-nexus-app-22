@@ -74,6 +74,13 @@ const UnifiedAdminDashboard = () => {
     ? currentProperty?.id || null
     : selectedPropertyId;
   
+  console.log('📊 Dashboard state:', {
+    roleLevel,
+    selectedPropertyId: selectedPropertyId || 'all',
+    effectivePropertyId: effectivePropertyId || 'all',
+    currentProperty: currentProperty?.name || 'All Properties'
+  });
+  
   const { 
     metrics, 
     isLoading, 

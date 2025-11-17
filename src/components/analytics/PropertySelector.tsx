@@ -44,12 +44,13 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
         .in('status', ['pending', 'in_progress', 'assigned']);
       
       const stats = data?.reduce((acc, req) => {
-        if (req.property_id) {
-          if (!acc[req.property_id]) acc[req.property_id] = 0;
-          acc[req.property_id]++;
-        }
+        const key = req.property_id || 'unassigned';
+        if (!acc[key]) acc[key] = 0;
+        acc[key]++;
         return acc;
       }, {} as Record<string, number>);
+      
+      console.log('🏗️ PropertySelector stats:', { totalRequests: data?.length, stats });
       
       return stats || {};
     },
@@ -59,6 +60,14 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   // L3: Show assigned properties only, L4+: Show all properties
   const showAllOption = roleLevel === 'L4+' || (roleLevel === 'L3' && availableProperties.length > 1);
   const selectedProperty = availableProperties.find(p => p.id === value);
+  
+  console.log('🏗️ PropertySelector rendered:', {
+    roleLevel,
+    value: value || 'all',
+    showAllOption,
+    availablePropertiesCount: availableProperties.length,
+    propertyStats
+  });
   
   return (
     <Select value={value || 'all'} onValueChange={(v) => onChange(v === 'all' ? null : v)}>

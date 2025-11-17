@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
+import { getRoleLevel } from '@/constants/roles';
 
 export interface Property {
   id: string;
@@ -96,19 +97,44 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
 
       setAvailableProperties(properties);
 
-      // Auto-select property
+      // Auto-select property based on role level
       const storedPropertyId = localStorage.getItem('current_property_id');
+      const roleLevel = getRoleLevel(userRole);
       
-      if (storedPropertyId && properties.find(p => p.id === storedPropertyId)) {
-        const selected = properties.find(p => p.id === storedPropertyId);
-        setCurrentProperty(selected || null);
+      console.log('🏢 PropertyContext initialized:', {
+        roleLevel,
+        userRole,
+        propertiesCount: properties.length,
+        storedPropertyId
+      });
+
+      // L3 & L4+: Default to "All Properties" (null) unless user explicitly selected
+      if (roleLevel === 'L4+' || roleLevel === 'L3') {
+        if (storedPropertyId && properties.find(p => p.id === storedPropertyId)) {
+          // Restore explicit user selection
+          const selected = properties.find(p => p.id === storedPropertyId);
+          setCurrentProperty(selected || null);
+          console.log('🏢 Restored property selection:', selected?.name);
+        } else {
+          // Default to "All Properties" - do NOT auto-select
+          setCurrentProperty(null);
+          localStorage.removeItem('current_property_id');
+          console.log('🏢 Defaulting to All Properties for L3/L4+');
+        }
       } else {
-        // Select primary property or first available
-        const primary = properties.find(p => p.isPrimary);
-        const selected = primary || properties[0] || null;
-        setCurrentProperty(selected);
-        if (selected) {
-          localStorage.setItem('current_property_id', selected.id);
+        // L1/L2: Auto-select primary or first property
+        if (storedPropertyId && properties.find(p => p.id === storedPropertyId)) {
+          const selected = properties.find(p => p.id === storedPropertyId);
+          setCurrentProperty(selected || null);
+          console.log('🏢 Restored L1/L2 property:', selected?.name);
+        } else {
+          const primary = properties.find(p => p.isPrimary);
+          const selected = primary || properties[0] || null;
+          setCurrentProperty(selected);
+          if (selected) {
+            localStorage.setItem('current_property_id', selected.id);
+            console.log('🏢 Auto-selected property for L1/L2:', selected.name);
+          }
         }
       }
     } catch (error) {
