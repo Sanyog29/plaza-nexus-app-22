@@ -44,7 +44,7 @@ interface OptimizedAdminData {
 }
 
 export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isStaff } = useAuth();
   const [data, setData] = useState<OptimizedAdminData>({
     metrics: {
       activeRequests: 0,
@@ -76,7 +76,8 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
 
   // Optimized data fetching with single query
   const fetchMetrics = useCallback(async () => {
-    if (!user || !isAdmin) return;
+    // Allow both admin and staff to fetch metrics
+    if (!user || (!isAdmin && !isStaff)) return;
 
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
