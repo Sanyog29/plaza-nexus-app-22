@@ -32,6 +32,18 @@ const AppLayout: React.FC = () => {
     }
   }, [user, isAdmin, isStaff, requestNotificationPermission]);
 
+  // Safety timeout to prevent infinite loading
+  useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        console.error('[AppLayout] Loading timeout - forcing reload');
+        window.location.href = '/auth';
+      }, 10000); // 10 second timeout
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoading]);
+
   // Handle redirects - clean navigation logic
   useEffect(() => {
     // Wait for both authentication AND role assignment to prevent race conditions
