@@ -243,7 +243,7 @@ const opsSupervisorMenuGroups = [
   {
     label: "Operations Approvals",
     items: [
-      { title: "Dashboard", url: "/admin/dashboard", icon: Home },
+      { title: "Dashboard", url: "/dashboard", icon: Home },
       { title: "Pending Approvals", url: "/procurement/pending-approvals", icon: Clock },
       { title: "Approval History", url: "/procurement/approval-history", icon: CheckCircle },
     ]
@@ -305,7 +305,6 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
         return procurementMenuGroups;
         
       // Management, Staff, Operations & Vendors - Staff level access with requests
-      case 'assistant_manager':
       case 'assistant_floor_manager':
       case 'field_staff':
       case 'ops_l1':
