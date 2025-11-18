@@ -83,7 +83,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // Operations Supervisor & Assistant Manager access control - Access to approvals
   if (userRole === 'ops_supervisor' || userRole === 'assistant_manager') {
-    const allowedOpsPaths = ['/procurement/pending-approvals', '/procurement/approval-history', '/operations', '/dashboard', '/profile', '/auth', '/admin'];
+    const allowedOpsPaths = [
+      '/procurement/pending-approvals',
+      '/procurement/approval-history',
+      '/procurement/create-requisition',
+      '/procurement/my-requisitions',
+      '/procurement/requisitions',
+      '/operations',
+      '/dashboard',
+      '/staff',
+      '/profile',
+      '/auth',
+      '/admin'
+    ];
     const isAllowedPath = allowedOpsPaths.some(path => 
       location.pathname === path || location.pathname.startsWith(path + '/')
     );

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 
 export interface RequisitionList {
@@ -30,6 +31,7 @@ interface RequisitionFilters {
 
 export const useRequisitionList = (filters?: RequisitionFilters) => {
   const { user, userRole, isAdmin, isSuperAdmin, isL2, isL3 } = useAuth();
+  const { currentProperty, isSuperAdmin: isPropertySuperAdmin } = usePropertyContext();
   const [requisitions, setRequisitions] = useState<RequisitionList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -57,12 +59,24 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
         `)
         .order('created_at', { ascending: false });
 
-      // Role-based filtering
+      // Role-based filtering with property scope
       if (!isAdmin && !isSuperAdmin && !isManager) {
         // FE users see only their own requisitions
         query = query.eq('created_by', user.id);
+      } else {
+        // Managers/admins must filter by their assigned property
+        // Only super admins without a selected property see ALL
+        if (!isPropertySuperAdmin || currentProperty) {
+          const propertyId = currentProperty?.id;
+          if (propertyId) {
+            query = query.eq('property_id', propertyId);
+          } else {
+            // If no property assigned, show nothing
+            query = query.eq('property_id', 'none');
+          }
+        }
+        // Super admin viewing "All Properties" sees everything (no filter)
       }
-      // Managers and admins see all requisitions (no filter needed)
 
       // Apply status filter
       if (filters?.status && filters.status.length > 0) {
