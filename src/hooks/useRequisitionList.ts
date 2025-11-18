@@ -44,6 +44,14 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
       return;
     }
 
+    // Wait for PropertyContext to initialize for managers that need property filtering
+    if (isManager && !isSuperAdmin) {
+      if (currentProperty === undefined) {
+        console.log('[useRequisitionList] Waiting for property context...');
+        return; // Don't query yet
+      }
+    }
+
     try {
       setIsLoading(true);
 
@@ -65,17 +73,29 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
         query = query.eq('created_by', user.id);
       } else {
         // Managers/admins must filter by their assigned property
+        console.log('[useRequisitionList] Manager filtering:', {
+          userRole,
+          isPropertySuperAdmin,
+          currentPropertyId: currentProperty?.id,
+          currentPropertyName: currentProperty?.name
+        });
+
         // Only super admins without a selected property see ALL
-        if (!isPropertySuperAdmin || currentProperty) {
+        if (isPropertySuperAdmin && !currentProperty) {
+          console.log('[useRequisitionList] Super admin viewing all properties - no filter');
+          // No filter - see all requisitions
+        } else {
+          // Everyone else MUST filter by property
           const propertyId = currentProperty?.id;
-          if (propertyId) {
-            query = query.eq('property_id', propertyId);
+          
+          if (!propertyId) {
+            console.error('[useRequisitionList] No property assigned! Showing nothing.');
+            query = query.eq('property_id', 'impossible-id-show-nothing');
           } else {
-            // If no property assigned, show nothing
-            query = query.eq('property_id', 'none');
+            console.log('[useRequisitionList] Filtering by property:', propertyId);
+            query = query.eq('property_id', propertyId);
           }
         }
-        // Super admin viewing "All Properties" sees everything (no filter)
       }
 
       // Apply status filter
