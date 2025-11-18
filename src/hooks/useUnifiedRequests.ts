@@ -73,6 +73,15 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
       return;
     }
 
+    // Wait for PropertyContext to initialize for staff that need property filtering
+    if (isStaff && userRole !== 'field_staff' && !isPropertySuperAdmin) {
+      // For staff that need property filtering, wait for property to load
+      if (currentProperty === undefined) {
+        console.log('[useUnifiedRequests] Waiting for property context...');
+        return; // Don't query yet
+      }
+    }
+
     try {
       setIsLoading(true);
 
@@ -105,16 +114,30 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
         query = query.or(`assigned_to.eq.${user.id},assigned_to.is.null`);
       } else {
         // Staff roles (admin, ops_supervisor, assistant_manager) - MUST filter by property
-        if (!isPropertySuperAdmin || currentProperty) {
+        console.log('[useUnifiedRequests] Staff filtering:', {
+          userRole,
+          isPropertySuperAdmin,
+          currentPropertyId: currentProperty?.id,
+          currentPropertyName: currentProperty?.name
+        });
+
+        // Super admin viewing "All Properties" (no property selected) sees everything
+        if (isPropertySuperAdmin && !currentProperty) {
+          console.log('[useUnifiedRequests] Super admin viewing all properties - no filter');
+          // No filter needed - see all requests
+        } else {
+          // Everyone else MUST filter by their assigned property
           const propertyId = currentProperty?.id;
-          if (propertyId) {
-            query = query.eq('property_id', propertyId);
+          
+          if (!propertyId) {
+            console.error('[useUnifiedRequests] No property assigned! Showing nothing.');
+            // User has no property - show nothing (safety measure)
+            query = query.eq('property_id', 'impossible-id-show-nothing');
           } else {
-            // If no property assigned, show nothing
-            query = query.eq('property_id', 'none');
+            console.log('[useUnifiedRequests] Filtering by property:', propertyId);
+            query = query.eq('property_id', propertyId);
           }
         }
-        // Super admin viewing "All Properties" sees everything (no filter)
       }
 
       // Apply filters
