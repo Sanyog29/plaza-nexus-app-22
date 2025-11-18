@@ -291,8 +291,9 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'assistant_general_manager':
         return adminMenuGroups;
 
-      // Operations Supervisor - approval access
+      // Operations Supervisor & Assistant Manager - approval access
       case 'ops_supervisor':
+      case 'assistant_manager':
         return opsSupervisorMenuGroups;
 
       // Procurement manager - execution only, no approvals
