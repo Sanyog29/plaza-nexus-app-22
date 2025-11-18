@@ -1,8 +1,9 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { format } from 'date-fns';
 import { generateRequisitionIdempotencyKey } from '@/lib/idempotency';
 import { handleSupabaseError } from '@/lib/errorHandler';
@@ -30,6 +31,7 @@ const CreateRequisitionContext = createContext<CreateRequisitionContextType | nu
 
 function useProvideCreateRequisition(onComplete?: () => void) {
   const { user } = useAuth();
+  const { currentProperty } = usePropertyContext();
   const queryClient = useQueryClient();
   
   const [editMode, setEditMode] = useState(false);
@@ -37,7 +39,7 @@ function useProvideCreateRequisition(onComplete?: () => void) {
   const [isLoadingRequisition, setIsLoadingRequisition] = useState(false);
   
   const [formData, setFormData] = useState<RequisitionFormData>({
-    property_id: '',
+    property_id: currentProperty?.id || '',
     priority: 'normal',
     expected_delivery_date: null,
     notes: '',
@@ -45,6 +47,16 @@ function useProvideCreateRequisition(onComplete?: () => void) {
   
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
+
+  // Auto-populate property_id when currentProperty changes
+  useEffect(() => {
+    if (currentProperty?.id && !formData.property_id && !editMode) {
+      setFormData(prev => ({
+        ...prev,
+        property_id: currentProperty.id
+      }));
+    }
+  }, [currentProperty?.id, formData.property_id, editMode]);
 
   const loadRequisition = async (id: string) => {
     setIsLoadingRequisition(true);

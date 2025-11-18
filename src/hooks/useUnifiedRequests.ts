@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 import { toDBStatus, mapStatusArrayToDB, type UIStatus, type DBRequestStatus } from '@/utils/status';
 
@@ -43,6 +44,7 @@ interface RequestFilters {
 
 export const useUnifiedRequests = (filters?: RequestFilters) => {
   const { user, isStaff, userRole, approvalStatus, isAdmin } = useAuth();
+  const { currentProperty, isSuperAdmin: isPropertySuperAdmin } = usePropertyContext();
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -94,15 +96,26 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
         `, { count: 'exact' })
         .is('deleted_at', null); // Exclude soft-deleted requests
 
-      // Apply role-based filtering
+      // Apply role-based filtering with property scope
       if (!isStaff) {
         // Non-staff can only see their own requests
         query = query.eq('reported_by', user.id);
       } else if (userRole === 'field_staff') {
         // Field staff can see requests assigned to them or unassigned
         query = query.or(`assigned_to.eq.${user.id},assigned_to.is.null`);
+      } else {
+        // Staff roles (admin, ops_supervisor, assistant_manager) - MUST filter by property
+        if (!isPropertySuperAdmin || currentProperty) {
+          const propertyId = currentProperty?.id;
+          if (propertyId) {
+            query = query.eq('property_id', propertyId);
+          } else {
+            // If no property assigned, show nothing
+            query = query.eq('property_id', 'none');
+          }
+        }
+        // Super admin viewing "All Properties" sees everything (no filter)
       }
-      // Admin and ops_supervisor can see all requests (no additional filter)
 
       // Apply filters
       if (parsedFilters.status?.length) {
