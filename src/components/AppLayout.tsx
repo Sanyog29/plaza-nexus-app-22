@@ -34,7 +34,8 @@ const AppLayout: React.FC = () => {
 
   // Handle redirects - clean navigation logic
   useEffect(() => {
-    if (isLoading || !user) return;
+    // Wait for both authentication AND role assignment to prevent race conditions
+    if (isLoading || !user || (user && !userRole)) return;
 
     // Vendor-specific redirects - redirect vendors to portal from home
     if (userRole === 'vendor' && location.pathname === '/') {

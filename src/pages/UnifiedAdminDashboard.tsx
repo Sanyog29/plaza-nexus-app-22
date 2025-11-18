@@ -56,7 +56,7 @@ const PropertyManagementPage = lazy(() => import('@/pages/admin/PropertyManageme
 
 const UnifiedAdminDashboard = () => {
   const navigate = useNavigate();
-  const { isAdmin, userRole } = useAuth();
+  const { isAdmin, isStaff, userRole } = useAuth();
   const { currentProperty } = usePropertyContext();
   const roleLevel = getRoleLevel(userRole);
   const [activeTab, setActiveTab] = useState('overview');
@@ -93,19 +93,27 @@ const UnifiedAdminDashboard = () => {
   
   const { counts: requestCounts } = useRequestCounts(effectivePropertyId);
 
-  if (!isAdmin) {
+  // Allow both admin and staff roles to access dashboard
+  if (!isStaff && !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Access Restricted</h2>
-            <p className="text-muted-foreground">You need admin privileges to access this dashboard.</p>
+            <p className="text-muted-foreground">You need staff or admin privileges to access this dashboard.</p>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  // Role-based tab visibility
+  const showHealthTab = isAdmin || roleLevel === 'L3' || roleLevel === 'L4+';
+  const showExecutiveTab = isAdmin || roleLevel === 'L4+';
+  const showPropertiesTab = isAdmin || roleLevel === 'L3' || roleLevel === 'L4+';
+  const showSettingsTab = isAdmin;
+  // All staff can see: Overview, Analytics, Quality, Bulk Ops, Audit, Visitors
 
   const healthSummary = getHealthSummary();
 
@@ -338,15 +346,19 @@ const UnifiedAdminDashboard = () => {
             <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="health" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Health
-            </TabsTrigger>
+            {showHealthTab && (
+              <TabsTrigger value="health" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Health
+              </TabsTrigger>
+            )}
             <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Analytics
             </TabsTrigger>
-            <TabsTrigger value="executive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Executive
-            </TabsTrigger>
+            {showExecutiveTab && (
+              <TabsTrigger value="executive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Executive
+              </TabsTrigger>
+            )}
             <TabsTrigger value="quality" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Quality
             </TabsTrigger>
@@ -359,12 +371,16 @@ const UnifiedAdminDashboard = () => {
             <TabsTrigger value="visitors" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Visitors
             </TabsTrigger>
-            <TabsTrigger value="properties" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Properties
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Settings
-            </TabsTrigger>
+            {showPropertiesTab && (
+              <TabsTrigger value="properties" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Properties
+              </TabsTrigger>
+            )}
+            {showSettingsTab && (
+              <TabsTrigger value="settings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Settings
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -516,11 +532,13 @@ const UnifiedAdminDashboard = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="health" className="space-y-6">
-            <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
-              <SystemHealthDashboard />
-            </Suspense>
-          </TabsContent>
+          {showHealthTab && (
+            <TabsContent value="health" className="space-y-6">
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
+                <SystemHealthDashboard />
+              </Suspense>
+            </TabsContent>
+          )}
 
           <TabsContent value="analytics" className="space-y-6">
             <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
@@ -528,11 +546,13 @@ const UnifiedAdminDashboard = () => {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="executive" className="space-y-6">
-            <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
-              <ExecutiveDashboard />
-            </Suspense>
-          </TabsContent>
+          {showExecutiveTab && (
+            <TabsContent value="executive" className="space-y-6">
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
+                <ExecutiveDashboard />
+              </Suspense>
+            </TabsContent>
+          )}
 
           <TabsContent value="quality" className="space-y-6">
             <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
@@ -558,17 +578,21 @@ const UnifiedAdminDashboard = () => {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="properties" className="space-y-6">
-            <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
-              <PropertyManagementPage />
-            </Suspense>
-          </TabsContent>
+          {showPropertiesTab && (
+            <TabsContent value="properties" className="space-y-6">
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
+                <PropertyManagementPage />
+              </Suspense>
+            </TabsContent>
+          )}
 
-          <TabsContent value="settings" className="space-y-6">
-            <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
-              <UnifiedSettingsPage />
-            </Suspense>
-          </TabsContent>
+          {showSettingsTab && (
+            <TabsContent value="settings" className="space-y-6">
+              <Suspense fallback={<div className="flex items-center justify-center p-8"><RefreshCw className="h-8 w-8 animate-spin" /></div>}>
+                <UnifiedSettingsPage />
+              </Suspense>
+            </TabsContent>
+          )}
         </Tabs>
 
         {/* Status Footer */}
