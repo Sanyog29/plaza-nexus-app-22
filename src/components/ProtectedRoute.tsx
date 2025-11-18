@@ -81,15 +81,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Operations Supervisor access control - Access to approvals
-  if (userRole === 'ops_supervisor') {
+  // Operations Supervisor & Assistant Manager access control - Access to approvals
+  if (userRole === 'ops_supervisor' || userRole === 'assistant_manager') {
     const allowedOpsPaths = ['/procurement/pending-approvals', '/procurement/approval-history', '/operations', '/dashboard', '/profile', '/auth', '/admin'];
     const isAllowedPath = allowedOpsPaths.some(path => 
       location.pathname === path || location.pathname.startsWith(path + '/')
     );
 
     if (!isAllowedPath) {
-      console.warn(`Operations supervisor attempted to access restricted path: ${location.pathname}`);
+      console.warn(`${userRole} attempted to access restricted path: ${location.pathname}`);
       return <Navigate to="/dashboard" replace />;
     }
   }
