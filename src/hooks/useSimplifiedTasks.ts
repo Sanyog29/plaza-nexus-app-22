@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 
 interface SimpleTaskCategory {
@@ -42,6 +43,7 @@ interface SimplifiedMaintenanceRequest {
 
 export function useSimplifiedTasks() {
   const { user } = useAuth();
+  const { currentProperty } = usePropertyContext();
   const [taskCategories, setTaskCategories] = useState<SimpleTaskCategory[]>([]);
   const [taskAssignments, setTaskAssignments] = useState<TaskAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +108,7 @@ export function useSimplifiedTasks() {
           priority: requestData.priority,
           category_id: category?.id,
           reported_by: user.id,
+          property_id: currentProperty?.id,
           status: 'pending'
         })
         .select()

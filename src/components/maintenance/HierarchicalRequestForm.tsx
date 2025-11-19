@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -177,6 +178,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentProperty } = usePropertyContext();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -417,6 +419,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         priority: safePriority,
         status: 'pending' as const,
         reported_by: user.id,
+        property_id: currentProperty?.id,
         gps_coordinates: currentLocation || null,
         auto_detected_location: !!currentLocation,
         is_crisis: Boolean(formValues.is_crisis)
