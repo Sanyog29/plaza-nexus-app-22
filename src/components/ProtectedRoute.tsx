@@ -29,6 +29,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
+  // Tenant access control - restrict tenants to only their portal
+  if (userRole === 'tenant' || userRole === 'super_tenant') {
+    const allowedTenantPaths = ['/tenant-portal', '/profile', '/auth'];
+    const isAllowedPath = allowedTenantPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      console.warn(`Tenant attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/tenant-portal" replace />;
+    }
+  }
+
   // Food vendor access control - STRICT RESTRICTIONS
   if (isFoodVendor || userCategory === 'food_vendor') {
     const allowedFoodVendorPaths = ['/pos', '/profile', '/auth'];
