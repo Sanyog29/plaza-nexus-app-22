@@ -32,8 +32,10 @@ const LandingPage: React.FC = () => {
         navigate('/vendor-portal');
       } else if (userRole === 'procurement_manager' || userRole === 'purchase_executive') {
         navigate('/procurement');
+      } else if (userRole === 'tenant' || userRole === 'super_tenant') {
+        navigate('/tenant-portal');
       } else {
-        navigate('/dashboard'); // Tenants go to tenant portal
+        navigate('/dashboard');
       }
     }
   }, [user, isAdmin, isStaff, userRole, navigate]);
