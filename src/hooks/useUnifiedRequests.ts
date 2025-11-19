@@ -43,7 +43,7 @@ interface RequestFilters {
 }
 
 export const useUnifiedRequests = (filters?: RequestFilters) => {
-  const { user, isStaff, userRole, approvalStatus, isAdmin } = useAuth();
+  const { user, isStaff, userRole, approvalStatus, isAdmin, isSuperAdmin } = useAuth();
   const { currentProperty, isSuperAdmin: isPropertySuperAdmin } = usePropertyContext();
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,26 +113,26 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
         // Field staff can see requests assigned to them or unassigned
         query = query.or(`assigned_to.eq.${user.id},assigned_to.is.null`);
       } else {
-        // Staff roles (admin, ops_supervisor, assistant_manager) - MUST filter by property
+        // Staff roles - property filtering logic
         console.log('[useUnifiedRequests] Staff filtering:', {
           userRole,
-          isPropertySuperAdmin,
+          isSuperAdmin,  // From AuthContext - TRUE super_admin role
+          isPropertySuperAdmin,  // From PropertyContext
           currentPropertyId: currentProperty?.id,
           currentPropertyName: currentProperty?.name
         });
 
-        // Super admin viewing "All Properties" (no property selected) sees everything
-        if (isPropertySuperAdmin && !currentProperty) {
+        // ONLY super_admin role can see ALL properties
+        if (isSuperAdmin && !currentProperty) {
           console.log('[useUnifiedRequests] Super admin viewing all properties - no filter');
-          // No filter needed - see all requests
+          // No filter - see all requests
         } else {
-          // Everyone else MUST filter by their assigned property
+          // Everyone else (including property_super_admin) MUST filter by property
           const propertyId = currentProperty?.id;
           
           if (!propertyId) {
             console.error('[useUnifiedRequests] No property assigned! Showing nothing.');
-            // User has no property - show nothing (safety measure)
-            query = query.eq('property_id', 'impossible-id-show-nothing');
+            query = query.eq('property_id', '__none__');  // Safety: show nothing
           } else {
             console.log('[useUnifiedRequests] Filtering by property:', propertyId);
             query = query.eq('property_id', propertyId);
@@ -208,6 +208,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           category_id: requestData.category,
           location: requestData.location,
           reported_by: user.id,
+          property_id: currentProperty?.id,
           status: 'pending',
         })
         .select()

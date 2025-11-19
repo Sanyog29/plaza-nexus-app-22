@@ -75,13 +75,14 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
         // Managers/admins must filter by their assigned property
         console.log('[useRequisitionList] Manager filtering:', {
           userRole,
-          isPropertySuperAdmin,
+          isSuperAdmin,  // From AuthContext - TRUE super_admin role
+          isPropertySuperAdmin,  // From PropertyContext
           currentPropertyId: currentProperty?.id,
           currentPropertyName: currentProperty?.name
         });
 
-        // Only super admins without a selected property see ALL
-        if (isPropertySuperAdmin && !currentProperty) {
+        // Only TRUE super_admin without a selected property sees ALL
+        if (isSuperAdmin && !currentProperty) {
           console.log('[useRequisitionList] Super admin viewing all properties - no filter');
           // No filter - see all requisitions
         } else {
@@ -90,7 +91,7 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
           
           if (!propertyId) {
             console.error('[useRequisitionList] No property assigned! Showing nothing.');
-            query = query.eq('property_id', 'impossible-id-show-nothing');
+            query = query.eq('property_id', '__none__');
           } else {
             console.log('[useRequisitionList] Filtering by property:', propertyId);
             query = query.eq('property_id', propertyId);
