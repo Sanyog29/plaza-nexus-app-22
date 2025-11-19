@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -39,7 +38,6 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentProperty } = usePropertyContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +62,6 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           category_id: selectedCategory,
           location,
           reported_by: userId,
-          property_id: currentProperty?.id,
           priority,
           status: 'pending' as RequestStatus
         })

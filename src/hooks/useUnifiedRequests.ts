@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 import { toDBStatus, mapStatusArrayToDB, type UIStatus, type DBRequestStatus } from '@/utils/status';
 
@@ -43,8 +42,7 @@ interface RequestFilters {
 }
 
 export const useUnifiedRequests = (filters?: RequestFilters) => {
-  const { user, isStaff, userRole, approvalStatus, isAdmin, isSuperAdmin } = useAuth();
-  const { currentProperty, isSuperAdmin: isPropertySuperAdmin } = usePropertyContext();
+  const { user, isStaff, userRole, approvalStatus, isAdmin } = useAuth();
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -73,15 +71,6 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
       return;
     }
 
-    // Wait for PropertyContext to initialize for staff that need property filtering
-    if (isStaff && userRole !== 'field_staff' && !isPropertySuperAdmin) {
-      // For staff that need property filtering, wait for property to load
-      if (currentProperty === undefined) {
-        console.log('[useUnifiedRequests] Waiting for property context...');
-        return; // Don't query yet
-      }
-    }
-
     try {
       setIsLoading(true);
 
@@ -105,40 +94,15 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
         `, { count: 'exact' })
         .is('deleted_at', null); // Exclude soft-deleted requests
 
-      // Apply role-based filtering with property scope
+      // Apply role-based filtering
       if (!isStaff) {
         // Non-staff can only see their own requests
         query = query.eq('reported_by', user.id);
       } else if (userRole === 'field_staff') {
         // Field staff can see requests assigned to them or unassigned
         query = query.or(`assigned_to.eq.${user.id},assigned_to.is.null`);
-      } else {
-        // Staff roles - property filtering logic
-        console.log('[useUnifiedRequests] Staff filtering:', {
-          userRole,
-          isSuperAdmin,  // From AuthContext - TRUE super_admin role
-          isPropertySuperAdmin,  // From PropertyContext
-          currentPropertyId: currentProperty?.id,
-          currentPropertyName: currentProperty?.name
-        });
-
-        // ONLY super_admin role can see ALL properties
-        if (isSuperAdmin && !currentProperty) {
-          console.log('[useUnifiedRequests] Super admin viewing all properties - no filter');
-          // No filter - see all requests
-        } else {
-          // Everyone else (including property_super_admin) MUST filter by property
-          const propertyId = currentProperty?.id;
-          
-          if (!propertyId) {
-            console.error('[useUnifiedRequests] No property assigned! Showing nothing.');
-            query = query.eq('property_id', '__none__');  // Safety: show nothing
-          } else {
-            console.log('[useUnifiedRequests] Filtering by property:', propertyId);
-            query = query.eq('property_id', propertyId);
-          }
-        }
       }
+      // Admin and ops_supervisor can see all requests (no additional filter)
 
       // Apply filters
       if (parsedFilters.status?.length) {
@@ -208,7 +172,6 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           category_id: requestData.category,
           location: requestData.location,
           reported_by: user.id,
-          property_id: currentProperty?.id,
           status: 'pending',
         })
         .select()

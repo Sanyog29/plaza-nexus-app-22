@@ -142,7 +142,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               {/* General Routes */}
-              <Route path="/dashboard" element={<UnifiedDashboardPage />} />
+              <Route path="/dashboard" element={<HomePage />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/requests" element={<RequestsPage />} />
               <Route path="/requests/new" element={<NewRequestPage />} />

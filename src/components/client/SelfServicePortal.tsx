@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface SelfHelpArticle {
   id: string;
@@ -53,7 +52,6 @@ export const SelfServicePortal: React.FC = () => {
   const [troubleshootingResult, setTroubleshootingResult] = useState<TroubleshootingResult | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { currentProperty } = usePropertyContext();
 
   useEffect(() => {
     loadSelfHelpContent();
@@ -245,7 +243,6 @@ export const SelfServicePortal: React.FC = () => {
           description: `User attempted self-resolution but needs professional assistance. Troubleshooting attempted: ${troubleshootingResult?.recommendedSteps.join(', ')}`,
           location: 'To be specified by user',
           priority: 'medium',
-          property_id: currentProperty?.id,
           reported_by: user.id
         })
         .select()

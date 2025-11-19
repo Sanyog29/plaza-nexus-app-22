@@ -383,8 +383,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const checkUserRole = React.useCallback(async (userId: string) => {
-    console.log('[AuthProvider] checkUserRole called for user:', userId);
-    
     try {
       // Fetch role from user_roles table (authoritative source)
       const { data: userRole, error: roleError } = await supabase
@@ -392,8 +390,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .select('role')
         .eq('user_id', userId)
         .maybeSingle();
-      
-      console.log('[AuthProvider] Fetched role:', userRole?.role);
       
       // Fetch profile data for other fields
       const { data: profile, error: profileError } = await supabase
@@ -467,10 +463,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateRoleStates('tenant', 'tenant');
       setUserDepartment(null);
       setApprovalStatus('pending');
-    } finally {
-      // CRITICAL FIX: Always set loading to false after role check completes
-      console.log('[AuthProvider] checkUserRole complete - setting isLoading to false');
-      setIsLoading(false);
     }
   }, [updateRoleStates]);
 

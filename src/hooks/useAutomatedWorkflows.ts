@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 
 interface WorkflowRule {
@@ -163,8 +162,7 @@ export const useAutomatedWorkflows = () => {
             description: action.params.description,
             priority: action.params.priority || 'medium',
             location: context.location || 'Auto-generated',
-            reported_by: user?.id,
-            property_id: null // Automated workflows may not have property context
+            reported_by: user?.id
           });
           break;
 

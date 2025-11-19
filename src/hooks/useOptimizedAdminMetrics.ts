@@ -44,7 +44,7 @@ interface OptimizedAdminData {
 }
 
 export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
-  const { user, isAdmin, isStaff } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [data, setData] = useState<OptimizedAdminData>({
     metrics: {
       activeRequests: 0,
@@ -76,8 +76,7 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
 
   // Optimized data fetching with single query
   const fetchMetrics = useCallback(async () => {
-    // Allow both admin and staff to fetch metrics
-    if (!user || (!isAdmin && !isStaff)) return;
+    if (!user || !isAdmin) return;
 
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
@@ -93,8 +92,9 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         .order('created_at', { ascending: false });
 
       // Apply property filter if specified
+      // Include NULL property_id (legacy requests) in all property views
       if (propertyId) {
-        requestsQuery = requestsQuery.eq('property_id', propertyId);
+        requestsQuery = requestsQuery.or(`property_id.eq.${propertyId},property_id.is.null`);
       }
 
       const { data: requests, error: requestsError } = await requestsQuery;

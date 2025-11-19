@@ -29,19 +29,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Tenant access control - restrict tenants to only their portal
-  if (userRole === 'tenant' || userRole === 'super_tenant') {
-    const allowedTenantPaths = ['/tenant-portal', '/profile', '/auth'];
-    const isAllowedPath = allowedTenantPaths.some(path => 
-      location.pathname === path || location.pathname.startsWith(path + '/')
-    );
-
-    if (!isAllowedPath) {
-      console.warn(`Tenant attempted to access restricted path: ${location.pathname}`);
-      return <Navigate to="/tenant-portal" replace />;
-    }
-  }
-
   // Food vendor access control - STRICT RESTRICTIONS
   if (isFoodVendor || userCategory === 'food_vendor') {
     const allowedFoodVendorPaths = ['/pos', '/profile', '/auth'];
@@ -94,27 +81,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Operations Supervisor & Assistant Manager access control - Access to approvals
-  if (userRole === 'ops_supervisor' || userRole === 'assistant_manager') {
-    const allowedOpsPaths = [
-      '/procurement/pending-approvals',
-      '/procurement/approval-history',
-      '/procurement/create-requisition',
-      '/procurement/my-requisitions',
-      '/procurement/requisitions',
-      '/operations',
-      '/dashboard',
-      '/staff',
-      '/profile',
-      '/auth',
-      '/admin'
-    ];
+  // Operations Supervisor access control - Access to approvals
+  if (userRole === 'ops_supervisor') {
+    const allowedOpsPaths = ['/procurement/pending-approvals', '/procurement/approval-history', '/operations', '/dashboard', '/profile', '/auth', '/admin'];
     const isAllowedPath = allowedOpsPaths.some(path => 
       location.pathname === path || location.pathname.startsWith(path + '/')
     );
 
     if (!isAllowedPath) {
-      console.warn(`${userRole} attempted to access restricted path: ${location.pathname}`);
+      console.warn(`Operations supervisor attempted to access restricted path: ${location.pathname}`);
       return <Navigate to="/dashboard" replace />;
     }
   }

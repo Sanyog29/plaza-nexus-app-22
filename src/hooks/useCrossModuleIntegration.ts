@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 
 interface IntegrationEvent {
@@ -13,7 +12,6 @@ interface IntegrationEvent {
 
 export const useCrossModuleIntegration = () => {
   const { user } = useAuth();
-  const { currentProperty } = usePropertyContext();
 
   // Create maintenance request from visitor incident
   const createMaintenanceFromIncident = useCallback(async (
@@ -29,7 +27,6 @@ export const useCrossModuleIntegration = () => {
         location,
         priority: (incidentType.includes('emergency') ? 'urgent' : 'high') as 'low' | 'medium' | 'high' | 'urgent',
         reported_by: user?.id,
-        property_id: currentProperty?.id,
         category_id: null // Will be auto-categorized
       };
 

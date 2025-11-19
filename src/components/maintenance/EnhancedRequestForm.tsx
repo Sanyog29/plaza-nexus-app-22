@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
 import SmartCategorySelector from './SmartCategorySelector';
@@ -42,7 +41,6 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentProperty } = usePropertyContext();
 
   // Group categories to remove duplicates and organize them
   const groupedCategories = React.useMemo(() => {
@@ -107,7 +105,6 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
           process_id: selectedProcess || null,
           location,
           reported_by: userId,
-          property_id: currentProperty?.id,
           priority,
           status: 'pending' as RequestStatus
         })

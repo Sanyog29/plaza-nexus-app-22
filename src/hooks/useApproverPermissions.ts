@@ -3,17 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 
 export const useApproverPermissions = (requisitionId?: string) => {
-  const { user, userRole } = useAuth();
+  const { user } = useAuth();
 
   // Check if user can approve this specific requisition
   const { data: canApprove = false, isLoading } = useQuery({
     queryKey: ['can-approve-requisition', requisitionId, user?.id],
     queryFn: async () => {
       if (!requisitionId || !user?.id) return false;
-
-      // Check if user has an approver-eligible role
-      const approverRoles = ['ops_supervisor', 'assistant_manager', 'admin', 'super_admin'];
-      if (!approverRoles.includes(userRole)) return false;
 
       // Get requisition's property_id
       const { data: requisition } = await supabase

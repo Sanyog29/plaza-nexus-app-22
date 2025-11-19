@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
-import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 
 export interface RequisitionList {
@@ -31,7 +30,6 @@ interface RequisitionFilters {
 
 export const useRequisitionList = (filters?: RequisitionFilters) => {
   const { user, userRole, isAdmin, isSuperAdmin, isL2, isL3 } = useAuth();
-  const { currentProperty, isSuperAdmin: isPropertySuperAdmin } = usePropertyContext();
   const [requisitions, setRequisitions] = useState<RequisitionList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -42,14 +40,6 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
       setRequisitions([]);
       setIsLoading(false);
       return;
-    }
-
-    // Wait for PropertyContext to initialize for managers that need property filtering
-    if (isManager && !isSuperAdmin) {
-      if (currentProperty === undefined) {
-        console.log('[useRequisitionList] Waiting for property context...');
-        return; // Don't query yet
-      }
     }
 
     try {
@@ -67,37 +57,12 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
         `)
         .order('created_at', { ascending: false });
 
-      // Role-based filtering with property scope
+      // Role-based filtering
       if (!isAdmin && !isSuperAdmin && !isManager) {
         // FE users see only their own requisitions
         query = query.eq('created_by', user.id);
-      } else {
-        // Managers/admins must filter by their assigned property
-        console.log('[useRequisitionList] Manager filtering:', {
-          userRole,
-          isSuperAdmin,  // From AuthContext - TRUE super_admin role
-          isPropertySuperAdmin,  // From PropertyContext
-          currentPropertyId: currentProperty?.id,
-          currentPropertyName: currentProperty?.name
-        });
-
-        // Only TRUE super_admin without a selected property sees ALL
-        if (isSuperAdmin && !currentProperty) {
-          console.log('[useRequisitionList] Super admin viewing all properties - no filter');
-          // No filter - see all requisitions
-        } else {
-          // Everyone else MUST filter by property
-          const propertyId = currentProperty?.id;
-          
-          if (!propertyId) {
-            console.error('[useRequisitionList] No property assigned! Showing nothing.');
-            query = query.eq('property_id', '__none__');
-          } else {
-            console.log('[useRequisitionList] Filtering by property:', propertyId);
-            query = query.eq('property_id', propertyId);
-          }
-        }
       }
+      // Managers and admins see all requisitions (no filter needed)
 
       // Apply status filter
       if (filters?.status && filters.status.length > 0) {

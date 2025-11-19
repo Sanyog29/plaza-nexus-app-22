@@ -8,11 +8,11 @@ import { useAuth } from '@/components/AuthProvider';
 import { SEOHead } from '@/components/seo/SEOHead';
 
 const AdminDashboardPage = () => {
-  const { isAdmin, isStaff } = useAuth();
+  const { isAdmin } = useAuth();
   const { isLoading, error } = useOptimizedAdminMetrics();
 
-  // Show access restricted if not admin or staff
-  if (!isAdmin && !isStaff) {
+  // Show access restricted if not admin
+  if (!isAdmin) {
     return <OptimizedAccessRestricted />;
   }
 
