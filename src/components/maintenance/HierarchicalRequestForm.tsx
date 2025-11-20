@@ -419,7 +419,8 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         reported_by: user.id,
         gps_coordinates: currentLocation || null,
         auto_detected_location: !!currentLocation,
-        is_crisis: Boolean(formValues.is_crisis)
+        is_crisis: Boolean(formValues.is_crisis),
+        property_id: null as any
       };
 
       console.log('Submitting request data:', requestData);

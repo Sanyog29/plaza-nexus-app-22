@@ -173,6 +173,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           location: requestData.location,
           reported_by: user.id,
           status: 'pending',
+          property_id: null as any,
         })
         .select()
         .maybeSingle();
