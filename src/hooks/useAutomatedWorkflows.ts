@@ -162,7 +162,8 @@ export const useAutomatedWorkflows = () => {
             description: action.params.description,
             priority: action.params.priority || 'medium',
             location: context.location || 'Auto-generated',
-            reported_by: user?.id
+            reported_by: user?.id,
+            property_id: null as any
           });
           break;
 

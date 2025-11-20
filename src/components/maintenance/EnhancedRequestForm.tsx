@@ -106,7 +106,8 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
           location,
           reported_by: userId,
           priority,
-          status: 'pending' as RequestStatus
+          status: 'pending' as RequestStatus,
+          property_id: null as any
         })
         .select()
         .maybeSingle();

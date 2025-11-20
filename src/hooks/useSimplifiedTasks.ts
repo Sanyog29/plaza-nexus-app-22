@@ -106,7 +106,8 @@ export function useSimplifiedTasks() {
           priority: requestData.priority,
           category_id: category?.id,
           reported_by: user.id,
-          status: 'pending'
+          status: 'pending',
+          property_id: null as any
         })
         .select()
         .maybeSingle();

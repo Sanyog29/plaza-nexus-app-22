@@ -27,7 +27,8 @@ export const useCrossModuleIntegration = () => {
         location,
         priority: (incidentType.includes('emergency') ? 'urgent' : 'high') as 'low' | 'medium' | 'high' | 'urgent',
         reported_by: user?.id,
-        category_id: null // Will be auto-categorized
+        category_id: null, // Will be auto-categorized
+        property_id: null as any
       };
 
       const { data, error } = await supabase

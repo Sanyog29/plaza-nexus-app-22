@@ -63,6 +63,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           location,
           reported_by: userId,
           priority,
+          property_id: null as any,
           status: 'pending' as RequestStatus
         })
         .select()

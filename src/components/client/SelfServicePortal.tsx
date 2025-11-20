@@ -243,7 +243,8 @@ export const SelfServicePortal: React.FC = () => {
           description: `User attempted self-resolution but needs professional assistance. Troubleshooting attempted: ${troubleshootingResult?.recommendedSteps.join(', ')}`,
           location: 'To be specified by user',
           priority: 'medium',
-          reported_by: user.id
+          reported_by: user.id,
+          property_id: null as any
         })
         .select()
         .maybeSingle();
