@@ -3485,7 +3485,7 @@ export type Database = {
           next_escalation_at: string | null
           priority: Database["public"]["Enums"]["request_priority"]
           process_id: string | null
-          property_id: string | null
+          property_id: string
           reported_by: string | null
           resolution_sla_at: string | null
           response_sla_at: string | null
@@ -3535,7 +3535,7 @@ export type Database = {
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           process_id?: string | null
-          property_id?: string | null
+          property_id: string
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
@@ -3585,7 +3585,7 @@ export type Database = {
           next_escalation_at?: string | null
           priority?: Database["public"]["Enums"]["request_priority"]
           process_id?: string | null
-          property_id?: string | null
+          property_id?: string
           reported_by?: string | null
           resolution_sla_at?: string | null
           response_sla_at?: string | null
