@@ -135,12 +135,12 @@ const handler = async (req: Request): Promise<Response> => {
     } = await req.json() as CreateUserRequest;
 
     // Get the role mapping but preserve the exact title for storage
-    const { data: resolvedRole, error: roleError } = await supabase.rpc('get_role_from_title', {
+    const { data: resolvedRole, error: roleResolveError } = await supabase.rpc('get_role_from_title', {
       input_role: inputRole
     });
 
-    if (roleError) {
-      console.error('Error resolving role:', roleError);
+    if (roleResolveError) {
+      console.error('Error resolving role:', roleResolveError);
       return new Response(JSON.stringify({ 
         error: `Invalid role: ${inputRole}. Please select a valid role.` 
       }), {
