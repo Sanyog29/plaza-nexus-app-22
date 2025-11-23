@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { ACTIVE_REQUEST_STATUSES } from '@/constants/requests';
 
 interface RequestCounts {
@@ -13,6 +14,7 @@ interface RequestCounts {
 
 export const useRequestCounts = (propertyId?: string | null) => {
   const { user, isStaff, isAdmin } = useAuth();
+  const { currentProperty, isSuperAdmin, availableProperties } = usePropertyContext();
   const [counts, setCounts] = useState<RequestCounts>({
     totalRequests: 0,
     activeRequests: 0,
@@ -33,10 +35,29 @@ export const useRequestCounts = (propertyId?: string | null) => {
         .select('status')
         .is('deleted_at', null);
       
-      // Apply property filter if specified
-      // Include NULL property_id (legacy requests) in all property views
-      if (propertyId) {
-        query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
+      // CRITICAL: Apply property filtering for non-super-admins
+      // Use passed propertyId if available, otherwise use PropertyContext
+      if (!isSuperAdmin) {
+        const filterPropertyId = propertyId || currentProperty?.id;
+        
+        if (filterPropertyId) {
+          query = query.eq('property_id', filterPropertyId);
+        } else if (availableProperties.length > 0) {
+          const propertyIds = availableProperties.map(p => p.id);
+          query = query.in('property_id', propertyIds);
+        } else {
+          // No property access - return zero counts
+          console.warn('User has no property access for request counts');
+          setCounts({
+            totalRequests: 0,
+            activeRequests: 0,
+            completedRequests: 0,
+            pendingRequests: 0,
+            inProgressRequests: 0,
+          });
+          setIsLoading(false);
+          return;
+        }
       }
       
       // Non-staff/admin users see only their own requests
@@ -90,7 +111,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [propertyId]);
+  }, [propertyId, currentProperty, isSuperAdmin, availableProperties]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };
