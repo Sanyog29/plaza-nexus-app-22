@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/hooks/use-toast';
 
 interface MaintenanceRequest {
@@ -22,6 +23,7 @@ interface RequestStats {
 }
 
 export const useRealtimeMaintenanceRequests = () => {
+  const { currentProperty, isSuperAdmin, availableProperties } = usePropertyContext();
   const [requestStats, setRequestStats] = useState<RequestStats>({
     total: 0,
     pending: 0,
@@ -56,12 +58,32 @@ export const useRealtimeMaintenanceRequests = () => {
 
   const fetchRequests = async () => {
     try {
-      const { data: requests, error } = await supabase
+      let query = supabase
         .from('maintenance_requests')
         .select('id, status, created_at, title, priority, assigned_to, completed_at, sla_breach_at')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(50); // Increased limit for better stats
+        .is('deleted_at', null);
+
+      // CRITICAL: Apply property filtering for non-super-admins
+      // RLS policies enforce this at DB level, but frontend filtering improves UX
+      if (!isSuperAdmin) {
+        if (currentProperty) {
+          query = query.eq('property_id', currentProperty.id);
+        } else if (availableProperties.length > 0) {
+          const propertyIds = availableProperties.map(p => p.id);
+          query = query.in('property_id', propertyIds);
+        } else {
+          // No property access - return empty
+          console.warn('User has no property access');
+          setRequestStats({ total: 0, pending: 0, inProgress: 0, completed: 0, overdue: 0 });
+          setRecentRequests([]);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      query = query.order('created_at', { ascending: false }).limit(50);
+
+      const { data: requests, error } = await query;
 
       if (error) throw error;
 
@@ -125,7 +147,7 @@ export const useRealtimeMaintenanceRequests = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentProperty, isSuperAdmin, availableProperties]);
 
   return {
     requestStats,
