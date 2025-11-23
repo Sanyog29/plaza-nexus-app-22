@@ -44,7 +44,7 @@ interface RequisitionWithRelations {
   updated_at: string;
   expected_delivery_date?: string;
   notes?: string;
-  property?: {
+  properties?: {
     name: string;
   };
   created_by_profile?: {
@@ -88,7 +88,7 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
         .from('requisition_lists')
         .select(`
           *,
-          property:properties(name),
+          properties!requisition_lists_property_id_fkey(name),
           created_by_profile:profiles!requisition_lists_created_by_fkey(
             first_name,
             last_name
@@ -138,7 +138,13 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
       console.log('[MyTasksList] Query results:', {
         count: data?.length || 0,
         statuses: data?.map(r => r.status) || [],
-        orderNumbers: data?.map(r => r.order_number) || []
+        orderNumbers: data?.map(r => r.order_number) || [],
+        sampleData: data?.[0], // Log first requisition structure
+        propertyData: data?.map(r => ({ 
+          id: r.id.slice(0, 8), 
+          property_id: r.property_id,
+          property_name: r.properties?.name || 'undefined'
+        }))
       });
 
       return data;
@@ -252,6 +258,7 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
       manager_rejected: { variant: 'destructive' as const, label: 'Rejected' },
       closed: { variant: 'outline' as const, label: 'Closed' },
       assigned_to_procurement: { variant: 'default' as const, label: 'Assigned' },
+      po_created: { variant: 'default' as const, label: 'PO Created' },
       po_raised: { variant: 'default' as const, label: 'PO Raised' },
       in_transit: { variant: 'default' as const, label: 'In Transit' },
       received: { variant: 'default' as const, label: 'Received' },
@@ -359,7 +366,7 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
                     </CardTitle>
                     <CardDescription className="mt-2 font-medium">
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
-                        {req.property?.name || 'No property assigned'}
+                        {req.properties?.name || 'No property assigned'}
                       </Badge>
                     </CardDescription>
                   </div>
