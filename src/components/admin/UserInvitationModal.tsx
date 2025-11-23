@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Mail, User, Building, Phone, MapPin } from 'lucide-react';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface UserInvitationModalProps {
   open: boolean;
@@ -25,6 +26,7 @@ interface InvitationData {
   phone_number: string;
   office_number: string;
   floor: string;
+  property_id: string;
   send_invitation: boolean;
 }
 
@@ -33,6 +35,7 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
   onOpenChange,
   onSuccess
 }) => {
+  const { availableProperties, currentProperty } = usePropertyContext();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<InvitationData>({
     email: '',
@@ -44,6 +47,7 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
     phone_number: '',
     office_number: '',
     floor: '',
+    property_id: currentProperty?.id || '',
     send_invitation: true
   });
 
@@ -55,6 +59,16 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
       toast({
         title: "Error",
         description: "Either email or mobile number is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate property is selected
+    if (!formData.property_id) {
+      toast({
+        title: "Error",
+        description: "Property is required for all users",
         variant: "destructive",
       });
       return;
@@ -73,7 +87,8 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
           invitation_department: formData.department || null,
           invitation_phone_number: formData.mobile_number || formData.phone_number || null,
           invitation_office_number: formData.office_number || null,
-          invitation_floor: formData.floor || null
+          invitation_floor: formData.floor || null,
+          invitation_property_id: formData.property_id
         });
 
         // Type the response properly
@@ -90,7 +105,11 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
       } else {
         // For direct user creation, we'll still use the Edge Function as it requires admin privileges
         const { data, error } = await supabase.functions.invoke('admin-create-user', {
-          body: { ...formData, send_invitation: false }
+          body: { 
+            ...formData, 
+            property_id: formData.property_id,
+            send_invitation: false 
+          }
         });
 
         if (error) throw error;
@@ -115,6 +134,7 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
         phone_number: '',
         office_number: '',
         floor: '',
+        property_id: currentProperty?.id || '',
         send_invitation: true
       });
 
@@ -209,6 +229,28 @@ const UserInvitationModal: React.FC<UserInvitationModalProps> = ({
             <p className="text-sm text-muted-foreground">
               * Either email or mobile number is required for login
             </p>
+
+            <div>
+              <Label htmlFor="property">Property *</Label>
+              <Select 
+                value={formData.property_id} 
+                onValueChange={(value) => updateFormData('property_id', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableProperties.map(property => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Property assignment is required for all users
+              </p>
+            </div>
 
             <div>
               <Label htmlFor="role">Role *</Label>

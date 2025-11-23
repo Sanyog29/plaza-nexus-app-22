@@ -378,16 +378,41 @@ const handler = async (req: Request): Promise<Response> => {
           assigned_by: user.id
         });
 
-      // Assign user to property if property_id is provided
-      if (property_id) {
-        await supabase
-          .from('property_assignments')
-          .insert({
-            user_id: newUser.user.id,
-            property_id: property_id,
-            is_primary: true,
-            assigned_by: user.id
-          });
+      // Assign user to property - REQUIRED for all users
+      if (!property_id) {
+        console.error('Property ID is required but not provided');
+        // Delete the created user to maintain consistency
+        await supabase.auth.admin.deleteUser(newUser.user.id);
+        
+        return new Response(JSON.stringify({ 
+          error: 'Property assignment is required for all users' 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { error: assignmentError } = await supabase
+        .from('property_assignments')
+        .insert({
+          user_id: newUser.user.id,
+          property_id: property_id,
+          is_primary: true,
+          assigned_by: user.id
+        });
+        
+      if (assignmentError) {
+        console.error('Property assignment failed:', assignmentError);
+        
+        // Delete the created user to maintain consistency
+        await supabase.auth.admin.deleteUser(newUser.user.id);
+        
+        return new Response(JSON.stringify({ 
+          error: `User creation rolled back: Property assignment failed - ${assignmentError.message}` 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       // Create notification for admin

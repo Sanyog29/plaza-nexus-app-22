@@ -849,6 +849,16 @@ export const EnhancedUserManagement: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
+          {unassignedCount > 0 && (
+            <Alert className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>{unassignedCount} user{unassignedCount > 1 ? 's' : ''} without property assignment.</strong>
+                {' '}Users must be assigned to a property to access the system. Click the edit icon next to "No Property" to assign.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {isLoading ? (
             <div className="text-center py-4">Loading users...</div>
           ) : filteredUsers.length === 0 ? (

@@ -10,11 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DepartmentSelector } from "@/components/admin/DepartmentSelector";
 import { useInvitationRoles } from "@/hooks/useInvitationRoles";
+import { usePropertyContext } from "@/contexts/PropertyContext";
 
 export default function UserNewPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { roles, isLoading: rolesLoading, requiresSpecialization, getRoleDefaults, requiresDepartment } = useInvitationRoles();
+  const { availableProperties, currentProperty, isSuperAdmin } = usePropertyContext();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -26,6 +28,7 @@ export default function UserNewPage() {
     role: "",
     department: "",
     specialization: "",
+    propertyId: "",
   });
 
   // Set default role when roles are loaded  
@@ -43,6 +46,13 @@ export default function UserNewPage() {
       }));
     }
   }, [roles, formData.role, getRoleDefaults, requiresDepartment]);
+
+  // Set default property when available
+  useEffect(() => {
+    if (currentProperty && !formData.propertyId) {
+      setFormData(prev => ({ ...prev, propertyId: currentProperty.id }));
+    }
+  }, [currentProperty, formData.propertyId]);
 
   const handleInputChange = (field: string, value: string) => {
     if (field === 'role') {
@@ -93,6 +103,16 @@ export default function UserNewPage() {
       return;
     }
 
+    // Validate property is selected
+    if (!formData.propertyId) {
+      toast({
+        title: "Property Required",
+        description: "Please select a property for this user",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -107,6 +127,7 @@ export default function UserNewPage() {
           specialization: formData.specialization || null,
           password: formData.password || null,
           emp_id: formData.empId || null,
+          property_id: formData.propertyId,
           send_invitation: true,
         }
       });
@@ -240,6 +261,28 @@ export default function UserNewPage() {
                       onChange={(e) => handleInputChange('password', e.target.value)}
                     />
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="property">Property *</Label>
+                  <Select 
+                    value={formData.propertyId} 
+                    onValueChange={(value) => handleInputChange('propertyId', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProperties.map(property => (
+                        <SelectItem key={property.id} value={property.id}>
+                          {property.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Property assignment is required for all users
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
