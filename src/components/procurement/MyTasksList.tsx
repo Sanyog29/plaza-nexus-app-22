@@ -96,21 +96,20 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
         `)
         .order('created_at', { ascending: false });
 
-      // CRITICAL: Procurement roles see ALL properties for centralized management
-      const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
-      
-      // Apply property filter only for non-procurement roles
-      if (propertyId && !isProcurementRole) {
-        query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
+      // Apply property filter when a specific property is selected
+      // When propertyId is null, show all properties (no filter)
+      if (propertyId) {
+        query = query.eq('property_id', propertyId);
       }
 
       // Role-based filtering - Procurement roles only see approved and later stages
+      const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
       if (isProcurementRole) {
         console.log('[MyTasksList] Applying procurement role filter');
         query = query.in('status', [
           'manager_approved',
           'assigned_to_procurement',
-          'po_created',  // FIXED: Added missing status
+          'po_created',
           'po_raised',
           'in_transit',
           'received',

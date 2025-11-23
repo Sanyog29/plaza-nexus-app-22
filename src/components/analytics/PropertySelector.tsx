@@ -27,9 +27,10 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   const { availableProperties, currentProperty } = usePropertyContext();
   const userRole = user?.user_metadata?.role;
   const roleLevel = getRoleLevel(userRole);
+  const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
   
-  // L2 and L1: No property selector
-  if (roleLevel === 'L2' || roleLevel === 'L1') {
+  // L2 and L1: No property selector (unless they're procurement roles)
+  if (!isProcurementRole && (roleLevel === 'L2' || roleLevel === 'L1')) {
     return null;
   }
 
@@ -57,7 +58,8 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   });
 
   // L3: Show assigned properties only, L4+: Show all properties
-  const showAllOption = roleLevel === 'L4+' || (roleLevel === 'L3' && availableProperties.length > 1);
+  // Procurement roles: Always show "All Properties" option
+  const showAllOption = isProcurementRole || roleLevel === 'L4+' || (roleLevel === 'L3' && availableProperties.length > 1);
   const selectedProperty = availableProperties.find(p => p.id === value);
   
   return (
@@ -71,7 +73,7 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
           <SelectValue>
             {value 
               ? selectedProperty?.name 
-              : roleLevel === 'L4+' ? 'All Properties' : 'All My Properties'}
+              : (isProcurementRole || roleLevel === 'L4+') ? 'All Properties' : 'All My Properties'}
           </SelectValue>
         </div>
       </SelectTrigger>
@@ -83,7 +85,7 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
                   <span className="font-semibold">
-                    {roleLevel === 'L4+' ? 'All Properties' : 'All My Properties'}
+                    {(isProcurementRole || roleLevel === 'L4+') ? 'All Properties' : 'All My Properties'}
                   </span>
                 </div>
                 {propertyStats && (
