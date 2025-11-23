@@ -73,6 +73,20 @@ export const isApproverEligibleRole = (role: string): boolean => {
   ].includes(role);
 };
 
+/**
+ * Check if user is a procurement manager (has delete permissions and dashboard access)
+ */
+export const isProcurementManager = (role: string): boolean => {
+  return role === 'procurement_manager';
+};
+
+/**
+ * Check if user is a purchase executive (execution only, no delete permissions)
+ */
+export const isPurchaseExecutive = (role: string): boolean => {
+  return role === 'purchase_executive';
+};
+
 // ==================== ROLE HIERARCHY ====================
 export const ROLE_HIERARCHY = {
   'L4+': {
