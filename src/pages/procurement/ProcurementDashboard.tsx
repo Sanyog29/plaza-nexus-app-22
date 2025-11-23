@@ -43,9 +43,9 @@ const ProcurementDashboard = () => {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Procurement Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Streamlined procurement operations for {userRole === 'procurement_manager' ? 'managers' : 'executives'}
-            </p>
+          <p className="text-muted-foreground mt-1">
+            Centralized procurement operations for all procurement staff
+          </p>
           </div>
           
           <div className="flex items-center gap-3">
