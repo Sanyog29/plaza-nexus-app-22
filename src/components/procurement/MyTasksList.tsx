@@ -364,8 +364,8 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
                     </CardDescription>
                   </div>
                   
-                  {/* Delete Button in Header */}
-                  {(isCreator || isProcurementRole) && (isDraft || isManagerApproved) && (
+                  {/* Delete Button in Header - Only for Procurement Managers */}
+                  {(isCreator || userRole === 'procurement_manager') && (isDraft || isManagerApproved) && (
                     <Button
                       variant="ghost"
                       size="sm"

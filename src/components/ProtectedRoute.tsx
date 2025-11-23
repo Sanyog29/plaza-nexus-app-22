@@ -55,16 +55,29 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Procurement staff access control - STRICT RESTRICTIONS
-  if (userRole === 'procurement_manager' || userRole === 'purchase_executive') {
-    const allowedProcurementPaths = ['/procurement', '/profile', '/auth'];
-    const isAllowedPath = allowedProcurementPaths.some(path => 
+  // Procurement Manager - Access to Dashboard, vendors, orders, budget
+  if (userRole === 'procurement_manager') {
+    const allowedPaths = ['/procurement', '/procurement/create-requisition', '/procurement/requisitions', '/procurement/vendors', '/procurement/orders', '/procurement/budget', '/profile', '/auth'];
+    const isAllowedPath = allowedPaths.some(path => 
       location.pathname === path || location.pathname.startsWith(path + '/')
     );
 
     if (!isAllowedPath) {
-      console.warn(`Procurement staff attempted to access restricted path: ${location.pathname}`);
+      console.warn(`Procurement manager attempted to access restricted path: ${location.pathname}`);
       return <Navigate to="/procurement" replace />;
+    }
+  }
+
+  // Purchase Executive - Access to My Requisitions ONLY
+  if (userRole === 'purchase_executive') {
+    const allowedPaths = ['/procurement/my-requisitions', '/procurement/create-requisition', '/profile', '/auth'];
+    const isAllowedPath = allowedPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      console.warn(`Purchase executive attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/procurement/my-requisitions" replace />;
     }
   }
 
