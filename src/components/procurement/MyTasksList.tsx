@@ -32,6 +32,27 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+interface RequisitionWithRelations {
+  id: string;
+  order_number: string;
+  status: string;
+  priority: string;
+  property_id: string;
+  created_by: string;
+  created_by_name?: string;
+  created_at: string;
+  updated_at: string;
+  expected_delivery_date?: string;
+  notes?: string;
+  property?: {
+    name: string;
+  };
+  created_by_profile?: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
 interface MyTasksListProps {
   filter?: 'draft' | 'pending_manager_approval' | 'manager_approved' | 'all';
   propertyId?: string | null;
@@ -60,12 +81,19 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
   const { approveRequisition, rejectRequisition, requestClarification } = useRequisitionApproval();
   const { acceptRequisition, isAccepting } = usePurchaseOrders();
   
-  const { data: requisitions, isLoading, isError, error } = useQuery({
+  const { data: requisitions, isLoading, isError, error } = useQuery<RequisitionWithRelations[]>({
     queryKey: ['my-requisitions', filter, userRole, propertyId],
     queryFn: async () => {
       let query = supabase
         .from('requisition_lists')
-        .select('*')
+        .select(`
+          *,
+          property:properties(name),
+          created_by_profile:profiles!requisition_lists_created_by_fkey(
+            first_name,
+            last_name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       // CRITICAL: Procurement roles see ALL properties for centralized management
@@ -324,15 +352,30 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 flex-wrap">
                       List #{req.id.slice(0, 8)}
                       {getStatusBadge(req.status)}
                       {getPriorityBadge(req.priority)}
                     </CardTitle>
-                    <CardDescription className="mt-2">
-                      {req.property_id || 'No property assigned'}
+                    <CardDescription className="mt-2 font-medium">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+                        {req.property?.name || 'No property assigned'}
+                      </Badge>
                     </CardDescription>
                   </div>
+                  
+                  {/* Delete Button in Header */}
+                  {(isCreator || isProcurementRole) && (isDraft || isManagerApproved) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeletingRequisitionId(req.id)}
+                      disabled={isProcessing}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
