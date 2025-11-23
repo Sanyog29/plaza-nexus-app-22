@@ -392,27 +392,38 @@ const handler = async (req: Request): Promise<Response> => {
         });
       }
 
-      const { error: assignmentError } = await supabase
+      // Check if property assignment already exists (might be created by trigger)
+      const { data: existingAssignment } = await supabase
         .from('property_assignments')
-        .insert({
-          user_id: newUser.user.id,
-          property_id: property_id,
-          is_primary: true,
-          assigned_by: user.id
-        });
-        
-      if (assignmentError) {
-        console.error('Property assignment failed:', assignmentError);
-        
-        // Delete the created user to maintain consistency
-        await supabase.auth.admin.deleteUser(newUser.user.id);
-        
-        return new Response(JSON.stringify({ 
-          error: `User creation rolled back: Property assignment failed - ${assignmentError.message}` 
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        .select('id')
+        .eq('user_id', newUser.user.id)
+        .eq('property_id', property_id)
+        .maybeSingle();
+
+      // Only insert if assignment doesn't exist
+      if (!existingAssignment) {
+        const { error: assignmentError } = await supabase
+          .from('property_assignments')
+          .insert({
+            user_id: newUser.user.id,
+            property_id: property_id,
+            is_primary: true,
+            assigned_by: user.id
+          });
+          
+        if (assignmentError) {
+          console.error('Property assignment failed:', assignmentError);
+          
+          // Delete the created user to maintain consistency
+          await supabase.auth.admin.deleteUser(newUser.user.id);
+          
+          return new Response(JSON.stringify({ 
+            error: `User creation rolled back: Property assignment failed - ${assignmentError.message}` 
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
       }
 
       // Create notification for admin
