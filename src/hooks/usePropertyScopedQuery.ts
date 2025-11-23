@@ -23,10 +23,25 @@ export const usePropertyScopedQuery = () => {
     query: any,
     options: PropertyScopeOptions = {}
   ) => {
+    const { respectPropertyScope = true } = options;
+    
+    // CRITICAL: Super admins viewing "All Properties" can bypass
+    if (isSuperAdmin && !currentProperty && !respectPropertyScope) {
+      return query;
+    }
+    
+    // For everyone else, property filtering is MANDATORY
     const propertyId = getPropertyFilter(options);
     
     if (propertyId) {
       return query.eq('property_id', propertyId);
+    }
+
+    // If no property context but respectPropertyScope is true, block the query
+    if (respectPropertyScope && !isSuperAdmin) {
+      console.warn('Property filter required but no property context available');
+      // Return impossible filter to prevent data leakage
+      return query.eq('property_id', '00000000-0000-0000-0000-000000000000');
     }
 
     return query;

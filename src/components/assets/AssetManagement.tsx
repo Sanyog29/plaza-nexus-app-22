@@ -32,6 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Asset {
   id: string;
+  property_id: string;
   asset_name: string;
   asset_type: string;
   location: string;
@@ -100,18 +101,12 @@ export function AssetManagement({ propertyId }: AssetManagementProps) {
 
   const fetchAssets = async () => {
     try {
-      let query = supabase
+      // RLS policies now handle property filtering automatically
+      // No need for manual property filtering
+      const { data, error } = await supabase
         .from('assets')
         .select('*')
         .order('created_at', { ascending: false });
-
-      // Apply property filter
-      // Include NULL property_id (legacy assets) in all property views
-      if (propertyId) {
-        query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       setAssets(data || []);
@@ -147,8 +142,19 @@ export function AssetManagement({ propertyId }: AssetManagementProps) {
 
   const handleAddAsset = async () => {
     try {
+      // CRITICAL: Require propertyId for new assets
+      if (!propertyId) {
+        toast({
+          title: 'Error',
+          description: 'Please select a property before adding an asset',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const assetData = {
         ...newAsset,
+        property_id: propertyId,
         amc_cost: newAsset.amc_cost ? parseFloat(newAsset.amc_cost) : null,
         purchase_date: newAsset.purchase_date || null,
         installation_date: newAsset.installation_date || null,

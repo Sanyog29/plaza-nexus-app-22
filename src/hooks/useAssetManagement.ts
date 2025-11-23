@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 
 interface Asset {
   id: string;
+  property_id: string;
   asset_name: string;
   asset_type: string;
   location: string;
@@ -69,6 +71,7 @@ interface ServiceRecord {
 
 export function useAssetManagement() {
   const { user } = useAuth();
+  const { currentProperty, isSuperAdmin, availableProperties } = usePropertyContext();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [amcAlerts, setAmcAlerts] = useState<AmcAlert[]>([]);
   const [serviceRecords, setServiceRecords] = useState<ServiceRecord[]>([]);
@@ -84,10 +87,27 @@ export function useAssetManagement() {
 
   const fetchAssets = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('assets')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      // CRITICAL: Apply property filtering for non-super-admins
+      if (!isSuperAdmin) {
+        if (currentProperty) {
+          query = query.eq('property_id', currentProperty.id);
+        } else if (availableProperties.length > 0) {
+          const propertyIds = availableProperties.map(p => p.id);
+          query = query.in('property_id', propertyIds);
+        } else {
+          console.warn('User has no property access for assets');
+          setAssets([]);
+          return;
+        }
+      }
+
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAssets(data || []);
@@ -135,14 +155,26 @@ export function useAssetManagement() {
     }
   };
 
-  const createAsset = async (assetData: Omit<Asset, 'id' | 'created_at' | 'updated_at'>) => {
+  const createAsset = async (assetData: Omit<Asset, 'id' | 'created_at' | 'updated_at' | 'property_id'> & { property_id?: string }) => {
     if (!user) return null;
+
+    // CRITICAL: Require property assignment for new assets
+    const propertyId = assetData.property_id || currentProperty?.id;
+    if (!propertyId) {
+      toast.error('Please select a property before creating an asset');
+      return null;
+    }
 
     setIsLoading(true);
     try {
+      const dataToInsert = {
+        ...assetData,
+        property_id: propertyId
+      };
+
       const { data, error } = await supabase
         .from('assets')
-        .insert(assetData)
+        .insert(dataToInsert)
         .select()
         .maybeSingle();
 

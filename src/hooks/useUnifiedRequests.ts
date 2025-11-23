@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/components/ui/sonner';
 import { toDBStatus, mapStatusArrayToDB, type UIStatus, type DBRequestStatus } from '@/utils/status';
 
@@ -43,6 +44,7 @@ interface RequestFilters {
 
 export const useUnifiedRequests = (filters?: RequestFilters) => {
   const { user, isStaff, userRole, approvalStatus, isAdmin } = useAuth();
+  const { currentProperty, isSuperAdmin, availableProperties } = usePropertyContext();
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -94,6 +96,25 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
         `, { count: 'exact' })
         .is('deleted_at', null); // Exclude soft-deleted requests
 
+      // CRITICAL: Apply property filtering for non-super-admins
+      if (!isSuperAdmin) {
+        if (currentProperty) {
+          // Filter by currently selected property
+          query = query.eq('property_id', currentProperty.id);
+        } else if (availableProperties.length > 0) {
+          // Filter by all assigned properties
+          const propertyIds = availableProperties.map(p => p.id);
+          query = query.in('property_id', propertyIds);
+        } else {
+          // No property access - return empty results
+          console.warn('User has no property access');
+          setRequests([]);
+          setTotalCount(0);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // Apply role-based filtering
       if (!isStaff) {
         // Non-staff can only see their own requests
@@ -102,7 +123,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
         // Field staff can see requests assigned to them or unassigned
         query = query.or(`assigned_to.eq.${user.id},assigned_to.is.null`);
       }
-      // Admin and ops_supervisor can see all requests (no additional filter)
+      // Admin and ops_supervisor can see all requests (with property filter applied above)
 
       // Apply filters
       if (parsedFilters.status?.length) {
@@ -151,7 +172,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, isStaff, userRole, isAdmin, approvalStatus, serializedFilters]);
+  }, [user, isStaff, userRole, isAdmin, approvalStatus, serializedFilters, currentProperty, isSuperAdmin, availableProperties]);
 
   const createRequest = async (requestData: {
     title: string;
@@ -161,6 +182,12 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
     location: string;
   }) => {
     if (!user) return null;
+
+    // CRITICAL: Require property assignment for new requests
+    if (!currentProperty) {
+      toast.error('Please select a property before creating a request');
+      return null;
+    }
 
     try {
       const { data, error } = await supabase
@@ -173,7 +200,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
           location: requestData.location,
           reported_by: user.id,
           status: 'pending',
-          property_id: null as any,
+          property_id: currentProperty.id,
         })
         .select()
         .maybeSingle();
