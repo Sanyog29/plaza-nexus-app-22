@@ -348,7 +348,7 @@ export type Database = {
           next_service_due: string | null
           notes: string | null
           photo_urls: string[] | null
-          property_id: string | null
+          property_id: string
           purchase_date: string | null
           serial_number: string | null
           service_frequency_months: number | null
@@ -376,7 +376,7 @@ export type Database = {
           next_service_due?: string | null
           notes?: string | null
           photo_urls?: string[] | null
-          property_id?: string | null
+          property_id: string
           purchase_date?: string | null
           serial_number?: string | null
           service_frequency_months?: number | null
@@ -404,7 +404,7 @@ export type Database = {
           next_service_due?: string | null
           notes?: string | null
           photo_urls?: string[] | null
-          property_id?: string | null
+          property_id?: string
           purchase_date?: string | null
           serial_number?: string | null
           service_frequency_months?: number | null
@@ -5647,6 +5647,44 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      property_access_violations: {
+        Row: {
+          attempted_property_id: string | null
+          created_at: string | null
+          id: string
+          table_name: string
+          user_assigned_properties: string[] | null
+          user_id: string | null
+          violation_type: string
+        }
+        Insert: {
+          attempted_property_id?: string | null
+          created_at?: string | null
+          id?: string
+          table_name: string
+          user_assigned_properties?: string[] | null
+          user_id?: string | null
+          violation_type: string
+        }
+        Update: {
+          attempted_property_id?: string | null
+          created_at?: string | null
+          id?: string
+          table_name?: string
+          user_assigned_properties?: string[] | null
+          user_id?: string | null
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_access_violations_attempted_property_id_fkey"
+            columns: ["attempted_property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_approvers: {
         Row: {
