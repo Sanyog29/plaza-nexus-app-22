@@ -17,16 +17,11 @@ const ProcurementDashboard = () => {
   const { currentProperty } = usePropertyContext();
   const roleLevel = getRoleLevel(userRole);
 
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
-    // L4+ and L3: Default to "All Properties" view
-    // Special case: procurement_manager (L2) also gets property switching
-    if (roleLevel === 'L4+' || roleLevel === 'L3' || userRole === 'procurement_manager') return null;
-    return currentProperty?.id || null;
-  });
+  // Procurement roles default to "All Properties" (null) for centralized view
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>('all');
 
-  const effectivePropertyId = (roleLevel === 'L2' || roleLevel === 'L1')
-    ? currentProperty?.id || null
-    : selectedPropertyId;
+  // Convert 'all' to null for query filtering
+  const effectivePropertyId = selectedPropertyId === 'all' ? null : selectedPropertyId;
 
   return (
     <>
@@ -49,14 +44,12 @@ const ProcurementDashboard = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Property Selector for L3, L4+, and procurement_manager */}
-            {(roleLevel === 'L3' || roleLevel === 'L4+' || userRole === 'procurement_manager') && (
-              <PropertySelector
-                value={selectedPropertyId}
-                onChange={setSelectedPropertyId}
-                variant="header"
-              />
-            )}
+            {/* Property Selector for procurement roles */}
+            <PropertySelector
+              value={selectedPropertyId || 'all'}
+              onChange={setSelectedPropertyId}
+              variant="header"
+            />
             <QuickActions />
           </div>
         </div>
