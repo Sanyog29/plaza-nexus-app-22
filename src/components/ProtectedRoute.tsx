@@ -55,29 +55,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Procurement Manager - Access to Dashboard, vendors, orders, budget
-  if (userRole === 'procurement_manager') {
-    const allowedPaths = ['/procurement', '/procurement/create-requisition', '/procurement/requisitions', '/procurement/vendors', '/procurement/orders', '/procurement/budget', '/profile', '/auth'];
+  // ALL Procurement Roles - Unified access to Dashboard
+  if (userRole === 'procurement_manager' || userRole === 'purchase_executive') {
+    const allowedPaths = [
+      '/procurement',                    // Main dashboard
+      '/procurement/create-requisition', // Can create requisitions
+      '/procurement/requisitions',       // View all requisitions
+      '/procurement/vendors',            // Vendor management
+      '/procurement/orders',             // Purchase orders
+      '/procurement/budget',             // Budget tracking
+      '/profile',                        // User profile
+      '/auth'                           // Auth routes
+    ];
+    
     const isAllowedPath = allowedPaths.some(path => 
       location.pathname === path || location.pathname.startsWith(path + '/')
     );
 
     if (!isAllowedPath) {
-      console.warn(`Procurement manager attempted to access restricted path: ${location.pathname}`);
+      console.warn(`Procurement role (${userRole}) attempted to access restricted path: ${location.pathname}`);
       return <Navigate to="/procurement" replace />;
-    }
-  }
-
-  // Purchase Executive - Access to My Requisitions ONLY
-  if (userRole === 'purchase_executive') {
-    const allowedPaths = ['/procurement/my-requisitions', '/procurement/create-requisition', '/profile', '/auth'];
-    const isAllowedPath = allowedPaths.some(path => 
-      location.pathname === path || location.pathname.startsWith(path + '/')
-    );
-
-    if (!isAllowedPath) {
-      console.warn(`Purchase executive attempted to access restricted path: ${location.pathname}`);
-      return <Navigate to="/procurement/my-requisitions" replace />;
     }
   }
 
