@@ -347,9 +347,15 @@ export const EnhancedUserManagement: React.FC = () => {
         throw new Error(error.message || 'Failed to approve user');
       }
 
+      // Check the RPC function's success field from jsonb response
+      const response = data as { success: boolean; message?: string; error?: string } | null;
+      if (response && !response.success) {
+        throw new Error(response.error || 'Failed to approve user');
+      }
+
       toast({
         title: "Success",
-        description: "User approved successfully. They can now access the system.",
+        description: response?.message || "User approved successfully. They can now access the system.",
       });
 
       await fetchUsers();
@@ -375,9 +381,15 @@ export const EnhancedUserManagement: React.FC = () => {
         throw new Error(error.message || 'Failed to reject user');
       }
 
+      // Check the RPC function's success field from jsonb response
+      const response = data as { success: boolean; message?: string; error?: string } | null;
+      if (response && !response.success) {
+        throw new Error(response.error || 'Failed to reject user');
+      }
+
       toast({
         title: "Success",
-        description: "User rejected successfully.",
+        description: response?.message || "User rejected successfully.",
       });
 
       await fetchUsers();
