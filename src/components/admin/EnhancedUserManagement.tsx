@@ -338,10 +338,21 @@ export const EnhancedUserManagement: React.FC = () => {
 
   const handleApproveUser = async (userId: string) => {
     try {
+      // First, get the current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        throw new Error('You must be logged in to approve users');
+      }
+
+      console.log('Approving user:', { userId, approverId: user.id });
+
       const { data, error } = await supabase.rpc('approve_user', {
         target_user_id: userId,
-        approver_id: (await supabase.auth.getUser()).data.user?.id
+        approver_id: user.id
       });
+
+      console.log('RPC Response:', { data, error });
 
       if (error) {
         throw new Error(error.message || 'Failed to approve user');
@@ -371,11 +382,22 @@ export const EnhancedUserManagement: React.FC = () => {
 
   const handleRejectUser = async (userId: string, reason: string = 'Rejected by admin') => {
     try {
+      // First, get the current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        throw new Error('You must be logged in to reject users');
+      }
+
+      console.log('Rejecting user:', { userId, approverId: user.id, reason });
+
       const { data, error } = await supabase.rpc('reject_user', {
         target_user_id: userId,
-        approver_id: (await supabase.auth.getUser()).data.user?.id,
+        approver_id: user.id,
         reason: reason
       });
+
+      console.log('RPC Response:', { data, error });
 
       if (error) {
         throw new Error(error.message || 'Failed to reject user');
