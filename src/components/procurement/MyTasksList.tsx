@@ -68,14 +68,16 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Apply property filter
-      // Include NULL property_id (legacy requisitions) in all property views
-      if (propertyId) {
+      // CRITICAL: Procurement roles see ALL properties for centralized management
+      const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
+      
+      // Apply property filter only for non-procurement roles
+      if (propertyId && !isProcurementRole) {
         query = query.or(`property_id.eq.${propertyId},property_id.is.null`);
       }
 
       // Role-based filtering - Procurement roles only see approved and later stages
-      if (userRole === 'purchase_executive' || userRole === 'procurement_manager') {
+      if (isProcurementRole) {
         console.log('[MyTasksList] Applying procurement role filter');
         query = query.in('status', [
           'manager_approved',
