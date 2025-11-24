@@ -12502,6 +12502,7 @@ export type Database = {
           phone_number: string
         }[]
       }
+      get_system_health_info: { Args: never; Returns: Json }
       get_system_setting: {
         Args: { setting_category: string; setting_key: string }
         Returns: Json
@@ -12663,6 +12664,7 @@ export type Database = {
         Args: { approver_id: string; reason: string; target_user_id: string }
         Returns: Json
       }
+      repair_orphaned_users: { Args: never; Returns: Json }
       request_time_extension: {
         Args: {
           additional_hours: number
