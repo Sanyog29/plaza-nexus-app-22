@@ -25,24 +25,12 @@ export const useRequestCounts = (propertyId?: string | null) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // CRITICAL: Wait for PropertyContext to load before fetching data
-  // This prevents race condition where hooks execute with NULL property context
-  if (isLoadingProperties) {
-    return { 
-      counts: {
-        totalRequests: 0,
-        activeRequests: 0,
-        completedRequests: 0,
-        pendingRequests: 0,
-        inProgressRequests: 0,
-      },
-      isLoading: true,
-      error: null,
-      refetch: async () => {}
-    };
-  }
-
   const fetchCounts = async () => {
+    // Don't fetch if properties are still loading
+    if (isLoadingProperties) {
+      return;
+    }
+    
     try {
       setError(null);
       
@@ -128,7 +116,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [propertyId, currentProperty, isSuperAdmin, availableProperties]);
+  }, [propertyId, currentProperty, isSuperAdmin, availableProperties, isLoadingProperties]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };
