@@ -270,15 +270,7 @@ export const EnhancedUserManagement: React.FC = () => {
       return;
     }
 
-    // Check if property is selected
-    if (!newUser.propertyId) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a property for this user",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Property is optional - will default to "Unassigned" if not provided
 
     // If creating account now, password is required
     if (!sendInvitation && !newUser.password) {
@@ -305,7 +297,7 @@ export const EnhancedUserManagement: React.FC = () => {
           invitation_specialization: newUser.specialization || null,
           invitation_password: newUser.password || null,
           invitation_emp_id: newUser.empId || null,
-          invitation_property_id: newUser.propertyId,
+          invitation_property_id: newUser.propertyId || null, // Can be null - will default to Unassigned
         });
 
         if (error) throw error;
@@ -319,9 +311,14 @@ export const EnhancedUserManagement: React.FC = () => {
           return;
         }
 
+        // Check if user was assigned to default unassigned property
+        const isDefaultProperty = data && typeof data === 'object' && 'is_default_property' in data && data.is_default_property;
+        
         toast({
           title: "Success",
-          description: "User invitation sent successfully",
+          description: isDefaultProperty 
+            ? "User invitation sent. User assigned to 'Unassigned' property - remember to assign a real property after approval."
+            : "User invitation sent successfully",
         });
       } else {
       // Use the title directly for user creation
@@ -336,7 +333,7 @@ export const EnhancedUserManagement: React.FC = () => {
           specialization: newUser.specialization || undefined,
           password: newUser.password,
           emp_id: newUser.empId || undefined,
-          property_id: newUser.propertyId,
+          property_id: newUser.propertyId || undefined, // Can be undefined - will default to Unassigned
           send_invitation: false
         }
       });
@@ -354,7 +351,9 @@ export const EnhancedUserManagement: React.FC = () => {
 
         toast({
           title: "Success",
-          description: "User account created successfully. They can sign in immediately.",
+          description: !newUser.propertyId 
+            ? "User account created successfully. User assigned to 'Unassigned' property - assign a real property now."
+            : "User account created successfully. They can sign in immediately.",
         });
       }
 
@@ -879,30 +878,39 @@ export const EnhancedUserManagement: React.FC = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="property">Property *</Label>
+              <Label htmlFor="property">Property {!isSuperAdmin && '*'}</Label>
               <Select 
                 value={newUser.propertyId} 
                 onValueChange={(value) => setNewUser({ ...newUser, propertyId: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a property" />
+                  <SelectValue placeholder="Select a property (optional - defaults to Unassigned)" />
                 </SelectTrigger>
                 <SelectContent>
                   {isSuperAdmin ? (
                     availableProperties.map(property => (
-                      <SelectItem key={property.id} value={property.id}>
-                        {property.name}
-                      </SelectItem>
+                      property.id !== '00000000-0000-0000-0000-000000000001' && (
+                        <SelectItem key={property.id} value={property.id}>
+                          {property.name}
+                        </SelectItem>
+                      )
                     ))
                   ) : (
                     availableProperties.map(property => (
-                      <SelectItem key={property.id} value={property.id}>
-                        {property.name}
-                      </SelectItem>
+                      property.id !== '00000000-0000-0000-0000-000000000001' && (
+                        <SelectItem key={property.id} value={property.id}>
+                          {property.name}
+                        </SelectItem>
+                      )
                     ))
                   )}
                 </SelectContent>
               </Select>
+              {!newUser.propertyId && (
+                <p className="text-xs text-muted-foreground">
+                  ℹ️ User will be assigned to "Unassigned" property by default. You can assign a real property after creation.
+                </p>
+              )}
             </div>
             {/* Enhanced Department Selector */}
             <div className="md:col-span-2">
