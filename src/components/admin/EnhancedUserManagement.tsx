@@ -31,6 +31,7 @@ import { DepartmentSelector } from './DepartmentSelector';
 import { useInvitationRoles } from '@/hooks/useInvitationRoles';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { VendorStaffAssignmentDialog } from './VendorStaffAssignmentDialog';
+import { PropertyAssignmentDialog } from './PropertyAssignmentDialog';
 import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface UserData {
@@ -83,6 +84,10 @@ export const EnhancedUserManagement: React.FC = () => {
   // Vendor staff assignment state
   const [showVendorStaffDialog, setShowVendorStaffDialog] = useState(false);
   const [selectedUserForVendor, setSelectedUserForVendor] = useState<string>('');
+  
+  // Property assignment dialog state
+  const [showPropertyDialog, setShowPropertyDialog] = useState(false);
+  const [selectedUserForProperty, setSelectedUserForProperty] = useState<UserData | null>(null);
   
   // Categories for department specialization
   const categories = [
@@ -420,12 +425,19 @@ export const EnhancedUserManagement: React.FC = () => {
 
       toast({
         title: "Success",
-        description: response?.message || "User approved successfully. They can now access the system.",
+        description: response?.message || "User approved successfully. Auto-assigned to default property.",
       });
 
       // Manual refresh as fallback in case real-time doesn't trigger
       console.log('Manually refreshing users after approval');
       await fetchUsers();
+      
+      // Show property assignment dialog for newly approved users
+      const approvedUser = users.find(u => u.id === userId);
+      if (approvedUser) {
+        setSelectedUserForProperty(approvedUser);
+        setShowPropertyDialog(true);
+      }
     } catch (error: any) {
       console.error('Approval error:', error);
       
@@ -435,6 +447,38 @@ export const EnhancedUserManagement: React.FC = () => {
       toast({
         title: "Approval Failed",
         description: error.message || "Failed to approve user. Please check your permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handlePropertyAssignment = async (propertyId: string) => {
+    if (!selectedUserForProperty) return;
+    
+    try {
+      const { data, error } = await supabase.rpc('update_user_property_assignment', {
+        target_user_id: selectedUserForProperty.id,
+        new_property_id: propertyId
+      });
+
+      if (error) throw error;
+
+      if (data && typeof data === 'object' && 'success' in data && !data.success) {
+        throw new Error((data as any).error);
+      }
+
+      toast({
+        title: "Success",
+        description: "Property assignment updated successfully",
+      });
+
+      setShowPropertyDialog(false);
+      setSelectedUserForProperty(null);
+      await fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update property assignment",
         variant: "destructive",
       });
     }
@@ -967,7 +1011,7 @@ export const EnhancedUserManagement: React.FC = () => {
                         <p className="font-medium">{user.first_name} {user.last_name}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          {/* Property Badge/Editor */}
+                           {/* Property Badge - Enhanced with Unassigned indicator */}
                           {editingPropertyUserId === user.id ? (
                             <div className="flex items-center gap-2">
                               <Select value={newPropertyId} onValueChange={setNewPropertyId}>
@@ -998,13 +1042,20 @@ export const EnhancedUserManagement: React.FC = () => {
                                 <X className="h-3 w-3" />
                               </Button>
                             </div>
-                           ) : (
+                            ) : (
                             <div className="flex items-center gap-2">
                               {user.property_id ? (
-                                <Badge variant="outline">
-                                  {user.is_primary && '⭐ '}
-                                  {user.property_name}
-                                </Badge>
+                                user.property_id === '00000000-0000-0000-0000-000000000001' ? (
+                                  <Badge variant="secondary" className="flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Unassigned
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline">
+                                    {user.is_primary && '⭐ '}
+                                    {user.property_name}
+                                  </Badge>
+                                )
                               ) : (
                                 <Badge variant="destructive" className="flex items-center gap-1">
                                   <AlertCircle className="h-3 w-3" />
@@ -1016,7 +1067,7 @@ export const EnhancedUserManagement: React.FC = () => {
                                 variant="ghost"
                                 onClick={() => handleStartPropertyEdit(user.id, user.property_id || '')}
                                 className="h-6 w-6 p-0"
-                                title={!user.property_id ? "Assign property to enable access" : "Change property"}
+                                title={!user.property_id || user.property_id === '00000000-0000-0000-0000-000000000001' ? "Assign property to enable full access" : "Change property"}
                               >
                                 <Edit3 className="h-3 w-3" />
                               </Button>
@@ -1109,8 +1160,7 @@ export const EnhancedUserManagement: React.FC = () => {
                           size="sm"
                           variant="default"
                           onClick={() => handleApproveUser(user.id)}
-                          disabled={!user.property_id}
-                          title={!user.property_id ? "Assign property before approving" : "Approve user"}
+                          title="Approve user (will auto-assign to default property if needed)"
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Approve
@@ -1163,6 +1213,29 @@ export const EnhancedUserManagement: React.FC = () => {
         onConfirm={confirmDeleteUser}
         loading={isDeletingUser}
         destructive={true}
+      />
+      
+      {/* Property Assignment Dialog */}
+      <PropertyAssignmentDialog
+        open={showPropertyDialog}
+        onOpenChange={setShowPropertyDialog}
+        userId={selectedUserForProperty?.id || ''}
+        userName={`${selectedUserForProperty?.first_name} ${selectedUserForProperty?.last_name}`}
+        currentPropertyId={selectedUserForProperty?.property_id}
+        onAssign={handlePropertyAssignment}
+        isLoading={isUpdatingProperty}
+      />
+
+      {/* Vendor Staff Assignment Dialog */}
+      <VendorStaffAssignmentDialog
+        isOpen={showVendorStaffDialog}
+        onClose={() => setShowVendorStaffDialog(false)}
+        initialUserId={selectedUserForVendor}
+        onSuccess={() => {
+          setShowVendorStaffDialog(false);
+          setSelectedUserForVendor('');
+          fetchUsers();
+        }}
       />
     </div>
   );
