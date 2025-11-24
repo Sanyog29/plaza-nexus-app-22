@@ -23,6 +23,7 @@ interface DashboardMetrics {
 }
 
 export const useDashboardMetrics = () => {
+  // CRITICAL: All hooks MUST be called unconditionally at the top
   const { user, isStaff, isAdmin } = useAuth();
   const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
@@ -42,30 +43,6 @@ export const useDashboardMetrics = () => {
     totalOccupants: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-
-  // CRITICAL: Wait for PropertyContext to load before fetching data
-  if (isLoadingProperties) {
-    return { 
-      metrics: {
-        activeRequests: 0,
-        totalRequests: 0,
-        completedRequests: 0,
-        availableRooms: 0,
-        totalRooms: 0,
-        activeAlerts: 0,
-        criticalAlerts: 0,
-        pendingVisitors: 0,
-        totalVisitors: 0,
-        pendingMaintenance: 0,
-        operationalSystems: true,
-        currentTemperature: 0,
-        occupancyRate: 0,
-        totalOccupants: 0,
-      },
-      isLoading: true,
-      refreshMetrics: async () => {}
-    };
-  }
 
   const fetchMetrics = async () => {
     try {
@@ -200,6 +177,9 @@ export const useDashboardMetrics = () => {
   };
 
   useEffect(() => {
+    // Skip fetching if PropertyContext is still loading
+    if (isLoadingProperties) return;
+    
     fetchMetrics();
     
     // Set up real-time updates
@@ -230,7 +210,16 @@ export const useDashboardMetrics = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentProperty, isSuperAdmin, availableProperties]);
+  }, [currentProperty, isSuperAdmin, availableProperties, isLoadingProperties]);
+
+  // Return loading state while PropertyContext loads
+  if (isLoadingProperties) {
+    return { 
+      metrics,
+      isLoading: true,
+      refreshMetrics: async () => {}
+    };
+  }
 
   return { metrics, isLoading, refreshMetrics: fetchMetrics };
 };
