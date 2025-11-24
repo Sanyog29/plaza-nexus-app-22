@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
+import { getRoleLevel } from '@/constants/roles';
 
 export interface Property {
   id: string;
@@ -75,7 +76,10 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
       setIsLoadingProperties(false);
       return;
     }
-
+    
+    const userRole = user?.user_metadata?.role;
+    const roleLevel = getRoleLevel(userRole);
+    
     try {
       setIsLoadingProperties(true);
 
@@ -96,20 +100,25 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
 
       setAvailableProperties(properties);
 
-      // Auto-select property
+      // Auto-select property based on user role
       const storedPropertyId = localStorage.getItem('current_property_id');
       
       if (storedPropertyId && properties.find(p => p.id === storedPropertyId)) {
+        // Restore last selected property
         const selected = properties.find(p => p.id === storedPropertyId);
         setCurrentProperty(selected || null);
-      } else {
-        // Select primary property or first available
+      } else if (roleLevel === 'L2' || roleLevel === 'L1') {
+        // L2/L1: Auto-select primary property or first available
         const primary = properties.find(p => p.isPrimary);
         const selected = primary || properties[0] || null;
         setCurrentProperty(selected);
         if (selected) {
           localStorage.setItem('current_property_id', selected.id);
         }
+      } else {
+        // L3/L4+: Default to "All Properties" (null)
+        setCurrentProperty(null);
+        localStorage.removeItem('current_property_id');
       }
     } catch (error) {
       console.error('Error fetching properties:', error);

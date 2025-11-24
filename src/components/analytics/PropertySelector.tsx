@@ -24,7 +24,7 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   variant = 'default'
 }) => {
   const { user } = useAuth();
-  const { availableProperties, currentProperty } = usePropertyContext();
+  const { availableProperties, currentProperty, switchProperty } = usePropertyContext();
   const userRole = user?.user_metadata?.role;
   const roleLevel = getRoleLevel(userRole);
   const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
@@ -62,8 +62,18 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   const showAllOption = isProcurementRole || roleLevel === 'L4+' || (roleLevel === 'L3' && availableProperties.length > 1);
   const selectedProperty = availableProperties.find(p => p.id === value);
   
+  const handleChange = (v: string) => {
+    const newValue = v === 'all' ? null : v;
+    // Update PropertyContext
+    switchProperty(newValue);
+    // Also call onChange callback if provided
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
   return (
-    <Select value={value || 'all'} onValueChange={(v) => onChange(v === 'all' ? null : v)}>
+    <Select value={value || 'all'} onValueChange={handleChange}>
       <SelectTrigger className={cn(
         variant === 'header' ? "w-[280px] bg-background" : "w-[300px]",
         className
