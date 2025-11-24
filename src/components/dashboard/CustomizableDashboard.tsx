@@ -33,30 +33,13 @@ interface CustomizableDashboardProps {
 }
 
 export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) {
+  // CRITICAL: All hooks MUST be called unconditionally at the top
   const { user } = useAuth();
   const { isLoadingProperties } = usePropertyContext();
   const { counts, isLoading: isLoadingCounts } = useRequestCounts();
   const navigate = useNavigate();
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
-
-  // Show loading state while PropertyContext or counts are loading
-  if (isLoadingProperties || isLoadingCounts) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-white">Dashboard</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-card/50 backdrop-blur animate-pulse">
-              <CardContent className="p-6 h-32" />
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   const getDefaultWidgets = (role: string): DashboardWidget[] => {
     const baseWidgets: DashboardWidget[] = [
@@ -409,6 +392,24 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
 
     return <div className="text-center text-muted-foreground">Chart not available</div>;
   };
+
+  // Show loading state if PropertyContext or counts are loading
+  if (isLoadingProperties || isLoadingCounts) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-card/50 backdrop-blur animate-pulse">
+              <CardContent className="p-6 h-32" />
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
