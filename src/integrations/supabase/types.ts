@@ -12357,6 +12357,7 @@ export type Database = {
         }
         Returns: string
       }
+      create_test_pending_user: { Args: never; Returns: string }
       decline_request_offer: { Args: { p_request_id: string }; Returns: Json }
       decrypt_sensitive_field: {
         Args: { ciphertext: string; field_name: string; profile_id: string }
