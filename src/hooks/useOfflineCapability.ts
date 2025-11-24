@@ -7,8 +7,10 @@ export const useOfflineCapability = () => {
   return {
     isOnline: enhanced.isOnline,
     isSyncing: enhanced.isSyncing,
+    initialSyncDone: enhanced.initialSyncDone,
     offlineActions: enhanced.offlineActions,
     addOfflineAction: (type: string, data: any) => enhanced.addOfflineAction(type as any, data, 'medium'),
-    syncOfflineActions: enhanced.syncOfflineActions
+    syncOfflineActions: enhanced.syncOfflineActions,
+    clearAllActions: enhanced.clearAllActions
   };
 };

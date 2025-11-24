@@ -30,15 +30,44 @@ export const useEnhancedOfflineMode = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isSyncing, setIsSyncing] = useState(false);
   const [criticalMode, setCriticalMode] = useState(false);
+  const [initialSyncDone, setInitialSyncDone] = useState(false);
 
-  // Load offline data from localStorage
+  // Clean up stale actions (older than 7 days)
+  const cleanupStaleActions = useCallback((actions: OfflineAction[]) => {
+    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const cleaned = actions.filter(action => {
+      // Remove if older than 7 days
+      if (action.timestamp < sevenDaysAgo) {
+        console.log(`Removing stale action: ${action.id} (${action.type})`);
+        return false;
+      }
+      // Remove if exceeded max retries
+      if (action.retryCount >= action.maxRetries) {
+        console.log(`Removing failed action: ${action.id} after ${action.retryCount} retries`);
+        return false;
+      }
+      return true;
+    });
+    
+    if (cleaned.length < actions.length) {
+      const removed = actions.length - cleaned.length;
+      console.log(`Cleaned up ${removed} stale/failed actions`);
+      toast.info(`Removed ${removed} old queued actions`);
+    }
+    
+    return cleaned;
+  }, []);
+
+  // Load offline data from localStorage with cleanup
   useEffect(() => {
     const storedActions = localStorage.getItem('offlineActions');
     const storedCache = localStorage.getItem('offlineCache');
     
     if (storedActions) {
       try {
-        setOfflineActions(JSON.parse(storedActions));
+        const parsed = JSON.parse(storedActions);
+        const cleaned = cleanupStaleActions(parsed);
+        setOfflineActions(cleaned);
       } catch (error) {
         console.error('Failed to parse offline actions:', error);
         localStorage.removeItem('offlineActions');
@@ -53,7 +82,7 @@ export const useEnhancedOfflineMode = () => {
         localStorage.removeItem('offlineCache');
       }
     }
-  }, []);
+  }, [cleanupStaleActions]);
 
   // Save offline data to localStorage
   useEffect(() => {
@@ -95,12 +124,19 @@ export const useEnhancedOfflineMode = () => {
     };
   }, []);
 
-  // Add action to offline queue with priority handling
+  // Add action to offline queue with priority handling and validation
   const addOfflineAction = useCallback((
     type: OfflineAction['type'],
     data: any,
     priority: OfflineAction['priority'] = 'medium'
   ) => {
+    // Validate data before queuing
+    if (type === 'maintenance_request' && !data.property_id) {
+      console.error('Cannot queue maintenance request without property_id');
+      toast.error('Missing required property information');
+      return null;
+    }
+
     const action: OfflineAction = {
       id: crypto.randomUUID(),
       type,
@@ -171,9 +207,19 @@ export const useEnhancedOfflineMode = () => {
     });
   }, [offlineCache.emergencyContacts]);
 
+  // Clear all offline actions manually
+  const clearAllActions = useCallback(() => {
+    setOfflineActions([]);
+    localStorage.removeItem('offlineActions');
+    toast.success('All queued actions cleared');
+  }, []);
+
   // Sync offline actions with enhanced error handling
   const syncOfflineActions = useCallback(async () => {
-    if (!isOnline || offlineActions.length === 0 || isSyncing) return;
+    if (!isOnline || offlineActions.length === 0 || isSyncing) {
+      if (!initialSyncDone) setInitialSyncDone(true);
+      return;
+    }
 
     setIsSyncing(true);
     const actionsToProcess = [...offlineActions];
@@ -189,21 +235,25 @@ export const useEnhancedOfflineMode = () => {
 
       for (const action of sortedActions) {
         try {
+          console.log(`Syncing action: ${action.type} (${action.id})`);
+          
           switch (action.type) {
             case 'emergency_alert':
               await processOfflineEmergencyAlert(action);
               break;
               
             case 'visitor_checkin':
-              await supabase.from('visitor_check_logs').insert(action.data);
+              const { error: checkinError } = await supabase.from('visitor_check_logs').insert(action.data);
+              if (checkinError) throw checkinError;
               break;
               
             case 'maintenance_request':
-              await supabase.from('maintenance_requests').insert(action.data);
+              const { error: maintenanceError } = await supabase.from('maintenance_requests').insert(action.data);
+              if (maintenanceError) throw maintenanceError;
               break;
               
             case 'security_incident':
-              await supabase.from('visitor_check_logs').insert({
+              const { error: incidentError } = await supabase.from('visitor_check_logs').insert({
                 ...action.data,
                 action_type: 'security_incident',
                 metadata: {
@@ -212,10 +262,11 @@ export const useEnhancedOfflineMode = () => {
                   original_timestamp: action.timestamp
                 }
               });
+              if (incidentError) throw incidentError;
               break;
               
             case 'incident_report':
-              await supabase.from('visitor_check_logs').insert({
+              const { error: reportError } = await supabase.from('visitor_check_logs').insert({
                 ...action.data,
                 action_type: 'incident_report',
                 metadata: {
@@ -224,18 +275,21 @@ export const useEnhancedOfflineMode = () => {
                   sync_delay_minutes: Math.floor((Date.now() - action.timestamp) / (1000 * 60))
                 }
               });
+              if (reportError) throw reportError;
               break;
           }
 
           processedActionIds.push(action.id);
+          console.log(`Successfully synced action: ${action.id}`);
           
           // Show success toast for critical actions
           if (action.priority === 'critical') {
             toast.success(`Critical action synced: ${action.type}`);
           }
           
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to sync action ${action.id}:`, error);
+          console.error('Error details:', error.message, error.details, error.hint);
           
           // Increment retry count
           const updatedAction = {
@@ -246,9 +300,10 @@ export const useEnhancedOfflineMode = () => {
           // Only retry if under max retries
           if (updatedAction.retryCount < updatedAction.maxRetries) {
             failedActions.push(updatedAction);
+            console.log(`Will retry action ${action.id} (attempt ${updatedAction.retryCount}/${updatedAction.maxRetries})`);
           } else {
-            console.error(`Action ${action.id} failed after ${action.maxRetries} retries`);
-            toast.error(`Failed to sync ${action.type} after multiple attempts`);
+            console.error(`Action ${action.id} permanently failed after ${action.maxRetries} retries`);
+            toast.error(`Failed to sync ${action.type}: ${error.message || 'Unknown error'}`);
           }
         }
       }
@@ -263,7 +318,9 @@ export const useEnhancedOfflineMode = () => {
       ]);
 
       if (processedActionIds.length > 0) {
-        toast.success(`Synced ${processedActionIds.length} offline actions`);
+        toast.success(`Synced ${processedActionIds.length} offline action${processedActionIds.length > 1 ? 's' : ''}`);
+      } else if (failedActions.length > 0) {
+        toast.warning(`${failedActions.length} action${failedActions.length > 1 ? 's' : ''} failed to sync`);
       }
 
     } catch (error) {
@@ -271,8 +328,9 @@ export const useEnhancedOfflineMode = () => {
       toast.error('Failed to sync some offline actions');
     } finally {
       setIsSyncing(false);
+      setInitialSyncDone(true);
     }
-  }, [isOnline, offlineActions, isSyncing, processOfflineEmergencyAlert]);
+  }, [isOnline, offlineActions, isSyncing, initialSyncDone, processOfflineEmergencyAlert]);
 
   // Cache critical data for offline use
   const cacheEmergencyData = useCallback(async () => {
@@ -303,13 +361,24 @@ export const useEnhancedOfflineMode = () => {
     }
   }, []);
 
+  // Initial sync on mount (if online)
+  useEffect(() => {
+    if (isOnline && !initialSyncDone) {
+      const timer = setTimeout(() => {
+        console.log('Performing initial sync on mount');
+        syncOfflineActions();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOnline, initialSyncDone, syncOfflineActions]);
+
   // Auto-sync when coming back online
   useEffect(() => {
-    if (isOnline && offlineActions.length > 0) {
+    if (isOnline && offlineActions.length > 0 && initialSyncDone) {
       const timer = setTimeout(syncOfflineActions, 1000);
       return () => clearTimeout(timer);
     }
-  }, [isOnline, offlineActions.length, syncOfflineActions]);
+  }, [isOnline, offlineActions.length, initialSyncDone, syncOfflineActions]);
 
   // Periodically cache emergency data when online
   useEffect(() => {
@@ -324,10 +393,12 @@ export const useEnhancedOfflineMode = () => {
     isOnline,
     isSyncing,
     criticalMode,
+    initialSyncDone,
     offlineActions: offlineActions.length,
     pendingCriticalActions: offlineActions.filter(a => a.priority === 'critical').length,
     addOfflineAction,
     syncOfflineActions,
+    clearAllActions,
     offlineCache
   };
 };
