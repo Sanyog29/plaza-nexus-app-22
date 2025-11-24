@@ -26,12 +26,18 @@ export const useRequestCounts = (propertyId?: string | null) => {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchCounts = async () => {
-    // Don't fetch if properties are still loading
-    if (isLoadingProperties) {
-      return;
-    }
-    
     try {
+      console.log('[useRequestCounts] Fetching counts:', {
+        propertyId,
+        currentPropertyId: currentProperty?.id,
+        currentPropertyName: currentProperty?.name,
+        availablePropertiesCount: availableProperties.length,
+        isSuperAdmin,
+        userId: user?.id,
+        isStaff,
+        isAdmin
+      });
+      
       setError(null);
       
       // Build query with role-based scoping and exclude soft-deleted
@@ -74,6 +80,11 @@ export const useRequestCounts = (propertyId?: string | null) => {
 
       if (error) throw error;
 
+      console.log('[useRequestCounts] Query results:', {
+        requestsCount: requests?.length || 0,
+        requests: requests?.map(r => ({ id: r.status }))
+      });
+
       const totalRequests = requests?.length || 0;
       const pendingRequests = requests?.filter(r => r.status === 'pending').length || 0;
       const inProgressRequests = requests?.filter(r => r.status === 'in_progress').length || 0;
@@ -83,6 +94,14 @@ export const useRequestCounts = (propertyId?: string | null) => {
       const activeRequests = requests?.filter(r => 
         ACTIVE_REQUEST_STATUSES.includes(r.status as any)
       ).length || 0;
+
+      console.log('[useRequestCounts] Final counts:', {
+        totalRequests,
+        activeRequests,
+        completedRequests,
+        pendingRequests,
+        inProgressRequests,
+      });
 
       setCounts({
         totalRequests,
@@ -101,6 +120,13 @@ export const useRequestCounts = (propertyId?: string | null) => {
   };
 
   useEffect(() => {
+    // Only fetch when PropertyContext is ready
+    if (isLoadingProperties) {
+      console.log('[useRequestCounts] Waiting for PropertyContext to load');
+      return;
+    }
+    
+    console.log('[useRequestCounts] PropertyContext loaded, starting fetch');
     fetchCounts();
     
     // Set up real-time updates
@@ -109,14 +135,17 @@ export const useRequestCounts = (propertyId?: string | null) => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'maintenance_requests' },
-        () => fetchCounts()
+        () => {
+          console.log('[useRequestCounts] Real-time update triggered');
+          fetchCounts();
+        }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [propertyId, currentProperty, isSuperAdmin, availableProperties, isLoadingProperties]);
+  }, [propertyId, currentProperty?.id, isSuperAdmin, availableProperties.length, isLoadingProperties, user?.id, isStaff, isAdmin]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };

@@ -46,6 +46,16 @@ export const useDashboardMetrics = () => {
 
   const fetchMetrics = async () => {
     try {
+      console.log('[useDashboardMetrics] Fetching metrics:', {
+        currentPropertyId: currentProperty?.id,
+        currentPropertyName: currentProperty?.name,
+        availablePropertiesCount: availableProperties.length,
+        isSuperAdmin,
+        userId: user?.id,
+        isStaff,
+        isAdmin
+      });
+      
       const today = new Date().toISOString().split('T')[0];
       
       // Build role-scoped query for maintenance requests
@@ -104,8 +114,17 @@ export const useDashboardMetrics = () => {
           .eq('visit_date', today)
       ]);
 
+      const [requestsResult, roomsResult, bookingsResult, alertsResult, visitorsResult] = results;
+
+      console.log('[useDashboardMetrics] Query results:', {
+        requestsCount: requestsResult.status === 'fulfilled' ? requestsResult.value.data?.length : 'error',
+        roomsCount: roomsResult.status === 'fulfilled' ? roomsResult.value.data?.length : 'error',
+        bookingsCount: bookingsResult.status === 'fulfilled' ? bookingsResult.value.data?.length : 'error',
+        alertsCount: alertsResult.status === 'fulfilled' ? alertsResult.value.data?.length : 'error',
+        visitorsCount: visitorsResult.status === 'fulfilled' ? visitorsResult.value.data?.length : 'error',
+      });
+
       // Extract request data (always available)
-      const requestsResult = results[0];
       const requests = requestsResult.status === 'fulfilled' ? requestsResult.value.data : [];
 
       // Use canonical definitions for consistency
@@ -117,27 +136,31 @@ export const useDashboardMetrics = () => {
       const pendingMaintenance = requests?.filter(r => r.status === 'pending').length || 0;
 
       // Extract optional data with fallbacks
-      const roomsResult = results[1];
       const rooms = roomsResult.status === 'fulfilled' ? roomsResult.value.data : [];
-      
-      const bookingsResult = results[2];
       const bookings = bookingsResult.status === 'fulfilled' ? bookingsResult.value.data : [];
       
       const bookedRoomIds = new Set(bookings?.map(b => b.room_id) || []);
       const totalRooms = rooms?.length || 0;
       const availableRooms = totalRooms - bookedRoomIds.size;
 
-      const alertsResult = results[3];
       const alerts = alertsResult.status === 'fulfilled' ? alertsResult.value.data : [];
-      
       const activeAlerts = alerts?.length || 0;
       const criticalAlerts = alerts?.filter(a => a.severity === 'critical').length || 0;
 
-      const visitorsResult = results[4];
       const visitors = visitorsResult.status === 'fulfilled' ? visitorsResult.value.data : [];
-      
       const pendingVisitors = visitors?.filter(v => v.status === 'scheduled' || v.status === 'pending').length || 0;
       const totalVisitors = visitors?.length || 0;
+
+      console.log('[useDashboardMetrics] Final metrics:', {
+        activeRequests,
+        totalRequests,
+        completedRequests,
+        totalRooms,
+        availableRooms,
+        activeAlerts,
+        totalVisitors,
+        pendingVisitors
+      });
 
       // Calculate derived metrics
       const operationalSystems = activeAlerts === 0 && pendingMaintenance === 0;
@@ -178,8 +201,12 @@ export const useDashboardMetrics = () => {
 
   useEffect(() => {
     // Skip fetching if PropertyContext is still loading
-    if (isLoadingProperties) return;
+    if (isLoadingProperties) {
+      console.log('[useDashboardMetrics] Waiting for PropertyContext to load');
+      return;
+    }
     
+    console.log('[useDashboardMetrics] PropertyContext loaded, starting fetch');
     fetchMetrics();
     
     // Set up real-time updates
@@ -210,7 +237,7 @@ export const useDashboardMetrics = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentProperty, isSuperAdmin, availableProperties, isLoadingProperties]);
+  }, [currentProperty?.id, isSuperAdmin, availableProperties.length, isLoadingProperties, user?.id, isStaff, isAdmin]);
 
   // Return loading state while PropertyContext loads
   if (isLoadingProperties) {
