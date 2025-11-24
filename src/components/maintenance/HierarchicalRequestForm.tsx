@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -177,6 +178,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   
   const { toast } = useToast();
   const { user } = useAuth();
+  const { currentProperty } = usePropertyContext();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -392,6 +394,15 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       return;
     }
 
+    if (!currentProperty?.id) {
+      toast({
+        title: "Property Required",
+        description: "Please select a property before submitting a request",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -420,7 +431,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         gps_coordinates: currentLocation || null,
         auto_detected_location: !!currentLocation,
         is_crisis: Boolean(formValues.is_crisis),
-        property_id: null as any
+        property_id: currentProperty.id
       };
 
       console.log('Submitting request data:', requestData);

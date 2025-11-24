@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -38,6 +39,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
   const [createdRequestId, setCreatedRequestId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentProperty } = usePropertyContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +48,15 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
       toast({
         title: "Error",
         description: "Please fill all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!currentProperty?.id) {
+      toast({
+        title: "Property Required",
+        description: "Please select a property before submitting a request",
         variant: "destructive",
       });
       return;
@@ -63,7 +74,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({
           location,
           reported_by: userId,
           priority,
-          property_id: null as any,
+          property_id: currentProperty.id,
           status: 'pending' as RequestStatus
         })
         .select()
