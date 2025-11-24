@@ -13,15 +13,8 @@ export default function AssetsPage() {
   const userRole = user?.user_metadata?.role;
   const roleLevel = getRoleLevel(userRole);
 
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
-    // L4+ and L3: Default to "All Properties" view
-    if (roleLevel === 'L4+' || roleLevel === 'L3') return null;
-    return currentProperty?.id || null;
-  });
-
-  const effectivePropertyId = (roleLevel === 'L2' || roleLevel === 'L1')
-    ? currentProperty?.id || null
-    : selectedPropertyId;
+  // Use PropertyContext directly - no local state
+  const effectivePropertyId = currentProperty?.id || null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -37,8 +30,8 @@ export default function AssetsPage() {
           {/* Property Selector for L3 and L4+ */}
           {(roleLevel === 'L3' || roleLevel === 'L4+') && (
             <PropertySelector
-              value={selectedPropertyId}
-              onChange={setSelectedPropertyId}
+              value={currentProperty?.id || null}
+              onChange={() => {}} // Context handles the change
               variant="header"
             />
           )}

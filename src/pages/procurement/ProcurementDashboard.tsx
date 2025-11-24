@@ -17,11 +17,8 @@ const ProcurementDashboard = () => {
   const { currentProperty } = usePropertyContext();
   const roleLevel = getRoleLevel(userRole);
 
-  // Procurement roles default to "All Properties" (null) for centralized view
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-
-  // Convert 'all' to null for query filtering
-  const effectivePropertyId = selectedPropertyId === 'all' ? null : selectedPropertyId;
+  // Use PropertyContext directly - no local state
+  const effectivePropertyId = currentProperty?.id || null;
 
   return (
     <>
@@ -46,8 +43,8 @@ const ProcurementDashboard = () => {
           <div className="flex items-center gap-3">
             {/* Property Selector for procurement roles */}
             <PropertySelector
-              value={selectedPropertyId}
-              onChange={setSelectedPropertyId}
+              value={currentProperty?.id || null}
+              onChange={() => {}} // Context handles the change
               variant="header"
             />
             <QuickActions />

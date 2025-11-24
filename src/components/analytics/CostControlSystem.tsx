@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface CostData {
   budgets: {
@@ -66,6 +67,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 export const CostControlSystem: React.FC = () => {
   const { isAdmin, userRole } = useAuth();
+  const { currentProperty } = usePropertyContext();
   const [costData, setCostData] = useState<CostData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('current');
@@ -77,12 +79,15 @@ export const CostControlSystem: React.FC = () => {
 
   useEffect(() => {
     loadCostData();
-  }, [selectedPeriod]);
+  }, [selectedPeriod, currentProperty?.id]); // Add property dependency
 
   const loadCostData = async () => {
     setIsLoading(true);
     try {
       // In a real implementation, this would fetch from cost_centers and budget_allocations
+      // filtered by currentProperty?.id
+      console.log('[CostControlSystem] Loading data for property:', currentProperty?.id);
+      
       const mockCostData: CostData = {
         budgets: {
           total: 150000,

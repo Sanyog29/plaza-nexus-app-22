@@ -8,10 +8,15 @@ import { CostControlSystem } from '@/components/analytics/CostControlSystem';
 import { ExecutiveDashboard } from '@/components/analytics/ExecutiveDashboard';
 import { UnifiedRequest } from '@/hooks/useUnifiedRequests';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
+import { getRoleLevel } from '@/constants/roles';
+import { PropertySelector } from '@/components/analytics/PropertySelector';
 import { BarChart3, Clock, Users, AlertCircle, DollarSign, TrendingUp } from 'lucide-react';
 
 export default function UnifiedDashboardPage() {
-  const { isStaff, isAdmin, userRole } = useAuth();
+  const { isStaff, isAdmin, userRole, user } = useAuth();
+  const { currentProperty } = usePropertyContext();
+  const roleLevel = getRoleLevel(user?.user_metadata?.role);
   const [selectedRequest, setSelectedRequest] = useState<UnifiedRequest | null>(null);
 
   const handleViewRequest = (request: UnifiedRequest) => {
@@ -27,18 +32,29 @@ export default function UnifiedDashboardPage() {
     <div className="min-h-screen bg-background">
       <div className="w-full space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-white">
-            {isAdmin ? 'Admin Dashboard' : isStaff ? 'Operations Dashboard' : 'Service Dashboard'}
-          </h1>
-          <p className="text-muted-foreground">
-            {isAdmin 
-              ? 'Complete system overview with SLA monitoring and analytics'
-              : isStaff 
-              ? 'Manage requests and monitor service levels'
-              : 'Submit and track your service requests'
-            }
-          </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              {isAdmin ? 'Admin Dashboard' : isStaff ? 'Operations Dashboard' : 'Service Dashboard'}
+            </h1>
+            <p className="text-muted-foreground">
+              {isAdmin 
+                ? 'Complete system overview with SLA monitoring and analytics'
+                : isStaff 
+                ? 'Manage requests and monitor service levels'
+                : 'Submit and track your service requests'
+              }
+            </p>
+          </div>
+          
+          {/* Property Selector for L3+ users */}
+          {(roleLevel === 'L3' || roleLevel === 'L4+') && (
+            <PropertySelector
+              value={currentProperty?.id || null}
+              onChange={() => {}} // Context handles the change
+              variant="header"
+            />
+          )}
         </div>
 
         {/* Quick Stats */}

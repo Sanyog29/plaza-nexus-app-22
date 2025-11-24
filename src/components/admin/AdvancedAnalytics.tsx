@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { usePropertyContext } from "@/contexts/PropertyContext";
 import { 
   BarChart, 
   Bar, 
@@ -53,10 +54,17 @@ const performanceMetrics = [
 ];
 
 export const AdvancedAnalytics = () => {
+  const { currentProperty } = usePropertyContext();
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: new Date(2024, 0, 1),
     to: new Date()
   });
+
+  // Reload data when property changes
+  useEffect(() => {
+    // In a real implementation, this would fetch filtered data from Supabase
+    console.log('[AdvancedAnalytics] Property changed:', currentProperty?.id);
+  }, [currentProperty?.id]);
 
   return (
     <div className="space-y-6">
