@@ -106,18 +106,11 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
 
       console.log('[useOptimizedAdminMetrics] Fetched requests:', requests?.length, 'for property:', propertyId);
 
-      // Single query for alerts with property filter
-      let alertsQuery = supabase
+      // Fetch alerts (alerts are global, not property-specific)
+      const { data: alerts, error: alertsError } = await supabase
         .from('alerts')
         .select('id, severity, is_active')
         .eq('is_active', true);
-
-      // Apply property filter to alerts as well
-      if (propertyId) {
-        alertsQuery = alertsQuery.eq('property_id', propertyId);
-      }
-
-      const { data: alerts, error: alertsError } = await alertsQuery;
 
       if (alertsError) throw alertsError;
 
