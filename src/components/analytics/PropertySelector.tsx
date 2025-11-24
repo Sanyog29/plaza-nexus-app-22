@@ -11,15 +11,15 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PropertySelectorProps {
-  value: string | null;
-  onChange: (propertyId: string | null) => void;
+  value?: string | null; // Optional - uses context by default
+  onChange?: (propertyId: string | null) => void; // Optional - updates context by default
   className?: string;
   variant?: 'default' | 'header';
 }
 
 export const PropertySelector: React.FC<PropertySelectorProps> = ({
-  value,
-  onChange,
+  value: propValue,
+  onChange: propOnChange,
   className,
   variant = 'default'
 }) => {
@@ -28,6 +28,9 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   const userRole = user?.user_metadata?.role;
   const roleLevel = getRoleLevel(userRole);
   const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
+  
+  // Use context value if no prop value provided
+  const value = propValue !== undefined ? propValue : currentProperty?.id;
   
   // L2 and L1: No property selector (unless they're procurement roles)
   if (!isProcurementRole && (roleLevel === 'L2' || roleLevel === 'L1')) {
@@ -67,8 +70,8 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
     // Update PropertyContext
     switchProperty(newValue);
     // Also call onChange callback if provided
-    if (onChange) {
-      onChange(newValue);
+    if (propOnChange) {
+      propOnChange(newValue);
     }
   };
 
