@@ -29,8 +29,9 @@ export const MobileSecurityInterface: React.FC<MobileSecurityInterfaceProps> = (
   onTabChange,
   stats
 }) => {
-  const { isOnline, offlineActions, isSyncing } = useOfflineCapability();
+  const { isOnline, offlineActions, isSyncing, initialSyncDone, syncOfflineActions, clearAllActions } = useOfflineCapability();
   const { isRecording, hasRecording, startRecording, stopRecording, clearRecording } = useVoiceNotes();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const quickActions: QuickAction[] = [
     {
@@ -73,13 +74,29 @@ export const MobileSecurityInterface: React.FC<MobileSecurityInterfaceProps> = (
     }
   };
 
+  const handleManualSync = () => {
+    syncOfflineActions();
+    toast.info('Manual sync triggered');
+  };
+
+  const handleClearQueue = () => {
+    if (showClearConfirm) {
+      clearAllActions();
+      setShowClearConfirm(false);
+    } else {
+      setShowClearConfirm(true);
+      toast.warning('Tap again to confirm clearing all queued actions');
+      setTimeout(() => setShowClearConfirm(false), 3000);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Status Bar */}
       <Card className="bg-card/50 backdrop-blur">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 {isOnline ? (
                   <Wifi className="h-4 w-4 text-green-400" />
@@ -91,10 +108,33 @@ export const MobileSecurityInterface: React.FC<MobileSecurityInterfaceProps> = (
                 </span>
               </div>
               
-              {offlineActions > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {offlineActions} queued
-                </Badge>
+              {initialSyncDone && offlineActions > 0 && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {offlineActions} queued
+                  </Badge>
+                  {isOnline && (
+                    <>
+                      <Button
+                        onClick={handleManualSync}
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        disabled={isSyncing}
+                      >
+                        Sync
+                      </Button>
+                      <Button
+                        onClick={handleClearQueue}
+                        variant="ghost"
+                        size="sm"
+                        className={`h-6 px-2 text-xs ${showClearConfirm ? 'text-red-400' : ''}`}
+                      >
+                        {showClearConfirm ? 'Confirm?' : 'Clear'}
+                      </Button>
+                    </>
+                  )}
+                </div>
               )}
               
               {isSyncing && (

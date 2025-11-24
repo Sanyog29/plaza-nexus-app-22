@@ -14,12 +14,30 @@ export const useOfflineSync = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // Load offline actions from localStorage
+  // Load offline actions from localStorage with cleanup
   useEffect(() => {
     const stored = localStorage.getItem('offlineActions');
     if (stored) {
       try {
-        setOfflineActions(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Clean up stale actions (>7 days old) and failed actions
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const cleaned = parsed.filter((action: OfflineAction) => {
+          if (action.timestamp < sevenDaysAgo) {
+            console.log(`Removing stale action from useOfflineSync: ${action.id}`);
+            return false;
+          }
+          if (action.retryCount >= 3) {
+            console.log(`Removing failed action from useOfflineSync: ${action.id}`);
+            return false;
+          }
+          return true;
+        });
+        setOfflineActions(cleaned);
+        
+        if (cleaned.length < parsed.length) {
+          console.log(`Cleaned up ${parsed.length - cleaned.length} actions in useOfflineSync`);
+        }
       } catch (error) {
         console.error('Failed to parse offline actions:', error);
         localStorage.removeItem('offlineActions');
