@@ -23,7 +23,7 @@ interface RequestStats {
 }
 
 export const useRealtimeMaintenanceRequests = () => {
-  const { currentProperty, isSuperAdmin, availableProperties } = usePropertyContext();
+  const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [requestStats, setRequestStats] = useState<RequestStats>({
     total: 0,
     pending: 0,
@@ -33,6 +33,22 @@ export const useRealtimeMaintenanceRequests = () => {
   });
   const [recentRequests, setRecentRequests] = useState<MaintenanceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // CRITICAL: Wait for PropertyContext to load before fetching data
+  if (isLoadingProperties) {
+    return {
+      requestStats: {
+        total: 0,
+        pending: 0,
+        inProgress: 0,
+        completed: 0,
+        overdue: 0
+      },
+      recentRequests: [],
+      isLoading: true,
+      refetch: async () => {}
+    };
+  }
 
   const calculateStats = (requests: MaintenanceRequest[]): RequestStats => {
     const now = new Date();
