@@ -155,6 +155,35 @@ export const EnhancedUserManagement: React.FC = () => {
     }
   }, [newUser.role, requiresSpecialization, getRoleDefaults]);
 
+  // Real-time subscription for profile updates
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    console.log('Setting up real-time subscription for profiles table');
+    
+    const channel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+        },
+        (payload) => {
+          console.log('Profile updated:', payload);
+          // Refresh users when any profile is updated
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
+
   // Get role object for current selection
   const currentRoleObject = roles.find(r => r.title === newUser.role);
 
@@ -338,6 +367,17 @@ export const EnhancedUserManagement: React.FC = () => {
 
   const handleApproveUser = async (userId: string) => {
     try {
+      // Find current user before approval
+      const userBefore = users.find(u => u.id === userId);
+      console.log('User before approval:', userBefore);
+
+      // Optimistic UI update
+      setUsers(prevUsers => 
+        prevUsers.map(u => 
+          u.id === userId ? { ...u, approval_status: 'approved' } : u
+        )
+      );
+      
       // First, get the current user
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
@@ -369,9 +409,13 @@ export const EnhancedUserManagement: React.FC = () => {
         description: response?.message || "User approved successfully. They can now access the system.",
       });
 
-      await fetchUsers();
+      // Real-time subscription will refresh the data
     } catch (error: any) {
       console.error('Approval error:', error);
+      
+      // Revert optimistic update on error
+      await fetchUsers();
+      
       toast({
         title: "Approval Failed",
         description: error.message || "Failed to approve user. Please check your permissions.",
