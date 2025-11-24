@@ -12825,6 +12825,7 @@ export type Database = {
         | "procurement_manager"
         | "purchase_executive"
         | "property_manager"
+        | "bms_operator"
       approval_status: "pending" | "approved" | "rejected"
       availability_status_type: "available" | "busy" | "offline" | "on_leave"
       permission_action:
@@ -13051,6 +13052,7 @@ export const Constants = {
         "procurement_manager",
         "purchase_executive",
         "property_manager",
+        "bms_operator",
       ],
       approval_status: ["pending", "approved", "rejected"],
       availability_status_type: ["available", "busy", "offline", "on_leave"],
