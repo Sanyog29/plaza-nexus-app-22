@@ -94,20 +94,30 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         .order('created_at', { ascending: false });
 
       // Apply property filter if specified
-      // Include NULL property_id (legacy requests) in all property views
       if (propertyId) {
-        requestsQuery = requestsQuery.or(`property_id.eq.${propertyId},property_id.is.null`);
+        // Filter by specific property only
+        requestsQuery = requestsQuery.eq('property_id', propertyId);
       }
+      // When propertyId is null, no filter is applied (shows all properties)
 
       const { data: requests, error: requestsError } = await requestsQuery;
 
       if (requestsError) throw requestsError;
 
-      // Single query for alerts
-      const { data: alerts, error: alertsError } = await supabase
+      console.log('[useOptimizedAdminMetrics] Fetched requests:', requests?.length, 'for property:', propertyId);
+
+      // Single query for alerts with property filter
+      let alertsQuery = supabase
         .from('alerts')
         .select('id, severity, is_active')
         .eq('is_active', true);
+
+      // Apply property filter to alerts as well
+      if (propertyId) {
+        alertsQuery = alertsQuery.eq('property_id', propertyId);
+      }
+
+      const { data: alerts, error: alertsError } = await alertsQuery;
 
       if (alertsError) throw alertsError;
 
@@ -115,6 +125,8 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
       const activeRequests = requests?.filter(r => 
         ACTIVE_REQUEST_STATUSES.includes(r.status as any)
       ) || [];
+      
+      console.log('[useOptimizedAdminMetrics] Active requests:', activeRequests.length);
       
       const completedTotal = requests?.filter(r => r.status === 'completed') || [];
       
