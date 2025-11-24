@@ -378,26 +378,22 @@ const handler = async (req: Request): Promise<Response> => {
           assigned_by: user.id
         });
 
-      // Assign user to property - REQUIRED for all users
-      if (!property_id) {
-        console.error('Property ID is required but not provided');
-        // Delete the created user to maintain consistency
-        await supabase.auth.admin.deleteUser(newUser.user.id);
-        
-        return new Response(JSON.stringify({ 
-          error: 'Property assignment is required for all users' 
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+      // Assign user to property - use "Unassigned" default if not provided
+      const UNASSIGNED_PROPERTY_ID = '00000000-0000-0000-0000-000000000001';
+      const assignedPropertyId = property_id || UNASSIGNED_PROPERTY_ID;
+      
+      console.log('Assigning user to property:', { 
+        userId: newUser.user.id, 
+        propertyId: assignedPropertyId,
+        isDefault: !property_id 
+      });
 
       // Check if property assignment already exists (might be created by trigger)
       const { data: existingAssignment } = await supabase
         .from('property_assignments')
         .select('id')
         .eq('user_id', newUser.user.id)
-        .eq('property_id', property_id)
+        .eq('property_id', assignedPropertyId)
         .maybeSingle();
 
       // Only insert if assignment doesn't exist
@@ -406,7 +402,7 @@ const handler = async (req: Request): Promise<Response> => {
           .from('property_assignments')
           .insert({
             user_id: newUser.user.id,
-            property_id: property_id,
+            property_id: assignedPropertyId,
             is_primary: true,
             assigned_by: user.id
           });
@@ -424,6 +420,11 @@ const handler = async (req: Request): Promise<Response> => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
+      }
+      
+      // Log if user was assigned to default unassigned property
+      if (!property_id) {
+        console.log(`User ${newUser.user.id} auto-assigned to "Unassigned" property - admin should assign a real property`);
       }
 
       // Create notification for admin
