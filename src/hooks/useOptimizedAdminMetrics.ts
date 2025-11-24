@@ -73,12 +73,26 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
   const channelRef = useRef<any>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isVisibleRef = useRef(true);
+  
+  // Race condition protection: track the latest fetch to ignore stale results
+  const fetchIdRef = useRef(0);
+  // Prevent stale closures: always use the latest propertyId in callbacks
+  const propertyIdRef = useRef<string | null | undefined>(propertyId);
+  propertyIdRef.current = propertyId;
 
   // Optimized data fetching with single query
   const fetchMetrics = useCallback(async () => {
     if (!user || !isAdmin) return;
 
-    console.log('[useOptimizedAdminMetrics] Fetching metrics for propertyId:', propertyId);
+    // Increment fetch ID to track this fetch
+    const currentFetchId = ++fetchIdRef.current;
+    const currentPropertyId = propertyIdRef.current;
+
+    console.log('[useOptimizedAdminMetrics] fetchMetrics START', { 
+      fetchId: currentFetchId, 
+      propertyId: currentPropertyId,
+      timestamp: new Date().toISOString()
+    });
 
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
@@ -93,18 +107,18 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
-      // Apply property filter if specified
-      if (propertyId) {
+      // Apply property filter if specified (use captured currentPropertyId)
+      if (currentPropertyId) {
         // Filter by specific property only
-        requestsQuery = requestsQuery.eq('property_id', propertyId);
+        requestsQuery = requestsQuery.eq('property_id', currentPropertyId);
       }
-      // When propertyId is null, no filter is applied (shows all properties)
+      // When currentPropertyId is null, no filter is applied (shows all properties)
 
       const { data: requests, error: requestsError } = await requestsQuery;
 
       if (requestsError) throw requestsError;
 
-      console.log('[useOptimizedAdminMetrics] Fetched requests:', requests?.length, 'for property:', propertyId);
+      console.log('[useOptimizedAdminMetrics] Fetched requests:', requests?.length, 'for propertyId:', currentPropertyId, 'fetchId:', currentFetchId);
 
       // Fetch alerts (alerts are global, not property-specific)
       const { data: alerts, error: alertsError } = await supabase
@@ -169,48 +183,80 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         totalAlerts: alerts?.length || 0
       };
 
-      setData(prev => ({
-        ...prev,
-        metrics: newMetrics,
-        isLoading: false,
-        lastFetch: now.toISOString()
-      }));
+      // Only update state if this is still the latest fetch (prevent race conditions)
+      if (fetchIdRef.current === currentFetchId) {
+        console.log('[useOptimizedAdminMetrics] fetchMetrics SUCCESS - updating state', { 
+          fetchId: currentFetchId,
+          propertyId: currentPropertyId,
+          activeRequests: newMetrics.activeRequests,
+          timestamp: now.toISOString()
+        });
+
+        setData(prev => ({
+          ...prev,
+          metrics: newMetrics,
+          isLoading: false,
+          lastFetch: now.toISOString()
+        }));
+      } else {
+        console.log('[useOptimizedAdminMetrics] fetchMetrics IGNORED (stale)', { 
+          fetchId: currentFetchId, 
+          currentFetchId: fetchIdRef.current,
+          propertyId: currentPropertyId
+        });
+      }
 
     } catch (error: any) {
       const errorMessage = handleSupabaseError(error);
-      setData(prev => ({
-        ...prev,
-        error: errorMessage,
-        isLoading: false
-      }));
-
-      toast({
-        title: "Error loading admin metrics",
-        description: errorMessage,
-        variant: "destructive",
+      
+      console.error('[useOptimizedAdminMetrics] fetchMetrics ERROR', { 
+        fetchId: currentFetchId, 
+        propertyId: currentPropertyId,
+        error: errorMessage 
       });
+
+      // Only update error state if this is still the latest fetch
+      if (fetchIdRef.current === currentFetchId) {
+        setData(prev => ({
+          ...prev,
+          error: errorMessage,
+          isLoading: false
+        }));
+
+        toast({
+          title: "Error loading admin metrics",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
-  }, [user, isAdmin, propertyId]);
+  }, [user, isAdmin]);
 
   // Smart real-time updates - only when tab is visible
   const setupRealTimeUpdates = useCallback(() => {
     if (!user || !isAdmin || !isVisibleRef.current) return;
+
+    console.log('[useOptimizedAdminMetrics] Setting up realtime subscription');
 
     // Clear existing subscriptions
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
     }
 
-    // Setup real-time subscription for critical changes only
+    // Setup real-time subscription - always uses latest propertyIdRef
     channelRef.current = supabase
       .channel('optimized-admin-metrics')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'maintenance_requests',
-        filter: 'priority=eq.urgent'
-      }, () => {
-        // Only refetch for urgent requests
+        table: 'maintenance_requests'
+      }, (payload) => {
+        console.log('[useOptimizedAdminMetrics] Realtime change detected', { 
+          event: payload.eventType,
+          propertyId: propertyIdRef.current,
+          timestamp: new Date().toISOString()
+        });
+        // fetchMetrics will use the latest propertyIdRef
         retryWithBackoff(fetchMetrics, 2, 1000);
       })
       .on('postgres_changes', {
@@ -218,7 +264,7 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         schema: 'public',
         table: 'alerts'
       }, () => {
-        // Refetch for new alerts
+        console.log('[useOptimizedAdminMetrics] New alert detected');
         retryWithBackoff(fetchMetrics, 2, 1000);
       })
       .subscribe();
@@ -261,9 +307,15 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [fetchMetrics, setupRealTimeUpdates]);
 
-  // Initialize
+  // Initialize - trigger fetch when propertyId changes
   useEffect(() => {
     if (!user || !isAdmin) return;
+
+    console.log('[useOptimizedAdminMetrics] propertyId changed -> triggering fetch', { propertyId });
+    
+    // Increment fetchId to invalidate any pending fetches
+    fetchIdRef.current += 1;
+    propertyIdRef.current = propertyId;
 
     fetchMetrics();
     setupRealTimeUpdates();
