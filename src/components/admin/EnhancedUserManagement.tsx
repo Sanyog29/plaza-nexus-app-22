@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,11 +111,55 @@ export const EnhancedUserManagement: React.FC = () => {
   
   const [sendInvitation, setSendInvitation] = useState(true);
 
+  // Define fetchUsers with useCallback for stable reference
+  const fetchUsers = useCallback(async () => {
+    console.log('fetchUsers called');
+    try {
+      setIsLoading(true);
+      
+      // Determine property filter based on user role and current selection
+      let propertyFilter: string | null = null;
+      
+      if (isSuperAdmin) {
+        // Super admins: respect their property dropdown selection
+        if (selectedProperty !== 'all' && selectedProperty !== 'unassigned') {
+          propertyFilter = selectedProperty;
+        }
+        // If 'all' or 'unassigned', pass null to see all users
+      } else {
+        // Regular admins: always filter by their current property
+        propertyFilter = currentProperty?.id || null;
+      }
+
+      console.log('Fetching users with filter:', propertyFilter);
+      const { data, error } = await supabase.rpc('get_user_management_data', {
+        filter_property_id: propertyFilter
+      });
+
+      if (error) throw error;
+      const mappedData = (data || []).map((user: any) => ({
+        ...user,
+        approval_status: user.approval_status || 'pending'
+      }));
+      console.log('Users fetched:', mappedData.length);
+      setUsers(mappedData);
+    } catch (error: any) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Error",
+        description: `Failed to fetch users: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isSuperAdmin, selectedProperty, currentProperty, toast]);
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
     }
-  }, [isAdmin, selectedProperty, currentProperty, isSuperAdmin]);
+  }, [isAdmin, fetchUsers]);
 
   // Set default role and property when loaded
   useEffect(() => {
@@ -157,7 +201,10 @@ export const EnhancedUserManagement: React.FC = () => {
 
   // Real-time subscription for profile updates
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      console.log('Skipping real-time subscription - user is not admin');
+      return;
+    }
 
     console.log('Setting up real-time subscription for profiles table');
     
@@ -171,62 +218,29 @@ export const EnhancedUserManagement: React.FC = () => {
           table: 'profiles',
         },
         (payload) => {
-          console.log('Profile updated:', payload);
+          console.log('Real-time UPDATE event received:', payload);
+          console.log('Triggering fetchUsers from real-time subscription');
           // Refresh users when any profile is updated
           fetchUsers();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to profiles changes');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Real-time subscription error');
+        }
+      });
 
     return () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [isAdmin]);
+  }, [isAdmin, fetchUsers]);
 
   // Get role object for current selection
   const currentRoleObject = roles.find(r => r.title === newUser.role);
-
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Determine property filter based on user role and current selection
-      let propertyFilter: string | null = null;
-      
-      if (isSuperAdmin) {
-        // Super admins: respect their property dropdown selection
-        if (selectedProperty !== 'all' && selectedProperty !== 'unassigned') {
-          propertyFilter = selectedProperty;
-        }
-        // If 'all' or 'unassigned', pass null to see all users
-      } else {
-        // Regular admins: always filter by their current property
-        propertyFilter = currentProperty?.id || null;
-      }
-
-      const { data, error } = await supabase.rpc('get_user_management_data', {
-        filter_property_id: propertyFilter
-      });
-
-      if (error) throw error;
-      const mappedData = (data || []).map((user: any) => ({
-        ...user,
-        approval_status: user.approval_status || 'pending'
-      }));
-      setUsers(mappedData);
-    } catch (error: any) {
-      console.error('Error fetching users:', error);
-      toast({
-        title: "Error",
-        description: `Failed to fetch users: ${error.message}`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   
   // Show department specialization field for L1 roles
   const [showDepartmentSpecialization, setShowDepartmentSpecialization] = useState(false);
@@ -409,7 +423,9 @@ export const EnhancedUserManagement: React.FC = () => {
         description: response?.message || "User approved successfully. They can now access the system.",
       });
 
-      // Real-time subscription will refresh the data
+      // Manual refresh as fallback in case real-time doesn't trigger
+      console.log('Manually refreshing users after approval');
+      await fetchUsers();
     } catch (error: any) {
       console.error('Approval error:', error);
       
