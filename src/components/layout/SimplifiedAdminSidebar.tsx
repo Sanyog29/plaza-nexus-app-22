@@ -264,6 +264,43 @@ const opsSupervisorMenuGroups = [
   }
 ];
 
+// Manager menu - L2 management with approval authority
+const managerMenuGroups = [
+  {
+    label: "Management Dashboard",
+    items: [
+      { title: "Dashboard", url: "/staff/dashboard", icon: Home },
+      { title: "Manager Dashboard", url: "/procurement/manager-dashboard", icon: Activity },
+      { title: "Pending Approvals", url: "/procurement/pending-approvals", icon: Clock },
+      { title: "Approval History", url: "/procurement/approval-history", icon: CheckCircle },
+    ]
+  },
+  {
+    label: "Operations",
+    items: [
+      { title: "My Tasks", url: "/staff/tasks", icon: ClipboardList },
+      { title: "Requests", url: "/staff/requests", icon: Wrench },
+      { title: "Requisition List", url: "/procurement/requisitions", icon: Package },
+      { title: "Alerts", url: "/staff/alerts", icon: Bell },
+    ]
+  },
+  {
+    label: "Analytics & Tools",
+    items: [
+      { title: "My Analytics", url: "/staff/analytics", icon: BarChart3 },
+      { title: "Reports", url: "/staff/reports", icon: FileText },
+      { title: "Search", url: "/staff/search", icon: Search },
+    ]
+  },
+  {
+    label: "Personal",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
 interface SimplifiedAdminSidebarProps {
   userRole: string;
 }
@@ -303,9 +340,12 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'purchase_executive':
         return procurementMenuGroups;
         
-      // Management, Staff, Operations & Vendors - Staff level access with requests
+      // Management roles with approval authority - L2 level
       case 'assistant_manager':
       case 'assistant_floor_manager':
+        return managerMenuGroups;
+      
+      // Field-level staff without approval authority
       case 'field_staff':
       case 'ops_l1':
       case 'ops_l2':
