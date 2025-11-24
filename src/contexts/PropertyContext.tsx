@@ -4,6 +4,9 @@ import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { getRoleLevel } from '@/constants/roles';
 
+// Fake property ID used for "Unassigned" placeholder
+const FAKE_PROPERTY_ID = '00000000-0000-0000-0000-000000000001';
+
 export interface Property {
   id: string;
   name: string;
@@ -77,7 +80,6 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
       return;
     }
     
-    const userRole = user?.user_metadata?.role;
     const roleLevel = getRoleLevel(userRole);
     
     try {
@@ -90,7 +92,7 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
 
       if (error) throw error;
 
-      const properties: Property[] = (data || []).map((p: any) => ({
+      const allProperties: Property[] = (data || []).map((p: any) => ({
         id: p.property_id,
         name: p.property_name,
         code: p.property_code,
@@ -98,22 +100,32 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
         isPrimary: p.is_primary
       }));
 
+      // Filter out fake "Unassigned" property
+      const properties = allProperties.filter(p => p.id !== FAKE_PROPERTY_ID);
+
       setAvailableProperties(properties);
 
       // Auto-select property based on user role
       const storedPropertyId = localStorage.getItem('current_property_id');
       
-      if (storedPropertyId && properties.find(p => p.id === storedPropertyId)) {
+      // Ensure stored property is real and available
+      if (storedPropertyId && 
+          storedPropertyId !== FAKE_PROPERTY_ID && 
+          properties.find(p => p.id === storedPropertyId)) {
         // Restore last selected property
         const selected = properties.find(p => p.id === storedPropertyId);
         setCurrentProperty(selected || null);
       } else if (roleLevel === 'L2' || roleLevel === 'L1') {
-        // L2/L1: Auto-select primary property or first available
+        // L2/L1: Auto-select primary property or first available real property
         const primary = properties.find(p => p.isPrimary);
         const selected = primary || properties[0] || null;
+        
         setCurrentProperty(selected);
         if (selected) {
           localStorage.setItem('current_property_id', selected.id);
+        } else {
+          // No real properties available
+          localStorage.removeItem('current_property_id');
         }
       } else {
         // L3/L4+: Default to "All Properties" (null)
