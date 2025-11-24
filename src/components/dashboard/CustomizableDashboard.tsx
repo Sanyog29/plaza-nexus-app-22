@@ -16,6 +16,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { useRequestCounts } from '@/hooks/useRequestCounts';
 
 interface DashboardWidget {
@@ -33,10 +34,29 @@ interface CustomizableDashboardProps {
 
 export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) {
   const { user } = useAuth();
-  const { counts } = useRequestCounts();
+  const { isLoadingProperties } = usePropertyContext();
+  const { counts, isLoading: isLoadingCounts } = useRequestCounts();
   const navigate = useNavigate();
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [widgets, setWidgets] = useState<DashboardWidget[]>([]);
+
+  // Show loading state while PropertyContext or counts are loading
+  if (isLoadingProperties || isLoadingCounts) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-card/50 backdrop-blur animate-pulse">
+              <CardContent className="p-6 h-32" />
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const getDefaultWidgets = (role: string): DashboardWidget[] => {
     const baseWidgets: DashboardWidget[] = [

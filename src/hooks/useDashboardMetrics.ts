@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { ACTIVE_REQUEST_STATUSES } from '@/constants/requests';
 
 interface DashboardMetrics {
@@ -23,6 +24,7 @@ interface DashboardMetrics {
 
 export const useDashboardMetrics = () => {
   const { user, isStaff, isAdmin } = useAuth();
+  const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     activeRequests: 0,
     totalRequests: 0,
@@ -41,6 +43,30 @@ export const useDashboardMetrics = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // CRITICAL: Wait for PropertyContext to load before fetching data
+  if (isLoadingProperties) {
+    return { 
+      metrics: {
+        activeRequests: 0,
+        totalRequests: 0,
+        completedRequests: 0,
+        availableRooms: 0,
+        totalRooms: 0,
+        activeAlerts: 0,
+        criticalAlerts: 0,
+        pendingVisitors: 0,
+        totalVisitors: 0,
+        pendingMaintenance: 0,
+        operationalSystems: true,
+        currentTemperature: 0,
+        occupancyRate: 0,
+        totalOccupants: 0,
+      },
+      isLoading: true,
+      refreshMetrics: async () => {}
+    };
+  }
+
   const fetchMetrics = async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -50,6 +76,21 @@ export const useDashboardMetrics = () => {
         .from('maintenance_requests')
         .select('status')
         .is('deleted_at', null);
+      
+      // CRITICAL: Apply property filtering for non-super-admins
+      if (!isSuperAdmin) {
+        if (currentProperty) {
+          requestQuery = requestQuery.eq('property_id', currentProperty.id);
+        } else if (availableProperties.length > 0) {
+          const propertyIds = availableProperties.map(p => p.id);
+          requestQuery = requestQuery.in('property_id', propertyIds);
+        } else {
+          // No property access - return zero metrics
+          console.warn('User has no property access for dashboard metrics');
+          setIsLoading(false);
+          return;
+        }
+      }
       
       // Non-staff/admin users see only their own requests
       if (!isStaff && !isAdmin && user?.id) {
@@ -189,7 +230,7 @@ export const useDashboardMetrics = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentProperty, isSuperAdmin, availableProperties]);
 
   return { metrics, isLoading, refreshMetrics: fetchMetrics };
 };

@@ -14,7 +14,7 @@ interface RequestCounts {
 
 export const useRequestCounts = (propertyId?: string | null) => {
   const { user, isStaff, isAdmin } = useAuth();
-  const { currentProperty, isSuperAdmin, availableProperties } = usePropertyContext();
+  const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [counts, setCounts] = useState<RequestCounts>({
     totalRequests: 0,
     activeRequests: 0,
@@ -24,6 +24,23 @@ export const useRequestCounts = (propertyId?: string | null) => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // CRITICAL: Wait for PropertyContext to load before fetching data
+  // This prevents race condition where hooks execute with NULL property context
+  if (isLoadingProperties) {
+    return { 
+      counts: {
+        totalRequests: 0,
+        activeRequests: 0,
+        completedRequests: 0,
+        pendingRequests: 0,
+        inProgressRequests: 0,
+      },
+      isLoading: true,
+      error: null,
+      refetch: async () => {}
+    };
+  }
 
   const fetchCounts = async () => {
     try {

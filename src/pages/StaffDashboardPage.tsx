@@ -7,6 +7,7 @@ import { CustomizableDashboard } from '@/components/dashboard/CustomizableDashbo
 import { AdvancedNotificationCenter } from '@/components/notifications/AdvancedNotificationCenter';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { useRequestOffers } from '@/hooks/useRequestOffers';
 import { useProfile } from '@/hooks/useProfile';
 import { useRealtimeMaintenanceRequests } from '@/hooks/useRealtimeMaintenanceRequests';
@@ -29,6 +30,7 @@ interface RequestStats {
 const StaffDashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isLoadingProperties } = usePropertyContext();
   const [acceptedOffers, setAcceptedOffers] = useState<Set<string>>(new Set());
   const visibleStats = useStaggerAnimation(4, 100);
   const visibleActions = useStaggerAnimation(5, 80);
@@ -70,7 +72,8 @@ const StaffDashboardPage = () => {
         return 'text-muted-foreground';
     }
   };
-  if (isLoading) {
+  // Show loading state until both PropertyContext and data are ready
+  if (isLoadingProperties || isLoading) {
     return <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-plaza-blue"></div>
       </div>;
