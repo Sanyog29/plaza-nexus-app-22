@@ -192,32 +192,32 @@ const UnifiedAdminDashboard = () => {
   const quickStats = [
     {
       title: 'Active Requests',
-      value: requestCounts.activeRequests,
+      value: metrics.activeRequests,
       icon: Clock,
       color: metrics.urgentRequests > 0 ? 'text-red-500' : 'text-blue-500',
       change: metrics.urgentRequests > 0 ? `${metrics.urgentRequests} urgent` : 'Normal load'
     },
     {
       title: 'Completed',
-      value: requestCounts.completedRequests,
+      value: metrics.completedRequests,
       icon: CheckCircle,
       color: 'text-green-500',
       change: `Avg ${metrics.avgResponseTime}m response`
     },
     {
       title: 'Completion Rate',
-      value: requestCounts.totalRequests > 0 
-        ? ((requestCounts.completedRequests / requestCounts.totalRequests) * 100).toFixed(1) + '%'
+      value: metrics.totalRequests > 0 
+        ? ((metrics.completedRequests / metrics.totalRequests) * 100).toFixed(1) + '%'
         : '0.0%',
       icon: CheckCircle,
       color: (() => {
-        const rate = requestCounts.totalRequests > 0 
-          ? (requestCounts.completedRequests / requestCounts.totalRequests) * 100 
+        const rate = metrics.totalRequests > 0 
+          ? (metrics.completedRequests / metrics.totalRequests) * 100 
           : 0;
         return rate >= 90 ? 'text-green-500' : rate >= 70 ? 'text-yellow-500' : 'text-red-500';
       })(),
-      change: requestCounts.totalRequests > 0 
-        ? `${requestCounts.completedRequests} of ${requestCounts.totalRequests} closed`
+      change: metrics.totalRequests > 0 
+        ? `${metrics.completedRequests} of ${metrics.totalRequests} closed`
         : 'No requests yet'
     },
     {

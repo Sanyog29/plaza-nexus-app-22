@@ -10,6 +10,8 @@ interface OptimizedMetrics {
   activeRequests: number;
   pendingRequests: number;
   completedToday: number;
+  completedRequests: number; // Total completed (all time)
+  totalRequests: number; // Total requests (all statuses)
   urgentRequests: number;
   slaBreaches: number;
   
@@ -50,6 +52,8 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
       activeRequests: 0,
       pendingRequests: 0,
       completedToday: 0,
+      completedRequests: 0,
+      totalRequests: 0,
       urgentRequests: 0,
       slaBreaches: 0,
       avgResponseTime: 0,
@@ -167,7 +171,9 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
       const newMetrics: OptimizedMetrics = {
         activeRequests: activeRequests.length,
         pendingRequests: requests?.filter(r => r.status === 'pending').length || 0,
-        completedToday: completedTotal.length, // Changed to total completed (not just today)
+        completedToday: completedToday.length,
+        completedRequests: completedTotal.length, // Total completed (all time)
+        totalRequests: requests?.length || 0, // Total requests (all statuses)
         urgentRequests: urgentRequests.length,
         slaBreaches: slaBreaches.length,
         avgResponseTime: Math.round(avgResponseTime),
