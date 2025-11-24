@@ -10,6 +10,7 @@ export const ALLOWED_ROLES = [
   { value: 'fe', label: 'Field Expert', color: 'bg-green-100 text-green-800 border-green-200' },
   { value: 'hk', label: 'House Keeping', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
   { value: 'se', label: 'Security Executive', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+  { value: 'bms_operator', label: 'BMS Operator', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
   { value: 'field_staff', label: 'Field Staff', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
   { value: 'assistant_manager', label: 'Assistant Manager', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
   { value: 'assistant_floor_manager', label: 'Assistant Floor Manager', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
@@ -107,7 +108,7 @@ export const ROLE_HIERARCHY = {
   L1: {
     label: 'Field-Level',
     description: 'Operational field staff',
-    roles: ['mst', 'fe', 'hk', 'se', 'field_staff', 'purchase_executive']
+    roles: ['mst', 'fe', 'hk', 'se', 'bms_operator', 'field_staff', 'purchase_executive']
   }
 } as const;
 

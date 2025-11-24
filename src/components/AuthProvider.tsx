@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsFieldExpert(role === 'fe');
     
     // Set internal level flags (not exposed in UI)
-    const l1Roles = ['mst', 'fe', 'hk', 'se'];
+    const l1Roles = ['mst', 'fe', 'hk', 'se', 'bms_operator'];
     const l2Roles = ['assistant_manager', 'assistant_floor_manager', 'super_tenant'];
     const l3Roles = ['assistant_general_manager', 'assistant_vice_president'];
     const l4Roles = ['vp', 'ceo', 'cxo'];
@@ -257,6 +257,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         can_configure_auto_assign: false,
       },
       se: {
+        can_manage_users: false,
+        can_view_all_requests: false,
+        can_assign_requests: false,
+        can_configure_sla: false,
+        can_view_analytics: false,
+        can_manage_vendors: false,
+        can_view_vendor_scorecards: false,
+        can_manage_green_kpis: false,
+        can_use_qr_instant_ticket: true,
+        can_configure_auto_assign: false,
+      },
+      bms_operator: {
         can_manage_users: false,
         can_view_all_requests: false,
         can_assign_requests: false,
