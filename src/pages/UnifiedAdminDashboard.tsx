@@ -57,7 +57,7 @@ const PropertyManagementPage = lazy(() => import('@/pages/admin/PropertyManageme
 const UnifiedAdminDashboard = () => {
   const navigate = useNavigate();
   const { isAdmin, userRole } = useAuth();
-  const { currentProperty } = usePropertyContext();
+  const { currentProperty, isLoadingProperties } = usePropertyContext();
   const roleLevel = getRoleLevel(userRole);
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -79,6 +79,18 @@ const UnifiedAdminDashboard = () => {
   } = useOptimizedAdminMetrics(effectivePropertyId);
   
   const { counts: requestCounts } = useRequestCounts(effectivePropertyId);
+
+  // Wait for PropertyContext to fully load before rendering
+  if (isLoadingProperties) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
