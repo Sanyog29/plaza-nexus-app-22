@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { usePropertyContext } from '@/contexts/PropertyContext';
@@ -24,8 +24,10 @@ export const useRequestCounts = (propertyId?: string | null) => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const isMountedRef = useRef(true);
 
-  const fetchCounts = async () => {
+  const fetchCounts = useCallback(async () => {
+    if (!isMountedRef.current) return;
     try {
       console.log('[useRequestCounts] Fetching counts:', {
         propertyId,
@@ -59,14 +61,16 @@ export const useRequestCounts = (propertyId?: string | null) => {
         } else {
           // No property access - return zero counts
           console.warn('User has no property access for request counts');
-          setCounts({
-            totalRequests: 0,
-            activeRequests: 0,
-            completedRequests: 0,
-            pendingRequests: 0,
-            inProgressRequests: 0,
-          });
-          setIsLoading(false);
+          if (isMountedRef.current) {
+            setCounts({
+              totalRequests: 0,
+              activeRequests: 0,
+              completedRequests: 0,
+              pendingRequests: 0,
+              inProgressRequests: 0,
+            });
+            setIsLoading(false);
+          }
           return;
         }
       }
@@ -103,6 +107,8 @@ export const useRequestCounts = (propertyId?: string | null) => {
         inProgressRequests,
       });
 
+      if (!isMountedRef.current) return;
+
       setCounts({
         totalRequests,
         activeRequests,
@@ -112,14 +118,19 @@ export const useRequestCounts = (propertyId?: string | null) => {
       });
 
     } catch (error: any) {
+      if (!isMountedRef.current) return;
       console.error('Error fetching request counts:', error);
       setError(error);
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [propertyId, currentProperty?.id, isSuperAdmin, availableProperties.length, user?.id, isStaff, isAdmin]);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     // Only fetch when PropertyContext is ready
     if (isLoadingProperties) {
       console.log('[useRequestCounts] Waiting for PropertyContext to load');
@@ -143,9 +154,10 @@ export const useRequestCounts = (propertyId?: string | null) => {
       .subscribe();
 
     return () => {
+      isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [propertyId, currentProperty?.id, isSuperAdmin, availableProperties.length, isLoadingProperties, user?.id, isStaff, isAdmin]);
+  }, [isLoadingProperties, fetchCounts]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };

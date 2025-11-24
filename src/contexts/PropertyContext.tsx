@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
@@ -68,7 +68,7 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
   }, [user]);
 
   // Fetch available properties
-  const refreshProperties = async () => {
+  const refreshProperties = useCallback(async () => {
     if (!user) {
       setAvailableProperties([]);
       setCurrentProperty(null);
@@ -117,11 +117,11 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
     } finally {
       setIsLoadingProperties(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     refreshProperties();
-  }, [user]);
+  }, [refreshProperties]);
 
   // Switch property
   const switchProperty = async (propertyId: string | null) => {

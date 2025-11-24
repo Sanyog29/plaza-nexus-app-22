@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/components/AuthProvider';
@@ -43,8 +43,10 @@ export const useDashboardMetrics = () => {
     totalOccupants: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const isMountedRef = useRef(true);
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
+    if (!isMountedRef.current) return;
     try {
       console.log('[useDashboardMetrics] Fetching metrics:', {
         currentPropertyId: currentProperty?.id,
@@ -74,7 +76,9 @@ export const useDashboardMetrics = () => {
         } else {
           // No property access - return zero metrics
           console.warn('User has no property access for dashboard metrics');
-          setIsLoading(false);
+          if (isMountedRef.current) {
+            setIsLoading(false);
+          }
           return;
         }
       }
@@ -170,6 +174,8 @@ export const useDashboardMetrics = () => {
       const totalOccupants = 0;
       const currentTemperature = 0;
 
+      if (!isMountedRef.current) return;
+
       setMetrics({
         activeRequests,
         totalRequests,
@@ -188,6 +194,7 @@ export const useDashboardMetrics = () => {
       });
 
     } catch (error: any) {
+      if (!isMountedRef.current) return;
       console.error('Error fetching dashboard metrics:', error);
       toast({
         title: "Error loading dashboard data",
@@ -195,11 +202,15 @@ export const useDashboardMetrics = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [currentProperty?.id, isSuperAdmin, availableProperties.length, user?.id, isStaff, isAdmin]);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     // Skip fetching if PropertyContext is still loading
     if (isLoadingProperties) {
       console.log('[useDashboardMetrics] Waiting for PropertyContext to load');
@@ -235,9 +246,10 @@ export const useDashboardMetrics = () => {
       .subscribe();
 
     return () => {
+      isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [currentProperty?.id, isSuperAdmin, availableProperties.length, isLoadingProperties, user?.id, isStaff, isAdmin]);
+  }, [isLoadingProperties, fetchMetrics]);
 
   // Return loading state while PropertyContext loads
   if (isLoadingProperties) {
