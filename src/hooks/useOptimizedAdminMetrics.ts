@@ -78,6 +78,8 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
   const fetchMetrics = useCallback(async () => {
     if (!user || !isAdmin) return;
 
+    console.log('[useOptimizedAdminMetrics] Fetching metrics for propertyId:', propertyId);
+
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
@@ -269,7 +271,7 @@ export const useOptimizedAdminMetrics = (propertyId?: string | null) => {
         clearInterval(intervalRef.current);
       }
     };
-  }, [user, isAdmin]); // Minimal dependencies
+  }, [user, isAdmin, propertyId, fetchMetrics, setupRealTimeUpdates]);
 
   // Manual refresh function
   const refreshMetrics = useCallback(async () => {

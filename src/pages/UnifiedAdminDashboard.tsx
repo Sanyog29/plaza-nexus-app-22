@@ -61,18 +61,12 @@ const UnifiedAdminDashboard = () => {
   const roleLevel = getRoleLevel(userRole);
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Property selection state
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(() => {
-    // L4+ and L3: Default to "All Properties" view
-    if (roleLevel === 'L4+' || roleLevel === 'L3') return null;
-    // L2/L1: Locked to assigned property
-    return currentProperty?.id || null;
-  });
-
-  // For L2/L1, always use their assigned property (ignore state)
-  const effectivePropertyId = (roleLevel === 'L2' || roleLevel === 'L1')
-    ? currentProperty?.id || null
-    : selectedPropertyId;
+  // Use currentProperty directly from context (no local state)
+  const effectivePropertyId = currentProperty?.id ?? null;
+  
+  // Debug logging
+  console.log('[UnifiedAdminDashboard] currentProperty:', currentProperty?.id);
+  console.log('[UnifiedAdminDashboard] effectivePropertyId:', effectivePropertyId);
   
   const { 
     metrics, 
@@ -258,11 +252,7 @@ const UnifiedAdminDashboard = () => {
             
             {/* Property Selector for L3 and L4+ roles */}
             {(roleLevel === 'L3' || roleLevel === 'L4+') && (
-              <PropertySelector
-                value={selectedPropertyId}
-                onChange={setSelectedPropertyId}
-                variant="header"
-              />
+              <PropertySelector variant="header" />
             )}
             
             {/* Refresh button for L2/L1 or as icon for others */}
