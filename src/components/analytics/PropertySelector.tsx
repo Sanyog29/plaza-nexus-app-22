@@ -23,9 +23,8 @@ export const PropertySelector: React.FC<PropertySelectorProps> = ({
   className,
   variant = 'default'
 }) => {
-  const { user } = useAuth();
+  const { userRole } = useAuth();
   const { availableProperties, currentProperty, switchProperty } = usePropertyContext();
-  const userRole = user?.user_metadata?.role;
   const roleLevel = getRoleLevel(userRole);
   const isProcurementRole = userRole === 'purchase_executive' || userRole === 'procurement_manager';
   
