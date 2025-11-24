@@ -352,6 +352,7 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'mst':
       case 'hk':
       case 'se':
+      case 'bms_operator':
       case 'vendor':
       case 'food_vendor':
         return staffMenuGroups;
