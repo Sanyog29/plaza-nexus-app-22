@@ -149,7 +149,7 @@ const staffMenuGroups = [
     items: [
       { title: "Dashboard", url: "/staff/dashboard", icon: Home },
       { title: "My Tasks", url: "/staff/tasks", icon: ClipboardList },
-      { title: "Requests", url: "/staff/requests", icon: Wrench },
+      { title: "Requests", url: "/requests", icon: Wrench },
       { title: "Alerts", url: "/staff/alerts", icon: Bell },
     ]
   },
