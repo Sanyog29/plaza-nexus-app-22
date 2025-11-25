@@ -14,6 +14,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { AttachBeforePhotoButton } from '@/components/admin/AttachBeforePhotoButton';
 import { formatUserNameFromProfile } from '@/utils/formatters';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface MaintenanceRequest {
   id: string;
@@ -53,8 +54,10 @@ const AdminRequestsPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { currentProperty, isLoadingProperties, isSuperAdmin } = usePropertyContext();
 
   useEffect(() => {
+    if (isLoadingProperties) return; // Wait for property context
     fetchRequests();
     
     // Set initial filter from URL
@@ -71,7 +74,10 @@ const AdminRequestsPage = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'maintenance_requests'
+          table: 'maintenance_requests',
+          filter: currentProperty 
+            ? `property_id=eq.${currentProperty.id}`
+            : undefined
         },
         () => {
           fetchRequests();
@@ -82,7 +88,7 @@ const AdminRequestsPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentProperty, isLoadingProperties]);
 
   useEffect(() => {
     filterRequests();
@@ -90,7 +96,7 @@ const AdminRequestsPage = () => {
 
   const fetchRequests = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('maintenance_requests')
         .select(`
           *,
@@ -98,8 +104,19 @@ const AdminRequestsPage = () => {
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name),
           building_floors(name)
         `)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        .is('deleted_at', null);
+      
+      // Apply property filtering (super admins can bypass with "All Properties")
+      if (currentProperty) {
+        query = query.eq('property_id', currentProperty.id);
+      } else if (!isSuperAdmin) {
+        // Non-super-admins MUST have a property selected
+        query = query.eq('property_id', '00000000-0000-0000-0000-000000000000'); // Impossible filter
+      }
+      
+      query = query.order('created_at', { ascending: false });
+      
+      const { data, error } = await query;
 
       if (error) throw error;
       setRequests(data || []);

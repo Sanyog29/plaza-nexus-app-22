@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { toast } from '@/hooks/use-toast';
 import { 
   Users, 
@@ -44,6 +45,7 @@ interface BulkRequest {
 
 const BulkOperationsPage = () => {
   const { isAdmin } = useAuth();
+  const { currentProperty, isLoadingProperties } = usePropertyContext();
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState<BulkUser[]>([]);
   const [requests, setRequests] = useState<BulkRequest[]>([]);
@@ -54,10 +56,10 @@ const BulkOperationsPage = () => {
   const [filterStatus, setFilterStatus] = useState('all');
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && !isLoadingProperties) {
       fetchData();
     }
-  }, [isAdmin]);
+  }, [isAdmin, currentProperty, isLoadingProperties]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -69,9 +71,16 @@ const BulkOperationsPage = () => {
         .order('created_at', { ascending: false });
 
       // Fetch maintenance requests
-      const { data: requestData } = await supabase
+      let requestQuery = supabase
         .from('maintenance_requests')
-        .select('id, title, status, priority, created_at, reported_by')
+        .select('id, title, status, priority, created_at, reported_by');
+      
+      // Apply property filtering for bulk operations
+      if (currentProperty) {
+        requestQuery = requestQuery.eq('property_id', currentProperty.id);
+      }
+      
+      const { data: requestData } = await requestQuery
         .order('created_at', { ascending: false })
         .limit(100);
 
