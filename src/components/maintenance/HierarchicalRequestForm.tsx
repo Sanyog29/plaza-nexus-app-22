@@ -21,7 +21,7 @@ const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   mainCategoryId: z.string().min(1, 'Please select a category'),
-  issueType: z.string().min(1, 'Please select an issue type'),
+  issueType: z.string(),
   customIssueType: z.string().optional(),
   buildingAreaId: z.string().min(1, 'Please select an area'),
   buildingFloorId: z.string().min(1, 'Please select a floor'),
@@ -29,7 +29,15 @@ const formSchema = z.object({
   priority: z.enum(['urgent', 'high', 'medium', 'low', 'critical']),
   is_crisis: z.boolean().optional()
 }).refine((data) => {
-  // If issue type is custom, require custom issue type field
+  if (data.issueType === '__custom__') {
+    return data.customIssueType && data.customIssueType.trim().length >= 3;
+  }
+  return data.issueType && data.issueType.trim().length > 0;
+}, {
+  message: "Please select an issue type or describe your custom issue",
+  path: ["issueType"]
+})
+.refine((data) => {
   if (data.issueType === '__custom__') {
     return data.customIssueType && data.customIssueType.trim().length >= 3;
   }
@@ -318,15 +326,21 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   };
 
   const handleNotListedSelection = () => {
-    // Don't change category - keep the user's selected category
-    // Just enable custom issue type input
     form.setValue('issueType', '__custom__');
     setShowCustomIssueType(true);
     
+    const currentTitle = form.getValues('title');
+    const isAutoFilledFromIssue = availableIssueTypes.some(issue => 
+      currentTitle.includes(issue.name)
+    );
+    
+    if (isAutoFilledFromIssue || !currentTitle) {
+      form.setValue('title', '');
+    }
+    
     toast({
-      title: "Custom issue type enabled",
-      description: "Please describe your specific issue below.",
-      variant: "default"
+      title: "Custom issue enabled",
+      description: "Describe your issue - it will be used as your request title.",
     });
   };
 
@@ -413,8 +427,19 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
         ? (data.priority === 'critical' ? 'urgent' : data.priority) 
         : 'medium';
       
-      // Get the final issue type (either selected or custom)
-      const finalIssueType = data.issueType === '__custom__' ? data.customIssueType : data.issueType;
+      const finalIssueType = data.issueType === '__custom__' 
+        ? (data.customIssueType?.trim() || 'Custom Issue')
+        : data.issueType;
+
+      if (!finalIssueType || finalIssueType.trim().length === 0) {
+        toast({
+          title: "Invalid issue type",
+          description: "Please select or describe an issue type",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
       const requestData = {
         title: data.title,
@@ -600,15 +625,43 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                       <FormLabel>Describe your issue *</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Please describe your specific issue" 
-                          {...field} 
+                          placeholder="e.g., Water cooler not working, Broken window latch" 
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            const customIssue = e.target.value.trim();
+                            if (customIssue.length > 0) {
+                              form.setValue('title', customIssue);
+                            }
+                          }}
                           className="bg-background"
                         />
                       </FormControl>
                       <FormMessage />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        💡 This will be used as your request title
+                      </p>
                     </FormItem>
                   )}
                 />
+              )}
+
+              {/* Custom Issue Preview */}
+              {showCustomIssueType && form.watch('customIssueType') && (
+                <div className="col-span-1 md:col-span-2 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Custom Issue Preview</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Issue Type: <span className="font-medium text-foreground">{form.watch('customIssueType')}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Title: <span className="font-medium text-foreground">{form.watch('title')}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Building Area */}
