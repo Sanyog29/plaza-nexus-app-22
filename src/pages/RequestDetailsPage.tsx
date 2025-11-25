@@ -18,12 +18,14 @@ import { AssignToMeButton } from '@/components/maintenance/AssignToMeButton';
 import { TimeExtensionModal } from '@/components/maintenance/TimeExtensionModal';
 import { useTimeExtensions } from '@/hooks/useTimeExtensions';
 import { formatUserNameFromProfile } from '@/utils/formatters';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 const RequestDetailsPage = () => {
   const { requestId } = useParams();
   const navigate = useNavigate();
   const { user, isAdmin, isStaff: userIsStaff } = useAuth();
   const { toast } = useToast();
+  const { currentProperty, isSuperAdmin } = usePropertyContext();
   
   // UUID validation and sanitization
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -88,6 +90,10 @@ const RequestDetailsPage = () => {
         
       if (error) throw error;
       
+      if (!data) {
+        throw new Error('Request not found');
+      }
+      
       if (data) {
         // Fetch reporter name using the reliable database function
         let reporterName = 'Unknown User';
@@ -119,6 +125,17 @@ const RequestDetailsPage = () => {
             email: ''
           } : null
         };
+        
+        // Verify property access (non-super-admins must match current property)
+        if (currentProperty && data.property_id !== currentProperty.id && !isSuperAdmin) {
+          toast({
+            title: "Access Denied",
+            description: "This request belongs to a different property",
+            variant: "destructive",
+          });
+          navigate('/requests');
+          return;
+        }
         
         setRequest(enhancedData);
       } else {

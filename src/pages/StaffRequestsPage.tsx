@@ -18,6 +18,7 @@ import { LoadingState } from '@/components/ui/loading-state';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { handleSupabaseError } from '@/utils/errorHandler';
 import { formatUserNameFromProfile } from '@/utils/formatters';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface MaintenanceRequest {
   id: string;
@@ -35,6 +36,7 @@ interface MaintenanceRequest {
 const StaffRequestsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentProperty, isLoadingProperties } = usePropertyContext();
   const [searchParams] = useSearchParams();
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<MaintenanceRequest[]>([]);
@@ -63,6 +65,7 @@ const StaffRequestsPage = () => {
   useRealtimeRequests();
 
   useEffect(() => {
+    if (isLoadingProperties) return; // Wait for property context
     fetchRequests();
     
     // Set up real-time subscription for better UX feedback
@@ -71,7 +74,10 @@ const StaffRequestsPage = () => {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'maintenance_requests'
+        table: 'maintenance_requests',
+        filter: currentProperty 
+          ? `property_id=eq.${currentProperty.id}`
+          : undefined
       }, (payload) => {
         // Refetch data when requests change
         console.log('Request update received:', payload);
@@ -89,7 +95,7 @@ const StaffRequestsPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [currentProperty, isLoadingProperties]);
 
   useEffect(() => {
     filterRequests();
@@ -98,14 +104,22 @@ const StaffRequestsPage = () => {
   const fetchRequests = async () => {
     try {
       setError(null);
-      const { data, error } = await supabase
+      let query = supabase
         .from('maintenance_requests')
         .select(`
           *,
           reporter:profiles!maintenance_requests_reported_by_fkey(first_name, last_name, email),
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name, email)
-        `)
-        .order('created_at', { ascending: false });
+        `);
+      
+      // Apply property filtering
+      if (currentProperty) {
+        query = query.eq('property_id', currentProperty.id);
+      }
+      
+      query = query.order('created_at', { ascending: false });
+      
+      const { data, error } = await query;
 
       if (error) throw error;
       

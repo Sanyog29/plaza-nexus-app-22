@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Info, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface Alert {
   id: string;
@@ -32,11 +33,13 @@ const StaffAlertsPage = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentProperty, isLoadingProperties } = usePropertyContext();
 
   useEffect(() => {
+    if (isLoadingProperties) return;
     fetchAlerts();
     fetchSystemAlerts();
-  }, []);
+  }, [currentProperty, isLoadingProperties]);
 
   const fetchAlerts = async () => {
     try {
@@ -59,11 +62,18 @@ const StaffAlertsPage = () => {
   const fetchSystemAlerts = async () => {
     try {
       // Simulate system alerts based on maintenance requests with high priority
-      const { data: urgentRequests, error } = await supabase
+      let query = supabase
         .from('maintenance_requests')
         .select('id, title, description, priority, status, location, created_at')
         .in('priority', ['urgent', 'high'])
-        .neq('status', 'completed')
+        .neq('status', 'completed');
+      
+      // Apply property filtering
+      if (currentProperty) {
+        query = query.eq('property_id', currentProperty.id);
+      }
+      
+      const { data: urgentRequests, error } = await query
         .order('created_at', { ascending: false })
         .limit(10);
 
