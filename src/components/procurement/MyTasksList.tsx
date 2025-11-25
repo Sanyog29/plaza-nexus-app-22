@@ -84,11 +84,11 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
   const { data: requisitions, isLoading, isError, error } = useQuery<RequisitionWithRelations[]>({
     queryKey: ['my-requisitions', filter, userRole, propertyId],
     queryFn: async () => {
+      // First, fetch requisitions with created_by profile
       let query = supabase
         .from('requisition_lists')
         .select(`
           *,
-          properties!requisition_lists_property_id_fkey(name),
           created_by_profile:profiles!requisition_lists_created_by_fkey(
             first_name,
             last_name
@@ -134,19 +134,35 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
         throw error;
       }
 
+      if (!data || data.length === 0) return [];
+
+      // Fetch properties separately to bypass RLS issues
+      const propertyIds = [...new Set(data.map(r => r.property_id).filter(Boolean))];
+      
+      const { data: properties } = await supabase
+        .from('properties')
+        .select('id, name, code')
+        .in('id', propertyIds);
+
+      // Map properties back to requisitions
+      const requisitionsWithProperties = data.map(req => ({
+        ...req,
+        properties: properties?.find(p => p.id === req.property_id) || null
+      }));
+
       console.log('[MyTasksList] Query results:', {
-        count: data?.length || 0,
-        statuses: data?.map(r => r.status) || [],
-        orderNumbers: data?.map(r => r.order_number) || [],
-        sampleData: data?.[0], // Log first requisition structure
-        propertyData: data?.map(r => ({ 
+        count: requisitionsWithProperties.length,
+        statuses: requisitionsWithProperties.map(r => r.status),
+        orderNumbers: requisitionsWithProperties.map(r => r.order_number),
+        sampleData: requisitionsWithProperties[0], // Log first requisition structure
+        propertyData: requisitionsWithProperties.map(r => ({ 
           id: r.id.slice(0, 8), 
           property_id: r.property_id,
           property_name: r.properties?.name || 'undefined'
         }))
       });
 
-      return data;
+      return requisitionsWithProperties;
     }
   });
 
@@ -359,7 +375,7 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="flex items-center gap-2 flex-wrap">
-                      List #{req.id.slice(0, 8)}
+                      {req.order_number}
                       {getStatusBadge(req.status)}
                       {getPriorityBadge(req.priority)}
                     </CardTitle>
@@ -393,7 +409,11 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <User className="h-4 w-4" />
-                      <span>{req.created_by_name || 'Unknown'}</span>
+                      <span>
+                        {req.created_by_profile?.first_name && req.created_by_profile?.last_name
+                          ? `${req.created_by_profile.first_name} ${req.created_by_profile.last_name}`
+                          : req.created_by_profile?.first_name || 'Unknown'}
+                      </span>
                     </div>
                     {req.expected_delivery_date && (
                       <div className="flex items-center gap-2 text-muted-foreground">
