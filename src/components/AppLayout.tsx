@@ -14,6 +14,7 @@ import { usePWA } from '@/hooks/usePWA';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { useNavigationTransition } from '@/hooks/useNavigationTransition';
+import { getRoleLevel } from '@/constants/roles';
 
 const AppLayout: React.FC = () => {
   const { user, isAdmin, isStaff, isLoading, userRole, isFoodVendor } = useAuth(); // Use role states from AuthProvider
@@ -21,6 +22,7 @@ const AppLayout: React.FC = () => {
   const { navigate } = useNavigationTransition();
   const { requestNotificationPermission } = usePWA();
   const isMobile = useIsMobile();
+  const roleLevel = getRoleLevel(userRole);
   
   // Initialize breadcrumbs for all layouts
   useBreadcrumbs();
@@ -66,22 +68,30 @@ const AppLayout: React.FC = () => {
         return;
       }
 
-      // Allow staff to access /requests/new for raising requests, but redirect /requests to admin area
+      // Only redirect L3+ staff and admins to /admin/requests
+      // L1/L2 (field staff, operators) stay on /requests
       if (location.pathname === '/requests') {
-        navigate('/admin/requests', { replace: true });
-        return;
+        if (roleLevel === 'L3' || roleLevel === 'L4+' || isAdmin) {
+          navigate('/admin/requests', { replace: true });
+          return;
+        }
+        // L1/L2 users stay on /requests - no redirect
       }
 
-      // Redirect admin/staff users to their appropriate routes for tenant request URLs
+      // Redirect request details only for L3+ and admins
       const isOnTenantRequestRoute = location.pathname.startsWith('/requests/') && 
+                                    location.pathname !== '/requests/new' && 
                                     !location.pathname.includes('/admin/') && 
                                     !location.pathname.includes('/staff/');
       
       if (isOnTenantRequestRoute) {
-        const requestId = location.pathname.split('/requests/')[1];
-        const newPath = isAdmin ? `/admin/requests/${requestId}` : `/staff/requests/${requestId}`;
-        navigate(newPath, { replace: true });
-        return;
+        if (roleLevel === 'L3' || roleLevel === 'L4+' || isAdmin) {
+          const requestId = location.pathname.split('/requests/')[1];
+          const newPath = `/admin/requests/${requestId}`;
+          navigate(newPath, { replace: true });
+          return;
+        }
+        // L1/L2 users stay on /requests/:id - no redirect
       }
       
       // Redirect generic dashboard routes for admin/staff

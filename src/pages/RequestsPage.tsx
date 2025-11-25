@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import { formatUserNameFromProfile } from '@/utils/formatters';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface MaintenanceRequest {
   id: string;
@@ -47,6 +48,7 @@ interface MaintenanceRequest {
 
 const RequestsPage = () => {
   const { user } = useAuth();
+  const { currentProperty, isLoadingProperties } = usePropertyContext();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
@@ -66,6 +68,9 @@ const RequestsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
+    // Wait for property context to load
+    if (isLoadingProperties) return;
+    
     if (user) {
       fetchRequests();
     }
@@ -76,7 +81,7 @@ const RequestsPage = () => {
       setStatusFilter(urlStatus);
     }
 
-    // Set up real-time subscription
+    // Set up real-time subscription with property filter
     const channel = supabase
       .channel('requests-changes')
       .on(
@@ -85,7 +90,9 @@ const RequestsPage = () => {
           event: '*',
           schema: 'public',
           table: 'maintenance_requests',
-          filter: `reported_by=eq.${user?.id}`
+          filter: currentProperty 
+            ? `reported_by=eq.${user?.id},property_id=eq.${currentProperty.id}`
+            : `reported_by=eq.${user?.id}`
         },
         () => {
           fetchRequests();
@@ -96,14 +103,15 @@ const RequestsPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, currentProperty, isLoadingProperties]);
 
   const fetchRequests = async () => {
     if (!user) return;
     
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('maintenance_requests')
         .select(`
           *,
@@ -121,8 +129,16 @@ const RequestsPage = () => {
           building_floors(name)
         `)
         .eq('reported_by', user.id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        .is('deleted_at', null);
+      
+      // Apply property filtering
+      if (currentProperty) {
+        query = query.eq('property_id', currentProperty.id);
+      }
+      
+      query = query.order('created_at', { ascending: false });
+      
+      const { data, error } = await query;
 
       if (error) throw error;
 
