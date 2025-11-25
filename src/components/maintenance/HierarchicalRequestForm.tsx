@@ -264,7 +264,6 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
   useEffect(() => {
     if (!selectedMainCategory) {
       setAvailableIssueTypes([]);
-      setShowCustomIssueType(false);
       return;
     }
 
@@ -274,10 +273,11 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     const issueTypes = CATEGORY_ISSUE_MAPPINGS[selectedCategoryData.name] || [];
     setAvailableIssueTypes(issueTypes);
     
-    // Reset issue type selection
-    form.setValue('issueType', '');
-    form.setValue('customIssueType', '');
-    setShowCustomIssueType(false);
+    // Only reset if user is NOT in custom mode
+    if (form.getValues('issueType') !== '__custom__') {
+      form.setValue('issueType', '');
+      setShowCustomIssueType(false);
+    }
   }, [selectedMainCategory, mainCategories, form]);
 
   // Update priority and SLA when issue type changes
@@ -323,6 +323,13 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       low: { label: 'P4 - Low', color: 'outline', description: 'No immediate impact; planned task' }
     };
     return configs[priority as keyof typeof configs] || configs.medium;
+  };
+
+  const activateCustomMode = () => {
+    if (form.getValues('issueType') !== '__custom__') {
+      form.setValue('issueType', '__custom__');
+      setShowCustomIssueType(true);
+    }
   };
 
   const handleNotListedSelection = () => {
@@ -588,21 +595,20 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-background border shadow-lg z-50">
-                        {availableIssueTypes.length > 0 ? (
+                        {selectedMainCategory ? (
                           <>
                             {availableIssueTypes.map((issueType) => (
                               <SelectItem key={issueType.name} value={issueType.name}>
                                 {issueType.name}
                               </SelectItem>
                             ))}
-                            <SelectItem value="__not_listed__" className="text-primary font-medium border-t border-border mt-1 pt-2">
+                            <SelectItem 
+                              value="__not_listed__" 
+                              className="text-primary font-medium border-t border-border mt-1 pt-2"
+                            >
                               💭 My issue isn't mentioned here
                             </SelectItem>
                           </>
-                        ) : selectedMainCategory ? (
-                          <SelectItem value="__not_listed__" className="text-primary font-medium">
-                            💭 Describe your issue
-                          </SelectItem>
                         ) : (
                           <SelectItem value="__no_selection__" disabled>
                             Please select a category first
@@ -629,6 +635,9 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
+                            
+                            activateCustomMode(); // Lock custom mode to prevent flicker
+                            
                             const customIssue = e.target.value.trim();
                             if (customIssue.length > 0) {
                               form.setValue('title', customIssue);
