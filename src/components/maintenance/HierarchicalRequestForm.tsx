@@ -21,30 +21,35 @@ const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   mainCategoryId: z.string().min(1, 'Please select a category'),
-  issueType: z.string(),
+  issueType: z.string().optional(),
   customIssueType: z.string().optional(),
   buildingAreaId: z.string().min(1, 'Please select an area'),
   buildingFloorId: z.string().min(1, 'Please select a floor'),
   processId: z.string().optional(),
   priority: z.enum(['urgent', 'high', 'medium', 'low', 'critical']),
   is_crisis: z.boolean().optional()
-}).refine((data) => {
-  if (data.issueType === '__custom__') {
-    return data.customIssueType && data.customIssueType.trim().length >= 3;
+}).superRefine((data, ctx) => {
+  const isCustomMode = data.issueType === '__custom__';
+  
+  if (isCustomMode) {
+    // In custom mode, customIssueType is required
+    if (!data.customIssueType || data.customIssueType.trim().length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please describe your custom issue (minimum 3 characters)",
+        path: ["customIssueType"]
+      });
+    }
+  } else {
+    // In normal mode, issueType is required
+    if (!data.issueType || data.issueType.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Please select an issue type",
+        path: ["issueType"]
+      });
+    }
   }
-  return data.issueType && data.issueType.trim().length > 0;
-}, {
-  message: "Please select an issue type or describe your custom issue",
-  path: ["issueType"]
-})
-.refine((data) => {
-  if (data.issueType === '__custom__') {
-    return data.customIssueType && data.customIssueType.trim().length >= 3;
-  }
-  return true;
-}, {
-  message: "Please describe your custom issue (minimum 3 characters)",
-  path: ["customIssueType"]
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -334,16 +339,15 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
 
   const handleNotListedSelection = () => {
     form.setValue('issueType', '__custom__');
+    form.setValue('customIssueType', '');
     setShowCustomIssueType(true);
     
-    const currentTitle = form.getValues('title');
-    const isAutoFilledFromIssue = availableIssueTypes.some(issue => 
-      currentTitle.includes(issue.name)
-    );
+    // Clear title to prepare for custom entry
+    form.setValue('title', '');
     
-    if (isAutoFilledFromIssue || !currentTitle) {
-      form.setValue('title', '');
-    }
+    // Clear any validation errors
+    form.clearErrors('issueType');
+    form.clearErrors('customIssueType');
     
     toast({
       title: "Custom issue enabled",
@@ -429,6 +433,14 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     try {
       const formValues = form.getValues();
       
+      // Debug logging
+      console.log('Form submission debug:', {
+        issueType: data.issueType,
+        customIssueType: data.customIssueType,
+        title: data.title,
+        showCustomIssueType
+      });
+      
       // Map priority to allowed enum values to ensure safety
       const safePriority = ['urgent', 'high', 'medium', 'low', 'critical'].includes(data.priority) 
         ? (data.priority === 'critical' ? 'urgent' : data.priority) 
@@ -437,6 +449,8 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       const finalIssueType = data.issueType === '__custom__' 
         ? (data.customIssueType?.trim() || 'Custom Issue')
         : data.issueType;
+      
+      console.log('Final issue type:', finalIssueType);
 
       if (!finalIssueType || finalIssueType.trim().length === 0) {
         toast({
@@ -577,52 +591,73 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Issue Type *</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        if (value === '__not_listed__') {
-                          handleNotListedSelection();
-                        } else {
-                          field.onChange(value);
-                          setShowCustomIssueType(false);
-                        }
-                      }} 
-                      value={field.value} 
-                      disabled={!selectedMainCategory}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Select issue type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-background border shadow-lg z-50">
-                        {selectedMainCategory ? (
-                          <>
-                            {availableIssueTypes.map((issueType) => (
-                              <SelectItem key={issueType.name} value={issueType.name}>
-                                {issueType.name}
+                    
+                    {/* Hide Select when in custom mode, show badge instead */}
+                    {showCustomIssueType ? (
+                      <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                        <Badge variant="outline" className="text-primary">Custom Issue Selected</Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowCustomIssueType(false);
+                            form.setValue('issueType', '');
+                            form.setValue('customIssueType', '');
+                            form.setValue('title', '');
+                          }}
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    ) : (
+                      <Select 
+                        onValueChange={(value) => {
+                          if (value === '__not_listed__') {
+                            handleNotListedSelection();
+                          } else {
+                            field.onChange(value);
+                            setShowCustomIssueType(false);
+                          }
+                        }} 
+                        value={field.value} 
+                        disabled={!selectedMainCategory}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-background">
+                            <SelectValue placeholder="Select issue type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          {selectedMainCategory ? (
+                            <>
+                              {availableIssueTypes.map((issueType) => (
+                                <SelectItem key={issueType.name} value={issueType.name}>
+                                  {issueType.name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem 
+                                value="__not_listed__" 
+                                className="text-primary font-medium border-t border-border mt-1 pt-2"
+                              >
+                                💭 My issue isn't mentioned here
                               </SelectItem>
-                            ))}
-                            <SelectItem 
-                              value="__not_listed__" 
-                              className="text-primary font-medium border-t border-border mt-1 pt-2"
-                            >
-                              💭 My issue isn't mentioned here
+                            </>
+                          ) : (
+                            <SelectItem value="__no_selection__" disabled>
+                              Please select a category first
                             </SelectItem>
-                          </>
-                        ) : (
-                          <SelectItem value="__no_selection__" disabled>
-                            Please select a category first
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Custom Issue Type Input */}
-              {showCustomIssueType && (
+              {/* Custom Issue Type Input - Show when custom mode active */}
+              {(showCustomIssueType || form.watch('issueType') === '__custom__') && (
                 <FormField
                   control={form.control}
                   name="customIssueType"
@@ -633,6 +668,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
                         <Input 
                           placeholder="e.g., Water cooler not working, Broken window latch" 
                           {...field}
+                          value={field.value || ''}
                           onChange={(e) => {
                             field.onChange(e);
                             
