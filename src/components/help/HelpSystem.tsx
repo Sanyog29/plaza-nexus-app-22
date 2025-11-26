@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { HelpCircle, X, ChevronRight, Search, Book, MessageCircle, Video } from 'lucide-react';
+import React, { useState } from 'react';
+import { HelpCircle, X, ChevronRight, Book, MessageCircle, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,47 +41,9 @@ const helpCategories = [
   },
 ];
 
-const faqs = [
-  {
-    question: 'How do I reset my password?',
-    answer: 'Click on the "Forgot password?" link on the login page and enter your email address. You\'ll receive a reset link within a few minutes.',
-    category: 'Account'
-  },
-  {
-    question: 'How long does it take for requests to be resolved?',
-    answer: 'Response times vary by priority: Urgent (2 hours), High (4 hours), Medium (24 hours), Low (48 hours).',
-    category: 'Maintenance'
-  },
-  {
-    question: 'Can I book rooms for external meetings?',
-    answer: 'Yes, you can book meeting rooms for business meetings with external guests. Please specify this in your booking notes.',
-    category: 'Booking'
-  },
-  {
-    question: 'How do I contact the facility management team?',
-    answer: 'You can contact us through the maintenance request system for non-urgent matters, or call the emergency number for urgent issues.',
-    category: 'Contact'
-  },
-];
-
 export function HelpSystem() {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticle, setSelectedArticle] = useState<number | null>(null);
-  const [filteredFaqs, setFilteredFaqs] = useState(faqs);
-
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = faqs.filter(
-        faq => 
-          faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredFaqs(filtered);
-    } else {
-      setFilteredFaqs(faqs);
-    }
-  }, [searchQuery]);
 
   const HelpButton = () => (
     <Button
@@ -164,9 +126,8 @@ export function HelpSystem() {
             ) : (
               <Tabs defaultValue="help" className="h-full">
                 <div className="px-6">
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-1">
                     <TabsTrigger value="help">Help Articles</TabsTrigger>
-                    <TabsTrigger value="faq">FAQ</TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -207,40 +168,6 @@ export function HelpSystem() {
                       ))}
                     </div>
                   </ScrollArea>
-                </TabsContent>
-
-                <TabsContent value="faq" className="mt-4 px-6">
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search FAQs..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-
-                    <ScrollArea className="h-[45vh]">
-                      <div className="space-y-3">
-                        {filteredFaqs.map((faq, index) => (
-                          <Card key={index} className="p-4">
-                            <div className="space-y-2">
-                              <div className="flex items-start justify-between">
-                                <h4 className="font-medium text-sm leading-tight">{faq.question}</h4>
-                                <Badge variant="outline" className="text-xs ml-2">
-                                  {faq.category}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {faq.answer}
-                              </p>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </div>
                 </TabsContent>
               </Tabs>
             )}
