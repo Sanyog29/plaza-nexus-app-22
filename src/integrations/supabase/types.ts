@@ -6814,6 +6814,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_requisition_list_items_requisition"
+            columns: ["requisition_list_id"]
+            isOneToOne: false
+            referencedRelation: "requisition_lists"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "requisition_list_items_item_master_id_fkey"
             columns: ["item_master_id"]
             isOneToOne: false
@@ -6912,6 +6919,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_requisition_lists_property"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "requisition_lists_assigned_by_fkey"
             columns: ["assigned_by"]
@@ -12298,6 +12312,19 @@ export type Database = {
       assign_and_start_request:
         | { Args: { p_request_id: string }; Returns: Json }
         | { Args: { p_request_id: string; p_staff_id: string }; Returns: Json }
+      assign_requisitions_to_property: {
+        Args: {
+          p_force_update?: boolean
+          p_property_id: string
+          p_requisition_ids: string[]
+        }
+        Returns: {
+          message: string
+          order_number: string
+          requisition_id: string
+          success: boolean
+        }[]
+      }
       assign_staff_to_zone: {
         Args: {
           p_department_id: string
