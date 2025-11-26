@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePropertyContext } from '@/contexts/PropertyContext';
+import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
 
 interface MaintenanceRequest {
@@ -24,6 +25,7 @@ interface RequestStats {
 
 export const useRealtimeMaintenanceRequests = () => {
   const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
+  const { user, userRole } = useAuth();
   const [requestStats, setRequestStats] = useState<RequestStats>({
     total: 0,
     pending: 0,
@@ -97,6 +99,11 @@ export const useRealtimeMaintenanceRequests = () => {
         }
       }
 
+      // CRITICAL: FE users should only see their own reported requests
+      if (userRole === 'fe' && user) {
+        query = query.eq('reported_by', user.id);
+      }
+
       query = query.order('created_at', { ascending: false }).limit(50);
 
       const { data: requests, error } = await query;
@@ -163,7 +170,7 @@ export const useRealtimeMaintenanceRequests = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentProperty, isSuperAdmin, availableProperties]);
+  }, [currentProperty, isSuperAdmin, availableProperties, userRole, user]);
 
   return {
     requestStats,
