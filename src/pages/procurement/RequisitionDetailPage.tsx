@@ -23,7 +23,7 @@ const RequisitionDetailPage = () => {
         .from('requisition_lists')
         .select(`
           *,
-          property:properties(id, name),
+          property:properties!fk_requisition_lists_property(id, name),
           items:requisition_list_items(
             *,
             item:requisition_items_master(
