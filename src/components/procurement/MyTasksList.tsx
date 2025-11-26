@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { useAuth } from '@/components/AuthProvider';
 import { useNavigationTransition } from '@/hooks/useNavigationTransition';
 import { useRequisitionActions } from '@/hooks/useRequisitionActions';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { useRequisitionApproval } from '@/hooks/useRequisitionApproval';
 import { useApproverPermissions } from '@/hooks/useApproverPermissions';
 import { usePurchaseOrders } from '@/hooks/usePurchaseOrders';
@@ -62,6 +63,7 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
   const { user, userRole } = useAuth();
   const { navigate } = useNavigationTransition();
   const queryClient = useQueryClient();
+  const { currentProperty } = usePropertyContext();
   
   // State for inline editing
   const [editingRequisitionId, setEditingRequisitionId] = useState<string | null>(null);
@@ -96,10 +98,10 @@ export const MyTasksList = ({ filter = 'all', propertyId }: MyTasksListProps) =>
         `)
         .order('created_at', { ascending: false });
 
-      // Apply property filter when a specific property is selected
-      // When propertyId is null, show all properties (no filter)
-      if (propertyId) {
-        query = query.eq('property_id', propertyId);
+      // Apply property filter: prefer explicit propertyId prop, fallback to currentProperty
+      const effectivePropertyId = propertyId || currentProperty?.id;
+      if (effectivePropertyId) {
+        query = query.eq('property_id', effectivePropertyId);
       }
 
       // Role-based filtering - Procurement roles only see approved and later stages

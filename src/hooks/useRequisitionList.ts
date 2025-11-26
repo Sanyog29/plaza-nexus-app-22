@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/components/ui/sonner';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 export interface RequisitionList {
   id: string;
@@ -30,10 +31,12 @@ interface RequisitionFilters {
 
 export const useRequisitionList = (filters?: RequisitionFilters) => {
   const { user, userRole, isAdmin, isSuperAdmin, isL2, isL3 } = useAuth();
+  const { currentProperty } = usePropertyContext();
   const [requisitions, setRequisitions] = useState<RequisitionList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const isManager = isL2 || isL3 || userRole === 'assistant_manager' || userRole === 'assistant_floor_manager';
+  const isProcurement = userRole === 'purchase_executive' || userRole === 'procurement_manager';
 
   const fetchRequisitions = useCallback(async () => {
     if (!user) {
@@ -57,12 +60,23 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
         `)
         .order('created_at', { ascending: false });
 
-      // Role-based filtering
-      if (!isAdmin && !isSuperAdmin && !isManager) {
-        // FE users see only their own requisitions
+      // Role-based filtering with property scoping
+      if (!isAdmin && !isSuperAdmin && !isManager && !isProcurement) {
+        // FE users see only their own requisitions from their current property
         query = query.eq('created_by', user.id);
+        if (currentProperty) {
+          query = query.eq('property_id', currentProperty.id);
+        }
+      } else if (isManager && !isAdmin && !isSuperAdmin) {
+        // Managers see all requisitions from their current property
+        if (currentProperty) {
+          query = query.eq('property_id', currentProperty.id);
+        }
+      } else if ((isAdmin || isSuperAdmin) && currentProperty) {
+        // Admins/Super admins with property selected: filter by that property
+        query = query.eq('property_id', currentProperty.id);
       }
-      // Managers and admins see all requisitions (no filter needed)
+      // Procurement staff and admins without property filter see all approved+ requisitions
 
       // Apply status filter
       if (filters?.status && filters.status.length > 0) {
@@ -86,7 +100,7 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, userRole, isAdmin, isSuperAdmin, isManager, filters?.status, filters?.search]);
+  }, [user, userRole, isAdmin, isSuperAdmin, isManager, isProcurement, currentProperty, filters?.status, filters?.search]);
 
   const deleteRequisition = async (requisitionId: string) => {
     if (!user) return false;

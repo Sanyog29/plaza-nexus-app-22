@@ -36,11 +36,13 @@ export const RequisitionHeader: React.FC<RequisitionHeaderProps> = ({
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
               <Building className="h-4 w-4" />
               Property
             </div>
-            <p className="font-semibold">{requisition.property?.name}</p>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 text-sm py-1 px-3">
+              {requisition.property?.name || 'No property assigned'}
+            </Badge>
           </div>
 
           <div>
