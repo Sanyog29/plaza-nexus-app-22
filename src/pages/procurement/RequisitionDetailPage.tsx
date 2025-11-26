@@ -24,7 +24,7 @@ const RequisitionDetailPage = () => {
         .select(`
           *,
           property:properties!fk_requisition_lists_property(id, name),
-          items:requisition_list_items(
+          items:requisition_list_items!fk_requisition_list_items_requisition(
             *,
             item:requisition_items_master(
               *,
