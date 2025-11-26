@@ -12,7 +12,6 @@ import {
   Search, 
   ChevronRight,
   Settings,
-  HelpCircle,
   FileText,
   Wrench,
   Shield,
@@ -270,129 +269,6 @@ const UserManualPage = () => {
     ]
   };
 
-  const troubleshootingGuide = [
-    {
-      issue: "Cannot submit maintenance request",
-      solutions: [
-        "Verify all required fields (title, description, location) are completed",
-        "Ensure your user profile is complete and approved",
-        "Check if you have selected a valid category from the dropdown",
-        "Try uploading photos in supported formats (JPG, PNG, PDF)",
-        "Clear browser cache and refresh the page",
-        "Disable browser extensions that might interfere",
-        "Contact support with specific error messages"
-      ]
-    },
-    {
-      issue: "QR Code not scanning properly",
-      solutions: [
-        "Ensure adequate lighting when scanning QR codes",
-        "Clean your camera lens for better image quality",
-        "Hold device steady and at proper distance (6-12 inches)",
-        "Allow camera permissions in browser settings",
-        "Try using the manual visitor ID entry option",
-        "Refresh the QR code if it appears expired",
-        "Use a different device or browser if issues persist"
-      ]
-    },
-    {
-      issue: "Not receiving notifications",
-      solutions: [
-        "Enable browser notifications in site settings",
-        "Verify email address in your profile settings",
-        "Check spam/junk folder for system emails",
-        "Update notification preferences in profile",
-        "Ensure your browser supports push notifications",
-        "Try logging out and back in to refresh settings",
-        "Contact admin if notifications are disabled system-wide"
-      ]
-    },
-    {
-      issue: "Unable to access admin features",
-      solutions: [
-        "Verify your account has admin role assignment",
-        "Check if account approval status is 'approved'",
-        "Clear browser cache and cookies",
-        "Try incognito/private browsing mode",
-        "Log out completely and log back in",
-        "Verify you're accessing the correct subdomain/URL",
-        "Contact system administrator for role verification"
-      ]
-    },
-    {
-      issue: "Room booking conflicts or errors",
-      solutions: [
-        "Check room availability calendar before booking",
-        "Ensure booking times don't overlap existing reservations",
-        "Verify you have permission to book the selected room",
-        "Try selecting different time slots if conflicts occur",
-        "Contact facility manager for room-specific restrictions",
-        "Cancel conflicting bookings before creating new ones",
-        "Refresh the calendar view to see latest availability"
-      ]
-    },
-    {
-      issue: "Cafeteria order placement failures",
-      solutions: [
-        "Verify menu items are available and in stock",
-        "Check if ordering is within allowed time windows",
-        "Ensure pickup time is valid and within operating hours",
-        "Review order total and loyalty points balance",
-        "Try reducing order quantity if limits are exceeded",
-        "Clear cart and rebuild order if persistent errors",
-        "Contact cafeteria staff for special requirements"
-      ]
-    },
-    {
-      issue: "Knowledge base articles not loading",
-      solutions: [
-        "Check internet connection stability",
-        "Clear browser cache for the knowledge base section",
-        "Try different search terms or browse by category",
-        "Ensure you have permission to access knowledge base",
-        "Report broken article links to system administrator",
-        "Use alternative browsers if content doesn't display",
-        "Try accessing articles directly via URL if available"
-      ]
-    },
-    {
-      issue: "Performance metrics not updating",
-      solutions: [
-        "Verify you have appropriate permissions for analytics",
-        "Check if data sync is in progress (may take 5-10 minutes)",
-        "Refresh the dashboard to trigger data reload",
-        "Try accessing different date ranges for data",
-        "Clear cache and reload the analytics section",
-        "Report persistent data issues to system administrator",
-        "Verify system maintenance isn't affecting data processing"
-      ]
-    },
-    {
-      issue: "File upload failures",
-      solutions: [
-        "Check file size limits (typically 10MB maximum)",
-        "Ensure file formats are supported (JPG, PNG, PDF, DOC)",
-        "Verify stable internet connection during upload",
-        "Try compressing large files before uploading",
-        "Use different file names if special characters cause issues",
-        "Clear browser cache and try upload again",
-        "Contact support for file format or size limit increases"
-      ]
-    },
-    {
-      issue: "Mobile app installation problems",
-      solutions: [
-        "Ensure you're using a compatible browser (Chrome, Safari, Edge)",
-        "Look for 'Add to Home Screen' prompt when visiting the site",
-        "Access site via HTTPS (secure connection required for PWA)",
-        "Clear browser data and revisit the application",
-        "Enable app installation permissions in browser settings",
-        "Try installation from different pages within the app",
-        "Use desktop mode if mobile installation fails"
-      ]
-    }
-  ];
-
   const workflows = {
     "Submit Maintenance Request": [
       "Navigate to Requests → New Request from main menu",
@@ -540,10 +416,9 @@ const UserManualPage = () => {
       </div>
 
       <Tabs defaultValue="guides" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="guides">Role Guides</TabsTrigger>
           <TabsTrigger value="workflows">Workflows</TabsTrigger>
-          <TabsTrigger value="troubleshooting">FAQ & Support</TabsTrigger>
           <TabsTrigger value="features">Features</TabsTrigger>
           <TabsTrigger value="admin-setup">Admin Setup</TabsTrigger>
         </TabsList>
@@ -613,28 +488,6 @@ const UserManualPage = () => {
                         {stepIndex + 1}
                       </div>
                       <span className="text-gray-300 pt-1">{step}</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="troubleshooting">
-          <div className="grid gap-6">
-            {troubleshootingGuide.map((item, index) => (
-              <Card key={index} className="p-6 bg-gray-800 border-gray-700">
-                <div className="flex items-center gap-3 mb-4">
-                  <HelpCircle className="h-6 w-6 text-red-400" />
-                  <h3 className="text-xl font-semibold text-white">{item.issue}</h3>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-400 mb-3">SOLUTIONS:</h4>
-                  {item.solutions.map((solution, solutionIndex) => (
-                    <div key={solutionIndex} className="flex items-start gap-3 p-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <span className="text-gray-300">{solution}</span>
                     </div>
                   ))}
                 </div>
