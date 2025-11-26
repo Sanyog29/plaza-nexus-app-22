@@ -52,7 +52,7 @@ export const useRequisitionList = (filters?: RequisitionFilters) => {
         .from('requisition_lists')
         .select(`
           *,
-          property:properties(name),
+          property:properties!fk_requisition_lists_property(name),
           created_by_profile:profiles!requisition_lists_created_by_fkey(
             first_name,
             last_name
