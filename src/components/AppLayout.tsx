@@ -8,7 +8,6 @@ import { ResponsiveLayout } from './layout/ResponsiveLayout';
 import { MobileHeader } from './layout/MobileHeader';
 import { MobileBottomNav } from './layout/MobileBottomNav';
 import { MobileSystemStatus } from './layout/MobileSystemStatus';
-import { HelpSystem } from './help/HelpSystem';
 import ErrorBoundary from './common/ErrorBoundary';
 import { usePWA } from '@/hooks/usePWA';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -119,7 +118,6 @@ const AppLayout: React.FC = () => {
       <div className="min-h-screen w-full bg-background">
         <ErrorBoundary>
           <Outlet />
-          <HelpSystem />
         </ErrorBoundary>
       </div>
     );
@@ -135,7 +133,6 @@ const AppLayout: React.FC = () => {
             <Outlet />
           </main>
           <MobileBottomNav />
-          <HelpSystem />
         </div>
       </ErrorBoundary>
     );
@@ -146,7 +143,6 @@ const AppLayout: React.FC = () => {
     return (
       <ErrorBoundary>
         <ResponsiveLayout userRole={userRole || (isAdmin ? 'admin' : 'staff')} />
-        <HelpSystem />
       </ErrorBoundary>
     );
   }
@@ -162,7 +158,6 @@ const AppLayout: React.FC = () => {
             <Outlet />
           </main>
           <MobileBottomNav />
-          <HelpSystem />
         </div>
       </ErrorBoundary>
     );
@@ -177,7 +172,6 @@ const AppLayout: React.FC = () => {
           <Outlet />
         </main>
         <BottomNavigation />
-        <HelpSystem />
       </div>
     </ErrorBoundary>
   );
