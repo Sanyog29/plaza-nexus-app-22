@@ -50,7 +50,7 @@ const PendingApprovalsPage = () => {
         .from('requisition_lists')
         .select(`
           *,
-          properties:property_id (
+          properties!fk_requisition_lists_property (
             name
           )
         `)
