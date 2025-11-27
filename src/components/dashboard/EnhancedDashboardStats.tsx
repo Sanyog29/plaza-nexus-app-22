@@ -15,12 +15,13 @@ import {
   Target,
   RefreshCw
 } from 'lucide-react';
-import { useDashboardData } from '@/hooks/useDashboardData';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { LoadingWrapper } from '@/components/common/LoadingWrapper';
 import { useAuth } from '@/components/AuthProvider';
 
 const EnhancedDashboardStats = () => {
-  const { metrics, isLoading, error, refetch } = useDashboardData();
+  const { metrics, isLoading, refreshMetrics } = useDashboardMetrics();
+  const error = null; // useDashboardMetrics handles errors internally with toasts
   const { isStaff } = useAuth();
 
   const formatTime = (hours: number) => {
@@ -127,7 +128,7 @@ const EnhancedDashboardStats = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={refetch}
+              onClick={refreshMetrics}
               disabled={isLoading}
               className="ml-4"
             >

@@ -9,13 +9,20 @@ interface DashboardMetrics {
   activeRequests: number;
   totalRequests: number;
   completedRequests: number;
+  pendingRequests: number;
   availableRooms: number;
   totalRooms: number;
   activeAlerts: number;
   criticalAlerts: number;
   pendingVisitors: number;
   totalVisitors: number;
+  activeVisitors: number;
   pendingMaintenance: number;
+  upcomingBookings: number;
+  systemAlerts: number;
+  slaBreaches: number;
+  avgCompletionTime: number;
+  slaCompliance: number;
   operationalSystems: boolean;
   currentTemperature: number;
   occupancyRate: number;
@@ -30,13 +37,20 @@ export const useDashboardMetrics = () => {
     activeRequests: 0,
     totalRequests: 0,
     completedRequests: 0,
+    pendingRequests: 0,
     availableRooms: 0,
     totalRooms: 0,
     activeAlerts: 0,
     criticalAlerts: 0,
     pendingVisitors: 0,
     totalVisitors: 0,
+    activeVisitors: 0,
     pendingMaintenance: 0,
+    upcomingBookings: 0,
+    systemAlerts: 0,
+    slaBreaches: 0,
+    avgCompletionTime: 0,
+    slaCompliance: 100,
     operationalSystems: true,
     currentTemperature: 0,
     occupancyRate: 0,
@@ -88,17 +102,60 @@ export const useDashboardMetrics = () => {
         requestQuery = requestQuery.eq('reported_by', user.id);
       }
       
+      // Build additional queries with property filtering
+      let bookingsQuery = supabase
+        .from('room_bookings')
+        .select('*')
+        .gte('start_time', new Date().toISOString());
+
+      if (!isStaff && !isAdmin && user?.id) {
+        bookingsQuery = bookingsQuery.eq('user_id', user.id);
+      }
+
+      let visitorsQuery = supabase
+        .from('visitors')
+        .select('*')
+        .gte('visit_date', today);
+
+      // Build maintenance requests query with property filtering
+      let fullRequestQuery = supabase
+        .from('maintenance_requests')
+        .select('status, created_at, completed_at, sla_breach_at')
+        .is('deleted_at', null);
+
+      // Apply property filtering
+      if (!isSuperAdmin) {
+        if (currentProperty) {
+          fullRequestQuery = fullRequestQuery.eq('property_id', currentProperty.id);
+        } else if (availableProperties.length > 0) {
+          const propertyIds = availableProperties.map(p => p.id);
+          fullRequestQuery = fullRequestQuery.in('property_id', propertyIds);
+        } else {
+          // No property access - skip query
+          console.warn('User has no property access for dashboard metrics');
+          if (isMountedRef.current) {
+            setIsLoading(false);
+          }
+          return;
+        }
+      }
+
+      // Apply user filtering for non-staff
+      if (!isStaff && !isAdmin && user?.id) {
+        fullRequestQuery = fullRequestQuery.eq('reported_by', user.id);
+      }
+
       // Use Promise.allSettled to make queries resilient to individual failures
       const results = await Promise.allSettled([
-        // Core maintenance requests (critical)
-        requestQuery,
+        // Core maintenance requests (critical) - get full data for calculations
+        fullRequestQuery,
         
         // Optional room data
         supabase
           .from('rooms')
           .select('id'),
         
-        // Optional booking data
+        // Optional booking data - today's bookings for room availability
         supabase
           .from('room_bookings')
           .select('room_id')
@@ -112,20 +169,21 @@ export const useDashboardMetrics = () => {
           .eq('is_active', true),
         
         // Optional visitors data
-        supabase
-          .from('visitors')
-          .select('status')
-          .eq('visit_date', today)
+        visitorsQuery,
+
+        // User's upcoming bookings
+        bookingsQuery
       ]);
 
-      const [requestsResult, roomsResult, bookingsResult, alertsResult, visitorsResult] = results;
+      const [requestsResult, roomsResult, todayBookingsResult, alertsResult, visitorsResult, upcomingBookingsResult] = results;
 
       console.log('[useDashboardMetrics] Query results:', {
         requestsCount: requestsResult.status === 'fulfilled' ? requestsResult.value.data?.length : 'error',
         roomsCount: roomsResult.status === 'fulfilled' ? roomsResult.value.data?.length : 'error',
-        bookingsCount: bookingsResult.status === 'fulfilled' ? bookingsResult.value.data?.length : 'error',
+        todayBookingsCount: todayBookingsResult.status === 'fulfilled' ? todayBookingsResult.value.data?.length : 'error',
         alertsCount: alertsResult.status === 'fulfilled' ? alertsResult.value.data?.length : 'error',
         visitorsCount: visitorsResult.status === 'fulfilled' ? visitorsResult.value.data?.length : 'error',
+        upcomingBookingsCount: upcomingBookingsResult.status === 'fulfilled' ? upcomingBookingsResult.value.data?.length : 'error',
       });
 
       // Extract request data (always available)
@@ -137,13 +195,32 @@ export const useDashboardMetrics = () => {
       ).length || 0;
       const totalRequests = requests?.length || 0;
       const completedRequests = requests?.filter(r => r.status === 'completed').length || 0;
-      const pendingMaintenance = requests?.filter(r => r.status === 'pending').length || 0;
+      const pendingRequests = requests?.filter(r => r.status === 'pending').length || 0;
+      const pendingMaintenance = pendingRequests;
+
+      // Calculate SLA metrics
+      const slaBreaches = requests?.filter(r => 
+        r.sla_breach_at && new Date(r.sla_breach_at) < new Date() && r.status !== 'completed'
+      ).length || 0;
+
+      const avgCompletionTime = completedRequests > 0
+        ? requests
+            ?.filter(r => r.status === 'completed' && r.completed_at && r.created_at)
+            .reduce((acc, req) => {
+              const diff = new Date(req.completed_at!).getTime() - new Date(req.created_at).getTime();
+              return acc + (diff / (1000 * 60 * 60)); // Convert to hours
+            }, 0) / completedRequests
+        : 0;
+
+      const slaCompliance = totalRequests > 0
+        ? ((totalRequests - slaBreaches) / totalRequests) * 100
+        : 100;
 
       // Extract optional data with fallbacks
       const rooms = roomsResult.status === 'fulfilled' ? roomsResult.value.data : [];
-      const bookings = bookingsResult.status === 'fulfilled' ? bookingsResult.value.data : [];
+      const todayBookings = todayBookingsResult.status === 'fulfilled' ? todayBookingsResult.value.data : [];
       
-      const bookedRoomIds = new Set(bookings?.map(b => b.room_id) || []);
+      const bookedRoomIds = new Set(todayBookings?.map(b => b.room_id) || []);
       const totalRooms = rooms?.length || 0;
       const availableRooms = totalRooms - bookedRoomIds.size;
 
@@ -154,16 +231,25 @@ export const useDashboardMetrics = () => {
       const visitors = visitorsResult.status === 'fulfilled' ? visitorsResult.value.data : [];
       const pendingVisitors = visitors?.filter(v => v.status === 'scheduled' || v.status === 'pending').length || 0;
       const totalVisitors = visitors?.length || 0;
+      const activeVisitors = visitors?.filter(v => v.approval_status === 'approved' && !v.check_out_time).length || 0;
+
+      const upcomingBookings = upcomingBookingsResult.status === 'fulfilled' ? upcomingBookingsResult.value.data?.length || 0 : 0;
 
       console.log('[useDashboardMetrics] Final metrics:', {
         activeRequests,
         totalRequests,
         completedRequests,
+        pendingRequests,
+        slaBreaches,
+        avgCompletionTime: avgCompletionTime.toFixed(2),
+        slaCompliance: slaCompliance.toFixed(2),
         totalRooms,
         availableRooms,
         activeAlerts,
         totalVisitors,
-        pendingVisitors
+        activeVisitors,
+        pendingVisitors,
+        upcomingBookings
       });
 
       // Calculate derived metrics
@@ -180,13 +266,20 @@ export const useDashboardMetrics = () => {
         activeRequests,
         totalRequests,
         completedRequests,
+        pendingRequests,
         availableRooms,
         totalRooms,
         activeAlerts,
         criticalAlerts,
         pendingVisitors,
         totalVisitors,
+        activeVisitors,
         pendingMaintenance,
+        upcomingBookings,
+        systemAlerts: activeAlerts,
+        slaBreaches,
+        avgCompletionTime,
+        slaCompliance,
         operationalSystems,
         currentTemperature,
         occupancyRate,

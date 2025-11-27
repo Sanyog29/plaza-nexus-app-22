@@ -24,7 +24,6 @@ import {
 import { Link } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
-import { useDashboardData } from "@/hooks/useDashboardData";
 import DashboardTile from "../components/DashboardTile";
 import { Card, CardContent } from "@/components/ui/card";
 import AISummaryCards from "../components/AISummaryCards";
@@ -32,8 +31,7 @@ import { VisitorNotificationBanner } from "@/components/notifications/VisitorNot
 import { SystemHealthWidget } from "@/components/common/SystemHealthWidget";
 const HomePage = () => {
   const { user } = useAuth();
-  const { metrics: oldMetrics, isLoading: oldLoading } = useDashboardMetrics();
-  const { metrics: newMetrics, isLoading: newLoading } = useDashboardData();
+  const { metrics, isLoading } = useDashboardMetrics();
   const firstName = user?.user_metadata?.first_name || "Employee";
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -43,7 +41,7 @@ const HomePage = () => {
   });
 
   // Show loading state
-  if (oldLoading || newLoading) {
+  if (isLoading) {
     return (
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="flex items-center gap-2 text-foreground">
@@ -80,9 +78,9 @@ const HomePage = () => {
             icon={<MessageSquare size={28} className="text-primary-foreground" strokeWidth={1.5} />}
             to="/requests/new"
             bgColor="bg-blue-600"
-            count={newMetrics.totalRequests}
+            count={metrics.totalRequests}
             status={{
-              text: `${newMetrics.pendingRequests} Active Tickets`,
+              text: `${metrics.pendingRequests} Active Tickets`,
               color: "bg-background/20 text-primary-foreground",
             }}
           />
@@ -93,9 +91,9 @@ const HomePage = () => {
             icon={<UserCheck size={28} className="text-primary-foreground" strokeWidth={1.5} />}
             to="/security"
             bgColor="bg-indigo-600"
-            count={newMetrics.totalVisitors}
+            count={metrics.totalVisitors}
             status={{
-              text: `${newMetrics.activeVisitors} Active Visitors`,
+              text: `${metrics.activeVisitors} Active Visitors`,
               color: "bg-background/20 text-primary-foreground",
             }}
           />
@@ -106,7 +104,7 @@ const HomePage = () => {
             icon={<Calendar size={28} className="text-primary-foreground" strokeWidth={1.5} />}
             to="/bookings"
             bgColor="bg-purple-600"
-            count={newMetrics.upcomingBookings}
+            count={metrics.upcomingBookings}
             status={{
               text: `Available Today`,
               color: "bg-background/20 text-primary-foreground",
