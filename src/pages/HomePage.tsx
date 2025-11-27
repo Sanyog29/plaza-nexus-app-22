@@ -80,7 +80,7 @@ const HomePage = () => {
             bgColor="bg-blue-600"
             count={metrics.totalRequests}
             status={{
-              text: `${metrics.pendingRequests} Active Tickets`,
+              text: `${metrics.activeRequests} Active • ${metrics.completedRequests} Completed`,
               color: "bg-background/20 text-primary-foreground",
             }}
           />
