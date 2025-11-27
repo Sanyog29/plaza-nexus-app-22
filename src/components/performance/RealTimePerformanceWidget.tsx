@@ -12,12 +12,12 @@ import {
   Users,
   Timer
 } from 'lucide-react';
-import { useDashboardData } from '@/hooks/useDashboardData';
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useRequestCounts } from '@/hooks/useRequestCounts';
 import { useAuth } from '@/components/AuthProvider';
 
 const RealTimePerformanceWidget = () => {
-  const { metrics, isLoading } = useDashboardData();
+  const { metrics, isLoading } = useDashboardMetrics();
   const { counts } = useRequestCounts();
   const { isStaff } = useAuth();
   const [previousMetrics, setPreviousMetrics] = useState(metrics);
