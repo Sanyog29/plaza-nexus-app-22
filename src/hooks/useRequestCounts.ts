@@ -13,7 +13,7 @@ interface RequestCounts {
 }
 
 export const useRequestCounts = (propertyId?: string | null) => {
-  const { user, isStaff, isAdmin, isLoading: isAuthLoading } = useAuth();
+  const { user, isStaff, isAdmin, userRole, isLoading: isAuthLoading } = useAuth();
   const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [counts, setCounts] = useState<RequestCounts>({
     totalRequests: 0,
@@ -25,6 +25,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const isMountedRef = useRef(true);
+  const fetchCountsRef = useRef<() => Promise<void>>();
 
   const fetchCounts = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -34,10 +35,17 @@ export const useRequestCounts = (propertyId?: string | null) => {
       console.log('[useRequestCounts] Waiting for auth to load...');
       return;
     }
+
+    // CRITICAL: Ensure userRole is determined before fetching
+    if (!userRole) {
+      console.log('[useRequestCounts] Waiting for userRole to be determined...');
+      return;
+    }
     
     try {
       console.log('[useRequestCounts] Fetching counts:', {
         isAuthLoading,
+        userRole,
         propertyId,
         currentPropertyId: currentProperty?.id,
         currentPropertyName: currentProperty?.name,
@@ -61,6 +69,11 @@ export const useRequestCounts = (propertyId?: string | null) => {
       if (!isSuperAdmin) {
         const filterPropertyId = propertyId || currentProperty?.id;
         
+        console.log('[useRequestCounts] Applying property filter:', {
+          filterPropertyId,
+          availablePropertiesCount: availableProperties.length
+        });
+
         if (filterPropertyId) {
           query = query.eq('property_id', filterPropertyId);
         } else if (availableProperties.length > 0) {
@@ -85,6 +98,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
       
       // Non-staff/admin users see only their own requests
       if (!isStaff && !isAdmin && user?.id) {
+        console.log('[useRequestCounts] Applying user-specific filter for:', user.id);
         query = query.eq('reported_by', user.id);
       }
 
@@ -142,15 +156,24 @@ export const useRequestCounts = (propertyId?: string | null) => {
     user?.id, 
     isStaff, 
     isAdmin,
-    isAuthLoading
+    isAuthLoading,
+    userRole
   ]);
 
   useEffect(() => {
     isMountedRef.current = true;
+    fetchCountsRef.current = fetchCounts;
+  }, [fetchCounts]);
 
+  useEffect(() => {
     // CRITICAL: Wait for both auth and property context to load
     if (isAuthLoading) {
       console.log('[useRequestCounts] Waiting for auth to load');
+      return;
+    }
+
+    if (!userRole) {
+      console.log('[useRequestCounts] Waiting for userRole to be determined');
       return;
     }
 
@@ -162,7 +185,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
     console.log('[useRequestCounts] Auth and PropertyContext loaded, starting fetch');
     fetchCounts();
     
-    // Set up real-time updates
+    // Set up real-time updates with ref to avoid stale closures
     const channel = supabase
       .channel('request-counts')
       .on(
@@ -170,7 +193,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
         { event: '*', schema: 'public', table: 'maintenance_requests' },
         () => {
           console.log('[useRequestCounts] Real-time update triggered');
-          fetchCounts();
+          fetchCountsRef.current?.();
         }
       )
       .subscribe();
@@ -179,7 +202,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [isAuthLoading, isLoadingProperties, fetchCounts]);
+  }, [isAuthLoading, isLoadingProperties, userRole, fetchCounts]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };

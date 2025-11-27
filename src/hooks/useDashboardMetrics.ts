@@ -31,7 +31,7 @@ interface DashboardMetrics {
 
 export const useDashboardMetrics = () => {
   // CRITICAL: All hooks MUST be called unconditionally at the top
-  const { user, isStaff, isAdmin, isLoading: isAuthLoading } = useAuth();
+  const { user, isStaff, isAdmin, userRole, isLoading: isAuthLoading } = useAuth();
   const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     activeRequests: 0,
@@ -58,6 +58,7 @@ export const useDashboardMetrics = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const isMountedRef = useRef(true);
+  const fetchMetricsRef = useRef<() => Promise<void>>();
 
   const fetchMetrics = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -67,10 +68,17 @@ export const useDashboardMetrics = () => {
       console.log('[useDashboardMetrics] Waiting for auth to load...');
       return;
     }
+
+    // CRITICAL: Ensure userRole is determined before fetching
+    if (!userRole) {
+      console.log('[useDashboardMetrics] Waiting for userRole to be determined...');
+      return;
+    }
     
     try {
       console.log('[useDashboardMetrics] Fetching metrics:', {
         isAuthLoading,
+        userRole,
         currentPropertyId: currentProperty?.id,
         currentPropertyName: currentProperty?.name,
         availablePropertiesCount: availableProperties.length,
@@ -90,6 +98,11 @@ export const useDashboardMetrics = () => {
       
       // CRITICAL: Apply property filtering for non-super-admins
       if (!isSuperAdmin) {
+        console.log('[useDashboardMetrics] Applying property filter:', {
+          currentPropertyId: currentProperty?.id,
+          availablePropertiesCount: availableProperties.length
+        });
+        
         if (currentProperty) {
           requestQuery = requestQuery.eq('property_id', currentProperty.id);
         } else if (availableProperties.length > 0) {
@@ -107,6 +120,7 @@ export const useDashboardMetrics = () => {
       
       // Non-staff/admin users see only their own requests
       if (!isStaff && !isAdmin && user?.id) {
+        console.log('[useDashboardMetrics] Applying user-specific filter for:', user.id);
         requestQuery = requestQuery.eq('reported_by', user.id);
       }
       
@@ -314,15 +328,24 @@ export const useDashboardMetrics = () => {
     user?.id, 
     isStaff, 
     isAdmin,
-    isAuthLoading
+    isAuthLoading,
+    userRole
   ]);
 
   useEffect(() => {
     isMountedRef.current = true;
+    fetchMetricsRef.current = fetchMetrics;
+  }, [fetchMetrics]);
 
+  useEffect(() => {
     // CRITICAL: Wait for both auth and property context to load
     if (isAuthLoading) {
       console.log('[useDashboardMetrics] Waiting for auth to load');
+      return;
+    }
+
+    if (!userRole) {
+      console.log('[useDashboardMetrics] Waiting for userRole to be determined');
       return;
     }
 
@@ -332,32 +355,42 @@ export const useDashboardMetrics = () => {
     }
     
     console.log('[useDashboardMetrics] Auth and PropertyContext loaded, starting fetch');
-    
-    console.log('[useDashboardMetrics] PropertyContext loaded, starting fetch');
     fetchMetrics();
     
-    // Set up real-time updates
+    // Set up real-time updates with ref to avoid stale closures
     const channel = supabase
       .channel('dashboard-updates')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'maintenance_requests' },
-        () => fetchMetrics()
+        () => {
+          console.log('[useDashboardMetrics] Real-time update: maintenance_requests');
+          fetchMetricsRef.current?.();
+        }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'alerts' },
-        () => fetchMetrics()
+        () => {
+          console.log('[useDashboardMetrics] Real-time update: alerts');
+          fetchMetricsRef.current?.();
+        }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'visitors' },
-        () => fetchMetrics()
+        () => {
+          console.log('[useDashboardMetrics] Real-time update: visitors');
+          fetchMetricsRef.current?.();
+        }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'room_bookings' },
-        () => fetchMetrics()
+        () => {
+          console.log('[useDashboardMetrics] Real-time update: room_bookings');
+          fetchMetricsRef.current?.();
+        }
       )
       .subscribe();
 
@@ -365,7 +398,7 @@ export const useDashboardMetrics = () => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [isAuthLoading, isLoadingProperties, fetchMetrics]);
+  }, [isAuthLoading, isLoadingProperties, userRole, fetchMetrics]);
 
   return { 
     metrics, 
