@@ -49,11 +49,8 @@ export function CustomizableDashboard({ userRole }: CustomizableDashboardProps) 
         type: 'metric',
         size: 'medium',
         visible: true,
-        data: {
-          total: counts.totalRequests,
-          active: counts.activeRequests,
-          completed: counts.completedRequests
-        }
+        // Don't cache counts here - they'll be injected fresh during render
+        data: {}
       },
       {
         id: 'recent-activity',

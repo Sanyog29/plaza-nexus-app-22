@@ -13,7 +13,7 @@ interface RequestCounts {
 }
 
 export const useRequestCounts = (propertyId?: string | null) => {
-  const { user, isStaff, isAdmin } = useAuth();
+  const { user, isStaff, isAdmin, isLoading: isAuthLoading } = useAuth();
   const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [counts, setCounts] = useState<RequestCounts>({
     totalRequests: 0,
@@ -28,8 +28,16 @@ export const useRequestCounts = (propertyId?: string | null) => {
 
   const fetchCounts = useCallback(async () => {
     if (!isMountedRef.current) return;
+    
+    // CRITICAL: Wait for auth to finish loading before determining filters
+    if (isAuthLoading) {
+      console.log('[useRequestCounts] Waiting for auth to load...');
+      return;
+    }
+    
     try {
       console.log('[useRequestCounts] Fetching counts:', {
+        isAuthLoading,
         propertyId,
         currentPropertyId: currentProperty?.id,
         currentPropertyName: currentProperty?.name,
@@ -126,18 +134,32 @@ export const useRequestCounts = (propertyId?: string | null) => {
         setIsLoading(false);
       }
     }
-  }, [propertyId, currentProperty?.id, isSuperAdmin, availableProperties.length, user?.id, isStaff, isAdmin]);
+  }, [
+    propertyId, 
+    currentProperty?.id, 
+    isSuperAdmin, 
+    availableProperties.map(p => p.id).join(','), // Stable property IDs
+    user?.id, 
+    isStaff, 
+    isAdmin,
+    isAuthLoading
+  ]);
 
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Only fetch when PropertyContext is ready
+    // CRITICAL: Wait for both auth and property context to load
+    if (isAuthLoading) {
+      console.log('[useRequestCounts] Waiting for auth to load');
+      return;
+    }
+
     if (isLoadingProperties) {
       console.log('[useRequestCounts] Waiting for PropertyContext to load');
       return;
     }
     
-    console.log('[useRequestCounts] PropertyContext loaded, starting fetch');
+    console.log('[useRequestCounts] Auth and PropertyContext loaded, starting fetch');
     fetchCounts();
     
     // Set up real-time updates
@@ -157,7 +179,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [isLoadingProperties, fetchCounts]);
+  }, [isAuthLoading, isLoadingProperties, fetchCounts]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };
