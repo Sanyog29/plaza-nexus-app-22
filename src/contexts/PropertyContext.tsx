@@ -80,7 +80,15 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
       return;
     }
     
+    // CRITICAL: Wait for userRole to be determined before computing roleLevel
+    if (!userRole) {
+      console.log('[PropertyContext] Waiting for userRole...');
+      setIsLoadingProperties(false);
+      return;
+    }
+    
     const roleLevel = getRoleLevel(userRole);
+    console.log('[PropertyContext] refreshProperties:', { userId: user?.id, userRole, roleLevel });
     
     try {
       setIsLoadingProperties(true);
@@ -104,6 +112,7 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
       const properties = allProperties.filter(p => p.id !== FAKE_PROPERTY_ID);
 
       setAvailableProperties(properties);
+      console.log('[PropertyContext] Loaded properties:', { count: properties.length, names: properties.map(p => p.name) });
 
       // Auto-select property based on user role
       const storedPropertyId = localStorage.getItem('current_property_id');
@@ -121,6 +130,7 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
         const selected = primary || properties[0] || null;
         
         setCurrentProperty(selected);
+        console.log('[PropertyContext] L2/L1 auto-selected property:', selected?.name);
         if (selected) {
           localStorage.setItem('current_property_id', selected.id);
         } else {
@@ -130,6 +140,7 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
       } else {
         // L3/L4+: Default to "All Properties" (null)
         setCurrentProperty(null);
+        console.log('[PropertyContext] L3/L4+ viewing all properties');
         localStorage.removeItem('current_property_id');
       }
     } catch (error) {
@@ -138,7 +149,7 @@ export const PropertyProvider: React.FC<PropertyProviderProps> = ({ children }) 
     } finally {
       setIsLoadingProperties(false);
     }
-  }, [user]);
+  }, [user, userRole]);
 
   useEffect(() => {
     refreshProperties();
