@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/components/AuthProvider';
@@ -74,6 +74,20 @@ export const useDashboardMetrics = () => {
       console.log('[useDashboardMetrics] Waiting for userRole to be determined...');
       return;
     }
+
+    // CRITICAL: Validate isStaff matches userRole to prevent race conditions
+    const expectedIsStaff = ['admin', 'mst', 'fe', 'hk', 'se', 'bms_operator', 
+      'assistant_manager', 'assistant_floor_manager', 'super_tenant',
+      'assistant_general_manager', 'assistant_vice_president'].includes(userRole);
+
+    if (isStaff !== expectedIsStaff) {
+      console.warn('[useDashboardMetrics] isStaff mismatch detected! Waiting for sync...', {
+        isStaff,
+        expectedIsStaff,
+        userRole
+      });
+      return;
+    }
     
     try {
       console.log('[useDashboardMetrics] Fetching metrics:', {
@@ -123,6 +137,16 @@ export const useDashboardMetrics = () => {
         console.log('[useDashboardMetrics] Applying user-specific filter for:', user.id);
         requestQuery = requestQuery.eq('reported_by', user.id);
       }
+
+      console.log('[useDashboardMetrics] 🔍 FILTER DIAGNOSTIC:', {
+        propertyFilter: currentProperty?.id ? `property_id = ${currentProperty.id}` : availableProperties.length > 0 ? `property_id IN (${availableProperties.length} properties)` : 'NO PROPERTY FILTER',
+        userFilter: (!isStaff && !isAdmin && user?.id) ? `reported_by = ${user.id}` : 'NONE (staff/admin access)',
+        isStaff,
+        isAdmin,
+        userRole,
+        expectedIsStaff,
+        userId: user?.id
+      });
       
       // Build additional queries with property filtering
       let bookingsQuery = supabase
@@ -166,6 +190,15 @@ export const useDashboardMetrics = () => {
       if (!isStaff && !isAdmin && user?.id) {
         fullRequestQuery = fullRequestQuery.eq('reported_by', user.id);
       }
+
+      console.log('[useDashboardMetrics] 🔍 FULL REQUEST QUERY DIAGNOSTIC:', {
+        propertyFilter: currentProperty?.id ? `property_id = ${currentProperty.id}` : availableProperties.length > 0 ? `property_id IN (${availableProperties.length} properties)` : 'NO PROPERTY FILTER',
+        userFilter: (!isStaff && !isAdmin && user?.id) ? `reported_by = ${user.id}` : 'NONE (staff/admin access)',
+        isStaff,
+        isAdmin,
+        userRole,
+        userId: user?.id
+      });
 
       // Use Promise.allSettled to make queries resilient to individual failures
       const results = await Promise.allSettled([
@@ -332,10 +365,14 @@ export const useDashboardMetrics = () => {
     userRole
   ]);
 
-  useEffect(() => {
-    isMountedRef.current = true;
+  // Use useLayoutEffect to update ref synchronously before any effects run
+  useLayoutEffect(() => {
     fetchMetricsRef.current = fetchMetrics;
   }, [fetchMetrics]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+  }, []);
 
   useEffect(() => {
     // CRITICAL: Wait for both auth and property context to load
@@ -398,7 +435,7 @@ export const useDashboardMetrics = () => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [isAuthLoading, isLoadingProperties, userRole, fetchMetrics]);
+  }, [isAuthLoading, isLoadingProperties, userRole, isStaff, fetchMetrics]);
 
   return { 
     metrics, 

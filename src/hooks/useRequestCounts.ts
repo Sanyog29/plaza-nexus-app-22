@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { usePropertyContext } from '@/contexts/PropertyContext';
@@ -41,6 +41,20 @@ export const useRequestCounts = (propertyId?: string | null) => {
       console.log('[useRequestCounts] Waiting for userRole to be determined...');
       return;
     }
+
+    // CRITICAL: Validate isStaff matches userRole to prevent race conditions
+    const expectedIsStaff = ['admin', 'mst', 'fe', 'hk', 'se', 'bms_operator', 
+      'assistant_manager', 'assistant_floor_manager', 'super_tenant',
+      'assistant_general_manager', 'assistant_vice_president'].includes(userRole);
+
+    if (isStaff !== expectedIsStaff) {
+      console.warn('[useRequestCounts] isStaff mismatch detected! Waiting for sync...', {
+        isStaff,
+        expectedIsStaff,
+        userRole
+      });
+      return;
+    }
     
     try {
       console.log('[useRequestCounts] Fetching counts:', {
@@ -66,9 +80,9 @@ export const useRequestCounts = (propertyId?: string | null) => {
       
       // CRITICAL: Apply property filtering for non-super-admins
       // Use passed propertyId if available, otherwise use PropertyContext
+      const filterPropertyId = propertyId || currentProperty?.id;
+
       if (!isSuperAdmin) {
-        const filterPropertyId = propertyId || currentProperty?.id;
-        
         console.log('[useRequestCounts] Applying property filter:', {
           filterPropertyId,
           availablePropertiesCount: availableProperties.length
@@ -101,6 +115,16 @@ export const useRequestCounts = (propertyId?: string | null) => {
         console.log('[useRequestCounts] Applying user-specific filter for:', user.id);
         query = query.eq('reported_by', user.id);
       }
+
+      console.log('[useRequestCounts] 🔍 FILTER DIAGNOSTIC:', {
+        propertyFilter: filterPropertyId ? `property_id = ${filterPropertyId}` : availableProperties.length > 0 ? `property_id IN (${availableProperties.length} properties)` : 'NO PROPERTY FILTER',
+        userFilter: (!isStaff && !isAdmin && user?.id) ? `reported_by = ${user.id}` : 'NONE (staff/admin access)',
+        isStaff,
+        isAdmin,
+        userRole,
+        expectedIsStaff,
+        userId: user?.id
+      });
 
       const { data: requests, error } = await query;
 
@@ -160,10 +184,14 @@ export const useRequestCounts = (propertyId?: string | null) => {
     userRole
   ]);
 
-  useEffect(() => {
-    isMountedRef.current = true;
+  // Use useLayoutEffect to update ref synchronously before any effects run
+  useLayoutEffect(() => {
     fetchCountsRef.current = fetchCounts;
   }, [fetchCounts]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+  }, []);
 
   useEffect(() => {
     // CRITICAL: Wait for both auth and property context to load
@@ -202,7 +230,7 @@ export const useRequestCounts = (propertyId?: string | null) => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [isAuthLoading, isLoadingProperties, userRole, fetchCounts]);
+  }, [isAuthLoading, isLoadingProperties, userRole, isStaff, fetchCounts]);
 
   return { counts, isLoading, error, refetch: fetchCounts };
 };
