@@ -31,7 +31,7 @@ interface DashboardMetrics {
 
 export const useDashboardMetrics = () => {
   // CRITICAL: All hooks MUST be called unconditionally at the top
-  const { user, isStaff, isAdmin } = useAuth();
+  const { user, isStaff, isAdmin, isLoading: isAuthLoading } = useAuth();
   const { currentProperty, isSuperAdmin, availableProperties, isLoadingProperties } = usePropertyContext();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     activeRequests: 0,
@@ -61,8 +61,16 @@ export const useDashboardMetrics = () => {
 
   const fetchMetrics = useCallback(async () => {
     if (!isMountedRef.current) return;
+    
+    // CRITICAL: Wait for auth to finish loading before determining filters
+    if (isAuthLoading) {
+      console.log('[useDashboardMetrics] Waiting for auth to load...');
+      return;
+    }
+    
     try {
       console.log('[useDashboardMetrics] Fetching metrics:', {
+        isAuthLoading,
         currentPropertyId: currentProperty?.id,
         currentPropertyName: currentProperty?.name,
         availablePropertiesCount: availableProperties.length,
@@ -299,16 +307,31 @@ export const useDashboardMetrics = () => {
         setIsLoading(false);
       }
     }
-  }, [currentProperty?.id, isSuperAdmin, availableProperties.length, user?.id, isStaff, isAdmin]);
+  }, [
+    currentProperty?.id, 
+    isSuperAdmin, 
+    availableProperties.map(p => p.id).join(','), // Stable property IDs
+    user?.id, 
+    isStaff, 
+    isAdmin,
+    isAuthLoading
+  ]);
 
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Skip fetching if PropertyContext is still loading
+    // CRITICAL: Wait for both auth and property context to load
+    if (isAuthLoading) {
+      console.log('[useDashboardMetrics] Waiting for auth to load');
+      return;
+    }
+
     if (isLoadingProperties) {
       console.log('[useDashboardMetrics] Waiting for PropertyContext to load');
       return;
     }
+    
+    console.log('[useDashboardMetrics] Auth and PropertyContext loaded, starting fetch');
     
     console.log('[useDashboardMetrics] PropertyContext loaded, starting fetch');
     fetchMetrics();
@@ -342,16 +365,11 @@ export const useDashboardMetrics = () => {
       isMountedRef.current = false;
       supabase.removeChannel(channel);
     };
-  }, [isLoadingProperties, fetchMetrics]);
+  }, [isAuthLoading, isLoadingProperties, fetchMetrics]);
 
-  // Return loading state while PropertyContext loads
-  if (isLoadingProperties) {
-    return { 
-      metrics,
-      isLoading: true,
-      refreshMetrics: async () => {}
-    };
-  }
-
-  return { metrics, isLoading, refreshMetrics: fetchMetrics };
+  return { 
+    metrics, 
+    isLoading: isAuthLoading || isLoadingProperties || isLoading, 
+    refreshMetrics: fetchMetrics 
+  };
 };
