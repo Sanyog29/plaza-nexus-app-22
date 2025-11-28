@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePropertyContext } from '@/contexts/PropertyContext';
 import { useAuth } from '@/components/AuthProvider';
@@ -36,22 +36,6 @@ export const useRealtimeMaintenanceRequests = () => {
   const [recentRequests, setRecentRequests] = useState<MaintenanceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // CRITICAL: Wait for PropertyContext to load before fetching data
-  if (isLoadingProperties) {
-    return {
-      requestStats: {
-        total: 0,
-        pending: 0,
-        inProgress: 0,
-        completed: 0,
-        overdue: 0
-      },
-      recentRequests: [],
-      isLoading: true,
-      refetch: async () => {}
-    };
-  }
-
   const calculateStats = (requests: MaintenanceRequest[]): RequestStats => {
     const now = new Date();
     return requests.reduce(
@@ -74,7 +58,22 @@ export const useRealtimeMaintenanceRequests = () => {
     );
   };
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
+    // Wait for PropertyContext to load before fetching
+    if (isLoadingProperties) {
+      console.log('[useRealtimeMaintenanceRequests] ⏳ Waiting for PropertyContext to load...');
+      return;
+    }
+
+    console.log('[useRealtimeMaintenanceRequests] 🔍 Fetching requests with:', {
+      isLoadingProperties,
+      currentProperty: currentProperty?.id,
+      isSuperAdmin,
+      availablePropertiesCount: availableProperties.length,
+      userRole,
+      userId: user?.id
+    });
+
     try {
       let query = supabase
         .from('maintenance_requests')
@@ -91,7 +90,7 @@ export const useRealtimeMaintenanceRequests = () => {
           query = query.in('property_id', propertyIds);
         } else {
           // No property access - return empty
-          console.warn('User has no property access');
+          console.warn('[useRealtimeMaintenanceRequests] ⚠️ User has no property access');
           setRequestStats({ total: 0, pending: 0, inProgress: 0, completed: 0, overdue: 0 });
           setRecentRequests([]);
           setIsLoading(false);
@@ -111,10 +110,12 @@ export const useRealtimeMaintenanceRequests = () => {
       if (error) throw error;
 
       if (requests) {
+        console.log('[useRealtimeMaintenanceRequests] ✅ Fetched requests:', requests.length);
         setRequestStats(calculateStats(requests));
         setRecentRequests(requests.slice(0, 10));
       }
     } catch (error: any) {
+      console.error('[useRealtimeMaintenanceRequests] ❌ Error:', error);
       toast({
         title: "Error loading requests",
         description: error.message,
@@ -123,9 +124,17 @@ export const useRealtimeMaintenanceRequests = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoadingProperties, currentProperty, isSuperAdmin, availableProperties, userRole, user]);
 
   useEffect(() => {
+    // Skip if PropertyContext is still loading
+    if (isLoadingProperties) {
+      console.log('[useRealtimeMaintenanceRequests] ⏳ Skipping effect, PropertyContext loading...');
+      return;
+    }
+
+    console.log('[useRealtimeMaintenanceRequests] 🚀 Setting up subscription and initial fetch');
+
     // Initial fetch
     fetchRequests();
 
@@ -140,7 +149,7 @@ export const useRealtimeMaintenanceRequests = () => {
           table: 'maintenance_requests'
         },
         (payload) => {
-          console.log('Real-time update received:', payload);
+          console.log('[useRealtimeMaintenanceRequests] 🔔 Real-time update received:', payload);
           
           // Show toast notification for completed tasks
           if (payload.eventType === 'UPDATE' && payload.new?.status === 'completed') {
@@ -168,14 +177,15 @@ export const useRealtimeMaintenanceRequests = () => {
 
     // Cleanup subscription on component unmount
     return () => {
+      console.log('[useRealtimeMaintenanceRequests] 🧹 Cleaning up subscription');
       supabase.removeChannel(channel);
     };
-  }, [currentProperty, isSuperAdmin, availableProperties, userRole, user]);
+  }, [isLoadingProperties, fetchRequests]);
 
   return {
     requestStats,
     recentRequests,
-    isLoading,
+    isLoading: isLoadingProperties || isLoading,
     refetch: fetchRequests
   };
 };
