@@ -106,11 +106,22 @@ const RequestDetailPanel: React.FC<RequestDetailPanelProps> = ({
   const handleUpdate = async () => {
     try {
       setUpdating(true);
-      const updates = {
-        status: updatedStatus as RequestStatus,
+      
+      // Auto-update status to 'assigned' when assigning someone to a pending ticket
+      let finalStatus = updatedStatus;
+      const isNewAssignment = updatedAssignee && !request.assigned_to;
+      if (isNewAssignment && updatedStatus === 'pending') {
+        finalStatus = 'assigned' as RequestStatus;
+        setUpdatedStatus(finalStatus);
+      }
+      
+      const updates: Record<string, any> = {
+        status: finalStatus as RequestStatus,
         assigned_to: updatedAssignee,
         priority: updatedPriority as RequestPriority,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // Set assigned_at when first assigned
+        ...(isNewAssignment && { assigned_at: new Date().toISOString() })
       };
 
       const { error } = await supabase
