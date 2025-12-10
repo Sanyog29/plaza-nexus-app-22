@@ -43,6 +43,17 @@ const AppLayout: React.FC = () => {
       return;
     }
 
+    // Super tenant stays on tenant routes - no staff redirects
+    if (userRole === 'super_tenant') {
+      // Only redirect from generic dashboard routes to home
+      if (['/dashboard', '/home', '/tenant-portal'].includes(location.pathname)) {
+        navigate('/', { replace: true });
+        return;
+      }
+      // Don't apply any other redirects for super_tenant
+      return;
+    }
+
     // Comprehensive admin/staff route redirects
     if (isAdmin || isStaff) {
       const redirects = {
@@ -134,6 +145,15 @@ const AppLayout: React.FC = () => {
           </main>
           <MobileBottomNav />
         </div>
+      </ErrorBoundary>
+    );
+  }
+
+  // Super tenant gets tenant-style layout WITH sidebar (enhanced tenant)
+  if (userRole === 'super_tenant') {
+    return (
+      <ErrorBoundary>
+        <ResponsiveLayout userRole="super_tenant" />
       </ErrorBoundary>
     );
   }
