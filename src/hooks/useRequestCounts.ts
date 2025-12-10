@@ -43,8 +43,9 @@ export const useRequestCounts = (propertyId?: string | null) => {
     }
 
     // CRITICAL: Validate isStaff matches userRole to prevent race conditions
+    // Note: super_tenant is excluded - they are enhanced tenants, not staff
     const expectedIsStaff = ['admin', 'mst', 'fe', 'hk', 'se', 'bms_operator', 
-      'assistant_manager', 'assistant_floor_manager', 'super_tenant',
+      'assistant_manager', 'assistant_floor_manager',
       'assistant_general_manager', 'assistant_vice_president'].includes(userRole);
 
     if (isStaff !== expectedIsStaff) {
