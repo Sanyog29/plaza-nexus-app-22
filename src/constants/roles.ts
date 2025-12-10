@@ -103,12 +103,12 @@ export const ROLE_HIERARCHY = {
   L2: {
     label: 'Department-Level',
     description: 'Department-specific access within property',
-    roles: ['assistant_manager', 'assistant_floor_manager', 'ops_supervisor', 'property_manager', 'procurement_manager']
+    roles: ['assistant_manager', 'assistant_floor_manager', 'ops_supervisor', 'property_manager', 'procurement_manager', 'super_tenant']
   },
   L1: {
     label: 'Field-Level',
-    description: 'Operational field staff',
-    roles: ['mst', 'fe', 'hk', 'se', 'bms_operator', 'field_staff', 'purchase_executive']
+    description: 'Operational field staff and end users',
+    roles: ['mst', 'fe', 'hk', 'se', 'bms_operator', 'field_staff', 'purchase_executive', 'tenant', 'vendor', 'food_vendor']
   }
 } as const;
 

@@ -12175,13 +12175,26 @@ export type Database = {
       }
       admin_bulk_create_users: { Args: { users_data: Json }; Returns: Json }
       admin_cascade_delete_user_data:
+        | { Args: { target_user_id: string }; Returns: Json }
         | {
             Args: { calling_user_id: string; target_user_id: string }
             Returns: Json
           }
-        | { Args: { target_user_id: string }; Returns: Json }
       admin_cleanup_orphaned_vendor_staff: { Args: never; Returns: Json }
       admin_create_user_invitation:
+        | {
+            Args: {
+              invitation_department?: string
+              invitation_email: string
+              invitation_first_name: string
+              invitation_floor?: string
+              invitation_last_name: string
+              invitation_office_number?: string
+              invitation_phone_number?: string
+              invitation_role: string
+            }
+            Returns: Json
+          }
         | {
             Args: {
               invitation_department?: string
@@ -12226,19 +12239,6 @@ export type Database = {
               invitation_property_id?: string
               invitation_role: string
               invitation_specialization?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              invitation_department?: string
-              invitation_email: string
-              invitation_first_name: string
-              invitation_floor?: string
-              invitation_last_name: string
-              invitation_office_number?: string
-              invitation_phone_number?: string
-              invitation_role: string
             }
             Returns: Json
           }
@@ -12609,7 +12609,6 @@ export type Database = {
         Returns: boolean
       }
       has_role:
-        | { Args: { _role: string; _user_id: string }; Returns: boolean }
         | {
             Args: {
               _role: Database["public"]["Enums"]["app_role"]
@@ -12617,6 +12616,7 @@ export type Database = {
             }
             Returns: boolean
           }
+        | { Args: { _role: string; _user_id: string }; Returns: boolean }
       infer_main_category_id: {
         Args: { desc_text: string; title_text: string }
         Returns: string
