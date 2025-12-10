@@ -211,6 +211,42 @@ const tenantMenuGroups = [
   }
 ];
 
+// Super Tenant - Enhanced tenant with analytics access
+const superTenantMenuGroups = [
+  {
+    label: "Services",
+    items: [
+      { title: "Dashboard", url: "/", icon: Home },
+      { title: "All Requests", url: "/requests", icon: ClipboardList },
+      { title: "Room Bookings", url: "/bookings", icon: Calendar },
+      { title: "Alerts", url: "/alerts", icon: Bell },
+    ]
+  },
+  {
+    label: "Analytics",
+    items: [
+      { title: "Request Analytics", url: "/staff/analytics", icon: BarChart3 },
+      { title: "Vendor Scorecards", url: "/admin/vendor-scorecards", icon: TrendingUp },
+    ]
+  },
+  {
+    label: "Facilities",
+    items: [
+      { title: "Services Marketplace", url: "/services", icon: Store },
+      { title: "Cafeteria", url: "/cafeteria", icon: Coffee },
+      { title: "Delivery Tracking", url: "/delivery", icon: Truck },
+      { title: "Info Hub", url: "/info-hub", icon: MapPin },
+    ]
+  },
+  {
+    label: "Personal",
+    items: [
+      { title: "Profile", url: "/profile", icon: User },
+      { title: "Help", url: "/manual", icon: HelpCircle },
+    ]
+  }
+];
+
 const procurementMenuGroups = [
   {
     label: "My Work",
@@ -344,6 +380,10 @@ export function SimplifiedAdminSidebar({ userRole }: SimplifiedAdminSidebarProps
       case 'assistant_manager':
       case 'assistant_floor_manager':
         return managerMenuGroups;
+      
+      // Super Tenant - Enhanced tenant with analytics access
+      case 'super_tenant':
+        return superTenantMenuGroups;
       
       // Field-level staff without approval authority
       case 'field_staff':

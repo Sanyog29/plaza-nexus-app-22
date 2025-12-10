@@ -116,7 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsProcurementStaff(procurementRoles.includes(role));
     
     // Staff includes admin and L1/L2/L3 roles (operational and management staff)
-    setIsStaff(['admin', ...l1Roles, ...l2Roles, ...l3Roles].includes(role));
+    // Note: super_tenant is excluded from staff - they get tenant layout with enhanced permissions
+    const staffRoles = ['admin', ...l1Roles, ...l2Roles.filter(r => r !== 'super_tenant'), ...l3Roles];
+    setIsStaff(staffRoles.includes(role));
 
     // Enhanced permissions based on feature-to-role matrix
     const rolePermissions = {
