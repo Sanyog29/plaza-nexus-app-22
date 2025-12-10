@@ -44,13 +44,10 @@ const AppLayout: React.FC = () => {
     }
 
     // Super tenant stays on tenant routes - no staff redirects
+    // They should see tenant dashboard, not be redirected anywhere
     if (userRole === 'super_tenant') {
-      // Only redirect from generic dashboard routes to home
-      if (['/dashboard', '/home', '/tenant-portal'].includes(location.pathname)) {
-        navigate('/', { replace: true });
-        return;
-      }
-      // Don't apply any other redirects for super_tenant
+      // No redirects needed - super_tenant stays on their current route
+      // The LandingPage will redirect authenticated super_tenants to /dashboard
       return;
     }
 
