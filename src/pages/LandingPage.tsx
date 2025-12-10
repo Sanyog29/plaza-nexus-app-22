@@ -19,7 +19,7 @@ import { useAuth } from '@/components/AuthProvider';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, isStaff, userRole } = useAuth();
+  const { user, isAdmin, isStaff, userRole, isLoading } = useAuth();
 
   // Redirect authenticated users to appropriate dashboard based on role
   useEffect(() => {
@@ -30,6 +30,8 @@ const LandingPage: React.FC = () => {
         navigate('/staff/dashboard');
       } else if (userRole === 'vendor') {
         navigate('/vendor-portal');
+      } else if (userRole === 'super_tenant') {
+        navigate('/dashboard'); // Super tenant goes to tenant dashboard with enhanced access
       } else if (userRole === 'procurement_manager' || userRole === 'purchase_executive') {
         navigate('/procurement');
       } else {
@@ -37,6 +39,15 @@ const LandingPage: React.FC = () => {
       }
     }
   }, [user, isAdmin, isStaff, userRole, navigate]);
+
+  // Show loading spinner while auth is being determined to prevent flash of landing page
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   const features = [
     {
       icon: Wrench,
