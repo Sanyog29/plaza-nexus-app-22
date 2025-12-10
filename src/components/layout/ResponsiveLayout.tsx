@@ -49,7 +49,8 @@ export function ResponsiveLayout({ userRole }: ResponsiveLayoutProps) {
 
   // Show full layout with header for staff/admin, regardless of route
   // For non-admin/non-staff users, render without the sidebar/header
-  if (!isAdmin && !isStaff) {
+  // Exception: super_tenant gets sidebar layout (enhanced tenant with analytics access)
+  if (!isAdmin && !isStaff && authUserRole !== 'super_tenant') {
     return <Outlet />;
   }
 
