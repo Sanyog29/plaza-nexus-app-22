@@ -29,6 +29,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
+  // Super tenant access - enhanced tenant with access to all property requests
+  if (userRole === 'super_tenant') {
+    const allowedSuperTenantPaths = ['/dashboard', '/requests', '/profile', '/auth', '/home', '/cafeteria', '/visitors', '/deliveries', '/bookings', '/announcements'];
+    const isAllowedPath = allowedSuperTenantPaths.some(path => 
+      location.pathname === path || location.pathname.startsWith(path + '/')
+    );
+
+    if (!isAllowedPath) {
+      console.warn(`Super tenant attempted to access restricted path: ${location.pathname}`);
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
   // Food vendor access control - STRICT RESTRICTIONS
   if (isFoodVendor || userCategory === 'food_vendor') {
     const allowedFoodVendorPaths = ['/pos', '/profile', '/auth'];
