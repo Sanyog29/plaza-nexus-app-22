@@ -216,7 +216,7 @@ const superTenantMenuGroups = [
   {
     label: "Services",
     items: [
-      { title: "Dashboard", url: "/", icon: Home },
+      { title: "Dashboard", url: "/dashboard", icon: Home },
       { title: "All Requests", url: "/requests", icon: ClipboardList },
       { title: "Room Bookings", url: "/bookings", icon: Calendar },
       { title: "Alerts", url: "/alerts", icon: Bell },

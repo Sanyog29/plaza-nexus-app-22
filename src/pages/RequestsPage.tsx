@@ -47,7 +47,7 @@ interface MaintenanceRequest {
 }
 
 const RequestsPage = () => {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const { currentProperty, isLoadingProperties } = usePropertyContext();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -66,6 +66,8 @@ const RequestsPage = () => {
   });
   const [requestsWithFeedback, setRequestsWithFeedback] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  const isSuperTenant = userRole === 'super_tenant';
 
   useEffect(() => {
     // Wait for property context to load
@@ -82,6 +84,13 @@ const RequestsPage = () => {
     }
 
     // Set up real-time subscription with property filter
+    // Super tenant listens to all property requests, regular users to their own
+    const filter = isSuperTenant && currentProperty
+      ? `property_id=eq.${currentProperty.id}`
+      : currentProperty 
+        ? `property_id=eq.${currentProperty.id}`
+        : `reported_by=eq.${user?.id}`;
+    
     const channel = supabase
       .channel('requests-changes')
       .on(
@@ -90,9 +99,7 @@ const RequestsPage = () => {
           event: '*',
           schema: 'public',
           table: 'maintenance_requests',
-          filter: currentProperty 
-            ? `reported_by=eq.${user?.id},property_id=eq.${currentProperty.id}`
-            : `reported_by=eq.${user?.id}`
+          filter
         },
         () => {
           fetchRequests();
@@ -103,7 +110,7 @@ const RequestsPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, currentProperty, isLoadingProperties]);
+  }, [user, userRole, currentProperty, isLoadingProperties]);
 
   const fetchRequests = async () => {
     if (!user) return;
@@ -128,8 +135,12 @@ const RequestsPage = () => {
           assignee:profiles!maintenance_requests_assigned_to_fkey(first_name, last_name),
           building_floors(name)
         `)
-        .eq('reported_by', user.id)
         .is('deleted_at', null);
+      
+      // Super tenant sees ALL property requests, regular users see only their own
+      if (!isSuperTenant) {
+        query = query.eq('reported_by', user.id);
+      }
       
       // Apply property filtering
       if (currentProperty) {
@@ -278,8 +289,14 @@ const RequestsPage = () => {
     <div className="w-full space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Requests</h2>
-          <p className="text-sm text-muted-foreground mt-1">Track your service requests</p>
+          <h2 className="text-2xl font-bold text-foreground">
+            {isSuperTenant ? 'All Property Requests' : 'My Requests'}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isSuperTenant 
+              ? `All requests from ${currentProperty?.name || 'your property'}` 
+              : 'Track your service requests'}
+          </p>
         </div>
         <Link to="/requests/new">
           <Button className="bg-primary hover:bg-primary/90">New Request</Button>
@@ -406,7 +423,9 @@ const RequestsPage = () => {
                           Updated: {new Date(request.updated_at).toLocaleString()}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Reported by: You
+                          Reported by: {isSuperTenant && request.reporter
+                            ? formatUserNameFromProfile(request.reporter)
+                            : 'You'}
                         </p>
                         {request.assignee && (
                           <p className="text-xs text-muted-foreground">
