@@ -396,10 +396,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPermissions(rolePermissions[permissionKey as keyof typeof rolePermissions] || {});
   }, []);
 
-  const checkUserRole = React.useCallback(async (userId: string) => {
+  const checkUserRole = React.useCallback(async (userId: string): Promise<void> => {
     try {
+      console.log('[AuthProvider] checkUserRole started for:', userId);
+      
       // Fetch role from user_roles table (authoritative source)
-      const { data: userRole, error: roleError } = await supabase
+      const { data: userRoleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
@@ -421,13 +423,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Determine the role - prioritize user_roles table, fallback to tenant
-      const role = userRole?.role || 'tenant';
+      const role = userRoleData?.role || 'tenant';
+      console.log('[AuthProvider] Role determined:', role, 'from user_roles:', !!userRoleData);
       
       if (profile) {
         updateRoleStates(role, profile.user_category || 'tenant', null);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
-      } else if (userRole) {
+      } else if (userRoleData) {
         // Role exists but no profile - create profile
         updateRoleStates(role, 'tenant', null);
         setUserDepartment(null);
@@ -472,6 +475,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setApprovalStatus('pending');
         }
       }
+      
+      console.log('[AuthProvider] checkUserRole completed, role set to:', role);
     } catch (error) {
       console.error('Critical error in checkUserRole:', error);
       updateRoleStates('tenant', 'tenant');
@@ -506,7 +511,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (!mounted) return;
 
         if (event === 'SIGNED_IN') {
@@ -524,7 +529,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user && mounted) {
-          setTimeout(() => checkUserRole(session.user.id), 0);
+          // CRITICAL: Wait for role check to complete before setting isLoading = false
+          console.log('[AuthProvider] onAuthStateChange - checking role for user');
+          await checkUserRole(session.user.id);
+          if (mounted) {
+            console.log('[AuthProvider] onAuthStateChange - role check complete, setting isLoading=false');
+            setIsLoading(false);
+          }
         } else if (mounted) {
           setIsLoading(false);
         }

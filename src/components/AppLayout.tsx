@@ -116,7 +116,13 @@ const AppLayout: React.FC = () => {
     }
   }, [location.pathname, isAdmin, isStaff, isLoading, user, navigate, userRole]);
 
-  if (isLoading) {
+  // CRITICAL: Wait for BOTH isLoading AND userRole to be resolved
+  // This prevents race condition where isLoading=false before userRole is set
+  const isRoleLoading = isLoading || (user && !userRole);
+  
+  console.log('[AppLayout] Render check - isLoading:', isLoading, 'user:', !!user, 'userRole:', userRole, 'isRoleLoading:', isRoleLoading);
+  
+  if (isRoleLoading) {
     return <div className="h-screen flex items-center justify-center">Loading...</div>;
   }
 
@@ -148,6 +154,7 @@ const AppLayout: React.FC = () => {
 
   // Super tenant gets tenant-style layout WITH sidebar (enhanced tenant)
   if (userRole === 'super_tenant') {
+    console.log('[AppLayout] Rendering ResponsiveLayout for super_tenant');
     return (
       <ErrorBoundary>
         <ResponsiveLayout userRole="super_tenant" />
