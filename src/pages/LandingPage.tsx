@@ -21,9 +21,17 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAdmin, isStaff, userRole, isLoading } = useAuth();
 
+  // CRITICAL: Wait for BOTH isLoading AND userRole to be resolved for authenticated users
+  const isRoleLoading = isLoading || (user && !userRole);
+
   // Redirect authenticated users to appropriate dashboard based on role
   useEffect(() => {
-    if (user) {
+    // Don't redirect until role is fully resolved
+    if (isRoleLoading) return;
+    
+    if (user && userRole) {
+      console.log('[LandingPage] Redirecting user with role:', userRole);
+      
       if (isAdmin) {
         navigate('/admin/dashboard');
       } else if (isStaff) {
@@ -38,10 +46,10 @@ const LandingPage: React.FC = () => {
         navigate('/dashboard'); // Tenants go to tenant portal
       }
     }
-  }, [user, isAdmin, isStaff, userRole, navigate]);
+  }, [user, isAdmin, isStaff, userRole, isRoleLoading, navigate]);
 
-  // Show loading spinner while auth is being determined to prevent flash of landing page
-  if (isLoading) {
+  // Show loading spinner while auth/role is being determined to prevent flash of landing page
+  if (isRoleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
