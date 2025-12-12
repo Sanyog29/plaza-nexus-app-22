@@ -530,9 +530,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
 
+        // Handle toasts synchronously
         if (event === 'SIGNED_IN') {
           toast("Welcome back!", {
             description: "You have successfully logged in.",
@@ -544,17 +545,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           resetRoleStates();
         }
         
+        // Update state synchronously
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user && mounted) {
-          // CRITICAL: Wait for role check to complete before setting isLoading = false
-          console.log('[AuthProvider] onAuthStateChange - checking role for user');
-          await checkUserRole(session.user.id);
-          if (mounted) {
-            console.log('[AuthProvider] onAuthStateChange - role check complete, setting isLoading=false');
-            setIsLoading(false);
-          }
+        // CRITICAL: Use setTimeout(0) to defer async operations and avoid auth deadlock
+        if (session?.user) {
+          const userId = session.user.id;
+          setTimeout(async () => {
+            if (mounted) {
+              console.log('[AuthProvider] onAuthStateChange - checking role for user');
+              await checkUserRole(userId);
+              if (mounted) {
+                console.log('[AuthProvider] onAuthStateChange - role check complete, setting isLoading=false');
+                setIsLoading(false);
+              }
+            }
+          }, 0);
         } else if (mounted) {
           setIsLoading(false);
         }
