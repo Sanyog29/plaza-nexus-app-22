@@ -400,12 +400,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('[AuthProvider] checkUserRole started for:', userId);
       
-      // Fetch role from user_roles table (authoritative source)
-      const { data: userRoleData, error: roleError } = await supabase
+      // Fetch ALL roles from user_roles table (may have duplicates from legacy data)
+      const { data: userRolesData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
+        .eq('user_id', userId);
       
       // Fetch profile data for other fields
       const { data: profile, error: profileError } = await supabase
@@ -422,15 +421,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error fetching profile:', profileError);
       }
       
-      // Determine the role - prioritize user_roles table, fallback to tenant
-      const role = userRoleData?.role || 'tenant';
-      console.log('[AuthProvider] Role determined:', role, 'from user_roles:', !!userRoleData);
+      // Role priority map - higher = more privileged (defense in depth for duplicate roles)
+      const rolePriority: Record<string, number> = {
+        'super_admin': 100, 'admin': 90, 'super_tenant': 80,
+        'assistant_general_manager': 75, 'assistant_vice_president': 75,
+        'vp': 70, 'ceo': 70, 'cxo': 70, 'ops_supervisor': 65,
+        'assistant_manager': 60, 'assistant_floor_manager': 60,
+        'procurement_manager': 55, 'purchase_executive': 50,
+        'property_manager': 45, 'fe': 40, 'mst': 35, 'hk': 35,
+        'staff': 30, 'vendor': 25, 'food_vendor': 20,
+        'tenant_manager': 15, 'tenant': 10
+      };
+      
+      // Select highest priority role if user has multiple
+      let role = 'tenant';
+      if (userRolesData && userRolesData.length > 0) {
+        const sortedRoles = userRolesData
+          .map(r => r.role as string)
+          .sort((a, b) => (rolePriority[b] || 0) - (rolePriority[a] || 0));
+        role = sortedRoles[0] || 'tenant';
+        console.log('[AuthProvider] User roles found:', userRolesData.map(r => r.role), '-> Selected highest priority:', role);
+      } else {
+        console.log('[AuthProvider] No roles found, defaulting to tenant');
+      }
       
       if (profile) {
         updateRoleStates(role, profile.user_category || 'tenant', null);
         setUserDepartment(profile.department || null);
         setApprovalStatus(profile.approval_status || 'pending');
-      } else if (userRoleData) {
+      } else if (userRolesData && userRolesData.length > 0) {
         // Role exists but no profile - create profile
         updateRoleStates(role, 'tenant', null);
         setUserDepartment(null);
