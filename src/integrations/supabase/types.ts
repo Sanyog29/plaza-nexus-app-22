@@ -12782,7 +12782,7 @@ export type Database = {
         Returns: Json
       }
       update_user_role:
-        | { Args: { new_role: string; user_id: string }; Returns: boolean }
+        | { Args: { p_new_role: string; p_user_id: string }; Returns: boolean }
         | {
             Args: { caller_id: string; new_role: string; user_id: string }
             Returns: boolean
