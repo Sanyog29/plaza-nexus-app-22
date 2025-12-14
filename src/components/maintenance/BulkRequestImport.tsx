@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { FileSpreadsheet, Download, Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { format, parse } from 'date-fns';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 interface ExcelRow {
   'Sl.No.'?: string;
@@ -52,14 +53,26 @@ export function BulkRequestImport({ onComplete }: { onComplete?: () => void }) {
   const [processes, setProcesses] = useState<any[]>([]);
   const [mainCategories, setMainCategories] = useState<any[]>([]);
 
+  const { currentProperty } = usePropertyContext();
+
   React.useEffect(() => {
     loadReferenceData();
-  }, []);
+  }, [currentProperty?.id]);
 
   const loadReferenceData = async () => {
+    // Build processes query with property filter
+    let processesQuery = supabase
+      .from('maintenance_processes')
+      .select('id, name')
+      .eq('is_active', true);
+    
+    if (currentProperty?.id) {
+      processesQuery = processesQuery.eq('property_id', currentProperty.id);
+    }
+
     const [floorsRes, processesRes, categoriesRes] = await Promise.all([
       supabase.from('building_floors').select('id, name').eq('is_active', true),
-      supabase.from('maintenance_processes').select('id, name').eq('is_active', true),
+      processesQuery,
       supabase.from('main_categories').select('id, name')
     ]);
 

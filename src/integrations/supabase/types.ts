@@ -3304,6 +3304,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          property_id: string
           updated_at: string
         }
         Insert: {
@@ -3314,6 +3315,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          property_id: string
           updated_at?: string
         }
         Update: {
@@ -3324,6 +3326,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          property_id?: string
           updated_at?: string
         }
         Relationships: [
@@ -3346,6 +3349,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles_with_role"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_processes_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
