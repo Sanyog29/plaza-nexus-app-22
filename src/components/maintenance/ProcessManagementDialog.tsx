@@ -17,8 +17,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Building2 } from 'lucide-react';
 import { useProcesses, MaintenanceProcess } from '@/hooks/useProcesses';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 import { AddProcessForm } from './AddProcessForm';
 import {
   AlertDialog,
@@ -37,6 +38,8 @@ interface ProcessManagementDialogProps {
 }
 
 export function ProcessManagementDialog({ open, onOpenChange }: ProcessManagementDialogProps) {
+  const { currentProperty } = usePropertyContext();
+  
   const {
     processes,
     isLoading,
@@ -44,7 +47,7 @@ export function ProcessManagementDialog({ open, onOpenChange }: ProcessManagemen
     updateProcess,
     deleteProcess,
     toggleProcessStatus,
-  } = useProcesses(false);
+  } = useProcesses(false, currentProperty?.id);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProcess, setEditingProcess] = useState<MaintenanceProcess | null>(null);
@@ -89,14 +92,39 @@ export function ProcessManagementDialog({ open, onOpenChange }: ProcessManagemen
     setDeleteConfirm(null);
   };
 
+  // Show message if no property selected
+  if (!currentProperty) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Select a Property
+            </DialogTitle>
+            <DialogDescription>
+              Please select a specific property from the property selector to manage its processes.
+              Each property has its own set of processes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end pt-4">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Manage Processes</DialogTitle>
+            <DialogTitle>Manage Processes - {currentProperty.name}</DialogTitle>
             <DialogDescription>
-              Add, edit, or remove processes for maintenance requests
+              Add, edit, or remove processes for {currentProperty.name}
             </DialogDescription>
           </DialogHeader>
 

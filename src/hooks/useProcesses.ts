@@ -11,6 +11,7 @@ export interface MaintenanceProcess {
   created_at: string;
   updated_at: string;
   display_order: number;
+  property_id: string;
 }
 
 export interface CreateProcessInput {
@@ -27,7 +28,7 @@ export interface UpdateProcessInput {
   display_order?: number;
 }
 
-export const useProcesses = (activeOnly: boolean = false) => {
+export const useProcesses = (activeOnly: boolean = false, propertyId?: string | null) => {
   const [processes, setProcesses] = useState<MaintenanceProcess[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -42,6 +43,11 @@ export const useProcesses = (activeOnly: boolean = false) => {
 
       if (activeOnly) {
         query = query.eq('is_active', true);
+      }
+
+      // Filter by property if provided
+      if (propertyId) {
+        query = query.eq('property_id', propertyId);
       }
 
       const { data, error } = await query;
@@ -60,6 +66,15 @@ export const useProcesses = (activeOnly: boolean = false) => {
   };
 
   const addProcess = async (input: CreateProcessInput) => {
+    if (!propertyId) {
+      toast({
+        title: "Error",
+        description: "Please select a property first",
+        variant: "destructive",
+      });
+      throw new Error("Property ID is required");
+    }
+
     try {
       const { data, error } = await supabase
         .from('maintenance_processes')
@@ -68,6 +83,7 @@ export const useProcesses = (activeOnly: boolean = false) => {
           description: input.description || null,
           is_active: input.is_active ?? true,
           display_order: input.display_order ?? processes.length,
+          property_id: propertyId,
         }])
         .select()
         .single();
@@ -201,7 +217,7 @@ export const useProcesses = (activeOnly: boolean = false) => {
 
   useEffect(() => {
     fetchProcesses();
-  }, [activeOnly]);
+  }, [activeOnly, propertyId]);
 
   return {
     processes,

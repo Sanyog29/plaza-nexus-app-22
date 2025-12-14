@@ -13,6 +13,7 @@ import SLATimerPreview from './SLATimerPreview';
 import RequestAttachments from './RequestAttachments';
 import SmartCategorySelector from './SmartCategorySelector';
 import { Database } from '@/integrations/supabase/types';
+import { usePropertyContext } from '@/contexts/PropertyContext';
 
 type RequestPriority = Database['public']['Enums']['request_priority'];
 type RequestStatus = Database['public']['Enums']['request_status'];
@@ -140,18 +141,26 @@ const EnhancedRequestForm: React.FC<EnhancedRequestFormProps> = ({
     setAttachmentFiles(files);
   };
 
-  // Fetch processes
+  const { currentProperty } = usePropertyContext();
+
+  // Fetch processes filtered by property
   React.useEffect(() => {
     const fetchProcesses = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('maintenance_processes')
         .select('*')
         .eq('is_active', true)
         .order('display_order');
+      
+      if (currentProperty?.id) {
+        query = query.eq('property_id', currentProperty.id);
+      }
+      
+      const { data } = await query;
       setProcesses(data || []);
     };
     fetchProcesses();
-  }, []);
+  }, [currentProperty?.id]);
 
   // Update estimated time based on priority
   React.useEffect(() => {

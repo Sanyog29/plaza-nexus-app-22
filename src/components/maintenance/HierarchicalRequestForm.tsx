@@ -236,11 +236,22 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
       try {
         setIsLoadingCategories(true);
         
+        // Build processes query with property filter
+        let processesQuery = supabase
+          .from('maintenance_processes')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+        
+        if (currentProperty?.id) {
+          processesQuery = processesQuery.eq('property_id', currentProperty.id);
+        }
+
         const [categoriesResult, areasResult, floorsResult, processesResult] = await Promise.all([
           supabase.from('main_categories').select('*').eq('is_active', true).order('sort_order'),
           supabase.from('building_areas').select('*').eq('is_active', true).order('sort_order'),
           supabase.from('building_floors').select('*').eq('is_active', true).order('sort_order'),
-          supabase.from('maintenance_processes').select('*').eq('is_active', true).order('display_order')
+          processesQuery
         ]);
 
         if (categoriesResult.error) throw categoriesResult.error;
@@ -263,7 +274,7 @@ const HierarchicalRequestForm: React.FC<HierarchicalRequestFormProps> = ({ onSuc
     };
 
     loadData();
-  }, [toast]);
+  }, [toast, currentProperty?.id]);
 
   // Load issue types when main category changes
   useEffect(() => {
