@@ -12544,6 +12544,42 @@ export type Database = {
         Args: { setting_category: string; setting_key: string }
         Returns: Json
       }
+      get_tenant_tickets: {
+        Args: {
+          p_assigned_to?: string
+          p_category_ids?: string[]
+          p_date_end?: string
+          p_date_start?: string
+          p_limit?: number
+          p_offset?: number
+          p_priority?: string[]
+          p_property_id?: string
+          p_status?: string[]
+        }
+        Returns: {
+          assigned_to: string
+          assignee_first_name: string
+          assignee_last_name: string
+          category_id: string
+          completed_at: string
+          created_at: string
+          deleted_at: string
+          description: string
+          id: string
+          location: string
+          priority: string
+          property_id: string
+          reported_by: string
+          reporter_first_name: string
+          reporter_last_name: string
+          reporter_office_number: string
+          sla_breach_at: string
+          status: string
+          title: string
+          total_count: number
+          updated_at: string
+        }[]
+      }
       get_user_display_name: { Args: { user_uuid: string }; Returns: string }
       get_user_management_data: {
         Args: { filter_property_id?: string }
