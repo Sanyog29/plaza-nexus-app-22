@@ -79,6 +79,58 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
       // Parse filters back from serialized form
       const parsedFilters = JSON.parse(serializedFilters) as RequestFilters;
 
+      // SPECIAL CASE: Super Tenant uses RPC to see only tenant/super_tenant tickets
+      if (userRole === 'super_tenant') {
+        const dbStatuses = parsedFilters.status?.length 
+          ? mapStatusArrayToDB(parsedFilters.status) 
+          : null;
+
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_tenant_tickets', {
+          p_property_id: currentProperty?.id || null,
+          p_status: dbStatuses,
+          p_priority: parsedFilters.priority?.length ? parsedFilters.priority : null,
+          p_category_ids: parsedFilters.category?.length ? parsedFilters.category : null,
+          p_assigned_to: parsedFilters.assigned_to || null,
+          p_date_start: parsedFilters.date_range?.start || null,
+          p_date_end: parsedFilters.date_range?.end || null,
+          p_limit: limit,
+          p_offset: (page - 1) * limit
+        });
+
+        if (rpcError) throw rpcError;
+
+        // Transform RPC result to match UnifiedRequest interface
+        const transformedData = (rpcData || []).map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          status: row.status,
+          priority: row.priority,
+          category_id: row.category_id,
+          location: row.location,
+          reported_by: row.reported_by,
+          assigned_to: row.assigned_to,
+          sla_breach_at: row.sla_breach_at,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          completed_at: row.completed_at,
+          reported_by_profile: row.reporter_first_name ? {
+            first_name: row.reporter_first_name,
+            last_name: row.reporter_last_name,
+            office_number: row.reporter_office_number
+          } : undefined,
+          assigned_to_profile: row.assignee_first_name ? {
+            first_name: row.assignee_first_name,
+            last_name: row.assignee_last_name
+          } : undefined
+        }));
+
+        setRequests(transformedData);
+        setTotalCount(rpcData?.[0]?.total_count || 0);
+        setIsLoading(false);
+        return;
+      }
+
       // Build the query based on user role and permissions
       let query = supabase
         .from('maintenance_requests')
@@ -117,7 +169,7 @@ export const useUnifiedRequests = (filters?: RequestFilters) => {
 
       // Apply role-based filtering
       if (!isStaff) {
-        // Non-staff can only see their own requests
+        // Non-staff (regular tenant) can only see their own requests
         query = query.eq('reported_by', user.id);
       } else if (userRole === 'field_staff') {
         // Field staff can see requests assigned to them or unassigned
