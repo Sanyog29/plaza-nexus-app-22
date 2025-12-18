@@ -66,9 +66,22 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
 
     } catch (error: any) {
       console.error('Password reset error:', error);
+      
+      let errorMessage = "Unable to process your request. Please try again.";
+      
+      // Try to extract message from error context if it's a FunctionsHttpError
+      if (error?.context) {
+        try {
+          const errorData = await error.context.json();
+          errorMessage = errorData?.message || errorMessage;
+        } catch {
+          // Failed to parse error response, use default message
+        }
+      }
+      
       toast({
         title: "Request failed",
-        description: "Unable to process your request. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

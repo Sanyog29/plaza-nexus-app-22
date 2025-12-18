@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
           message: "Invalid email format" 
         }),
         { 
-          status: 400, 
+          status: 200, 
           headers: { "Content-Type": "application/json", ...corsHeaders } 
         }
       );
@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
     const userExists = users.some(u => u.email?.toLowerCase() === email.toLowerCase());
 
     if (!userExists) {
-      // Return clear error for non-existent email
+      // Return clear error for non-existent email (200 status so client can read the response)
       console.log(`Password reset attempted for non-existent email: ${email}`);
       return new Response(
         JSON.stringify({ 
@@ -66,7 +66,7 @@ const handler = async (req: Request): Promise<Response> => {
           message: "This email is not registered in our system." 
         }),
         { 
-          status: 404, 
+          status: 200, 
           headers: { "Content-Type": "application/json", ...corsHeaders } 
         }
       );
