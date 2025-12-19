@@ -108,6 +108,7 @@ import { PWANotificationManager } from "./components/notifications/PWANotificati
 import { EnhancedNotificationProvider } from "./components/notifications/EnhancedNotificationProvider";
 import NotificationsPage from "./pages/NotificationsPage";
 import { BreadcrumbProvider } from "./contexts/BreadcrumbContext";
+import { SnowfallEffect } from "./components/common/SnowfallEffect";
 import QualityControlPage from "./pages/admin/QualityControlPage";
 import SystemMonitoringPage from "./pages/admin/SystemMonitoringPage";
 import VisitorManagementPage from "./pages/VisitorManagementPage";
@@ -129,6 +130,7 @@ const App = () => (
                         <TooltipProvider>
                   
                   <Sonner />
+                  <SnowfallEffect />
             <BrowserRouter>
           <Routes>
             {/* Public Routes */}
